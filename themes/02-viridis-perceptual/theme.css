@@ -1,0 +1,89 @@
+/* ==========================================================================
+   Thème Dataviz 02 : Viridis Perceptual (SciPy / Matplotlib)
+   Fondé sur les travaux de S. van der Walt, N. Smith & J. Nuñez (PLOS ONE)
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap');
+
+:root, [data-theme="viridis-perceptual"] {
+  /* Typographie Technique */
+  --chart-font-sans: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --chart-font-mono: 'IBM Plex Mono', Menlo, Monaco, Consolas, monospace;
+
+  /* Surfaces & Fonds (Thème Clair Scientifique) */
+  --chart-bg: #FFFFFF;
+  --chart-surface: #F8FAFC;
+  --chart-surface-raised: #FFFFFF;
+  --chart-border: #E2E8F0;
+  --chart-border-strong: #CBD5E1;
+
+  /* Textes & Typographie */
+  --chart-text-primary: #0F172A;
+  --chart-text-secondary: #334155;
+  --chart-text-muted: #64748B;
+
+  /* Grille & Axes */
+  --chart-grid-color: rgba(15, 23, 42, 0.06);
+  --chart-axis-color: #94A3B8;
+  --chart-zero-line: #475569;
+
+  /* Échelle Séquentielle Perceptuelle Viridis (10 pas continus) */
+  --chart-viridis-1: #440154; /* 0% */
+  --chart-viridis-2: #482777; /* 11% */
+  --chart-viridis-3: #3E4A89; /* 22% */
+  --chart-viridis-4: #31688E; /* 33% */
+  --chart-viridis-5: #26828E; /* 44% */
+  --chart-viridis-6: #1F9E89; /* 55% */
+  --chart-viridis-7: #35B779; /* 66% */
+  --chart-viridis-8: #6DCD59; /* 77% */
+  --chart-viridis-9: #B4DE2C; /* 88% */
+  --chart-viridis-10: #FDE725; /* 100% */
+
+  /* Palette Catégorielle Extraite (Sous-ensemble contrasté) */
+  --chart-color-1: #3E4A89; /* Indigo */
+  --chart-color-2: #26828E; /* Turquoise */
+  --chart-color-3: #35B779; /* Vert */
+  --chart-color-4: #B4DE2C; /* Lime */
+  --chart-color-5: #440154; /* Violet foncé */
+  --chart-color-6: #FDE725; /* Jaune */
+  --chart-color-7: #31688E; /* Bleu pétrole */
+  --chart-color-8: #1F9E89; /* Sarcelle */
+
+  /* Échelle Magma (Alternative Sombre / Chaleur) */
+  --chart-magma-1: #000004;
+  --chart-magma-2: #3B0F70;
+  --chart-magma-3: #8C2981;
+  --chart-magma-4: #DE4968;
+  --chart-magma-5: #FE9F6D;
+  --chart-magma-6: #FCFDBF;
+
+  /* Sémantique & Statuts */
+  --chart-positive: #22A884;
+  --chart-negative: #440154;
+  --chart-warning: #FDE725;
+  --chart-info: #2A788E;
+  --chart-neutral: #414487;
+
+  /* Accentuation & Focus Cognitif */
+  --chart-emphasis-focal: #26828E;
+  --chart-emphasis-benchmark: #3E4A89;
+  --chart-emphasis-context: #CBD5E1;
+  --chart-emphasis-anomaly: #FDE725;
+  --chart-emphasis-forecast-alpha: 0.50;
+
+  /* Statuts Universels Standardisés */
+  --chart-status-success: #22A884;
+  --chart-status-warning: #D8B400;
+  --chart-status-danger: #440154;
+  --chart-status-info: #2A788E;
+  --chart-status-neutral: #8E9AAF;
+}
+
+.chart-container-viridis {
+  font-family: var(--chart-font-sans);
+  background-color: var(--chart-bg);
+  color: var(--chart-text-primary);
+  border: 1px solid var(--chart-border);
+  border-radius: 8px;
+  padding: 16px;
+}

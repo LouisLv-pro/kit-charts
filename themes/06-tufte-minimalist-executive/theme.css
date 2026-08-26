@@ -1,0 +1,79 @@
+/* ==========================================================================
+   Thème Dataviz 06 : Tufte Minimalist Executive
+   Fondé sur les principes d'Edward Tufte & Stephen Few
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root, [data-theme="tufte-minimalist-executive"], [data-theme="tufte-minimalist"], [data-theme="tufte"] {
+  /* Typographie Épurée */
+  --chart-font-sans: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif;
+  --chart-font-mono: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace;
+
+  /* Surfaces & Fonds (Blanc Épuré Mat) */
+  --chart-bg: #FCFBF9;
+  --chart-surface: #FFFFFF;
+  --chart-surface-raised: #FFFFFF;
+  --chart-border: #E8E5DF;
+  --chart-border-strong: #D5D1C8;
+
+  /* Textes & Encre (Ratio Data-Ink Maximal) */
+  --chart-text-primary: #111111;     /* Noir encre */
+  --chart-text-secondary: #333333;   /* Gris neutre foncé */
+  --chart-text-muted: #777777;       /* Gris discret */
+
+  /* Grille & Axes (Subtilité Absolue) */
+  --chart-grid-color: rgba(0, 0, 0, 0.04);
+  --chart-axis-color: #CCCCCC;
+  --chart-zero-line: #333333;
+
+  /* Palette Monochromatique Fonctionnelle avec Accent */
+  --chart-color-focal: #1D4ED8;     /* Accent Bleu Cobalt Unique */
+  --chart-color-context-1: #525252; /* Série secondaire */
+  --chart-color-context-2: #737373; /* Série tertiaire */
+  --chart-color-context-3: #A3A3A3; /* Fond / Historique */
+  --chart-color-context-4: #D4D4D4; /* Base comparative */
+  --chart-color-context-5: #E5E5E5;
+  --chart-color-context-6: #171717;
+  --chart-color-context-7: #B91C1C;
+
+  /* Mappings Standards */
+  --chart-color-1: #1D4ED8;
+  --chart-color-2: #525252;
+  --chart-color-3: #737373;
+  --chart-color-4: #A3A3A3;
+  --chart-color-5: #D4D4D4;
+  --chart-color-6: #E5E5E5;
+  --chart-color-7: #171717;
+  --chart-color-8: #B91C1C;
+
+  /* Alertes Minimales & Sémantique */
+  --chart-positive: #15803D;
+  --chart-negative: #B91C1C;
+  --chart-warning: #B8860B;
+  --chart-info: #1D4ED8;
+  --chart-neutral: #737373;
+
+  /* Accentuation & Focus Cognitif */
+  --chart-emphasis-focal: #1D4ED8;
+  --chart-emphasis-benchmark: #111111;
+  --chart-emphasis-context: #D4D4D4;
+  --chart-emphasis-anomaly: #B91C1C;
+  --chart-emphasis-forecast-alpha: 0.45;
+
+  /* Statuts Universels Standardisés */
+  --chart-status-success: #15803D;
+  --chart-status-warning: #B8860B;
+  --chart-status-danger: #B91C1C;
+  --chart-status-info: #1D4ED8;
+  --chart-status-neutral: #737373;
+}
+
+.chart-container-tufte {
+  font-family: var(--chart-font-sans);
+  background-color: var(--chart-bg);
+  color: var(--chart-text-primary);
+  border: none;
+  border-top: 1px solid var(--chart-text-primary); /* Style éditorial presse */
+  padding: 16px 0;
+}

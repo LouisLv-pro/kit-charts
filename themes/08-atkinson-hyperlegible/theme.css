@@ -1,0 +1,69 @@
+/* ==========================================================================
+   Thème Dataviz 08 : Atkinson Hyperlegible (Accessibilité Maximale & Basse Vision)
+   Développé par le Braille Institute of America & Applied Design Works
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;600&display=swap');
+
+:root, [data-theme="atkinson-hyperlegible"], [data-theme="atkinson"] {
+  /* Typographie Spécialisée Basse Vision */
+  --chart-font-sans: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --chart-font-mono: 'Fira Code', 'JetBrains Mono', Menlo, monospace;
+
+  /* Surfaces & Fonds (Contraste Élevé) */
+  --chart-bg: #FFFFFF;
+  --chart-surface: #F4F4F5;
+  --chart-surface-raised: #FFFFFF;
+  --chart-border: #D4D4D8;
+  --chart-border-strong: #71717A;
+
+  /* Textes & Labels (WCAG AAA Strict) */
+  --chart-text-primary: #000000;     /* Contraste 21:1 */
+  --chart-text-secondary: #18181B;   /* Contraste 17:1 */
+  --chart-text-muted: #3F3F46;       /* Contraste 9.5:1 */
+
+  /* Grille & Axes (Clairement Définis) */
+  --chart-grid-color: rgba(0, 0, 0, 0.12);
+  --chart-axis-color: #71717A;
+  --chart-zero-line: #18181B;
+
+  /* Palette Haute Lisibilité (High-Contrast & CVD Certified) */
+  --chart-color-1: #005AB5; /* Bleu Cobalt Foncé */
+  --chart-color-2: #DC3220; /* Vermillon Vif */
+  --chart-color-3: #009E73; /* Vert Émeraude */
+  --chart-color-4: #FE6100; /* Orange Brûlé */
+  --chart-color-5: #785EF0; /* Violet Lumineux */
+  --chart-color-6: #FFB000; /* Ambre */
+  --chart-color-7: #3F3F46; /* Zinc foncé haute lisibilité */
+  --chart-color-8: #64748B; /* Ardoise */
+
+  /* Sémantique */
+  --chart-positive: #009E73;
+  --chart-negative: #DC3220;
+  --chart-warning: #FE6100;
+  --chart-info: #005AB5;
+  --chart-neutral: #71717A;
+
+  /* Accentuation & Focus Cognitif */
+  --chart-emphasis-focal: #005AB5;
+  --chart-emphasis-benchmark: #27272A;
+  --chart-emphasis-context: #A1A1AA;
+  --chart-emphasis-anomaly: #DC3220;
+  --chart-emphasis-forecast-alpha: 0.55;
+
+  /* Statuts Universels Standardisés */
+  --chart-status-success: #009E73;
+  --chart-status-warning: #FE6100;
+  --chart-status-danger: #DC3220;
+  --chart-status-info: #005AB5;
+  --chart-status-neutral: #71717A;
+}
+
+.chart-container-atkinson {
+  font-family: var(--chart-font-sans);
+  background-color: var(--chart-bg);
+  color: var(--chart-text-primary);
+  border: 2px solid var(--chart-border);
+  border-radius: 8px;
+  padding: 20px;
+}

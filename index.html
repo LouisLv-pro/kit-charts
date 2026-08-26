@@ -1,0 +1,3440 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="colorbrewer-accessible">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kit-Charts — Suite de Visualisation Graphique Cognitive & Psychophysique</title>
+  <meta name="description" content="Suite moderne de visualisations graphiques interactives Chart.js v4+ calibrées pour une clarté cognitive absolue et une discrimination psychophysique optimale.">
+
+  <!-- Google Fonts pour tous les thèmes cognitifs -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Chart.js Core v4.4.7 UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+
+  <!-- Date Adapter (Luxon) pour les échelles temporelles & Chandelier OHLC -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.5.0/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
+
+  <!-- TopoJSON Client pour les projections cartographiques -->
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+
+  <!-- 6 Plugins spécialisés Chart.js v4+ -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.1/dist/chartjs-chart-sankey.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.1/dist/chartjs-chart-treemap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.3.4/build/index.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.4/build/index.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
+
+  <!-- Système universel de thèmes cognitifs & Catalogue Pré-Bundlé Zero-CORS -->
+  <script src="./themes/theme-tokens.js"></script>
+  <script src="./catalog-bundle.js"></script>
+
+  <style>
+    /* ==========================================================================
+       1. VARIABLES CSS, DESIGN SYSTEM & THÈMES
+       ========================================================================== */
+    :root {
+      --bg: #F8FAFC;
+      --surface: #FFFFFF;
+      --surface-raised: #FFFFFF;
+      --surface-subtle: #F1F5F9;
+      --surface-glass: rgba(255, 255, 255, 0.82);
+      --border: rgba(226, 232, 240, 0.9);
+      --border-strong: #CBD5E1;
+      --border-glow: rgba(34, 91, 255, 0.25);
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #64748B;
+      --accent: #225BFF;
+      --accent-hover: #1742C2;
+      --accent-light: rgba(34, 91, 255, 0.08);
+      --accent-glow: rgba(34, 91, 255, 0.25);
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+      --shadow-md: 0 4px 12px -2px rgba(0, 0, 0, 0.06), 0 2px 6px -1px rgba(0, 0, 0, 0.04);
+      --shadow-lg: 0 12px 28px -6px rgba(0, 0, 0, 0.08), 0 4px 12px -2px rgba(0, 0, 0, 0.04);
+      --shadow-glass: 0 16px 36px -8px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.5) inset;
+      --shadow-card-hover: 0 20px 38px -10px rgba(34, 91, 255, 0.15), 0 8px 16px -4px rgba(0, 0, 0, 0.06);
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --radius-xl: 24px;
+      --radius-full: 9999px;
+      --transition-smooth: all 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+      --transition-spring: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+
+    [data-theme="nord-cognitive-dark"] {
+      --bg: #1A1E24;
+      --surface: #242933;
+      --surface-raised: #2E3440;
+      --surface-subtle: #1F232B;
+      --surface-glass: rgba(36, 41, 51, 0.85);
+      --border: rgba(76, 86, 106, 0.6);
+      --border-strong: #4C566A;
+      --border-glow: rgba(136, 192, 208, 0.3);
+      --text-primary: #ECEFF4;
+      --text-secondary: #D8DEE9;
+      --text-muted: #9EABC0;
+      --accent: #88C0D0;
+      --accent-hover: #81A1C1;
+      --accent-light: rgba(136, 192, 208, 0.12);
+      --accent-glow: rgba(136, 192, 208, 0.3);
+      --shadow-glass: 0 16px 36px -8px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06) inset;
+      --shadow-card-hover: 0 22px 42px -10px rgba(0, 0, 0, 0.6), 0 0 20px rgba(136, 192, 208, 0.2);
+    }
+
+    [data-theme="tufte-minimalist-executive"] {
+      --bg: #FCFBF9;
+      --surface: #FFFFFF;
+      --surface-raised: #FFFFFF;
+      --surface-subtle: #F5F3EF;
+      --surface-glass: rgba(255, 255, 255, 0.9);
+      --border: #E8E5DF;
+      --border-strong: #D5D1C8;
+      --border-glow: rgba(178, 34, 34, 0.2);
+      --text-primary: #111111;
+      --text-secondary: #333333;
+      --text-muted: #777777;
+      --accent: #B22222;
+      --accent-hover: #8B0000;
+      --accent-light: rgba(178, 34, 34, 0.08);
+      --accent-glow: rgba(178, 34, 34, 0.2);
+    }
+
+    [data-theme="atkinson-hyperlegible"] {
+      --bg: #FFFFFF;
+      --surface: #F9F9FB;
+      --surface-raised: #FFFFFF;
+      --surface-subtle: #F0F2F6;
+      --surface-glass: rgba(249, 249, 251, 0.9);
+      --border: #000000;
+      --border-strong: #000000;
+      --border-glow: rgba(0, 90, 156, 0.3);
+      --text-primary: #000000;
+      --text-secondary: #1A1A1A;
+      --text-muted: #444444;
+      --accent: #005A9C;
+      --accent-hover: #003F6E;
+      --accent-light: rgba(0, 90, 156, 0.1);
+      --accent-glow: rgba(0, 90, 156, 0.25);
+      --font-sans: 'Atkinson Hyperlegible', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-primary);
+      font-family: var(--font-sans);
+      min-height: 100vh;
+      line-height: 1.5;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* ==========================================================================
+       2. TOP NAVIGATION BAR
+       ========================================================================== */
+    .top-navbar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      background: var(--surface-glass);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2rem;
+      transition: var(--transition-smooth);
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: var(--text-primary);
+      font-weight: 800;
+      font-size: 1.2rem;
+      letter-spacing: -0.03em;
+    }
+
+    .brand-icon-wrap {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, var(--accent) 0%, #6366F1 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #FFFFFF;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .brand-icon-wrap svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: var(--surface-subtle);
+      padding: 0.3rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+    }
+
+    .nav-link {
+      padding: 0.45rem 1rem;
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+      transition: var(--transition-smooth);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .nav-link:hover {
+      color: var(--text-primary);
+      background: var(--surface);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .btn-theme-toggle {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 1.1rem;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-theme-toggle:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-light);
+      transform: rotate(15deg);
+    }
+
+    /* ==========================================================================
+       3. AMBIENT AURORA & HERO SECTION
+       ========================================================================== */
+    .hero-wrapper {
+      position: relative;
+      padding: 8.5rem 2rem 4rem 2rem;
+      max-width: 1400px;
+      margin: 0 auto;
+      overflow: visible;
+    }
+
+    /* Aurora Glows */
+    .aurora-container {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 1300px;
+      height: 640px;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .aurora-glow {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(75px);
+      opacity: 0.55;
+      transition: opacity 0.5s ease;
+    }
+
+    .aurora-1 {
+      top: -10%;
+      left: 15%;
+      width: 460px;
+      height: 460px;
+      background: radial-gradient(circle, var(--accent) 0%, rgba(34, 91, 255, 0) 70%);
+      animation: floatAurora1 12s ease-in-out infinite alternate;
+    }
+
+    .aurora-2 {
+      top: -5%;
+      right: 15%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, #818CF8 0%, rgba(129, 140, 248, 0) 70%);
+      animation: floatAurora2 15s ease-in-out infinite alternate;
+    }
+
+    .aurora-3 {
+      top: 25%;
+      left: 42%;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, #F472B6 0%, rgba(244, 114, 182, 0) 70%);
+      animation: floatAurora3 18s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatAurora1 {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.45; }
+      100% { transform: translate(40px, 30px) scale(1.15); opacity: 0.75; }
+    }
+
+    @keyframes floatAurora2 {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.55; }
+      100% { transform: translate(-35px, 45px) scale(1.2); opacity: 0.8; }
+    }
+
+    @keyframes floatAurora3 {
+      0% { transform: translate(0, 0) scale(1); opacity: 0.35; }
+      100% { transform: translate(25px, -35px) scale(1.1); opacity: 0.65; }
+    }
+
+    /* Hero Typography */
+    .hero-main {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      max-width: 880px;
+      margin: 0 auto;
+    }
+
+    .hero-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 1.1rem;
+      background: var(--surface-glass);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      color: var(--accent);
+      border: 1px solid var(--border-glow);
+      border-radius: var(--radius-full);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1.35rem;
+      box-shadow: 0 4px 14px var(--accent-glow);
+      animation: fadeInDown 0.6s ease;
+    }
+
+    .hero-title {
+      font-size: clamp(3.2rem, 7vw, 5.2rem);
+      font-weight: 900;
+      letter-spacing: -0.04em;
+      line-height: 1.02;
+      color: var(--text-primary);
+      margin-bottom: 1.25rem;
+      animation: fadeInUp 0.7s ease;
+    }
+
+    .hero-title .title-accent {
+      background: linear-gradient(135deg, var(--accent) 0%, #6366F1 50%, #EC4899 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      display: inline-block;
+    }
+
+    .hero-subtitle {
+      font-size: clamp(1.1rem, 2.2vw, 1.35rem);
+      color: var(--text-secondary);
+      line-height: 1.6;
+      font-weight: 400;
+      max-width: 700px;
+      margin: 0 auto 2.25rem auto;
+      animation: fadeInUp 0.8s ease;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      animation: fadeInUp 0.9s ease;
+    }
+
+    .btn-hero-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      background: var(--accent);
+      color: #FFFFFF !important;
+      padding: 0.9rem 1.85rem;
+      border-radius: var(--radius-full);
+      font-size: 0.95rem;
+      font-weight: 700;
+      text-decoration: none;
+      box-shadow: 0 8px 24px var(--accent-glow);
+      transition: var(--transition-smooth);
+      border: 1px solid transparent;
+    }
+
+    .btn-hero-primary:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px var(--accent-glow);
+    }
+
+    /* ==========================================================================
+       4. HERO DÉCORATIF : 3 CARTES PUREMENT VISUELLES (SANS TEXTE)
+       ========================================================================== */
+    .hero-floating-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.75rem;
+      margin-top: 3.75rem;
+      position: relative;
+      z-index: 2;
+    }
+
+    .floating-card {
+      background: var(--surface-glass);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 1.25rem;
+      box-shadow: var(--shadow-glass);
+      transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.35s, border-color 0.35s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 210px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .floating-card:hover {
+      transform: translateY(-8px) scale(1.02);
+      border-color: var(--accent);
+      box-shadow: var(--shadow-card-hover);
+    }
+
+    .float-anim-1 {
+      animation: floatMotion1 7s ease-in-out infinite alternate;
+    }
+
+    .float-anim-2 {
+      animation: floatMotion2 8.5s ease-in-out infinite alternate;
+    }
+
+    .float-anim-3 {
+      animation: floatMotion3 6.5s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatMotion1 {
+      0% { transform: translateY(0px); }
+      100% { transform: translateY(-12px); }
+    }
+
+    @keyframes floatMotion2 {
+      0% { transform: translateY(-8px); }
+      100% { transform: translateY(8px); }
+    }
+
+    @keyframes floatMotion3 {
+      0% { transform: translateY(6px); }
+      100% { transform: translateY(-10px); }
+    }
+
+    .hero-drawing-wrap {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .hero-drawing-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    /* Dessin 2 : Tableaux Dataviz (Pur Graphisme sans texte) */
+    .hero-tab-drawing {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 0.6rem;
+      padding: 0.5rem 0.75rem;
+    }
+
+    .tab-drawing-header {
+      display: grid;
+      grid-template-columns: 28px 1fr 1.2fr 48px;
+      gap: 0.6rem;
+      align-items: center;
+      padding-bottom: 0.4rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tab-drawing-header-pill {
+      height: 7px;
+      border-radius: var(--radius-full);
+      background: var(--border-strong);
+      opacity: 0.7;
+    }
+
+    .tab-drawing-row {
+      display: grid;
+      grid-template-columns: 28px 1fr 1.2fr 48px;
+      gap: 0.6rem;
+      align-items: center;
+      padding: 0.35rem 0.5rem;
+      background: var(--surface-subtle);
+      border-radius: var(--radius-sm);
+      border: 1px solid var(--border);
+      transition: var(--transition-smooth);
+    }
+
+    .tab-drawing-row:hover {
+      background: var(--surface);
+      border-color: var(--accent);
+    }
+
+    .tab-status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      box-shadow: 0 0 8px currentColor;
+    }
+
+    .tab-bar-track {
+      width: 100%;
+      height: 7px;
+      background: var(--border);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      position: relative;
+    }
+
+    .tab-bar-fill {
+      height: 100%;
+      border-radius: var(--radius-full);
+      background: var(--accent);
+      transition: width 0.5s ease;
+    }
+
+    .tab-sparkline-svg {
+      width: 48px;
+      height: 16px;
+      overflow: visible;
+    }
+
+    /* Keyframes */
+    @keyframes fadeInUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeInDown {
+      from { opacity: 0; transform: translateY(-15px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ==========================================================================
+       5. STICKY CONTROLS TOOLBAR : PASTILLES DE COULEUR & BOUTON LABEL
+       ========================================================================== */
+    .portal-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem 5rem 2rem;
+    }
+
+    .toolbar-sticky {
+      position: sticky;
+      top: 80px;
+      z-index: 500;
+      background: var(--surface-glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 0.95rem 1.5rem;
+      margin-bottom: 3rem;
+      box-shadow: var(--shadow-lg);
+      transition: var(--transition-smooth);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1.25rem;
+    }
+
+    .toolbar-left {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    .toolbar-theme-label {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    /* Pastilles de Couleurs (Theme Swatches) */
+    .theme-swatches-group {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: var(--surface-subtle);
+      padding: 0.35rem 0.55rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+    }
+
+    .theme-swatch {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 2px solid transparent;
+      cursor: pointer;
+      position: relative;
+      transition: var(--transition-smooth);
+      outline: none;
+      padding: 0;
+      flex-shrink: 0;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.12);
+    }
+
+    .theme-swatch:hover {
+      transform: scale(1.2);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .theme-swatch.active {
+      transform: scale(1.22);
+      border-color: var(--surface);
+      box-shadow: 0 0 0 3px var(--accent), 0 4px 12px var(--accent-glow);
+    }
+
+    .active-theme-name-tag {
+      font-size: 0.825rem;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: var(--surface);
+      padding: 0.35rem 0.85rem;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .toolbar-right {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+    }
+
+    /* Bouton Label (Dessin avec Surbrillance) */
+    .btn-label-toggle {
+      width: 42px;
+      height: 42px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      background: var(--surface-subtle);
+      color: var(--text-muted);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: var(--transition-smooth);
+      position: relative;
+      outline: none;
+    }
+
+    .btn-label-toggle svg {
+      width: 20px;
+      height: 20px;
+      transition: var(--transition-smooth);
+    }
+
+    .btn-label-toggle:hover {
+      background: var(--surface);
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-1px);
+    }
+
+    /* État Activé avec Surbrillance / Glow Lumineux */
+    .btn-label-toggle.active {
+      background: var(--accent);
+      color: #FFFFFF !important;
+      border-color: var(--accent);
+      box-shadow: 0 0 16px var(--accent-glow), 0 4px 12px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-label-toggle.active svg {
+      filter: drop-shadow(0 0 4px rgba(255, 255, 255, 0.7));
+    }
+
+    .toolbar-badge-total {
+      font-size: 0.825rem;
+      font-family: var(--font-mono);
+      font-weight: 700;
+      color: var(--text-secondary);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 0.45rem 0.9rem;
+      border-radius: var(--radius-full);
+      white-space: nowrap;
+    }
+
+    /* ==========================================================================
+       6. SÉCTIONS ET TITRES DE SÉCTIONS
+       ========================================================================== */
+    .portal-section {
+      margin-bottom: 5rem;
+      scroll-margin-top: 170px;
+    }
+
+    .section-header-wrap {
+      margin-bottom: 2rem;
+      padding-bottom: 1.25rem;
+      border-bottom: 1px solid var(--border);
+      position: relative;
+    }
+
+    .section-header-wrap::after {
+      content: '';
+      position: absolute;
+      bottom: -1px;
+      left: 0;
+      width: 80px;
+      height: 2px;
+      background: var(--accent);
+      border-radius: var(--radius-full);
+      box-shadow: 0 0 10px var(--accent-glow);
+    }
+
+    .section-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.25rem 0.75rem;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: var(--radius-full);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 0.75rem;
+      border: 1px solid var(--border-glow);
+    }
+
+    .section-title {
+      font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.03em;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-count-tag {
+      font-size: 0.95rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--surface-subtle);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.65rem;
+      border-radius: var(--radius-full);
+    }
+
+    .section-desc {
+      font-size: 1rem;
+      color: var(--text-secondary);
+      max-width: 780px;
+      line-height: 1.55;
+    }
+
+    /* Sub-Catégories pour les Graphiques */
+    .chart-subcategory-divider {
+      margin: 3.5rem 0 1.5rem 0;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .chart-subcategory-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .chart-subcategory-line {
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* ==========================================================================
+       7. GRILLE DE LA GALERIE & CARTES DE TEMPLATES
+       ========================================================================== */
+    .gallery-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+      gap: 1.75rem;
+    }
+
+    .chart-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s, border-color 0.28s;
+      position: relative;
+    }
+
+    .chart-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--accent);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 0.75rem;
+      margin-bottom: 0.85rem;
+    }
+
+    .card-title-group {
+      flex: 1;
+    }
+
+    .card-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      line-height: 1.3;
+      letter-spacing: -0.01em;
+    }
+
+    .card-slug {
+      font-size: 0.75rem;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      margin-top: 0.2rem;
+    }
+
+    .card-badges {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 0.35rem;
+    }
+
+    .badge-category {
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      padding: 0.2rem 0.6rem;
+      border-radius: var(--radius-full);
+      background: var(--surface-subtle);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .badge-plugin {
+      font-size: 0.675rem;
+      font-weight: 700;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: var(--accent-light);
+      color: var(--accent);
+      border: 1px solid var(--border-glow);
+      white-space: nowrap;
+      font-family: var(--font-mono);
+    }
+
+    /* Règle cognitive */
+    .card-cognitive-rule {
+      background: var(--surface-subtle);
+      border-left: 3px solid var(--accent);
+      border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+      padding: 0.55rem 0.85rem;
+      margin-bottom: 1.1rem;
+      font-size: 0.775rem;
+      color: var(--text-secondary);
+      line-height: 1.45;
+    }
+
+    .card-cognitive-rule strong {
+      color: var(--text-primary);
+      display: block;
+      font-size: 0.725rem;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-bottom: 0.15rem;
+    }
+
+    /* Zone Canvas */
+    .card-canvas-container {
+      position: relative;
+      width: 100%;
+      height: 250px;
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 0.75rem;
+      margin-bottom: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .card-canvas-container canvas {
+      width: 100% !important;
+      height: 100% !important;
+    }
+
+    .card-canvas-container .kc-table-wrapper {
+      width: 100%;
+      height: 100%;
+      max-height: 100%;
+      overflow: auto;
+    }
+
+    .card-canvas-container .kc-dataviz-table-container,
+    .card-canvas-container .kc-dataviz-heatmap-container,
+    .card-canvas-container .kc-dataviz-barincell-container,
+    .card-canvas-container .kc-dataviz-tree-container,
+    .card-canvas-container .kc-dataviz-financial-container,
+    .card-canvas-container .kc-dataviz-leaderboard-container {
+      max-height: 100%;
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* Skeleton */
+    .chart-skeleton {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--surface-subtle);
+      border-radius: var(--radius-md);
+      color: var(--text-muted);
+      font-size: 0.8rem;
+      font-family: var(--font-mono);
+      transition: opacity 0.3s ease;
+    }
+
+    .skeleton-spinner {
+      width: 24px;
+      height: 24px;
+      border: 2px solid var(--border-strong);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Pied de carte : Bouton unique 'Aperçu du template' */
+    .card-footer {
+      display: grid;
+      grid-template-columns: 1fr;
+      padding-top: 0.85rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .card-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.45rem;
+      padding: 0.65rem 1rem;
+      border-radius: var(--radius-full);
+      font-size: 0.825rem;
+      font-weight: 600;
+      text-decoration: none;
+      cursor: pointer;
+      transition: var(--transition-smooth);
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .card-btn-demo {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #FFFFFF !important;
+      box-shadow: 0 4px 12px var(--accent-glow);
+    }
+
+    .card-btn-demo:hover {
+      background: var(--accent-hover);
+      border-color: var(--accent-hover);
+      box-shadow: 0 6px 16px var(--accent-glow);
+      transform: translateY(-1px);
+    }
+
+    /* Styles dédiés aux Cartes de Thèmes */
+    .theme-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.35rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: var(--shadow-sm);
+      transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.28s, border-color 0.28s;
+      position: relative;
+    }
+
+    .theme-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-card-hover);
+      border-color: var(--accent);
+    }
+
+    .theme-card-accent-bar {
+      height: 4px;
+      border-radius: var(--radius-full);
+      margin-bottom: 0.9rem;
+    }
+
+    .theme-palette-preview {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 1rem;
+      margin-bottom: 1.1rem;
+    }
+
+    .theme-swatches-row {
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      gap: 0.4rem;
+    }
+
+    .theme-chip {
+      height: 38px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 0, 0, 0.12);
+      cursor: pointer;
+      transition: transform 0.18s ease, box-shadow 0.18s ease;
+      position: relative;
+    }
+
+    .theme-chip:hover {
+      transform: scale(1.18);
+      z-index: 5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .theme-seq-mini-bar {
+      height: 12px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--border);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    .theme-status-mini-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .theme-typography-tag {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    /* ==========================================================================
+       8. PIED DE PAGE STRUCTURÉ ET STYLISÉ
+       ========================================================================== */
+    .portal-footer {
+      margin-top: 6rem;
+      padding: 4.5rem 0 2rem 0;
+      border-top: 1px solid var(--border);
+      position: relative;
+      background: var(--surface-subtle);
+    }
+
+    .footer-top-accent {
+      position: absolute;
+      top: -1px;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+    }
+
+    .footer-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 0 2rem;
+    }
+
+    .footer-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1.5fr;
+      gap: 3rem;
+      margin-bottom: 3.5rem;
+    }
+
+    .footer-col-brand .footer-brand-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: var(--text-primary);
+      letter-spacing: -0.02em;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .footer-col-brand p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+      margin-bottom: 1.25rem;
+    }
+
+    .footer-badges-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .footer-badge {
+      font-size: 0.725rem;
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 0.2rem 0.55rem;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-full);
+      color: var(--text-muted);
+    }
+
+    .footer-col-title {
+      font-size: 0.85rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-primary);
+      margin-bottom: 1.15rem;
+    }
+
+    .footer-col-links {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.65rem;
+    }
+
+    .footer-col-links a {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: var(--transition-smooth);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .footer-col-links a:hover {
+      color: var(--accent);
+      transform: translateX(3px);
+    }
+
+    .footer-bottom-bar {
+      padding-top: 2rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+    }
+
+    .footer-back-to-top {
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      transition: var(--transition-smooth);
+    }
+
+    .footer-back-to-top:hover {
+      color: var(--accent);
+    }
+
+    /* ==========================================================================
+       9. RESPONSIVE
+       ========================================================================== */
+    @media (max-width: 1024px) {
+      .hero-floating-grid {
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+      }
+      .floating-card {
+        height: 180px;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .top-navbar {
+        padding: 0 1rem;
+      }
+      .nav-links {
+        display: none;
+      }
+      .hero-wrapper {
+        padding: 6.5rem 1rem 3rem 1rem;
+      }
+      .portal-container {
+        padding: 0 1rem 3rem 1rem;
+      }
+      .gallery-grid {
+        grid-template-columns: 1fr;
+      }
+      .toolbar-sticky {
+        top: 70px;
+        padding: 0.85rem;
+      }
+      .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .footer-bottom-bar {
+        flex-direction: column;
+        text-align: center;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, ::before, ::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+      }
+      .aurora-1, .aurora-2, .aurora-3, .float-anim-1, .float-anim-2, .float-anim-3 {
+        animation: none !important;
+      }
+    }
+  </style>
+</head>
+<body data-theme="colorbrewer-accessible">
+
+  <!-- ==========================================================================
+       TOP NAVIGATION BAR
+       ========================================================================== -->
+  <header class="top-navbar">
+    <a href="#" class="nav-brand">
+      <div class="brand-icon-wrap">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="20" x2="18" y2="10"></line>
+          <line x1="12" y1="20" x2="12" y2="4"></line>
+          <line x1="6" y1="20" x2="6" y2="14"></line>
+        </svg>
+      </div>
+      <span>Kit-Charts</span>
+    </a>
+
+    <nav class="nav-links" aria-label="Navigation principale">
+      <a href="#section-themes" class="nav-link"><span>🎨</span> Thèmes</a>
+      <a href="#section-cards" class="nav-link"><span>💳</span> Cards</a>
+      <a href="#section-charts" class="nav-link"><span>📊</span> Graphiques</a>
+      <a href="#section-tableaux" class="nav-link"><span>📋</span> Tableaux</a>
+      <a href="#section-tooltips" class="nav-link"><span>🔍</span> Tooltips</a>
+      <a href="#section-animations" class="nav-link"><span>⚡</span> Animations</a>
+    </nav>
+
+    <div class="nav-actions">
+      <button id="quickThemeToggleBtn" class="btn-theme-toggle" title="Basculer Mode Sombre / Clair" aria-label="Basculer le mode sombre">
+        🌙
+      </button>
+    </div>
+  </header>
+
+  <!-- ==========================================================================
+       HERO SECTION AVEC AURORA GLOW & WIDGETS DÉCORATIFS (100% VISUELS SANS TEXTE)
+       ========================================================================== -->
+  <section class="hero-wrapper">
+    <!-- Aurora ambient light layers -->
+    <div class="aurora-container" aria-hidden="true">
+      <div class="aurora-glow aurora-1"></div>
+      <div class="aurora-glow aurora-2"></div>
+      <div class="aurora-glow aurora-3"></div>
+    </div>
+
+    <div class="hero-main">
+      <div class="hero-badge-pill">
+        <span>✦</span> Design System & Dataviz Psychophysique
+      </div>
+      
+      <h1 class="hero-title">
+        Kit-Charts
+      </h1>
+
+      <p class="hero-subtitle">
+        La suite moderne de visualisations graphiques Chart.js conçue pour une clarté cognitive absolue et une précision psychophysique.
+      </p>
+
+      <div class="hero-cta-group">
+        <a href="#section-cards" class="btn-hero-primary">
+          Explorer les Collections <span>↓</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- 3 Cartes Décoratives Flottantes (Purement Graphiques : Graphs, Tab, Animation - Sans aucun texte) -->
+    <div class="hero-floating-grid">
+      <!-- Dessin 1 : Graphs (Combinaison Barres & Spline de Surface) -->
+      <div class="floating-card float-anim-1" title="Visualisation Graphique">
+        <div class="hero-drawing-wrap">
+          <canvas id="heroCanvasGraphs"></canvas>
+        </div>
+      </div>
+
+      <!-- Dessin 2 : Tab (Tableau Dataviz avec indicateurs, bar-in-cell et sparklines) -->
+      <div class="floating-card float-anim-2" title="Tableaux & Scorecards Dataviz">
+        <div class="hero-drawing-wrap">
+          <div class="hero-tab-drawing" id="heroTabDrawing">
+            <!-- Header épuré -->
+            <div class="tab-drawing-header">
+              <div class="tab-drawing-header-pill" style="width: 14px;"></div>
+              <div class="tab-drawing-header-pill" style="width: 70%;"></div>
+              <div class="tab-drawing-header-pill" style="width: 85%;"></div>
+              <div class="tab-drawing-header-pill" style="width: 100%;"></div>
+            </div>
+            <!-- Ligne 1 -->
+            <div class="tab-drawing-row">
+              <div class="tab-status-dot" style="background: #10B981; color: #10B981;"></div>
+              <div class="tab-drawing-header-pill" style="width: 80%; height: 6px;"></div>
+              <div class="tab-bar-track"><div class="tab-bar-fill" style="width: 78%; background: #10B981;"></div></div>
+              <svg class="tab-sparkline-svg" viewBox="0 0 48 16"><path d="M0 12 Q12 4, 24 9 T48 3" fill="none" stroke="#10B981" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <!-- Ligne 2 -->
+            <div class="tab-drawing-row">
+              <div class="tab-status-dot" style="background: var(--accent); color: var(--accent);"></div>
+              <div class="tab-drawing-header-pill" style="width: 60%; height: 6px;"></div>
+              <div class="tab-bar-track"><div class="tab-bar-fill" style="width: 92%;"></div></div>
+              <svg class="tab-sparkline-svg" viewBox="0 0 48 16"><path d="M0 14 Q14 2, 28 8 T48 2" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <!-- Ligne 3 -->
+            <div class="tab-drawing-row">
+              <div class="tab-status-dot" style="background: #F59E0B; color: #F59E0B;"></div>
+              <div class="tab-drawing-header-pill" style="width: 75%; height: 6px;"></div>
+              <div class="tab-bar-track"><div class="tab-bar-fill" style="width: 48%; background: #F59E0B;"></div></div>
+              <svg class="tab-sparkline-svg" viewBox="0 0 48 16"><path d="M0 6 Q16 14, 32 6 T48 11" fill="none" stroke="#F59E0B" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <!-- Ligne 4 -->
+            <div class="tab-drawing-row">
+              <div class="tab-status-dot" style="background: #8B5CF6; color: #8B5CF6;"></div>
+              <div class="tab-drawing-header-pill" style="width: 65%; height: 6px;"></div>
+              <div class="tab-bar-track"><div class="tab-bar-fill" style="width: 68%; background: #8B5CF6;"></div></div>
+              <svg class="tab-sparkline-svg" viewBox="0 0 48 16"><path d="M0 10 Q12 15, 24 5 T48 4" fill="none" stroke="#8B5CF6" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dessin 3 : Animation (Onde sinusoïdale cinématique & particule en mouvement) -->
+      <div class="floating-card float-anim-3" title="Micro-Animations Cognitives">
+        <div class="hero-drawing-wrap">
+          <canvas id="heroCanvasAnim"></canvas>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==========================================================================
+       SECTION PRINCIPALE AVEC CONTRÔLES STICKY & SECTIONS
+       ========================================================================== -->
+  <div class="portal-container" id="portalMain">
+
+    <!-- Barre d'outils flottante : Pastilles de Couleurs & Bouton Label Lumineux -->
+    <nav class="toolbar-sticky" id="portalToolbar" aria-label="Contrôles thématiques globaux">
+      <div class="toolbar-left">
+        <div class="toolbar-theme-label">
+          <span>🎨</span> Thème :
+        </div>
+
+        <!-- 8 Pastilles de Couleurs -->
+        <div class="theme-swatches-group" id="themeSwatchesGroup" role="radiogroup" aria-label="Sélection du thème colorimétrique">
+          <button type="button" class="theme-swatch active" data-theme-name="colorbrewer-accessible" style="background: linear-gradient(135deg, #2B8CBE 50%, #E66101 50%);" title="01. ColorBrewer Accessible (Éditorial & CVD Safe)" aria-label="Thème ColorBrewer Accessible"></button>
+          <button type="button" class="theme-swatch" data-theme-name="viridis-perceptual" style="background: linear-gradient(135deg, #3E4A89 50%, #35B779 50%);" title="02. Viridis Perceptual (Luminance Monotone)" aria-label="Thème Viridis Perceptual"></button>
+          <button type="button" class="theme-swatch" data-theme-name="paul-tol-scientific" style="background: linear-gradient(135deg, #4477AA 50%, #CC6677 50%);" title="03. Paul Tol Scientific (Discrimination Maximale)" aria-label="Thème Paul Tol Scientific"></button>
+          <button type="button" class="theme-swatch" data-theme-name="tableau-stone-categorical" style="background: linear-gradient(135deg, #4E79A7 50%, #F28E2B 50%);" title="04. Tableau Stone Categorical" aria-label="Thème Tableau Stone"></button>
+          <button type="button" class="theme-swatch" data-theme-name="okabe-ito-cud" style="background: linear-gradient(135deg, #E69F00 50%, #56B4E9 50%);" title="05. Okabe-Ito CUD (Color Universal Design)" aria-label="Thème Okabe-Ito CUD"></button>
+          <button type="button" class="theme-swatch" data-theme-name="tufte-minimalist-executive" style="background: linear-gradient(135deg, #111111 50%, #B22222 50%);" title="06. Tufte Minimalist Executive (Data-Ink Maximal)" aria-label="Thème Tufte Minimalist"></button>
+          <button type="button" class="theme-swatch" data-theme-name="nord-cognitive-dark" style="background: linear-gradient(135deg, #2E3440 50%, #88C0D0 50%);" title="07. Nord Cognitive Dark (Anti-Asthenopia Dark Mode)" aria-label="Thème Nord Cognitive Dark"></button>
+          <button type="button" class="theme-swatch" data-theme-name="atkinson-hyperlegible" style="background: linear-gradient(135deg, #000000 50%, #005A9C 50%);" title="08. Atkinson Hyperlegible (Haute Lisibilité)" aria-label="Thème Atkinson Hyperlegible"></button>
+        </div>
+
+        <div id="activeThemeIndicator" class="active-theme-name-tag">ColorBrewer Accessible</div>
+      </div>
+
+      <div class="toolbar-right">
+        <!-- Bouton Dessin de Label en Surbrillance -->
+        <button id="globalDataLabelsToggleBtn" class="btn-label-toggle active" type="button" aria-pressed="true" title="Étiquettes de données (Labels) : Activées" aria-label="Activer ou désactiver les étiquettes de données">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
+            <circle cx="7" cy="7" r="1.5" fill="currentColor"></circle>
+          </svg>
+        </button>
+
+        <div class="toolbar-badge-total">83 Templates • 8 Thèmes</div>
+      </div>
+    </nav>
+
+    <!-- ========================================================================
+         SECTION 0 : THÈMES COGNITIFS & PALETTES PERCEPTUELLES (THEMES)
+         ======================================================================== -->
+    <section class="portal-section" id="section-themes">
+      <div class="section-header-wrap">
+        <div class="section-badge"><span>🎨</span> 00. Systèmes de Thèmes & Ergonomie Chromatique</div>
+        <h2 class="section-title">
+          Thèmes Cognitifs & Palettes Perceptuelles
+          <span class="section-count-tag">8 thèmes</span>
+        </h2>
+        <p class="section-desc">
+          Systèmes chromatiques et typographiques scientifiquement calibrés sur les espaces uniformes CIELAB / CAM02 : discrimination optimale sous toutes les formes de daltonisme (CVD Safe), luminance monotone, typographies haute lisibilité et chiffres tabulaires.
+        </p>
+      </div>
+
+      <div class="gallery-grid" id="grid-themes">
+        <!-- Rendu JS dynamique des 8 thèmes -->
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         SECTION 1 : KPI CARDS (00-KPI-CARD)
+         ======================================================================== -->
+    <section class="portal-section" id="section-cards">
+      <div class="section-header-wrap">
+        <div class="section-badge"><span>💳</span> 00. KPI Cards</div>
+        <h2 class="section-title">
+          Cartes & Métriques KPI
+          <span class="section-count-tag">7 templates</span>
+        </h2>
+        <p class="section-desc">
+          Cartes synthétiques haute densité pour tableaux de bord exécutifs, micro-sparklines temporelles, indicateurs d'objectifs bullet et décompositions conformes aux principes de Sweller et Cowan.
+        </p>
+      </div>
+
+      <div class="gallery-grid" id="grid-cards">
+        <!-- Rendu JS dynamique -->
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         SECTION 2 : GRAPHIQUES & VISUALISATIONS (01 à 08)
+         ======================================================================== -->
+    <section class="portal-section" id="section-charts">
+      <div class="section-header-wrap">
+        <div class="section-badge"><span>📊</span> 01 à 08. Graphiques Dataviz</div>
+        <h2 class="section-title">
+          Graphiques & Visualisations
+          <span class="section-count-tag">60 templates</span>
+        </h2>
+        <p class="section-desc">
+          Suite exhaustive de visualisations calibrées rigoureusement selon les lois de Cleveland-McGill, Tufte et Stevens : comparaison, composition, distribution, corrélation, séries temporelles, flux et géospatial.
+        </p>
+      </div>
+
+      <!-- Sous-Catégorie : 01. Comparaison -->
+      <div class="chart-subcategory-divider">
+        <h3 class="chart-subcategory-title"><span>📊</span> 01. Comparaison</h3>
+        <div class="chart-subcategory-line"></div>
+      </div>
+      <div class="gallery-grid" id="grid-charts-01"></div>
+
+      <!-- Sous-Catégorie : 02. Composition -->
+      <div class="chart-subcategory-divider">
+        <h3 class="chart-subcategory-title"><span>🥧</span> 02. Composition & Part-to-Whole</h3>
+        <div class="chart-subcategory-line"></div>
+      </div>
+      <div class="gallery-grid" id="grid-charts-02"></div>
+
+      <!-- Sous-Catégorie : 03. Distribution -->
+      <div class="chart-subcategory-divider">
+        <h3 class="chart-subcategory-title"><span>📈</span> 03. Distribution & Densité</h3>
+        <div class="chart-subcategory-line"></div>
+      </div>
+      <div class="gallery-grid" id="grid-charts-03"></div>
+
+      <!-- Sous-Catégorie : 04. Corrélation & Relation -->
+      <div class="chart-subcategory-divider">
+        <h3 class="chart-subcategory-title"><span>🔵</span> 04. Corrélation & Relation</h3>
+        <div class="chart-subcategory-line"></div>
+      </div>
+      <div class="gallery-grid" id="grid-charts-04"></div>
+
+      <!-- Sous-Catégorie : 05. Évolution Temporelle -->
+      <div class="chart-subcategory-divider">
+        <h3 class="chart-subcategory-title"><span>⏳</span> 05. Évolution Temporelle</h3>
+        <div class="chart-subcategory-line"></div>
+      </div>
+      <div class="gallery-grid" id="grid-charts-05"></div>
+
+      <!-- Sous-Catégorie : 06. Flux & Processus -->
+      <div class="chart-subcategory-divider">
+        <h3 class="chart-subcategory-title"><span>🌊</span> 06. Flux & Processus</h3>
+        <div class="chart-subcategory-line"></div>
+      </div>
+      <div class="gallery-grid" id="grid-charts-06"></div>
+
+      <!-- Sous-Catégorie : 07. Hiérarchie & Réseau -->
+      <div class="chart-subcategory-divider">
+        <h3 class="chart-subcategory-title"><span>🌳</span> 07. Hiérarchie & Réseau</h3>
+        <div class="chart-subcategory-line"></div>
+      </div>
+      <div class="gallery-grid" id="grid-charts-07"></div>
+
+      <!-- Sous-Catégorie : 08. Géospatial & Cartes -->
+      <div class="chart-subcategory-divider">
+        <h3 class="chart-subcategory-title"><span>🗺️</span> 08. Géospatial & Cartes</h3>
+        <div class="chart-subcategory-line"></div>
+      </div>
+      <div class="gallery-grid" id="grid-charts-08"></div>
+    </section>
+
+    <!-- ========================================================================
+         SECTION 3 : TABLEAUX DATAVIZ (09-TABLEAUX-DATAVIZ)
+         ======================================================================== -->
+    <section class="portal-section" id="section-tableaux">
+      <div class="section-header-wrap">
+        <div class="section-badge"><span>📋</span> 09. Tableaux Dataviz</div>
+        <h2 class="section-title">
+          Tableaux & Matrices Dataviz
+          <span class="section-count-tag">6 templates</span>
+        </h2>
+        <p class="section-desc">
+          Tableaux analytiques conformes aux standards de Stephen Few, Edward Tufte et IBCS® : bar-in-cell, matrices heatmap, arborescences repliables, variances financières et classements.
+        </p>
+      </div>
+
+      <div class="gallery-grid" id="grid-tableaux">
+        <!-- Rendu JS dynamique -->
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         SECTION 4 : TOOLTIPS & ERGONOMIE (TOOLTIP)
+         ======================================================================== -->
+    <section class="portal-section" id="section-tooltips">
+      <div class="section-header-wrap">
+        <div class="section-badge"><span>🔍</span> 10. Ergonomie & Interaction</div>
+        <h2 class="section-title">
+          Tooltips & Infobulles Cognitives
+          <span class="section-count-tag">1 laboratoire</span>
+        </h2>
+        <p class="section-desc">
+          Système d'infobulles dynamiques anti-occlusion respectant la loi de Fitts, le principe de contiguïté de Mayer et les exigences de contraste WCAG AAA.
+        </p>
+      </div>
+
+      <div class="gallery-grid" id="grid-tooltips">
+        <!-- Rendu JS dynamique -->
+      </div>
+    </section>
+
+    <!-- ========================================================================
+         SECTION 5 : MICRO-ANIMATIONS COGNITIVES (ANIMATION)
+         ======================================================================== -->
+    <section class="portal-section" id="section-animations">
+      <div class="section-header-wrap">
+        <div class="section-badge"><span>⚡</span> 11. Micro-Animations Cognitives</div>
+        <h2 class="section-title">
+          Animations & Dynamique de Transition
+          <span class="section-count-tag">9 templates</span>
+        </h2>
+        <p class="section-desc">
+          Patterns d'animations cognitives basés sur les recherches de Heer & Robertson, Simons & Levin et Bartram : transitions par étapes, anti-change blindness, pulsations préattentionnelles et banc d'essai cinématique.
+        </p>
+      </div>
+
+      <div class="gallery-grid" id="grid-animations">
+        <!-- Rendu JS dynamique -->
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ==========================================================================
+       PIED DE PAGE STRUCTURÉ ET STYLISÉ
+       ========================================================================== -->
+  <footer class="portal-footer">
+    <div class="footer-top-accent"></div>
+    <div class="footer-container">
+      <div class="footer-grid">
+        <!-- Colonne 1 : Marque & Mission -->
+        <div class="footer-col-brand">
+          <div class="footer-brand-title">
+            <div class="brand-icon-wrap" style="width: 28px; height: 28px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+            </div>
+            <span>Kit-Charts</span>
+          </div>
+          <p>
+            Suite cognitive de visualisation graphique pour Chart.js v4+ calibrée pour une clarté analytique absolue, une discrimination psychophysique optimale et une conformité WCAG AAA.
+          </p>
+          <div class="footer-badges-wrap">
+            <span class="footer-badge">100% Hors-Ligne</span>
+            <span class="footer-badge">Zero-CORS</span>
+            <span class="footer-badge">8 Thèmes Perceptuels</span>
+            <span class="footer-badge">Chart.js v4.4+</span>
+          </div>
+        </div>
+
+        <!-- Colonne 2 : Navigation Directe -->
+        <div>
+          <h4 class="footer-col-title">Navigation</h4>
+          <ul class="footer-col-links">
+            <li><a href="#section-themes">🎨 Thèmes Cognitifs (8)</a></li>
+            <li><a href="#section-cards">💳 KPI Cards (7)</a></li>
+            <li><a href="#section-charts">📊 Graphiques (60)</a></li>
+            <li><a href="#section-tableaux">📋 Tableaux Dataviz (6)</a></li>
+            <li><a href="#section-tooltips">🔍 Tooltips Lab (1)</a></li>
+            <li><a href="#section-animations">⚡ Micro-Animations (9)</a></li>
+          </ul>
+        </div>
+
+        <!-- Colonne 3 : Démos & Laboratoires -->
+        <div>
+          <h4 class="footer-col-title">Laboratoires</h4>
+          <ul class="footer-col-links">
+            <li><a href="template/00-kpi-card/preview.html" target="_blank" rel="noopener">💳 Scorecard KPI Hub</a></li>
+            <li><a href="template/tooltip/preview.html" target="_blank" rel="noopener">🔍 Laboratoire Tooltips</a></li>
+            <li><a href="template/animation/preview.html" target="_blank" rel="noopener">⚡ Laboratoire Animations</a></li>
+            <li><a href="themes/README.md" target="_blank" rel="noopener">🎨 Guide des 8 Thèmes</a></li>
+          </ul>
+        </div>
+
+        <!-- Colonne 4 : Fondements & Normes -->
+        <div>
+          <h4 class="footer-col-title">Fondements Cognitifs</h4>
+          <ul class="footer-col-links">
+            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Cleveland & McGill (1984) — Rang 1</span></li>
+            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Edward Tufte — Data-Ink Maximal</span></li>
+            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Stephen Few — Bullet & Dashboarding</span></li>
+            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Norme IBCS® — Variance Financière</span></li>
+            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Richard Mayer — Contiguïté Spatiale</span></li>
+          </ul>
+        </div>
+      </div>
+
+      <!-- Bas de Footer -->
+      <div class="footer-bottom-bar">
+        <div>
+          © 2026 <strong>Kit-Charts</strong> — Conçu pour l'excellence visuelle et l'aide à la décision. Licence MIT.
+        </div>
+        <div>
+          <a href="#" class="footer-back-to-top">↑ Remonter en haut de page</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ==========================================================================
+       MOTEUR JAVASCRIPT : RENDU DES SECTIONS, PASTILLES DE THÈMES & DESSINS HERO
+       ========================================================================== -->
+  <script>
+  (function() {
+    'use strict';
+
+    const ThemeTokensModule = window.KitChartsTheme || (window.KitCharts && window.KitCharts.Theme) || {};
+    const getThemeTokens = ThemeTokensModule.getThemeTokens || function(t) { return (ThemeTokensModule.THEMES && ThemeTokensModule.THEMES[t]) || {}; };
+    const applyThemeToContainer = ThemeTokensModule.applyThemeToContainer || function() {};
+    const DEFAULT_THEME = ThemeTokensModule.DEFAULT_THEME || 'colorbrewer-accessible';
+    const THEMES = ThemeTokensModule.THEMES || {};
+
+    // ========================================================================
+    // REGISTRE EXHAUSTIF DES 83 TEMPLATES DU CATALOGUE
+    // ========================================================================
+    const CATALOG = [
+      // 00. KPI Cards (7)
+      {
+        id: 'kpi-standard',
+        title: 'KPI Card Standard — Synthèse Exécutive',
+        category: '00-kpi-card',
+        categoryLabel: '00. KPI Cards',
+        plugin: null,
+        pluginLabel: 'Micro-Card',
+        cognitiveRank: 'Rang 1 (Texte numérique direct & positionnement spatial)',
+        cognitiveSummary: 'Métrique Hero dominante 32px, badge de variation contextuelle avec quadruple encodage sémantique et chiffres tabulaires.',
+        tags: ['kpi', 'card', 'carte', 'indicateur', 'hero', 'delta', 'croissance', 'executive', 'synthèse', 'sweller', 'cowan']
+      },
+      {
+        id: 'kpi-sparkline',
+        title: 'KPI Card avec Sparkline — Micro-Tendance',
+        category: '00-kpi-card',
+        categoryLabel: '00. KPI Cards',
+        plugin: null,
+        pluginLabel: 'Chart.js Sparkline',
+        cognitiveRank: 'Rang 1 (Métrique) & Rang 4 (Continuité de Tufte)',
+        cognitiveSummary: 'Micro-visualisation temporelle continue haute densité sans axes parasites, accentuation pré-attentionnelle du point actuel et des extrema.',
+        tags: ['kpi', 'sparkline', 'tendance', 'tufte', 'continuité', 'volatilité', 'série temporelle', 'data-ink', 'micro-viz']
+      },
+      {
+        id: 'kpi-bullet',
+        title: 'KPI Card Objectif & Cible — Micro-Bullet',
+        category: '00-kpi-card',
+        categoryLabel: '00. KPI Cards',
+        plugin: null,
+        pluginLabel: 'Chart.js Bullet',
+        cognitiveRank: 'Rang 1 (Position alignée & Longueur sur échelle commune)',
+        cognitiveSummary: 'Micro-bullet de Stephen Few : réalisé vs cible avec bandes qualificatives en niveaux de gris, éliminant les ambiguïtés des jauges circulaires.',
+        tags: ['kpi', 'bullet', 'cible', 'target', 'objectif', 'quota', 'stephen few', 'performance', 'seuil', 'progression']
+      },
+      {
+        id: 'kpi-comparative',
+        title: 'KPI Card Comparative — Multi-Période',
+        category: '00-kpi-card',
+        categoryLabel: '00. KPI Cards',
+        plugin: null,
+        pluginLabel: 'Micro-Card',
+        cognitiveRank: 'Rang 1 (Comparaison bivalente côte-à-côte)',
+        cognitiveSummary: 'Triangulation décisionnelle entre Réalisé N, Historique N-1 et Budget prévisionnel avec doubles écarts absolus et relatifs.',
+        tags: ['kpi', 'comparatif', 'multi-période', 'budget', 'historique', 'n-1', 'benchmark', 'finance', 'gestion', 'triangulation']
+      },
+      {
+        id: 'kpi-distribution',
+        title: 'KPI Card Décomposition — Micro-Distribution',
+        category: '00-kpi-card',
+        categoryLabel: '00. KPI Cards',
+        plugin: null,
+        pluginLabel: 'Micro-Bar 100%',
+        cognitiveRank: 'Rang 1 (Total) & Rang 3 (Longueur de segment)',
+        cognitiveSummary: 'Total agrégé enrichi d\'une micro-barre empilée 100% avec étiquetage contigu direct respectant le principe de Mayer.',
+        tags: ['kpi', 'distribution', 'part-to-whole', 'composition', 'segments', 'répartition', 'mayer', 'contiguïté', 'stacked']
+      },
+      {
+        id: 'kpi-status-alert',
+        title: 'KPI Card Statut & Seuil d\'Alerte (Multi-State)',
+        category: '00-kpi-card',
+        categoryLabel: '00. KPI Cards',
+        plugin: null,
+        pluginLabel: 'Micro-Gauge RAG',
+        cognitiveRank: 'Rang 1 (Position sur réglette linéaire de seuils)',
+        cognitiveSummary: 'Supervision opérationnelle avec réglette linéaire de tolérance, badge d\'état dynamique (RAG) et polarité métier déterministe.',
+        tags: ['kpi', 'statut', 'alerte', 'seuil', 'rag', 'monitoring', 'sla', 'latence', 'incident', 'supervision', 'danger']
+      },
+      {
+        id: 'kpi-composite',
+        title: 'KPI Card Composite — Multi-Métriques Liées',
+        category: '00-kpi-card',
+        categoryLabel: '00. KPI Cards',
+        plugin: null,
+        pluginLabel: 'Micro-Drivers',
+        cognitiveRank: 'Rang 1 (Hiérarchie dominante Hero vs Drivers secondaires)',
+        cognitiveSummary: 'Métrique macroscopique dominante (60%) associée à ses 3 leviers opérationnels causaux directs avec micro-deltas individuels.',
+        tags: ['kpi', 'composite', 'drivers', 'équation', 'dupont', 'causes', 'e-commerce', 'ltv', 'multi-métriques', 'leviers']
+      },
+
+      // 01. Comparaison (10)
+      {
+        id: 'bar-chart-vertical',
+        title: 'Diagramme en Barres Verticales',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position sur échelle commune)',
+        cognitiveSummary: 'Ligne de base Y=0 absolue, espacements Gestalt (0.8 / 0.9), tri optionnel pour N ≤ 7 entités.',
+        tags: ['barres', 'vertical', 'column', 'comparaison', 'classement', 'pib', 'gestalt', 'rang 1']
+      },
+      {
+        id: 'bar-chart-horizontal',
+        title: 'Diagramme en Barres Horizontales',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position sur échelle commune)',
+        cognitiveSummary: 'Tri décroissant par défaut pour lecture naturelle, lisibilité des étiquettes longues, X=0 obligatoire.',
+        tags: ['barres', 'horizontal', 'bar', 'comparaison', 'tri', 'classement', 'ranking']
+      },
+      {
+        id: 'grouped-bar-chart',
+        title: 'Diagramme en Barres Groupées',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position) + Loi de Proximité',
+        cognitiveSummary: 'Comparaison multivariée par grappes (≤ 4 séries), espacement intra et inter-groupes distincts.',
+        tags: ['barres', 'groupées', 'clustered', 'multivarié', 'séries', 'comparaison']
+      },
+      {
+        id: 'stacked-bar-chart',
+        title: 'Diagramme en Barres Empilées',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Total & Base) / Rang 3 (Segments)',
+        cognitiveSummary: 'Décomposition cumulative, segment de référence constant en base sur Y=0.',
+        tags: ['barres', 'empilées', 'stacked', 'cumul', 'somme', 'composition']
+      },
+      {
+        id: 'bullet-chart',
+        title: 'Graphique à Puces (Bullet Graph)',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position & Longueur)',
+        cognitiveSummary: 'Stephen Few (2005) : Barre réelle, marqueur cible et plages qualitatives en niveaux de gris sans encombrement.',
+        tags: ['bullet', 'puces', 'kpi', 'cible', 'target', 'stephen few', 'performance', 'combo']
+      },
+      {
+        id: 'bar-target-overlay',
+        title: 'Barres + Marqueur de Cible (Target Overlay)',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position sur échelle commune & marqueur transversal)',
+        cognitiveSummary: 'Barres horizontales de réalisation combinées à un marqueur de cible perpendiculaire et deltas de variance automatisés.',
+        tags: ['comparaison', 'combo', 'cible', 'target', 'benchmark', 'variance', 'kpi', 'delta', 'stephen few']
+      },
+      {
+        id: 'lollipop-chart',
+        title: 'Graphique Sucette (Lollipop Chart)',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position de point)',
+        cognitiveSummary: 'Position de point saillante + tige fine pour un ratio Data-Ink élevé évitant l\'effet moiré.',
+        tags: ['lollipop', 'sucette', 'point', 'tige', 'ranking', 'classement', 'data-ink']
+      },
+      {
+        id: 'slope-chart',
+        title: 'Graphique de Pente (Slopegraph)',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position) & Rang 4 (Pente)',
+        cognitiveSummary: 'Comparaison directe de transition entre deux états temporels ou conditions expérimentales.',
+        tags: ['slope', 'slopegraph', 'pente', 'avant-après', 'transition', 'évolution']
+      },
+      {
+        id: 'dumbbell-chart',
+        title: 'Graphique en Haltères (Dumbbell Plot)',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position alignée) & Rang 3 (Delta)',
+        cognitiveSummary: 'Mise en évidence du delta binaire (écart) entre deux valeurs par entité.',
+        tags: ['dumbbell', 'haltères', 'delta', 'écart', 'comparaison', 'points']
+      },
+      {
+        id: 'radar-chart',
+        title: 'Graphique Radar (Spider Chart)',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 2 (Distance radiale)',
+        cognitiveSummary: 'Profil multivarié à axes normés (≤ 2 profils simultanés) pour éviter la surcharge cognitive.',
+        tags: ['radar', 'spider', 'toile', 'multidimensionnel', 'profil', 'compétences']
+      },
+      {
+        id: 'polar-area-chart',
+        title: 'Diagramme Polaire de Nightingale',
+        category: '01-comparaison',
+        categoryLabel: '01. Comparaison',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Rayon) & Rang 5 (Aire polaire)',
+        cognitiveSummary: 'Secteurs angulaires constants à rayon proportionnel à √V pour les séries cycliques ou saisonnières.',
+        tags: ['polaire', 'polar', 'nightingale', 'rose', 'cyclique', 'saisonnier']
+      },
+
+      // 02. Composition (6)
+      {
+        id: 'pie-chart',
+        title: 'Diagramme Circulaire (Pie Chart)',
+        category: '02-composition-part-to-whole',
+        categoryLabel: '02. Composition',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 2-4 (Angle & Surface)',
+        cognitiveSummary: 'Limité à 2-5 segments, trié par taille, départ à 12h pour maximiser la discrimination angulaire.',
+        tags: ['camembert', 'pie', 'circulaire', 'part-to-whole', 'composition', 'pourcentage']
+      },
+      {
+        id: 'doughnut-chart',
+        title: 'Diagramme en Anneau (Doughnut Chart)',
+        category: '02-composition-part-to-whole',
+        categoryLabel: '02. Composition',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 2 (Longueur d\'arc)',
+        cognitiveSummary: 'Anneau proportionnel avec métrique KPI centrale saillante pour un focus cognitif immédiat.',
+        tags: ['anneau', 'doughnut', 'donut', 'kpi', 'part-to-whole', 'composition']
+      },
+      {
+        id: 'treemap',
+        title: 'Carte Proportionnelle (Treemap)',
+        category: '02-composition-part-to-whole',
+        categoryLabel: '02. Composition',
+        plugin: 'treemap',
+        pluginLabel: 'Plugin: Treemap',
+        cognitiveRank: 'Rang 5 (Aire 2D rectangulaire)',
+        cognitiveSummary: 'Subdivision surfacique récursive optimale pour explorer des hiérarchies volumineuses.',
+        tags: ['treemap', 'carte', 'rectangles', 'hiérarchie', 'surfaces', 'composition']
+      },
+      {
+        id: 'sunburst',
+        title: 'Diagramme Rayonnant (Sunburst Chart)',
+        category: '02-composition-part-to-whole',
+        categoryLabel: '02. Composition',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 5 (Angle & Surface radiale)',
+        cognitiveSummary: 'Arborescence circulaire multiniveaux préservant les liens taxonomiques parent-enfant.',
+        tags: ['sunburst', 'rayonnant', 'arbre', 'hiérarchie', 'circulaire', 'multiniveaux']
+      },
+      {
+        id: 'waffle-chart',
+        title: 'Graphique Gaufre (Waffle Chart 10x10)',
+        category: '02-composition-part-to-whole',
+        categoryLabel: '02. Composition',
+        plugin: 'matrix',
+        pluginLabel: 'Plugin: Matrix',
+        cognitiveRank: 'Dénombrement discret (1 case = 1%)',
+        cognitiveSummary: 'Grille Isotype 10×10 éliminant les distorsions angulaires par comptage unitaire direct.',
+        tags: ['waffle', 'gaufre', 'grille', 'isotype', 'pourcentage', 'part-to-whole']
+      },
+      {
+        id: 'stacked-bar-100',
+        title: 'Barres Empilées 100% (100% Stacked Bar)',
+        category: '02-composition-part-to-whole',
+        categoryLabel: '02. Composition',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Base Y=0 & Sommet 100%)',
+        cognitiveSummary: 'Normalisation unitaire relative pour comparer les proportions à travers plusieurs catégories.',
+        tags: ['barres 100%', 'stacked', 'pourcentage', 'composition', 'normalisé']
+      },
+      {
+        id: 'pareto-chart',
+        title: 'Diagramme de Pareto (Loi 80/20)',
+        category: '02-composition-part-to-whole',
+        categoryLabel: '02. Composition',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position triée) & Rang 4 (Courbe de cumul)',
+        cognitiveSummary: 'Barres triées par fréquence décroissante et courbe de pourcentage cumulé avec seuil des 80% (causes vitales) et coefficient de Gini.',
+        tags: ['composition', 'combo', 'pareto', '80/20', 'qualité', 'juran', 'gini', 'cumul', 'vital few']
+      },
+      {
+        id: 'stacked-total-line',
+        title: 'Barres Empilées + Ligne de Total',
+        category: '02-composition-part-to-whole',
+        categoryLabel: '02. Composition',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Ligne de total globale) & Rang 3 (Segments empilés)',
+        cognitiveSummary: 'Décomposition part-to-whole des composantes et courbe de synthèse du total consolidé pour supprimer le calcul mental.',
+        tags: ['composition', 'combo', 'empilé', 'stacked', 'total', 'macro', 'somme', 'skau', 'kosara']
+      },
+
+      // 03. Distribution (7)
+      {
+        id: 'histogramme',
+        title: 'Histogramme de Fréquence',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position) & Rang 3 (Longueur 1D)',
+        cognitiveSummary: 'Discrétisation optimale (Freedman-Diaconis), barres contiguës sans espace, Y=0 obligatoire.',
+        tags: ['histogramme', 'distribution', 'fréquence', 'statistique', 'bins', 'freedman-diaconis']
+      },
+      {
+        id: 'density-plot',
+        title: 'Graphique de Densité (Gaussian KDE)',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position) & Rang 4 (Courbure continue)',
+        cognitiveSummary: 'Estimation continue de la fonction de densité de probabilité par lissage par noyau gaussien.',
+        tags: ['densité', 'kde', 'gaussian', 'distribution', 'courbe', 'probabilité']
+      },
+      {
+        id: 'box-plot',
+        title: 'Boîte à Moustaches (Box Plot)',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: 'boxplot',
+        pluginLabel: 'Plugin: Boxplot',
+        cognitiveRank: 'Rang 1 (Position sur échelle commune)',
+        cognitiveSummary: 'Résumé à 5 nombres de John Tukey : Médiane, IQR (Q1-Q3), moustaches 1.5×IQR et valeurs aberrantes.',
+        tags: ['boxplot', 'boite a moustaches', 'médiane', 'quartiles', 'tukey', 'outliers']
+      },
+      {
+        id: 'violin-plot',
+        title: 'Diagramme en Violon (Violin Plot + KDE)',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position) & Rang 5 (Silhouette de densité symétrique)',
+        cognitiveSummary: 'Combinaison non-paramétrique KDE (règle de Scott) et boîte à moustaches révélant la bimodalité (Knific & Weissgerber 2018).',
+        tags: ['violin', 'violon', 'kde', 'scott', 'bimodalité', 'distribution', 'densité', 'tukey', 'combo']
+      },
+      {
+        id: 'strip-plot',
+        title: 'Bandes de Points (Strip / Jitter Plot)',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position) + Jittering',
+        cognitiveSummary: 'Dispersion 1D d\'observations individuelles avec léger bruit contrôlé pour éviter la surimpression.',
+        tags: ['strip', 'jitter', 'dispersion', 'points', 'distribution', 'individuel']
+      },
+      {
+        id: 'beeswarm-plot',
+        title: 'Essaim de Points (Beeswarm Plot)',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position exacte) + Empilement',
+        cognitiveSummary: 'Disposition compacte sans chevauchement reflétant la densité locale par empilement latéral.',
+        tags: ['beeswarm', 'essaim', 'distribution', 'swarm', 'densité', 'points']
+      },
+      {
+        id: 'distribution-heatmap',
+        title: 'Heatmap de Distribution 2D',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: 'matrix',
+        pluginLabel: 'Plugin: Matrix',
+        cognitiveRank: 'Rang 1 (Position 2D) & Rang 7 (Luminance)',
+        cognitiveSummary: 'Matrice de densité bivariée binnée avec palette séquentielle monotone pour repérer les concentrations.',
+        tags: ['heatmap', 'distribution', 'matrice', '2d', 'densité', 'cases']
+      },
+      {
+        id: 'histogramme-kde',
+        title: 'Histogramme + Densité Continue (KDE)',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 2 (Hauteur de barre) & Rang 4 (Courbe de densité continue)',
+        cognitiveSummary: 'Décompte empirique par classes de Freedman-Diaconis et estimation de densité continue par noyau gaussien de Silverman sur axe commun.',
+        tags: ['distribution', 'combo', 'histogramme', 'kde', 'densité', 'silverman', 'freedman-diaconis', 'gauss']
+      },
+      {
+        id: 'box-strip-plot',
+        title: 'Box Plot + Strip / Jitter Plot',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position de points) & Rang 2 (Boîte de Tukey)',
+        cognitiveSummary: 'Résumé robuste à 5 nombres de Tukey et superposition déterministe au nombre d\'or des observations individuelles (Weissgerber 2015).',
+        tags: ['distribution', 'combo', 'box plot', 'strip plot', 'jitter', 'tukey', 'weissgerber', 'outliers', 'points']
+      },
+      {
+        id: 'raincloud-plot',
+        title: 'Raincloud Plot (Half-Violin + Box + Rain)',
+        category: '03-distribution',
+        categoryLabel: '03. Distribution',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Architecture Tri-Hybride (Macro KDE + Méso Box + Micro Rain)',
+        cognitiveSummary: 'Demi-densité KDE asymétrique sans redondance bilatérale, micro-boîte de Tukey et semis de points individuels jitterés (Allen & Kievit 2019).',
+        tags: ['distribution', 'combo', 'raincloud', 'demi-violon', 'kievit', 'allen', 'micro-box', 'rain', 'densité']
+      },
+
+      // 04. Corrélation & Relation (5)
+      {
+        id: 'scatter-plot',
+        title: 'Nuage de Points (Scatter Plot)',
+        category: '04-correlation-relation',
+        categoryLabel: '04. Corrélation',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position Cartésienne X, Y)',
+        cognitiveSummary: 'Position bidimensionnelle exacte révélant immédiatement les corrélations linéaires et regroupements.',
+        tags: ['scatter', 'nuage', 'points', 'corrélation', 'relation', 'bivarié']
+      },
+      {
+        id: 'bubble-chart',
+        title: 'Diagramme à Bulles (Bubble Chart)',
+        category: '04-correlation-relation',
+        categoryLabel: '04. Corrélation',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (X, Y) & Rang 5 (Aire r ∝ √Z)',
+        cognitiveSummary: 'Relation trivariée avec rayon calibré rigoureusement sur la racine carrée pour éviter la surévaluation.',
+        tags: ['bubble', 'bulles', 'trivarié', '3d', 'surface', 'corrélation']
+      },
+      {
+        id: 'matrix-heatmap',
+        title: 'Matrice de Corrélation (Matrix Heatmap)',
+        category: '04-correlation-relation',
+        categoryLabel: '04. Corrélation',
+        plugin: 'matrix',
+        pluginLabel: 'Plugin: Matrix',
+        cognitiveRank: 'Rang 1 (Position) & Palette divergente',
+        cognitiveSummary: 'Matrice de coefficients de Pearson [-1, +1] avec palette divergente symétrique et étiquetage direct.',
+        tags: ['matrix', 'heatmap', 'pearson', 'corrélation', 'matrice', 'coefficients']
+      },
+      {
+        id: 'connected-scatter-plot',
+        title: 'Nuage de Points Relié (Connected Scatter)',
+        category: '04-correlation-relation',
+        categoryLabel: '04. Corrélation',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position X, Y) & Trajectoire',
+        cognitiveSummary: 'Trajectoire dynamique 2D reliant deux indicateurs temporels pour analyser des boucles et cycles.',
+        tags: ['connected scatter', 'trajectoire', 'dynamique', 'cycle', 'évolution']
+      },
+      {
+        id: 'density-2d-hexbin',
+        title: 'Densité 2D et Hexbin (2D Density / Hexbin)',
+        category: '04-correlation-relation',
+        categoryLabel: '04. Corrélation',
+        plugin: 'matrix',
+        pluginLabel: 'Plugin: Matrix',
+        cognitiveRank: 'Rang 1 (Position) & Densité alvéolaire',
+        cognitiveSummary: 'Agrégation hexagonale bivariée pour visualiser des volumétries massives sans effet de saturation.',
+        tags: ['hexbin', 'alvéoles', 'densité', 'big data', 'clusters', '2d']
+      },
+      {
+        id: 'scatter-regression',
+        title: 'Scatter Plot + Régression Linéaire + IC 95%',
+        category: '04-correlation-relation',
+        categoryLabel: '04. Corrélation',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position 2D) & Rang 4 (Tendance OLS et IC 95%)',
+        cognitiveSummary: 'Nuage de points bivarié, ajustement par moindres carrés ordinaires (OLS), intervalle de confiance 95% et coefficient de Pearson.',
+        tags: ['corrélation', 'combo', 'scatter', 'régression', 'ols', 'anscombe', 'intervalle de confiance', 'pearson']
+      },
+      {
+        id: 'joint-scatter-marginals',
+        title: 'Scatter Plot + Distributions Marginales (Jointplot)',
+        category: '04-correlation-relation',
+        categoryLabel: '04. Corrélation',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position 2D) & Rang 4 (Rubans marginaux KDE & Ellipse 95%)',
+        cognitiveSummary: 'Nuage de points 2D central, densités marginales univariées KDE projetées sur les axes et ellipse de covariance bivariée à 95%.',
+        tags: ['corrélation', 'combo', 'jointplot', 'marginal', 'densité', 'ellipse', 'covariance', 'tufte']
+      },
+
+      // 05. Évolution Temporelle (7)
+      {
+        id: 'line-chart',
+        title: 'Graphique Linéaire Simple (Line Chart)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position) & Pente de variation',
+        cognitiveSummary: 'Série temporelle continue optimisée pour la perception de la direction et de la vitesse de variation.',
+        tags: ['line', 'ligne', 'temporel', 'tendance', 'chronologique', 'série']
+      },
+      {
+        id: 'multi-line-chart',
+        title: 'Graphique Multi-Lignes (Multi-Line Chart)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position) + Hiérarchie Focus',
+        cognitiveSummary: 'Comparaison d\'évolutions simultanées (≤ 4 séries) avec étiquetage direct évitant les allers-retours de légende.',
+        tags: ['multi-line', 'lignes multiples', 'focus contexte', 'comparaison', 'temps']
+      },
+      {
+        id: 'area-chart',
+        title: 'Graphique en Aires (Area Chart)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Ligne) & Volume sous courbe',
+        cognitiveSummary: 'Représentation du volume cumulé dans le temps avec transparence calibrée et ligne de base Y=0.',
+        tags: ['area', 'aire', 'volume', 'cumul', 'surface', 'évolution']
+      },
+      {
+        id: 'stacked-area-chart',
+        title: 'Graphique en Aires Empilées (Stacked Area)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Total) / Rang 3 (Bandes)',
+        cognitiveSummary: 'Évolution temporelle des composantes constitutives d\'un total global avec empilement ordonné.',
+        tags: ['stacked area', 'aires empilées', 'total', 'part-to-whole', 'composition temporelle']
+      },
+      {
+        id: 'streamgraph',
+        title: 'Streamgraph (Flux Thématique Fluide)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Épaisseur locale & Silhouette fluide',
+        cognitiveSummary: 'Silhouette fluide symétrique autour d\'une ligne médiane mobile pour visualiser des macro-tendances.',
+        tags: ['streamgraph', 'flux', 'organique', 'tendances', 'médias', 'volumes']
+      },
+      {
+        id: 'candlestick-ohlc',
+        title: 'Chandelier Japonais OHLC (Candlestick)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: 'financial',
+        pluginLabel: 'Plugin: Financial (Luxon)',
+        cognitiveRank: 'Rang 1 (Intervalles Open/High/Low/Close)',
+        cognitiveSummary: 'Fluctuations boursières avec encodage bicolore vert/rouge pour les chandeliers haussiers et baissiers.',
+        tags: ['candlestick', 'chandelier', 'ohlc', 'finance', 'bourse', 'trading']
+      },
+      {
+        id: 'sparkline',
+        title: 'Micro-Ligne de Tendance (Sparkline)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Forme globale à haute densité',
+        cognitiveSummary: 'Edward Tufte : Graphique sans axes ni étiquettes superflues, conçu pour les cartes KPI et tableaux de bord.',
+        tags: ['sparkline', 'micro', 'tufte', 'kpi', 'tableau de bord', 'tendance']
+      },
+      {
+        id: 'candlestick-volume',
+        title: 'Chandeliers Japonais + Volume (OHLCV)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position sur continuum temporel partagé)',
+        cognitiveSummary: 'Panneaux empilés verticaux synchronisés sur l\'axe temporel : cours boursier OHLC et volume de transactions avec moyenne mobile.',
+        tags: ['évolution', 'combo', 'chandeliers', 'candlestick', 'ohlc', 'volume', 'finance', 'bourse', 'vma']
+      },
+      {
+        id: 'dual-axis-controlled',
+        title: 'Double Axe Y Normalisé (Dual-Axis Contrôlé)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 4 (Continuité temporelle & garde-fous chromatiques)',
+        cognitiveSummary: 'Deux séries temporelles d\'unités hétérogènes avec zéros rigoureusement alignés, appariement chromatique série-axe et Pearson r.',
+        tags: ['évolution', 'combo', 'double axe', 'dual axis', 'normalisation', 'base 100', 'pearson', 'corrélation']
+      },
+      {
+        id: 'price-indicator-overlays',
+        title: 'Prix + Overlays Indicateurs (SMA / Bollinger)',
+        category: '05-evolution-temporelle',
+        categoryLabel: '05. Évolution',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 4 (Continuité temporelle & canal de volatilité à 3 couches max)',
+        cognitiveSummary: 'Série de prix chronologique avec canal de volatilité de Bollinger (±2σ) et moyenne mobile SMA sous contrainte cognitive de 3 couches max.',
+        tags: ['évolution', 'combo', 'prix', 'indicateurs', 'bollinger', 'sma', 'moyenne mobile', 'volatilité', 'miller']
+      },
+
+      // 06. Flux & Processus (5)
+      {
+        id: 'sankey-diagram',
+        title: 'Diagramme de Sankey (Sankey Diagram)',
+        category: '06-flux-processus',
+        categoryLabel: '06. Flux',
+        plugin: 'sankey',
+        pluginLabel: 'Plugin: Sankey',
+        cognitiveRank: 'Largeur de bande proportionnelle au flux',
+        cognitiveSummary: 'Conservation stricte du volume (Σ Entrées = Σ Sorties) pour tracer les transferts d\'énergie ou de flux.',
+        tags: ['sankey', 'flux', 'transfert', 'énergie', 'conservation', 'processus']
+      },
+      {
+        id: 'chord-diagram',
+        title: 'Diagramme de Corde (Chord Diagram)',
+        category: '06-flux-processus',
+        categoryLabel: '06. Flux',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Largeur des rubans & Longueur d\'arc',
+        cognitiveSummary: 'Représentation circulaire des matrices d\'échanges bilatéraux et migrations entre entités interconnectées.',
+        tags: ['chord', 'corde', 'circulaire', 'échanges', 'matrice', 'interconnexions']
+      },
+      {
+        id: 'funnel-chart',
+        title: 'Entonnoir de Conversion (Funnel Chart)',
+        category: '06-flux-processus',
+        categoryLabel: '06. Flux',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position) & Rang 3 (Longueur)',
+        cognitiveSummary: 'Visualisation séquentielle de pipeline avec calcul instantané des taux d\'attrition et de rétention.',
+        tags: ['funnel', 'entonnoir', 'conversion', 'pipeline', 'marketing', 'drop-off']
+      },
+      {
+        id: 'waterfall-chart',
+        title: 'Graphique en Cascade (Waterfall Chart)',
+        category: '06-flux-processus',
+        categoryLabel: '06. Flux',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Rang 1 (Position) & Longueur flottante',
+        cognitiveSummary: 'Réconciliation pas-à-pas des flux positifs (+) et négatifs (-) depuis la valeur initiale jusqu\'au solde final.',
+        tags: ['waterfall', 'cascade', 'flux financier', 'ebitda', 'variations', 'solde']
+      },
+      {
+        id: 'alluvial-diagram',
+        title: 'Diagramme Alluvial (Alluvial Diagram)',
+        category: '06-flux-processus',
+        categoryLabel: '06. Flux',
+        plugin: 'sankey',
+        pluginLabel: 'Plugin: Sankey',
+        cognitiveRank: 'Largeur de bande & Hauteur de cohorte',
+        cognitiveSummary: 'Suivi des redistributions et changements d\'états d\'une population ou de cohortes au fil du temps.',
+        tags: ['alluvial', 'cohortes', 'redistribution', 'transitions', 'catégories']
+      },
+      {
+        id: 'gantt-progress',
+        title: 'Gantt + Avancement + Ligne \'Aujourd\'hui\'',
+        category: '06-flux-processus',
+        categoryLabel: '06. Flux',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position horizontale & marqueur temporel préattentif)',
+        cognitiveSummary: 'Planning de projet avec barres flottantes d\'intervalles, avancement interne et repère vertical préattentif de la date courante.',
+        tags: ['flux', 'combo', 'gantt', 'planning', 'projet', 'avancement', 'progress', 'today', 'retard', 'jalon']
+      },
+      {
+        id: 'waterfall-cumulative-line',
+        title: 'Waterfall + Ligne Cumulée Continue',
+        category: '06-flux-processus',
+        categoryLabel: '06. Flux',
+        plugin: null,
+        pluginLabel: 'Combo Hybride',
+        cognitiveRank: 'Rang 1 (Position de solde) & Rang 3 (Barres de variation)',
+        cognitiveSummary: 'Pont de variance séquentiel des gains/pertes et courbe de trajectoire du solde net cumulé reliant les étapes clés.',
+        tags: ['flux', 'combo', 'waterfall', 'cascade', 'pont financier', 'ebitda', 'cumul', 'variance', 'solde']
+      },
+
+      // 07. Hiérarchie & Réseau (4)
+      {
+        id: 'node-link-network',
+        title: 'Réseau Nœuds-Liens (Node-Link Network)',
+        category: '07-hierarchie-reseau',
+        categoryLabel: '07. Hiérarchie',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Topologie & Degré de centralité',
+        cognitiveSummary: 'Graphe relationnel à disposition de forces visualisant les topologies de réseau et communautés.',
+        tags: ['network', 'réseau', 'nœuds', 'liens', 'graphe', 'topologie', 'relations']
+      },
+      {
+        id: 'arc-diagram',
+        title: 'Diagramme en Arcs (Arc Diagram)',
+        category: '07-hierarchie-reseau',
+        categoryLabel: '07. Hiérarchie',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Position 1D & Portée de l\'arc',
+        cognitiveSummary: 'Visualisation des relations au sein d\'une séquence linéaire (gènes, chapitres de texte, modules).',
+        tags: ['arc', 'arcs', 'séquence', '1d', 'connexions', 'graphe']
+      },
+      {
+        id: 'dendrogram',
+        title: 'Dendrogramme & Arbre Hiérarchique',
+        category: '07-hierarchie-reseau',
+        categoryLabel: '07. Hiérarchie',
+        plugin: null,
+        pluginLabel: 'Chart.js Core',
+        cognitiveRank: 'Hauteur de branche (Dissimilarité)',
+        cognitiveSummary: 'Arbre taxonomique de classification hiérarchique illustrant les distances de clustering.',
+        tags: ['dendrogramme', 'arbre', 'clustering', 'classification', 'taxonomie', 'hiérarchie']
+      },
+      {
+        id: 'marimekko-chart',
+        title: 'Graphique Marimekko / Mosaïque (Mekko)',
+        category: '07-hierarchie-reseau',
+        categoryLabel: '07. Hiérarchie',
+        plugin: 'matrix',
+        pluginLabel: 'Plugin: Matrix',
+        cognitiveRank: 'Largeur (Poids) & Hauteur (100%×100%)',
+        cognitiveSummary: 'Matrice bidimensionnelle où l\'aire de chaque bloc reflète fidèlement la part de marché globale.',
+        tags: ['marimekko', 'mekko', 'mosaïque', 'parts de marché', '2d', 'segments']
+      },
+
+      // 08. Géospatial & Cartes (3)
+      {
+        id: 'choropleth-map',
+        title: 'Carte Choroplèthe (Choropleth Map)',
+        category: '08-geospatial-cartes',
+        categoryLabel: '08. Géospatial',
+        plugin: 'geo',
+        pluginLabel: 'Plugin: Geo',
+        cognitiveRank: 'Position géo & Luminance séquentielle',
+        cognitiveSummary: 'Carte thématique pour ratios et taux normalisés (densité, par habitant) évitant le biais de surface.',
+        tags: ['choropleth', 'carte', 'géospatial', 'régions', 'taux normalisé', 'densité']
+      },
+      {
+        id: 'bubble-map',
+        title: 'Carte à Bulles (Bubble Map)',
+        category: '08-geospatial-cartes',
+        categoryLabel: '08. Géospatial',
+        plugin: 'geo',
+        pluginLabel: 'Plugin: Geo',
+        cognitiveRank: 'Position spatiale & Surface de symbole',
+        cognitiveSummary: 'Symboles circulaires géolocalisés à rayon r ∝ √V pour représenter les valeurs absolues sans distorsion.',
+        tags: ['bubble map', 'carte à bulles', 'géolocalisé', 'villes', 'valeurs absolues']
+      },
+      {
+        id: 'cartogram-tilegram',
+        title: 'Cartogramme & Grille de Tuiles (Tilegram)',
+        category: '08-geospatial-cartes',
+        categoryLabel: '08. Géospatial',
+        plugin: 'matrix',
+        pluginLabel: 'Plugin: Matrix',
+        cognitiveRank: 'Position relative & Tuiles égales',
+        cognitiveSummary: 'Élimine le biais de superficie en attribuant une tuile de taille identique à chaque région ou entité.',
+        tags: ['cartogramme', 'tilegram', 'tuiles', 'surfaces égales', 'géospatial', 'grille']
+      },
+
+      // 09. Tableaux Dataviz (6)
+      {
+        id: 'table-kpi-scorecard',
+        title: 'Tableau Exécutif KPI Scorecard',
+        category: '09-tableaux-dataviz',
+        categoryLabel: '09. Tableaux',
+        plugin: null,
+        pluginLabel: 'DOM + SVG Inline',
+        cognitiveRank: 'Stephen Few & Edward Tufte (Data-Ink)',
+        cognitiveSummary: 'Indicateurs clés, cibles, deltas normalisés, micro-sparklines 12M vectorielles et statuts décisionnels à double encodage WCAG AAA.',
+        tags: ['tableau', 'table', 'kpi', 'scorecard', 'exécutif', 'few', 'tufte', 'sparkline', 'delta', 'valence']
+      },
+      {
+        id: 'table-heatmap-matrix',
+        title: 'Tableau Heatmap / Matrice 2D',
+        category: '09-tableaux-dataviz',
+        categoryLabel: '09. Tableaux',
+        plugin: null,
+        pluginLabel: 'DOM + Color Scale',
+        cognitiveRank: 'Rang 7 (Luminance) + Inversion WCAG AAA',
+        cognitiveSummary: 'Matrice colorimétrique continue avec inversion automatique du contraste texte/fond selon la formule CIE (L < 0.38).',
+        tags: ['tableau', 'table', 'heatmap', 'matrice', 'highlight', 'couleur', 'gradient', 'luminance', 'wcag']
+      },
+      {
+        id: 'table-bar-in-cell',
+        title: 'Tableau Comparatif Bar-in-Cell & Bullet',
+        category: '09-tableaux-dataviz',
+        categoryLabel: '09. Tableaux',
+        plugin: null,
+        pluginLabel: 'DOM + SVG Inline',
+        cognitiveRank: 'Rang 1 / 3 (Longueur sur échelle commune)',
+        cognitiveSummary: 'Micro-barres horizontales et mini bullet graphs Stephen Few intégrés directement dans les cellules pour un décodage pré-attentif immédiat.',
+        tags: ['tableau', 'table', 'bar-in-cell', 'bullet', 'few', 'comparaison', 'barres', 'longueur', 'kpi']
+      },
+      {
+        id: 'table-hierarchical-tree',
+        title: 'Tableau Hiérarchique & Arborescent',
+        category: '09-tableaux-dataviz',
+        categoryLabel: '09. Tableaux',
+        plugin: null,
+        pluginLabel: 'DOM + Interactive Tree',
+        cognitiveRank: 'Sweller (Réduction de charge par chunking)',
+        cognitiveSummary: 'Structure arborescente multiniveaux avec indentation de 22px, repliage sélectif drill-down / roll-up et sous-totaux dynamiques.',
+        tags: ['tableau', 'table', 'arbre', 'hiérarchie', 'tree', 'drill-down', 'organisation', 'budget', 'gestalt']
+      },
+      {
+        id: 'table-financial-variance',
+        title: 'Tableau Financier & Variance IBCS',
+        category: '09-tableaux-dataviz',
+        categoryLabel: '09. Tableaux',
+        plugin: null,
+        pluginLabel: 'DOM + SVG Inline',
+        cognitiveRank: 'Norme IBCS® (Barres divergentes axe 0)',
+        cognitiveSummary: 'Compte de résultat (P&L) avec barres divergentes à axe zéro centré, inversion de polarité gain vs coût et conventions comptables.',
+        tags: ['tableau', 'table', 'finance', 'ibcs', 'variance', 'p&l', 'hichert', 'divergent', 'comptabilité']
+      },
+      {
+        id: 'table-ranking-leaderboard',
+        title: 'Tableau de Classement & Performance',
+        category: '09-tableaux-dataviz',
+        categoryLabel: '09. Tableaux',
+        plugin: null,
+        pluginLabel: 'DOM + SVG Inline',
+        cognitiveRank: 'Ordre sérial & Podium perceptif doux',
+        cognitiveSummary: 'Leaderboard ordonné avec badges de podium or/argent/bronze, delta de position ±, jauge relative au leader et sparkbar 6M.',
+        tags: ['tableau', 'table', 'ranking', 'leaderboard', 'classement', 'podium', 'sparkbar', 'performance', 'top']
+      },
+
+      // 10. Tooltips & Ergonomie
+      {
+        id: 'tooltip',
+        title: 'Ergonomie des Infobulles & Details-on-Demand',
+        category: 'tooltip',
+        categoryLabel: '10. Tooltip',
+        plugin: null,
+        pluginLabel: 'Laboratoire Cognitif',
+        cognitiveRank: 'Loi de Fitts, Mayer & Sweller',
+        cognitiveSummary: 'Pointage Fitts étendu (hitRadius 12px), positionnement anti-occlusion dynamique, typographie tabulaire monospacée et contrastes WCAG AAA.',
+        tags: ['tooltip', 'infobulle', 'fitts', 'mayer', 'anti-occlusion', 'details-on-demand', 'interaction', 'survol']
+      },
+
+      // 11. Micro-Animations Cognitives (8 Patterns Dédiés + Laboratoire)
+      {
+        id: 'anim-staged-transitions',
+        title: '1. Transitions par Étapes',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Heer & Robertson (2007)',
+        cognitiveRank: 'Séquençage Temporel en 3 Phases',
+        cognitiveSummary: 'Découpe la transition (Fade Out → Move → Fade In) pour séparer l\'encodage graphique du déplacement des marques.',
+        tags: ['animation', 'staged', 'heer', 'robertson', 'transition', 'morphing', 'etapes', 'cognitive']
+      },
+      {
+        id: 'anim-anti-change-blindness',
+        title: '2. Anti-Change Blindness',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Simons & Levin (1997)',
+        cognitiveRank: 'Continuité Spatio-Temporelle In-Place',
+        cognitiveSummary: 'Mutation directe des données sur place sans détruire le canvas pour éliminer les clignotements et la cécité au changement.',
+        tags: ['animation', 'blindness', 'simons', 'rensink', 'interpolation', 'constance', 'in-place']
+      },
+      {
+        id: 'anim-preattentive-pulse',
+        title: '3. Alerte Préattentive Pulse',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Bartram (2003) & Healey (2012)',
+        cognitiveRank: 'Signalement d\'Alerte Auto-Extinguible',
+        cognitiveSummary: 'Onde d\'alerte limitée à 3 pulsations amorties pour capturer l\'attention sur les seuils critiques sans saturer l\'utilisateur.',
+        tags: ['animation', 'pulse', 'alerte', 'bartram', 'healey', 'sinusoid', 'seuil', 'preattentive']
+      },
+      {
+        id: 'anim-continuous-zoom',
+        title: '4. Zoom & Drill-down Continu',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Bederson & Hollan (Pad++)',
+        cognitiveRank: 'Expansion d\'Échelle Continue',
+        cognitiveSummary: 'Transition fluide préservant le repère spatial global lors du drill-down analytique.',
+        tags: ['animation', 'zoom', 'drilldown', 'bederson', 'pad++', 'logarithmic', 'echelle', 'continu']
+      },
+      {
+        id: 'anim-mot-stagger',
+        title: '5. Stagger Plafonné MOT (k=4)',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Cavanagh & Alvarez (2005)',
+        cognitiveRank: 'Cascade Visuelle Ordonnée',
+        cognitiveSummary: 'Décalage temporel progressif respectant la capacité de suivi visuel simultané de l\'utilisateur.',
+        tags: ['animation', 'stagger', 'mot', 'cavanagh', 'cascade', 'tracking', 'capacite']
+      },
+      {
+        id: 'anim-apprehension-replay',
+        title: '6. Appréhension & Replay',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Tversky, Morrison & Bétrancourt',
+        cognitiveRank: 'Contrôle Utilisateur & Replay',
+        cognitiveSummary: 'Durée bornée adaptée à l\'œil humain avec possibilité de rejouer et contrôler le mouvement.',
+        tags: ['animation', 'tversky', 'replay', 'apprehension', 'duree', 'controle', 'congruence']
+      },
+      {
+        id: 'anim-event-segmentation',
+        title: '7. Segmentation Narrative',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Zacks (2001) & Hullman (2011)',
+        cognitiveRank: 'Narration de Données par Étapes',
+        cognitiveSummary: 'Découpage séquentiel du flux de données en étapes chronologiques claires pour le storytelling.',
+        tags: ['animation', 'narration', 'storytelling', 'zacks', 'hullman', 'segmentation', 'scene']
+      },
+      {
+        id: 'anim-lasseter-anticipation',
+        title: '8. Anticipation Traditionnelle',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Lasseter (SIGGRAPH 1987)',
+        cognitiveRank: 'Micro-Recul Préparatoire (60ms)',
+        cognitiveSummary: 'Micro-mouvement inverse préparant le regard à une réorganisation globale sans rebond cartoon.',
+        tags: ['animation', 'anticipation', 'lasseter', 'recul', 'tri', 'disney', 'siggraph']
+      },
+      {
+        id: 'animation',
+        title: '🔬 Laboratoire Complet d\'Animations',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Suite 10 Principes',
+        cognitiveRank: 'Banc d\'Essai & Télémétrie Cinématique',
+        cognitiveSummary: 'Démonstrateur des principes d\'animation cognitive respectant l\'accessibilité et la fluidité perceptuelle.',
+        tags: ['animation', 'lab', 'laboratoire', 'telemetrie', 'easing', 'tous']
+      }
+    ];
+
+    // ========================================================================
+    // REGISTRE DES 8 THÈMES COGNITIFS DU CATALOGUE
+    // ========================================================================
+    const THEMES_CATALOG = [
+      {
+        id: '01-colorbrewer-accessible',
+        themeName: 'colorbrewer-accessible',
+        title: 'ColorBrewer Accessible',
+        badge: '01. ColorBrewer',
+        mode: 'Mode Clair',
+        origin: 'Cynthia Brewer & Mark Harrower (Penn State)',
+        fontSans: 'Inter',
+        fontMono: 'JetBrains Mono',
+        palette: ['#2B8CBE', '#E66101', '#5E3C99', '#4DAC26', '#D01C8B', '#FDB863', '#B8E186', '#999999'],
+        seqGradient: 'linear-gradient(90deg, #EFF3FF, #C6DBEF, #9ECAE1, #6BAED6, #3182BD, #08519C)',
+        status: ['#2E7D32', '#EF6C00', '#C62828', '#1565C0']
+      },
+      {
+        id: '02-viridis-perceptual',
+        themeName: 'viridis-perceptual',
+        title: 'Viridis Perceptual',
+        badge: '02. Viridis',
+        mode: 'Luminance Monotone',
+        origin: 'Stéfan van der Walt & Nathaniel Smith (SciPy)',
+        fontSans: 'IBM Plex Sans',
+        fontMono: 'IBM Plex Mono',
+        palette: ['#3E4A89', '#26828E', '#35B779', '#B4DE2C', '#440154', '#FDE725', '#31688E', '#1F9E89'],
+        seqGradient: 'linear-gradient(90deg, #440154, #482777, #3E4A89, #31688E, #26828E, #1F9E89, #35B779, #6DCD59, #B4DE2C, #FDE725)',
+        status: ['#22A884', '#D8B400', '#440154', '#2A788E']
+      },
+      {
+        id: '03-paul-tol-scientific',
+        themeName: 'paul-tol-scientific',
+        title: 'Paul Tol Scientific',
+        badge: '03. Paul Tol',
+        mode: 'Clarté Scientifique',
+        origin: 'Dr. Paul Tol (SRON Space Research / Nature)',
+        fontSans: 'Fira Sans',
+        fontMono: 'Fira Code',
+        palette: ['#4477AA', '#EE6677', '#228833', '#CCBB44', '#66CCEE', '#AA3377', '#BBBBBB', '#555555'],
+        seqGradient: 'linear-gradient(90deg, #FEFBE9, #FCF7D5, #F5EE9E, #E5D965, #C9B934, #A8941C, #846F11, #5C4A08, #332402)',
+        status: ['#228833', '#CCBB44', '#EE6677', '#66CCEE']
+      },
+      {
+        id: '04-tableau-stone-categorical',
+        themeName: 'tableau-stone-categorical',
+        title: 'Tableau 10 Stone',
+        badge: '04. Tableau 10',
+        mode: 'Business Standard',
+        origin: 'Maureen Stone, Cristy Miller & Jeffrey Heer (IEEE InfoVis)',
+        fontSans: 'Roboto',
+        fontMono: 'Roboto Mono',
+        palette: ['#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F', '#EDC948', '#B07AA1', '#FF9DA7'],
+        seqGradient: 'linear-gradient(90deg, #D3E0EA, #A1BED4, #6F9DBE, #4E79A7, #2E5B88)',
+        status: ['#59A14F', '#F28E2B', '#E15759', '#4E79A7']
+      },
+      {
+        id: '05-okabe-ito-cud',
+        themeName: 'okabe-ito-cud',
+        title: 'Okabe-Ito CUD',
+        badge: '05. Okabe-Ito',
+        mode: 'Conformité Universelle',
+        origin: 'Masataka Okabe & Kei Ito (CUD Standard)',
+        fontSans: 'Source Sans 3',
+        fontMono: 'Source Code Pro',
+        palette: ['#0072B2', '#D55E00', '#009E73', '#E69F00', '#56B4E9', '#F0E442', '#CC79A7', '#595959'],
+        seqGradient: 'linear-gradient(90deg, #E6F2F8, #B3DAEE, #56B4E9, #0072B2, #004C77)',
+        status: ['#009E73', '#E69F00', '#D55E00', '#56B4E9']
+      },
+      {
+        id: '06-tufte-minimalist-executive',
+        themeName: 'tufte-minimalist-executive',
+        title: 'Tufte Minimalist Executive',
+        badge: '06. Tufte Minimalist',
+        mode: 'Data-Ink Maximal',
+        origin: 'Edward Tufte & Stephen Few',
+        fontSans: 'Geist / Inter',
+        fontMono: 'Geist Mono',
+        palette: ['#1D4ED8', '#525252', '#737373', '#A3A3A3', '#D4D4D4', '#E5E5E5', '#171717', '#B91C1C'],
+        seqGradient: 'linear-gradient(90deg, #EEEEEE, #CCCCCC, #999999, #555555, #111111)',
+        status: ['#15803D', '#B8860B', '#B91C1C', '#1D4ED8']
+      },
+      {
+        id: '07-nord-cognitive-dark',
+        themeName: 'nord-cognitive-dark',
+        title: 'Nord Cognitive Dark',
+        badge: '07. Nord Dark',
+        mode: 'Mode Sombre Anti-Fatigue',
+        origin: 'Nord System & Ergonomie de l\'Asthénopie (Sheedy et al.)',
+        fontSans: 'Inter / Geist',
+        fontMono: 'JetBrains Mono',
+        palette: ['#88C0D0', '#81A1C1', '#5E81AC', '#A3BE8C', '#EBCB8B', '#D08770', '#BF616A', '#B48EAD'],
+        seqGradient: 'linear-gradient(90deg, #3B4252, #4C566A, #5E81AC, #81A1C1, #88C0D0, #ECEFF4)',
+        status: ['#A3BE8C', '#EBCB8B', '#BF616A', '#88C0D0']
+      },
+      {
+        id: '08-atkinson-hyperlegible',
+        themeName: 'atkinson-hyperlegible',
+        title: 'Atkinson Hyperlegible',
+        badge: '08. Atkinson',
+        mode: 'Haute Lisibilité / Basse Vision',
+        origin: 'Braille Institute of America & Applied Design Works',
+        fontSans: 'Atkinson Hyperlegible',
+        fontMono: 'Fira Code',
+        palette: ['#005AB5', '#DC3220', '#009E73', '#FE6100', '#785EF0', '#FFB000', '#3F3F46', '#64748B'],
+        seqGradient: 'linear-gradient(90deg, #E6F0FA, #BDD7F1, #6BA3DC, #005AB5, #003B75)',
+        status: ['#009E73', '#FE6100', '#DC3220', '#005AB5']
+      }
+    ];
+
+    // ========================================================================
+    // ÉTAT DE L'APPLICATION
+    // ========================================================================
+    let currentTheme = localStorage.getItem('kitcharts_theme') || DEFAULT_THEME;
+    let globalShowDataLabels = true;
+    const chartRegistry = new Map();
+    let heroChartGraphs = null;
+    let heroAnimFrameId = null;
+
+    // Références DOM
+    const globalDataLabelsToggleBtn = document.getElementById('globalDataLabelsToggleBtn');
+    const quickThemeToggleBtn = document.getElementById('quickThemeToggleBtn');
+    const activeThemeIndicator = document.getElementById('activeThemeIndicator');
+    const themeSwatchesGroup = document.getElementById('themeSwatchesGroup');
+
+    // ========================================================================
+    // 0. GÉNÉRATION D'UNE CARTE DE THÈME DANS LA SECTION THÈMES
+    // ========================================================================
+    function createThemeCardElement(theme) {
+      const card = document.createElement('article');
+      card.className = 'theme-card';
+      card.dataset.themeId = theme.id;
+      card.dataset.themeName = theme.themeName;
+
+      const swatchesHtml = theme.palette.map(hex => `
+        <div class="theme-chip" style="background-color: ${hex};" title="Couleur ${hex} (cliquer pour copier)" onclick="navigator.clipboard.writeText('${hex}')"></div>
+      `).join('');
+
+      const statusDotsHtml = theme.status.map(hex => `
+        <span class="theme-status-mini-dot" style="background-color: ${hex};"></span>
+      `).join('');
+
+      card.innerHTML = `
+        <div>
+          <div class="theme-card-accent-bar" style="background: linear-gradient(90deg, ${theme.palette.slice(0, 4).join(', ')});"></div>
+
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3 class="card-title">${theme.title}</h3>
+              <div class="card-slug">${theme.id} • ${theme.origin}</div>
+            </div>
+            <div class="card-badges">
+              <span class="badge-category">${theme.mode}</span>
+              <span class="badge-plugin">${theme.badge}</span>
+            </div>
+          </div>
+
+          <div class="theme-palette-preview">
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.2rem;">
+              <span>Palette Qualitative (8 Teintes)</span>
+              <div style="display: flex; gap: 0.35rem; align-items: center;">
+                <span style="font-size: 0.7rem; color: var(--text-muted);">Statuts :</span>
+                ${statusDotsHtml}
+              </div>
+            </div>
+            <div class="theme-swatches-row">
+              ${swatchesHtml}
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;">
+              <span style="font-size: 0.7rem; color: var(--text-muted);">Dégradé Séquentiel (Luminance Monotone) :</span>
+              <div class="theme-seq-mini-bar" style="background: ${theme.seqGradient};"></div>
+            </div>
+            <div class="theme-typography-tag">
+              <span>🔤 <strong>Sans :</strong> ${theme.fontSans}</span>
+              <span>⌨️ <strong>Mono :</strong> ${theme.fontMono}</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <a href="./themes/${theme.id}/preview.html" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir le template dans une page dédiée autonome">
+            <span>▶</span> Ouvrir le template
+          </a>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // ========================================================================
+    // 1. GÉNÉRATION D'UNE CARTE DANS UN CONTENEUR DE SECTION
+    // ========================================================================
+    function createCardElement(chart) {
+      let previewUrl = `./template/${chart.category}/${chart.id}/preview.html`;
+      if (chart.id === 'animation') {
+        previewUrl = `./template/animation/preview.html`;
+      } else if (chart.id === 'tooltip') {
+        previewUrl = `./template/tooltip/preview.html`;
+      } else if (chart.id.startsWith('anim-')) {
+        const folderMap = {
+          'anim-staged-transitions': '01-staged-transitions',
+          'anim-anti-change-blindness': '02-anti-change-blindness',
+          'anim-preattentive-pulse': '03-preattentive-pulse',
+          'anim-continuous-zoom': '04-continuous-zoom',
+          'anim-mot-stagger': '05-mot-stagger',
+          'anim-apprehension-replay': '06-apprehension-replay',
+          'anim-event-segmentation': '07-event-segmentation',
+          'anim-lasseter-anticipation': '08-lasseter-anticipation'
+        };
+        previewUrl = `./template/animation/${folderMap[chart.id] || chart.id}/preview.html`;
+      }
+
+      const card = document.createElement('article');
+      card.className = 'chart-card';
+      card.dataset.chartId = chart.id;
+      card.dataset.category = chart.category;
+
+      card.innerHTML = `
+        <div>
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3 class="card-title">${chart.title}</h3>
+              <div class="card-slug">${chart.id}</div>
+            </div>
+            <div class="card-badges">
+              <span class="badge-category">${chart.categoryLabel}</span>
+              <span class="badge-plugin">${chart.pluginLabel}</span>
+            </div>
+          </div>
+
+          <div class="card-cognitive-rule">
+            <strong>${chart.cognitiveRank}</strong>
+            ${chart.cognitiveSummary}
+          </div>
+
+          <div class="card-canvas-container" id="container-${chart.id}">
+            <div class="chart-skeleton" id="skeleton-${chart.id}">
+              <div class="skeleton-spinner"></div>
+              <span>Initialisation...</span>
+            </div>
+            <canvas id="canvas-${chart.id}"></canvas>
+          </div>
+        </div>
+
+        <div class="card-footer">
+          <a href="${previewUrl}" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir le template dans une page dédiée autonome">
+            <span>▶</span> Ouvrir le template
+          </a>
+        </div>
+      `;
+
+      return card;
+    }
+
+    // ========================================================================
+    // 2. DISTRIBUTION DES CARTES DANS LES SECTIONS RESPECTIVES
+    // ========================================================================
+    function renderAllSections() {
+      // 0. Section Thèmes Cognitifs (8 thèmes)
+      const gridThemes = document.getElementById('grid-themes');
+      if (gridThemes) {
+        gridThemes.innerHTML = '';
+        THEMES_CATALOG.forEach(theme => {
+          gridThemes.appendChild(createThemeCardElement(theme));
+        });
+      }
+
+      // 1. KPI Cards
+      const gridCards = document.getElementById('grid-cards');
+      if (gridCards) {
+        gridCards.innerHTML = '';
+        CATALOG.filter(c => c.category === '00-kpi-card').forEach(chart => {
+          gridCards.appendChild(createCardElement(chart));
+        });
+      }
+
+      // 2. Graphiques Dataviz (Sous-catégories 01 à 08)
+      const chartCategories = [
+        { id: '01-comparaison', gridId: 'grid-charts-01' },
+        { id: '02-composition-part-to-whole', gridId: 'grid-charts-02' },
+        { id: '03-distribution', gridId: 'grid-charts-03' },
+        { id: '04-correlation-relation', gridId: 'grid-charts-04' },
+        { id: '05-evolution-temporelle', gridId: 'grid-charts-05' },
+        { id: '06-flux-processus', gridId: 'grid-charts-06' },
+        { id: '07-hierarchie-reseau', gridId: 'grid-charts-07' },
+        { id: '08-geospatial-cartes', gridId: 'grid-charts-08' }
+      ];
+
+      chartCategories.forEach(cat => {
+        const grid = document.getElementById(cat.gridId);
+        if (grid) {
+          grid.innerHTML = '';
+          CATALOG.filter(c => c.category === cat.id).forEach(chart => {
+            grid.appendChild(createCardElement(chart));
+          });
+        }
+      });
+
+      // 3. Tableaux Dataviz
+      const gridTableaux = document.getElementById('grid-tableaux');
+      if (gridTableaux) {
+        gridTableaux.innerHTML = '';
+        CATALOG.filter(c => c.category === '09-tableaux-dataviz').forEach(chart => {
+          gridTableaux.appendChild(createCardElement(chart));
+        });
+      }
+
+      // 4. Tooltips
+      const gridTooltips = document.getElementById('grid-tooltips');
+      if (gridTooltips) {
+        gridTooltips.innerHTML = '';
+        CATALOG.filter(c => c.category === 'tooltip').forEach(chart => {
+          gridTooltips.appendChild(createCardElement(chart));
+        });
+      }
+
+      // 5. Animations
+      const gridAnimations = document.getElementById('grid-animations');
+      if (gridAnimations) {
+        gridAnimations.innerHTML = '';
+        CATALOG.filter(c => c.category === 'animation').forEach(chart => {
+          gridAnimations.appendChild(createCardElement(chart));
+        });
+      }
+    }
+
+    // ========================================================================
+    // 3. INITIALISATION DES 3 DESSINS DU HERO (100% VISUELS SANS TEXTE)
+    // ========================================================================
+    function initHeroDrawings() {
+      const tokens = getThemeTokens(currentTheme);
+      const primaryColor = tokens.palette[0] || '#225BFF';
+      const secondaryColor = tokens.palette[1] || '#6366F1';
+
+      // --- DESSIN 1 : GRAPHS (Combinaison Barres & Courbe Spline Stylisée) ---
+      const c1 = document.getElementById('heroCanvasGraphs');
+      if (c1 && typeof Chart !== 'undefined') {
+        if (heroChartGraphs) {
+          try { heroChartGraphs.destroy(); } catch(e) {}
+        }
+        heroChartGraphs = new Chart(c1, {
+          type: 'bar',
+          data: {
+            labels: ['', '', '', '', '', '', ''],
+            datasets: [
+              {
+                type: 'line',
+                data: [32, 58, 44, 76, 62, 88, 94],
+                borderColor: primaryColor,
+                borderWidth: 3,
+                tension: 0.4,
+                pointBackgroundColor: primaryColor,
+                pointBorderColor: '#FFFFFF',
+                pointBorderWidth: 2,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                fill: true,
+                backgroundColor: primaryColor + '20',
+                order: 1
+              },
+              {
+                type: 'bar',
+                data: [45, 68, 52, 85, 70, 95, 82],
+                backgroundColor: secondaryColor + '40',
+                hoverBackgroundColor: secondaryColor,
+                borderRadius: 6,
+                borderSkipped: false,
+                barPercentage: 0.65,
+                categoryPercentage: 0.8,
+                order: 2
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
+            },
+            scales: {
+              x: {
+                display: false,
+                grid: { display: false }
+              },
+              y: {
+                display: false,
+                beginAtZero: true,
+                grid: { display: false }
+              }
+            },
+            animation: {
+              duration: 800,
+              easing: 'easeOutQuart'
+            }
+          }
+        });
+      }
+
+      // --- DESSIN 2 : TABLEAUX (Mis à jour par les couleurs de tokens dynamiques) ---
+      const tabDrawing = document.getElementById('heroTabDrawing');
+      if (tabDrawing) {
+        const fillBar = tabDrawing.querySelectorAll('.tab-bar-fill');
+        if (fillBar[1]) fillBar[1].style.background = primaryColor;
+        const sparkSvg = tabDrawing.querySelectorAll('.tab-sparkline-svg path');
+        if (sparkSvg[1]) sparkSvg[1].setAttribute('stroke', primaryColor);
+      }
+
+            // --- DESSIN 3 : ANIMATION (Décor statique représentant la dynamique et les transitions) ---
+      const c3 = document.getElementById('heroCanvasAnim');
+      if (c3) {
+        if (heroAnimFrameId) {
+          cancelAnimationFrame(heroAnimFrameId);
+          heroAnimFrameId = null;
+        }
+
+        const dpr = window.devicePixelRatio || 1;
+        const rect = c3.parentElement.getBoundingClientRect();
+        const width = (c3.width = (rect.width || 320) * dpr);
+        const height = (c3.height = (rect.height || 180) * dpr);
+        const ctx = c3.getContext('2d');
+
+        ctx.clearRect(0, 0, width, height);
+
+        const centerY = height / 2;
+        const amplitude = height * 0.28;
+
+        // 1. Lignes de repères et guides de transition (Statiques)
+        ctx.save();
+        ctx.strokeStyle = tokens.border || 'rgba(0,0,0,0.08)';
+        ctx.lineWidth = 1 * dpr;
+        ctx.setLineDash([4 * dpr, 6 * dpr]);
+        [centerY - amplitude, centerY, centerY + amplitude].forEach(y => {
+          ctx.beginPath();
+          ctx.moveTo(10 * dpr, y);
+          ctx.lineTo(width - 10 * dpr, y);
+          ctx.stroke();
+        });
+        ctx.restore();
+
+        // 2. Phase 1 : Trajectoire initiale fantôme / pointillés (État t0)
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = secondaryColor + '45';
+        ctx.lineWidth = 2 * dpr;
+        ctx.setLineDash([3 * dpr, 4 * dpr]);
+        for (let x = 10 * dpr; x <= width - 10 * dpr; x += 3 * dpr) {
+          const normX = (x - 10 * dpr) / (width - 20 * dpr);
+          const y = centerY + Math.sin(normX * Math.PI * 3.5 + 0.8) * (amplitude * 0.7);
+          if (x === 10 * dpr) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // 3. Phase 2 : Courbe de morphing intermédiaire (État t1)
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = secondaryColor + '90';
+        ctx.lineWidth = 2.5 * dpr;
+        for (let x = 10 * dpr; x <= width - 10 * dpr; x += 3 * dpr) {
+          const normX = (x - 10 * dpr) / (width - 20 * dpr);
+          const y = centerY + Math.sin(normX * Math.PI * 3.2 - 0.4) * (amplitude * 0.85);
+          if (x === 10 * dpr) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+        ctx.restore();
+
+        // 4. Phase 3 : Trajectoire principale focale (État t2)
+        ctx.save();
+        ctx.beginPath();
+        ctx.strokeStyle = primaryColor;
+        ctx.lineWidth = 3.5 * dpr;
+        const points = [];
+        for (let x = 10 * dpr; x <= width - 10 * dpr; x += 2 * dpr) {
+          const normX = (x - 10 * dpr) / (width - 20 * dpr);
+          const y = centerY + Math.sin(normX * Math.PI * 2.8) * amplitude;
+          points.push({ x, y });
+          if (x === 10 * dpr) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+
+        // Aire subtile sous la trajectoire principale
+        ctx.lineTo(width - 10 * dpr, centerY + amplitude * 1.1);
+        ctx.lineTo(10 * dpr, centerY + amplitude * 1.1);
+        ctx.closePath();
+        ctx.fillStyle = primaryColor + '12';
+        ctx.fill();
+        ctx.restore();
+
+        // 5. Nœuds cinématiques stroboscopiques (Points clés de la trajectoire)
+        const keyIndices = [
+          Math.floor(points.length * 0.15),
+          Math.floor(points.length * 0.42),
+          Math.floor(points.length * 0.72),
+          Math.floor(points.length * 0.92)
+        ];
+
+        keyIndices.forEach((idx, stepNum) => {
+          const pt = points[idx];
+          if (!pt) return;
+
+          if (stepNum === 2) {
+            // Nœud focal culminant (Point d'inflexion majeur)
+            // Halo externe
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 16 * dpr, 0, Math.PI * 2);
+            ctx.fillStyle = primaryColor + '20';
+            ctx.fill();
+
+            // Anneau intermédiaire
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 10 * dpr, 0, Math.PI * 2);
+            ctx.strokeStyle = primaryColor;
+            ctx.lineWidth = 2 * dpr;
+            ctx.stroke();
+
+            // Noyau solide
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 5 * dpr, 0, Math.PI * 2);
+            ctx.fillStyle = primaryColor;
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 2 * dpr, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+          } else {
+            // Nœuds secondaires
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 6 * dpr, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.arc(pt.x, pt.y, 5 * dpr, 0, Math.PI * 2);
+            ctx.strokeStyle = primaryColor;
+            ctx.lineWidth = 2 * dpr;
+            ctx.stroke();
+          }
+        });
+      }
+    }
+
+    // ========================================================================
+    // 4. RENDU DES CHARTS DU CATALOGUE DANS LEURS CANVAS TARGET
+    // ========================================================================
+    function loadAndRenderChart(chartId) {
+      const chartInfo = CATALOG.find(c => c.id === chartId);
+      if (!chartInfo) return;
+
+      const canvas = document.getElementById(`canvas-${chartId}`);
+      const skeleton = document.getElementById(`skeleton-${chartId}`);
+      if (!canvas) return;
+
+      const chartModule = (window.KitCharts && window.KitCharts[chartId]) || (chartId.startsWith('anim-') && window.KitCharts && window.KitCharts['animation']);
+
+      if (chartModule && typeof chartModule.createChart === 'function') {
+        try {
+          const dataCopy = chartModule.DEFAULT_DATA ? JSON.parse(JSON.stringify(chartModule.DEFAULT_DATA)) : null;
+          if (dataCopy) dataCopy.showDataLabels = globalShowDataLabels;
+          const chartInstance = chartModule.createChart(canvas, dataCopy, currentTheme, { showDataLabels: globalShowDataLabels });
+          chartRegistry.set(chartId, {
+            mod: chartModule,
+            chartInstance,
+            canvas,
+            chartInfo
+          });
+
+          if (skeleton) {
+            skeleton.style.opacity = '0';
+            setTimeout(() => { skeleton.style.display = 'none'; }, 200);
+          }
+          return;
+        } catch (err) {
+          console.error(`[kit-charts] Erreur de rendu pour ${chartId}:`, err);
+        }
+      }
+
+      if (skeleton) {
+        skeleton.innerHTML = `<span style="color: var(--text-muted); font-size: 0.75rem;">Aperçu indisponible</span>`;
+      }
+    }
+
+    // ========================================================================
+    // 5. GESTION DES LABELS & DU THÈME GLOBAL
+    // ========================================================================
+    function toggleGlobalDataLabels() {
+      globalShowDataLabels = !globalShowDataLabels;
+      if (globalDataLabelsToggleBtn) {
+        globalDataLabelsToggleBtn.setAttribute('aria-pressed', globalShowDataLabels);
+        if (globalShowDataLabels) {
+          globalDataLabelsToggleBtn.classList.add('active');
+          globalDataLabelsToggleBtn.setAttribute('title', 'Étiquettes de données (Labels) : Activées');
+        } else {
+          globalDataLabelsToggleBtn.classList.remove('active');
+          globalDataLabelsToggleBtn.setAttribute('title', 'Étiquettes de données (Labels) : Désactivées');
+        }
+      }
+
+      for (const [chartId, entry] of chartRegistry.entries()) {
+        try {
+          if (entry.chartInstance && typeof entry.chartInstance.draw === 'function' && entry.chartInstance.options) {
+            if (!entry.chartInstance.options.plugins) entry.chartInstance.options.plugins = {};
+            if (!entry.chartInstance.options.plugins.datalabels) entry.chartInstance.options.plugins.datalabels = {};
+            entry.chartInstance.options.plugins.datalabels.display = globalShowDataLabels;
+            entry.chartInstance.options.showDataLabels = globalShowDataLabels;
+            if (entry.chartInstance.config?.options) {
+              if (!entry.chartInstance.config.options.plugins) entry.chartInstance.config.options.plugins = {};
+              if (!entry.chartInstance.config.options.plugins.datalabels) entry.chartInstance.config.options.plugins.datalabels = {};
+              entry.chartInstance.config.options.plugins.datalabels.display = globalShowDataLabels;
+              entry.chartInstance.config.options.showDataLabels = globalShowDataLabels;
+            }
+            if (typeof entry.chartInstance.clear === 'function') {
+              entry.chartInstance.clear();
+            }
+            entry.chartInstance.draw();
+          } else if (entry.mod && typeof entry.mod.createChart === 'function') {
+            const dataCopy = entry.mod.DEFAULT_DATA ? JSON.parse(JSON.stringify(entry.mod.DEFAULT_DATA)) : null;
+            if (dataCopy) dataCopy.showDataLabels = globalShowDataLabels;
+            const newInstance = entry.mod.createChart(entry.canvas, dataCopy, currentTheme, { showDataLabels: globalShowDataLabels });
+            entry.chartInstance = newInstance;
+          }
+        } catch (err) {
+          console.warn(`[kit-charts] Erreur bascule data labels pour ${chartId}:`, err);
+        }
+      }
+    }
+
+    function applyGlobalTheme(themeName) {
+      currentTheme = themeName;
+      try {
+        localStorage.setItem('kitcharts_theme', themeName);
+      } catch (e) {}
+
+      if (ThemeTokensModule.loadGoogleFonts) {
+        ThemeTokensModule.loadGoogleFonts(themeName);
+      }
+
+      const tokens = applyThemeToContainer(document.body, themeName);
+
+      document.body.setAttribute('data-theme', tokens.name);
+      document.documentElement.setAttribute('data-theme', tokens.name);
+      document.body.style.backgroundColor = tokens.bg;
+      document.body.style.color = tokens.textPrimary;
+
+      document.documentElement.style.setProperty('--bg', tokens.bg);
+      document.documentElement.style.setProperty('--surface', tokens.surface);
+      document.documentElement.style.setProperty('--surface-raised', tokens.surfaceRaised || (tokens.isDark ? '#2E3440' : '#FFFFFF'));
+      document.documentElement.style.setProperty('--surface-glass', tokens.isDark ? 'rgba(36, 41, 51, 0.85)' : 'rgba(255, 255, 255, 0.85)');
+      document.documentElement.style.setProperty('--border', tokens.border);
+      document.documentElement.style.setProperty('--border-strong', tokens.borderStrong || tokens.border);
+      document.documentElement.style.setProperty('--text-primary', tokens.textPrimary);
+      document.documentElement.style.setProperty('--text-secondary', tokens.textSecondary);
+      document.documentElement.style.setProperty('--text-muted', tokens.textMuted || tokens.textSecondary);
+      document.documentElement.style.setProperty('--font-sans', tokens.fontFamily);
+      document.documentElement.style.setProperty('--font-mono', tokens.fontMono);
+      document.documentElement.style.setProperty('--accent', tokens.palette[0] || '#225BFF');
+      document.documentElement.style.setProperty('--accent-hover', tokens.palette[1] || tokens.palette[0] || '#1742C2');
+      document.documentElement.style.setProperty('--accent-light', (tokens.palette[0] || '#225BFF') + '18');
+      document.documentElement.style.setProperty('--accent-glow', (tokens.palette[0] || '#225BFF') + '35');
+
+      // Mise à jour des pastilles actives
+      const swatches = document.querySelectorAll('.theme-swatch');
+      swatches.forEach(swatch => {
+        if (swatch.dataset.themeName === themeName) {
+          swatch.classList.add('active');
+        } else {
+          swatch.classList.remove('active');
+        }
+      });
+
+      const themeObj = THEMES[themeName] || {};
+      if (activeThemeIndicator) {
+        activeThemeIndicator.textContent = themeObj.label || themeName;
+      }
+
+      if (quickThemeToggleBtn) {
+        quickThemeToggleBtn.textContent = tokens.isDark ? '☀️' : '🌙';
+      }
+
+      // Réactualisation des 3 dessins du hero avec la nouvelle palette
+      initHeroDrawings();
+
+      // Mise à jour de tous les templates du catalogue
+      CATALOG.forEach(c => loadAndRenderChart(c.id));
+    }
+
+    // Export global pour interaction depuis les cartes de thèmes
+    window.kitChartsApplyTheme = applyGlobalTheme;
+
+    // ========================================================================
+    // 6. ATTACHEMENT DES ÉVÉNEMENTS
+    // ========================================================================
+    function initEvents() {
+      // Pastilles de Couleurs (Theme Swatches)
+      if (themeSwatchesGroup) {
+        themeSwatchesGroup.addEventListener('click', (e) => {
+          const swatch = e.target.closest('.theme-swatch');
+          if (swatch && swatch.dataset.themeName) {
+            applyGlobalTheme(swatch.dataset.themeName);
+          }
+        });
+      }
+
+      // Quick Theme Toggle Button (Dark / Light toggle)
+      if (quickThemeToggleBtn) {
+        quickThemeToggleBtn.addEventListener('click', () => {
+          const isDarkNow = currentTheme === 'nord-cognitive-dark';
+          const nextTheme = isDarkNow ? 'colorbrewer-accessible' : 'nord-cognitive-dark';
+          applyGlobalTheme(nextTheme);
+        });
+      }
+
+      // Global Data Labels Toggle Button
+      if (globalDataLabelsToggleBtn) {
+        globalDataLabelsToggleBtn.addEventListener('click', () => {
+          toggleGlobalDataLabels();
+        });
+      }
+
+      // Redimensionnement de fenêtre pour le dessin d'animation
+      window.addEventListener('resize', () => {
+        initHeroDrawings();
+      });
+    }
+
+    // ========================================================================
+    // 7. INITIALISATION DE L'APPLICATION
+    // ========================================================================
+    function initApp() {
+      // 1. Distribution structurée des cartes dans toutes les sections
+      renderAllSections();
+
+      // 2. Initialisation des événements d'interaction
+      initEvents();
+
+      // 3. Application du thème initial
+      applyGlobalTheme(currentTheme);
+
+      // 4. Chargement immédiat des graphiques
+      CATALOG.forEach(c => loadAndRenderChart(c.id));
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initApp);
+    } else {
+      initApp();
+    }
+  })();
+  </script>
+</body>
+</html>

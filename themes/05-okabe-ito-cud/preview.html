@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="okabe-ito-cud">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Okabe-Ito CUD — kit-charts</title>
+  <!-- Google Fonts pour ce thème et tous les thèmes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+  <!-- Chart.js v4.4.7 CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <!-- Theme Tokens & Stat Engine -->
+  <script src="../theme-tokens.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
+      background-color: #F8FAFC;
+      color: #1E293B;
+      min-height: 100vh;
+      padding: 2rem 1.5rem;
+      transition: background-color 0.25s ease, color 0.25s ease;
+    }
+
+    .wrapper {
+      max-width: 1040px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .breadcrumb {
+      font-size: 0.8125rem;
+      color: #64748B;
+      margin-bottom: 0.5rem;
+    }
+
+    .breadcrumb a {
+      color: #0072B2;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .breadcrumb a:hover {
+      text-decoration: underline;
+    }
+
+    .header-panel {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid #E2E8F0;
+    }
+
+    .title-group h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      color: #1E293B;
+    }
+
+    .title-group p {
+      font-size: 0.875rem;
+      color: #64748B;
+      margin-top: 0.25rem;
+    }
+
+    .controls-group {
+      display: flex;
+      align-items: center;
+      gap: 0.85rem;
+      flex-wrap: wrap;
+    }
+
+    .active-theme-name-tag {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #334155;
+      background: #F8FAFC;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      border: 1px solid #E2E8F0;
+      white-space: nowrap;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(460px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .chart-container {
+      position: relative;
+      width: 100%;
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .chart-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1E293B;
+    }
+
+    .chart-badge {
+      font-size: 0.7rem;
+      font-family: 'Source Code Pro', monospace;
+      padding: 0.15rem 0.5rem;
+      border-radius: 4px;
+      background: #0072B218;
+      color: #0072B2;
+      border: 1px solid #0072B235;
+      font-weight: 600;
+    }
+
+    .canvas-wrapper {
+      position: relative;
+      width: 100%;
+      height: 240px;
+    }
+
+    .palette-container {
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+    }
+
+    .palette-section-title {
+      font-size: 0.875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #0072B2;
+      margin-bottom: 0.5rem;
+    }
+
+    .swatches-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .swatch-card {
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .swatch-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      border-color: #0072B2;
+    }
+
+    .swatch-color {
+      height: 44px;
+      width: 100%;
+    }
+
+    .swatch-info {
+      padding: 0.6rem 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.15rem;
+    }
+
+    .swatch-name {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #1E293B;
+    }
+
+    .swatch-hex {
+      font-family: 'Source Code Pro', monospace;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #0072B2;
+    }
+
+    .swatch-role {
+      font-size: 0.7rem;
+      color: #64748B;
+    }
+
+    .gradient-bar {
+      height: 28px;
+      border-radius: 6px;
+      border: 1px solid #E2E8F0;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .seq-chips-row {
+      display: flex;
+      gap: 0.25rem;
+      flex-wrap: wrap;
+      margin-top: 0.5rem;
+    }
+
+    .seq-chip {
+      flex: 1;
+      min-width: 60px;
+      height: 26px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      border: 1px solid #E2E8F0;
+      transition: transform 0.15s ease;
+    }
+
+    .seq-chip:hover {
+      transform: scale(1.08);
+      z-index: 2;
+    }
+
+    .seq-chip span {
+      font-family: 'Source Code Pro', monospace;
+      font-size: 0.625rem;
+      font-weight: 700;
+      color: #000;
+      background: rgba(255,255,255,0.85);
+      padding: 0.05rem 0.25rem;
+      border-radius: 3px;
+    }
+
+    .status-badges-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.6rem;
+    }
+
+    .status-badge-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.45rem;
+      padding: 0.35rem 0.75rem;
+      background: #FFFFFF;
+      border: 1px solid #E2E8F0;
+      border-radius: 9999px;
+      cursor: pointer;
+      font-size: 0.775rem;
+      transition: transform 0.15s ease;
+    }
+
+    .status-badge-item:hover {
+      border-color: #0072B2;
+      transform: translateY(-1px);
+    }
+
+    .status-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .cognitive-rules-card {
+      background-color: #F8FAFC;
+      border: 1px solid #E2E8F0;
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      transition: background-color 0.25s ease, border-color 0.25s ease;
+    }
+
+    .rule-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .rule-item h3 {
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #10B981;
+    }
+
+    .rule-item.bad h3 {
+      color: #EF4444;
+    }
+
+    .rule-item p {
+      font-size: 0.875rem;
+      line-height: 1.45;
+      color: #334155;
+    }
+
+    .toast {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      background: #0F172A;
+      color: #FFFFFF;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 9999;
+      pointer-events: none;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+      .charts-grid {
+        grid-template-columns: 1fr;
+      }
+      body {
+        padding: 1.25rem 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <!-- Breadcrumb & Header -->
+    <div>
+      <div class="breadcrumb">
+        <a href="../../index.html">← kit-charts</a> / <a href="../../index.html#section-themes">themes</a> / 05-okabe-ito-cud
+      </div>
+      <div class="header-panel">
+        <div class="title-group">
+          <h1>Okabe-Ito CUD</h1>
+          <p>Masataka Okabe & Kei Ito (Color Universal Design Standard) — Conformité Universelle</p>
+        </div>
+        <div class="controls-group">
+          <div class="active-theme-name-tag">05. Okabe-Ito • 100% CUD Certified</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Démonstrateurs Graphiques Live -->
+    <div class="charts-grid">
+      <!-- 1. Bar Chart -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <span class="chart-title">Comparaison Catégorielle</span>
+          <span class="chart-badge">Bar Chart</span>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="chartCanvasBar"></canvas>
+        </div>
+      </div>
+
+      <!-- 2. Line Chart -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <span class="chart-title">Évolution Multi-Séries</span>
+          <span class="chart-badge">Spline Line</span>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="chartCanvasLine"></canvas>
+        </div>
+      </div>
+
+      <!-- 3. Doughnut Chart -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <span class="chart-title">Répartition & Composition</span>
+          <span class="chart-badge">Doughnut</span>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="chartCanvasDonut"></canvas>
+        </div>
+      </div>
+
+      <!-- 4. Area Chart -->
+      <div class="chart-container">
+        <div class="chart-header">
+          <span class="chart-title">Progression Séquentielle</span>
+          <span class="chart-badge">Area Chart</span>
+        </div>
+        <div class="canvas-wrapper">
+          <canvas id="chartCanvasArea"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Explorateur de Palette & Tokens -->
+    <div class="palette-container">
+      <div>
+        <div class="palette-section-title">Palette Qualitative (8 Teintes)</div>
+        <div class="swatches-grid">
+          
+    <div class="swatch-card" onclick="copyColor('#0072B2')" title="Cliquer pour copier #0072B2">
+      <div class="swatch-color" style="background-color: #0072B2;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Bleu royal</span>
+        <span class="swatch-hex">#0072B2</span>
+        <span class="swatch-role">Ancre de contraste principale</span>
+      </div>
+    </div>
+  
+    <div class="swatch-card" onclick="copyColor('#D55E00')" title="Cliquer pour copier #D55E00">
+      <div class="swatch-color" style="background-color: #D55E00;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Vermillon</span>
+        <span class="swatch-hex">#D55E00</span>
+        <span class="swatch-role">Remplace avantageusement le rouge</span>
+      </div>
+    </div>
+  
+    <div class="swatch-card" onclick="copyColor('#009E73')" title="Cliquer pour copier #009E73">
+      <div class="swatch-color" style="background-color: #009E73;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Vert bleuté</span>
+        <span class="swatch-hex">#009E73</span>
+        <span class="swatch-role">Remplace avantageusement le vert</span>
+      </div>
+    </div>
+  
+    <div class="swatch-card" onclick="copyColor('#E69F00')" title="Cliquer pour copier #E69F00">
+      <div class="swatch-color" style="background-color: #E69F00;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Orange ambré</span>
+        <span class="swatch-hex">#E69F00</span>
+        <span class="swatch-role">Teinte lumineuse distincte</span>
+      </div>
+    </div>
+  
+    <div class="swatch-card" onclick="copyColor('#56B4E9')" title="Cliquer pour copier #56B4E9">
+      <div class="swatch-color" style="background-color: #56B4E9;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Bleu ciel</span>
+        <span class="swatch-hex">#56B4E9</span>
+        <span class="swatch-role">Nuance claire fraîche</span>
+      </div>
+    </div>
+  
+    <div class="swatch-card" onclick="copyColor('#F0E442')" title="Cliquer pour copier #F0E442">
+      <div class="swatch-color" style="background-color: #F0E442;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Jaune clair</span>
+        <span class="swatch-hex">#F0E442</span>
+        <span class="swatch-role">Point de surbrillance</span>
+      </div>
+    </div>
+  
+    <div class="swatch-card" onclick="copyColor('#CC79A7')" title="Cliquer pour copier #CC79A7">
+      <div class="swatch-color" style="background-color: #CC79A7;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Pourpre rosé</span>
+        <span class="swatch-hex">#CC79A7</span>
+        <span class="swatch-role">Discrimination douce</span>
+      </div>
+    </div>
+  
+    <div class="swatch-card" onclick="copyColor('#595959')" title="Cliquer pour copier #595959">
+      <div class="swatch-color" style="background-color: #595959;"></div>
+      <div class="swatch-info">
+        <span class="swatch-name">Gris anthracite</span>
+        <span class="swatch-hex">#595959</span>
+        <span class="swatch-role">Ligne de contexte</span>
+      </div>
+    </div>
+  
+        </div>
+      </div>
+
+      <div>
+        <div class="palette-section-title">Palette Séquentielle (Luminance Monotone)</div>
+        <div class="gradient-bar" style="background: linear-gradient(90deg, #E6F2F8, #B3DAEE, #56B4E9, #0072B2, #004C77);"></div>
+        <div class="seq-chips-row">
+          
+    <div class="seq-chip" style="background: #E6F2F8;" onclick="copyColor('#E6F2F8')" title="Copier #E6F2F8">
+      <span>#E6F2F8</span>
+    </div>
+  
+    <div class="seq-chip" style="background: #B3DAEE;" onclick="copyColor('#B3DAEE')" title="Copier #B3DAEE">
+      <span>#B3DAEE</span>
+    </div>
+  
+    <div class="seq-chip" style="background: #56B4E9;" onclick="copyColor('#56B4E9')" title="Copier #56B4E9">
+      <span>#56B4E9</span>
+    </div>
+  
+    <div class="seq-chip" style="background: #0072B2;" onclick="copyColor('#0072B2')" title="Copier #0072B2">
+      <span>#0072B2</span>
+    </div>
+  
+    <div class="seq-chip" style="background: #004C77;" onclick="copyColor('#004C77')" title="Copier #004C77">
+      <span>#004C77</span>
+    </div>
+  
+        </div>
+      </div>
+
+      <div>
+        <div class="palette-section-title">Palette Divergente</div>
+        <div class="gradient-bar" style="background: linear-gradient(90deg, #D55E00 0%, #FFFFFF 50%, #0072B2 100%);"></div>
+      </div>
+
+      <div>
+        <div class="palette-section-title">Couleurs Sémantiques & Statuts</div>
+        <div class="status-badges-row">
+          
+    <div class="status-badge-item" onclick="copyColor('#009E73')" title="Copier #009E73">
+      <span class="status-dot" style="background: #009E73;"></span>
+      <span class="status-lbl"><strong>Succès</strong> : #009E73</span>
+    </div>
+  
+    <div class="status-badge-item" onclick="copyColor('#E69F00')" title="Copier #E69F00">
+      <span class="status-dot" style="background: #E69F00;"></span>
+      <span class="status-lbl"><strong>Attention</strong> : #E69F00</span>
+    </div>
+  
+    <div class="status-badge-item" onclick="copyColor('#D55E00')" title="Copier #D55E00">
+      <span class="status-dot" style="background: #D55E00;"></span>
+      <span class="status-lbl"><strong>Danger / Alerte</strong> : #D55E00</span>
+    </div>
+  
+    <div class="status-badge-item" onclick="copyColor('#56B4E9')" title="Copier #56B4E9">
+      <span class="status-dot" style="background: #56B4E9;"></span>
+      <span class="status-lbl"><strong>Information</strong> : #56B4E9</span>
+    </div>
+  
+    <div class="status-badge-item" onclick="copyColor('#999999')" title="Copier #999999">
+      <span class="status-dot" style="background: #999999;"></span>
+      <span class="status-lbl"><strong>Neutre</strong> : #999999</span>
+    </div>
+  
+        </div>
+      </div>
+    </div>
+
+    <!-- Synthèse des Recommandations & Règles Cognitives -->
+    <div id="cognitiveRulesCard" class="cognitive-rules-card">
+      <div class="rule-item">
+        <h3>✅ Quand l'utiliser</h3>
+        <p><strong>Cas d'usage :</strong> Publications scientifiques et biomédicales, rapports publics institutionnels sous obligations légales d'accessibilité et présentations devant de larges audiences hétérogènes.</p>
+      </div>
+      <div class="rule-item bad">
+        <h3>❌ Quand NE PAS l'utiliser</h3>
+        <p><strong>Contre-indications :</strong> Designs graphiques à esthétique monochrome minimaliste, mode sombre sans inversion de polarité, ou séries au-delà de 8 catégories.</p>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Code couleur copié !</div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const palette = ["#0072B2","#D55E00","#009E73","#E69F00","#56B4E9","#F0E442","#CC79A7","#595959"];
+      const isDark = false;
+
+      Chart.defaults.font.family = "Source Sans 3, system-ui, sans-serif";
+      Chart.defaults.color = "#334155";
+      Chart.defaults.borderColor = "rgba(30, 41, 59, 0.06)";
+
+      // 1. Bar Chart
+      const cBar = document.getElementById('chartCanvasBar');
+      if (cBar) {
+        new Chart(cBar, {
+          type: 'bar',
+          data: {
+            labels: ['R&D', 'Ventes', 'Marketing', 'Ops', 'Support', 'Produit', 'Finance', 'RH'],
+            datasets: [{
+              label: 'Performance',
+              data: [142, 128, 98, 86, 74, 62, 54, 42],
+              backgroundColor: palette,
+              borderRadius: 4,
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false } },
+              y: {
+                grid: { color: "rgba(30, 41, 59, 0.06)" },
+                ticks: { font: { family: "Source Code Pro", size: 11 } }
+              }
+            }
+          }
+        });
+      }
+
+      // 2. Line Chart
+      const cLine = document.getElementById('chartCanvasLine');
+      if (cLine) {
+        new Chart(cLine, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil'],
+            datasets: [
+              {
+                label: 'Série A',
+                data: [32, 45, 58, 51, 68, 84, 92],
+                borderColor: palette[0],
+                backgroundColor: palette[0] + '20',
+                fill: false,
+                tension: 0.35,
+                borderWidth: 2.5,
+                pointRadius: 4,
+                pointBackgroundColor: palette[0]
+              },
+              {
+                label: 'Série B',
+                data: [48, 52, 44, 62, 55, 71, 79],
+                borderColor: palette[1],
+                backgroundColor: palette[1] + '20',
+                fill: false,
+                tension: 0.35,
+                borderWidth: 2,
+                pointRadius: 4,
+                pointBackgroundColor: palette[1]
+              },
+              {
+                label: 'Série C',
+                data: [20, 28, 35, 42, 49, 58, 64],
+                borderColor: palette[2],
+                backgroundColor: palette[2] + '20',
+                fill: false,
+                tension: 0.35,
+                borderWidth: 2,
+                pointRadius: 4,
+                pointBackgroundColor: palette[2]
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { position: 'top', labels: { boxWidth: 10, usePointStyle: true } }
+            },
+            scales: {
+              x: { grid: { display: false } },
+              y: {
+                grid: { color: "rgba(30, 41, 59, 0.06)" },
+                ticks: { font: { family: "Source Code Pro", size: 11 } }
+              }
+            }
+          }
+        });
+      }
+
+      // 3. Doughnut Chart
+      const cDonut = document.getElementById('chartCanvasDonut');
+      if (cDonut) {
+        new Chart(cDonut, {
+          type: 'doughnut',
+          data: {
+            labels: ['Direct', 'Organique', 'Payant', 'Social', 'Affiliation'],
+            datasets: [{
+              data: [38, 27, 18, 11, 6],
+              backgroundColor: [palette[0], palette[1], palette[2], palette[3], palette[4]],
+              borderWidth: 2,
+              borderColor: "#F8FAFC"
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '65%',
+            plugins: {
+              legend: { position: 'right', labels: { boxWidth: 10, usePointStyle: true } }
+            }
+          }
+        });
+      }
+
+      // 4. Area Chart
+      const cArea = document.getElementById('chartCanvasArea');
+      if (cArea) {
+        const gradient = cArea.getContext('2d').createLinearGradient(0, 0, 0, 240);
+        gradient.addColorStop(0, palette[0] + '55');
+        gradient.addColorStop(1, palette[0] + '00');
+
+        new Chart(cArea, {
+          type: 'line',
+          data: {
+            labels: ['S1', 'S2', 'S3', 'S4', 'S5', 'S6', 'S7', 'S8'],
+            datasets: [{
+              label: 'Progression',
+              data: [24, 38, 42, 59, 68, 74, 88, 96],
+              borderColor: palette[0],
+              backgroundColor: gradient,
+              fill: true,
+              tension: 0.35,
+              borderWidth: 2.5,
+              pointRadius: 3
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false } },
+              y: {
+                grid: { color: "rgba(30, 41, 59, 0.06)" },
+                ticks: { font: { family: "Source Code Pro", size: 11 } }
+              }
+            }
+          }
+        });
+      }
+    });
+
+    function showToast(msg) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => { toast.classList.remove('show'); }, 2000);
+    }
+
+    function copyColor(hex) {
+      navigator.clipboard.writeText(hex).then(() => {
+        showToast('Couleur ' + hex + ' copiée !');
+      }).catch(() => {
+        showToast('Code: ' + hex);
+      });
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+/* ==========================================================================
+   Thème Dataviz 03 : Paul Tol Scientific (SRON Research)
+   Fondé sur les spécifications techniques du Dr. Paul Tol
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap');
+
+:root, [data-theme="paul-tol-scientific"] {
+  /* Typographie Scientifique */
+  --chart-font-sans: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --chart-font-mono: 'Fira Code', Menlo, Monaco, Consolas, monospace;
+
+  /* Surfaces & Fonds */
+  --chart-bg: #FFFFFF;
+  --chart-surface: #F8FAFC;
+  --chart-surface-raised: #FFFFFF;
+  --chart-border: #E2E8F0;
+  --chart-border-strong: #CBD5E1;
+
+  /* Textes & Typographie */
+  --chart-text-primary: #1E293B;
+  --chart-text-secondary: #334155;
+  --chart-text-muted: #64748B;
+
+  /* Grille & Axes */
+  --chart-grid-color: rgba(30, 41, 59, 0.06);
+  --chart-axis-color: #94A3B8;
+  --chart-zero-line: #475569;
+
+  /* Palette Tol Bright (Contrastée & CVD Safe) */
+  --chart-tol-bright-1: #4477AA; /* Bleu */
+  --chart-tol-bright-2: #EE6677; /* Rouge/Corail */
+  --chart-tol-bright-3: #228833; /* Vert */
+  --chart-tol-bright-4: #CCBB44; /* Jaune/Olive */
+  --chart-tol-bright-5: #66CCEE; /* Cyan */
+  --chart-tol-bright-6: #AA3377; /* Pourpre */
+  --chart-tol-bright-7: #BBBBBB; /* Gris */
+  --chart-tol-bright-8: #555555; /* Gris ardoise foncé */
+
+  /* Palette Tol Muted (Harmonieuse & Douce) */
+  --chart-tol-muted-1: #CC6677; /* Rose poudré */
+  --chart-tol-muted-2: #332288; /* Indigo profond */
+  --chart-tol-muted-3: #DDCC77; /* Sable */
+  --chart-tol-muted-4: #117733; /* Vert forêt */
+  --chart-tol-muted-5: #88CCEE; /* Bleu ciel */
+  --chart-tol-muted-6: #882255; /* Bordeaux */
+  --chart-tol-muted-7: #44AA99; /* Sarcelle */
+  --chart-tol-muted-8: #999933; /* Olive */
+  --chart-tol-muted-9: #AA4499; /* Mauve */
+
+  /* Mappings Standards de Dataviz */
+  --chart-color-1: #4477AA;
+  --chart-color-2: #EE6677;
+  --chart-color-3: #228833;
+  --chart-color-4: #CCBB44;
+  --chart-color-5: #66CCEE;
+  --chart-color-6: #AA3377;
+  --chart-color-7: #BBBBBB;
+  --chart-color-8: #555555;
+
+  /* Sémantique */
+  --chart-positive: #228833;
+  --chart-negative: #EE6677;
+  --chart-warning: #CCBB44;
+  --chart-info: #4477AA;
+  --chart-neutral: #BBBBBB;
+
+  /* Accentuation & Focus Cognitif */
+  --chart-emphasis-focal: #4477AA;
+  --chart-emphasis-benchmark: #475569;
+  --chart-emphasis-context: #BBBBBB;
+  --chart-emphasis-anomaly: #EE6677;
+  --chart-emphasis-forecast-alpha: 0.50;
+
+  /* Statuts Universels Standardisés */
+  --chart-status-success: #228833;
+  --chart-status-warning: #CCBB44;
+  --chart-status-danger: #EE6677;
+  --chart-status-info: #66CCEE;
+  --chart-status-neutral: #BBBBBB;
+}
+
+.chart-container-paultol {
+  font-family: var(--chart-font-sans);
+  background-color: var(--chart-bg);
+  color: var(--chart-text-primary);
+  border: 1px solid var(--chart-border);
+  border-radius: 6px;
+  padding: 16px;
+}

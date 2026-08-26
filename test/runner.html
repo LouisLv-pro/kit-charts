@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>kit-charts — Opaque-Box E2E Test Runner (541 Tests)</title>
+  
+  <!-- Google Fonts for Cognitive Themes -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=Fira+Sans:wght@400;500;600&family=Fira+Code:wght@400;500&family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&family=Source+Code+Pro:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Chart.js Core v4.4.7 UMD -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  
+  <!-- Date Adapter (Luxon) for Time Scales & Financial OHLC -->
+  <script src="https://cdn.jsdelivr.net/npm/luxon@3.5.0/build/global/luxon.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
+  
+  <!-- TopoJSON for Geo Projections -->
+  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  
+  <!-- 6 Specialized 3rd-Party Plugins -->
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.1/dist/chartjs-chart-sankey.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.1/dist/chartjs-chart-treemap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.3.4/build/index.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.4/build/index.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
+
+  <style>
+    :root {
+      --bg: #0B0F19;
+      --surface: #111827;
+      --surface-raised: #1F2937;
+      --border: #374151;
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --text: #F9FAFB;
+      --text-muted: #9CA3AF;
+      --primary: #38BDF8;
+      --primary-hover: #0EA5E9;
+      --success: #10B981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --failure: #F43F5E;
+      --failure-bg: rgba(244, 63, 94, 0.12);
+      --warning: #F59E0B;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 24px 32px;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      -webkit-font-smoothing: antialiased;
+      line-height: 1.5;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 24px;
+    }
+
+    .title-group h1 {
+      margin: 0;
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .title-badge {
+      font-size: 12px;
+      font-family: var(--font-mono);
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      padding: 3px 8px;
+      border-radius: 4px;
+      color: var(--primary);
+    }
+
+    .subtitle {
+      margin: 4px 0 0;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    .actions-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    button {
+      font-family: var(--font-sans);
+      font-size: 14px;
+      font-weight: 600;
+      padding: 10px 18px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.15s ease;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: #0B0F19;
+    }
+    button.primary:hover { background: var(--primary-hover); }
+
+    button.secondary {
+      background: var(--surface-raised);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+    button.secondary:hover { background: var(--border); }
+
+    /* KPI Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .kpi-label {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .kpi-value {
+      font-size: 28px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      line-height: 1.1;
+    }
+
+    /* Progress Bar */
+    .progress-track {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      height: 12px;
+      border-radius: 6px;
+      overflow: hidden;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .progress-fill {
+      background: linear-gradient(90deg, var(--primary), var(--success));
+      height: 100%;
+      width: 0%;
+      transition: width 0.05s ease;
+    }
+
+    /* Controls Bar */
+    .controls-bar {
+      display: flex;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    select, input[type="text"] {
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      padding: 8px 12px;
+      border-radius: 6px;
+      outline: none;
+    }
+    select:focus, input[type="text"]:focus { border-color: var(--primary); }
+
+    .search-box { flex-grow: 1; }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+      cursor: pointer;
+      user-select: none;
+    }
+
+    /* Results Container */
+    .results-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+
+    .tier-accordion {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    .tier-header {
+      padding: 14px 18px;
+      background: var(--surface-raised);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .tier-title {
+      font-weight: 600;
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .test-list {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .test-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13px;
+      transition: background 0.1s ease;
+    }
+    .test-row:hover { background: rgba(255, 255, 255, 0.02); }
+    .test-row.failed-row { background: rgba(244, 63, 94, 0.04); }
+
+    .test-name-col {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .test-id-tag {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      background: rgba(255,255,255,0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+    }
+
+    .status-badge {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 8px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .status-badge.pass {
+      background: var(--success-bg);
+      color: var(--success);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+    .status-badge.fail {
+      background: var(--failure-bg);
+      color: var(--failure);
+      border: 1px solid rgba(244, 63, 94, 0.2);
+    }
+
+    .error-details {
+      padding: 8px 18px 12px;
+      background: rgba(244, 63, 94, 0.08);
+      font-family: var(--font-mono);
+      font-size: 12px;
+      color: #FECDD3;
+      border-bottom: 1px solid var(--border-subtle);
+      white-space: pre-wrap;
+    }
+
+    /* Live Visual Preview Cards */
+    .preview-section {
+      margin-top: 32px;
+    }
+    .preview-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+    .preview-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .preview-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .preview-canvas-container {
+      height: 200px;
+      position: relative;
+      background: #000000;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    /* Hidden Sandbox for off-screen canvas execution */
+    #canvasSandbox {
+      position: absolute;
+      left: -99999px;
+      top: -99999px;
+      width: 800px;
+      height: 600px;
+      visibility: hidden;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="header-bar">
+    <div class="title-group">
+      <h1>
+        kit-charts E2E Verification Harness
+        <span class="title-badge">541 Tests • 4 Tiers</span>
+      </h1>
+      <p class="subtitle">Opaque-box test suite verifying 47 features across 8 cognitive design themes & psychophysical rules</p>
+    </div>
+    <div class="actions-group">
+      <button id="btnRunTests" class="primary">▶ Run All Tests</button>
+      <button id="btnExportJson" class="secondary">📥 Export JSON Report</button>
+    </div>
+  </div>
+
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Tests</div>
+      <div id="kpiTotal" class="kpi-value" style="color: var(--text);">0 / 541</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Passed</div>
+      <div id="kpiPassed" class="kpi-value" style="color: var(--success);">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Failed</div>
+      <div id="kpiFailed" class="kpi-value" style="color: var(--failure);">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Skipped</div>
+      <div id="kpiSkipped" class="kpi-value" style="color: var(--warning);">0</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Success Rate</div>
+      <div id="kpiRate" class="kpi-value" style="color: var(--primary);">0%</div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Duration</div>
+      <div id="kpiDuration" class="kpi-value" style="color: var(--text-muted);">0.00s</div>
+    </div>
+  </div>
+
+  <div class="progress-track">
+    <div id="progressBar" class="progress-fill"></div>
+  </div>
+
+  <div class="controls-bar">
+    <select id="filterTier">
+      <option value="all">All Tiers (1 to 4)</option>
+      <option value="tier1">Tier 1: Feature Coverage (235 tests)</option>
+      <option value="tier2">Tier 2: Boundary & Corner Cases (235 tests)</option>
+      <option value="tier3">Tier 3: Pairwise Interactions (47 tests)</option>
+      <option value="tier4">Tier 4: Real-World Scenarios (24 tests)</option>
+    </select>
+
+    <select id="filterCategory">
+      <option value="all">All Categories</option>
+      <option value="themes">00 Theme System Core</option>
+      <option value="01-comparaison">01 Comparaison (10 charts)</option>
+      <option value="02-composition-part-to-whole">02 Composition (6 charts)</option>
+      <option value="03-distribution">03 Distribution (6 charts)</option>
+      <option value="04-correlation-relation">04 Corrélation (5 charts)</option>
+      <option value="05-evolution-temporelle">05 Évolution Temporelle (7 charts)</option>
+      <option value="06-flux-processus">06 Flux & Processus (5 charts)</option>
+      <option value="07-hierarchie-reseau">07 Hiérarchie & Réseau (4 charts)</option>
+      <option value="08-geospatial-cartes">08 Géospatial & Cartes (3 charts)</option>
+      <option value="cross-feature">Cross-Feature Interactions</option>
+      <option value="real-world">Real-World Composite Suites</option>
+    </select>
+
+    <input type="text" id="searchQuery" class="search-box" placeholder="Filter tests by name or ID (e.g. 'sankey', 'T1.bar-chart-vertical')...">
+
+    <label class="checkbox-label">
+      <input type="checkbox" id="chkFailuresOnly"> Failures Only
+    </label>
+  </div>
+
+  <!-- Test Results Feed Container -->
+  <div id="resultsContainer" class="results-container">
+    <div style="padding: 24px; text-align: center; color: var(--text-muted); background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+      Click <strong>▶ Run All Tests</strong> to execute the 541-test suite.
+    </div>
+  </div>
+
+  <!-- Visual Live Preview Area -->
+  <div class="preview-section">
+    <h2 style="font-size: 18px; margin: 0 0 12px;">Live Canvas Preview Gallery (Representative Samples)</h2>
+    <div id="previewGallery" class="preview-grid">
+      <!-- Live sample canvases populated after execution -->
+    </div>
+  </div>
+
+  <!-- Hidden Sandbox Container -->
+  <div id="canvasSandbox"></div>
+
+  <!-- Hidden Completion Indicator for Automated CLI / Headless Browser Runners -->
+  <div id="e2eComplete" style="display: none;" data-completed="false" data-total="0" data-passed="0" data-failed="0" data-duration="0"></div>
+
+  <!-- Test Runner Script Module -->
+  <script type="module">
+    import { runner, FEATURES } from './e2e-tests.js';
+    import { getThemeTokens } from '../themes/theme-tokens.js';
+    import { getStandardDataset } from './fixtures/datasets.js';
+
+    // DOM Elements
+    const btnRunTests = document.getElementById('btnRunTests');
+    const btnExportJson = document.getElementById('btnExportJson');
+    const kpiTotal = document.getElementById('kpiTotal');
+    const kpiPassed = document.getElementById('kpiPassed');
+    const kpiFailed = document.getElementById('kpiFailed');
+    const kpiSkipped = document.getElementById('kpiSkipped');
+    const kpiRate = document.getElementById('kpiRate');
+    const kpiDuration = document.getElementById('kpiDuration');
+    const progressBar = document.getElementById('progressBar');
+    const filterTier = document.getElementById('filterTier');
+    const filterCategory = document.getElementById('filterCategory');
+    const searchQuery = document.getElementById('searchQuery');
+    const chkFailuresOnly = document.getElementById('chkFailuresOnly');
+    const resultsContainer = document.getElementById('resultsContainer');
+    const e2eComplete = document.getElementById('e2eComplete');
+    const previewGallery = document.getElementById('previewGallery');
+
+    let currentResults = null;
+
+    function renderResults(results) {
+      currentResults = results;
+      const failuresOnly = chkFailuresOnly.checked;
+      const list = results.list.filter(item => !failuresOnly || !item.passed);
+
+      // Update KPI
+      kpiTotal.textContent = `${results.passed + results.failed} / ${results.total}`;
+      kpiPassed.textContent = results.passed;
+      kpiFailed.textContent = results.failed;
+      kpiSkipped.textContent = results.skipped;
+      const rate = results.total > 0 ? Math.round((results.passed / results.total) * 100) : 0;
+      kpiRate.textContent = `${rate}%`;
+      kpiDuration.textContent = `${results.duration}s`;
+      progressBar.style.width = `${Math.min(100, Math.round(((results.passed + results.failed) / (results.total || 1)) * 100))}%`;
+
+      // Group by Tier
+      const tiers = {
+        tier1: { title: 'Tier 1: Feature Coverage & Lifecycle (235 Tests)', items: [] },
+        tier2: { title: 'Tier 2: Boundary & Corner Cases (235 Tests)', items: [] },
+        tier3: { title: 'Tier 3: Cross-Feature Pairwise Interactions (47 Tests)', items: [] },
+        tier4: { title: 'Tier 4: Real-World Application Scenarios (24 Tests)', items: [] }
+      };
+
+      list.forEach(item => {
+        if (tiers[item.tier]) tiers[item.tier].items.push(item);
+      });
+
+      resultsContainer.innerHTML = '';
+
+      for (const [tierKey, tierData] of Object.entries(tiers)) {
+        if (tierData.items.length === 0) continue;
+
+        const tierCard = document.createElement('div');
+        tierCard.className = 'tier-accordion';
+
+        const tierPassed = tierData.items.filter(i => i.passed).length;
+        const tierFailed = tierData.items.filter(i => !i.passed).length;
+
+        tierCard.innerHTML = `
+          <div class="tier-header">
+            <div class="tier-title">
+              <span>${tierData.title}</span>
+            </div>
+            <div style="display: flex; gap: 8px; font-family: var(--font-mono); font-size: 12px;">
+              <span style="color: var(--success);">${tierPassed} PASS</span>
+              ${tierFailed > 0 ? `<span style="color: var(--failure);">${tierFailed} FAIL</span>` : ''}
+            </div>
+          </div>
+          <div class="test-list">
+            ${tierData.items.map(item => `
+              <div class="test-row ${!item.passed ? 'failed-row' : ''}">
+                <div class="test-name-col">
+                  <span class="test-id-tag">${item.id}</span>
+                  <span style="font-weight: 500;">${item.name}</span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span style="font-family: var(--font-mono); font-size: 11px; color: var(--text-muted);">${item.duration}ms</span>
+                  <span class="status-badge ${item.passed ? 'pass' : 'fail'}">${item.passed ? '✓ PASS' : '✗ FAIL'}</span>
+                </div>
+              </div>
+              ${!item.passed ? `<div class="error-details">${item.error}\n${item.stack || ''}</div>` : ''}
+            `).join('')}
+          </div>
+        `;
+        resultsContainer.appendChild(tierCard);
+      }
+    }
+
+    async function executeAll() {
+      btnRunTests.disabled = true;
+      btnRunTests.textContent = '⏳ Running 541 Tests...';
+      resultsContainer.innerHTML = `
+        <div style="padding: 24px; text-align: center; color: var(--primary); background: var(--surface); border: 1px solid var(--border); border-radius: 8px;">
+          🚀 Executing test suites across all 4 tiers in off-screen sandbox...
+        </div>
+      `;
+
+      runner.onTestComplete = (item, currentStats) => {
+        kpiTotal.textContent = `${currentStats.passed + currentStats.failed} / ${currentStats.total}`;
+        kpiPassed.textContent = currentStats.passed;
+        kpiFailed.textContent = currentStats.failed;
+        kpiSkipped.textContent = currentStats.skipped;
+        const pct = Math.round(((currentStats.passed + currentStats.failed) / (currentStats.total || 1)) * 100);
+        progressBar.style.width = `${pct}%`;
+      };
+
+      const results = await runner.run({
+        filterTier: filterTier.value,
+        filterCategory: filterCategory.value,
+        searchQuery: searchQuery.value
+      });
+
+      renderResults(results);
+
+      // Expose to window for automated CLI headless runner
+      window.E2E_TEST_RESULTS = results;
+      e2eComplete.dataset.completed = "true";
+      e2eComplete.dataset.total = String(results.total);
+      e2eComplete.dataset.passed = String(results.passed);
+      e2eComplete.dataset.failed = String(results.failed);
+      e2eComplete.dataset.duration = String(results.duration);
+
+      btnRunTests.disabled = false;
+      btnRunTests.textContent = '▶ Re-Run Tests';
+
+      // Render a few sample live preview cards
+      renderSamplePreviews();
+    }
+
+    function renderSamplePreviews() {
+      previewGallery.innerHTML = '';
+      const sampleIds = ['bar-chart-vertical', 'doughnut-chart', 'histogramme', 'line-chart', 'waterfall-chart', 'sankey-diagram'];
+      
+      sampleIds.forEach(id => {
+        const feature = FEATURES.find(f => f.id === id);
+        if (!feature) return;
+
+        const card = document.createElement('div');
+        card.className = 'preview-card';
+        const canvasId = `preview-canvas-${id}`;
+        card.innerHTML = `
+          <div class="preview-title">${feature.name} (${feature.category})</div>
+          <div class="preview-canvas-container">
+            <canvas id="${canvasId}"></canvas>
+          </div>
+        `;
+        previewGallery.appendChild(card);
+
+        const canvas = document.getElementById(canvasId);
+        const tokens = getThemeTokens('colorbrewer-accessible');
+        const data = getStandardDataset(id, tokens);
+        if (typeof Chart !== 'undefined') {
+          new Chart(canvas, {
+            type: feature.chartType === 'theme-core' ? 'bar' : feature.chartType,
+            data: data,
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } }
+            }
+          });
+        }
+      });
+    }
+
+    // Event Listeners
+    btnRunTests.addEventListener('click', executeAll);
+    filterTier.addEventListener('change', () => currentResults && renderResults(currentResults));
+    filterCategory.addEventListener('change', () => currentResults && renderResults(currentResults));
+    searchQuery.addEventListener('input', () => currentResults && renderResults(currentResults));
+    chkFailuresOnly.addEventListener('change', () => currentResults && renderResults(currentResults));
+
+    btnExportJson.addEventListener('click', () => {
+      if (!currentResults) return alert('Please run tests first.');
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(currentResults, null, 2));
+      const downloadAnchor = document.createElement('a');
+      downloadAnchor.setAttribute("href", dataStr);
+      downloadAnchor.setAttribute("download", `kit-charts-e2e-report-${Date.now()}.json`);
+      document.body.appendChild(downloadAnchor);
+      downloadAnchor.click();
+      downloadAnchor.remove();
+    });
+
+    // Auto-run if requested in URL parameter (?autorun=1 or ?mode=automated)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('autorun') === '1' || urlParams.get('mode') === 'automated') {
+      executeAll();
+    }
+  </script>
+</body>
+</html>
