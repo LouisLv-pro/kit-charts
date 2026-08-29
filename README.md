@@ -4,42 +4,41 @@
 
 # kit-charts
 
-Un kit de datavisualisation **agent-native** et **cognitivement déterministe** pour [Antigravity](https://github.com), [Claude Code](https://claude.com/claude-code), Cursor ou n'importe quel agent d'IA : il élimine les hallucinations graphiques et garantit un respect absolu des **sciences cognitives** (Cleveland-McGill, Tufte, Sweller, Mayer) et de l'accessibilité **WCAG 2.2 AAA**.
+Un kit pour vos agents d'IA (Antigravity, Claude Code, Cursor, etc.) pour générer des graphiques fiables, clairs et sans erreurs avec Chart.js.
 
-L'agent n'a **plus jamais à réinventer un graphique à partir de zéro** : il assemble des templates standardisés éprouvés et compile des visualisations prêtes à être ouvertes et inspectées instantanément dans votre navigateur.
+L'agent n'a **plus besoin de recréer les graphiques de zéro** : il pioche dans **95 modèles prêts à l'emploi**, applique de bonnes règles de lisibilité et livre une page HTML que vous pouvez ouvrir directement dans votre navigateur.
 
 ---
 
-## Pourquoi ce kit ? La Philosophie du Déterminisme Visuel
+## Pourquoi ce kit ?
 
-Lorsqu'un modèle d'IA tente de coder un graphique à partir d'une feuille blanche, il commet fréquemment des erreurs psychophysiques majeures :
-- **Troncature trompeuse des axes** (violation de la ligne de base $Y=0$, exagérant artificiellement des écarts minimes).
-- **Surcharge de la mémoire de travail** (bar charts verticaux illisibles à 15 catégories ou spaghetti charts multi-lignes).
-- **Discrimination chromatique désastreuse** (contrastes insuffisants, incompatibilité avec le daltonisme, fausses équivalences rouge/vert).
-- **Code fragile et verbeux** difficile à maintenir et à intégrer.
+Quand une IA essaie de coder un graphique à partir d'une feuille blanche, elle fait souvent de grosses erreurs :
+- **Des axes coupés** qui trompent l'œil et font paraître de petits écarts énormes.
+- **Trop d'informations entassées** (15 barres verticales illisibles ou 10 courbes emmêlées).
+- **Des couleurs mal choisies**, impossibles à lire pour les personnes daltoniennes.
+- **Du code bricolé**, difficile à relire ou à réutiliser.
 
-**kit-charts** résout définitivement ce problème en introduisant un **déterminisme visuel complet** :
+**kit-charts** règle ce problème en donnant à l'agent une méthode simple et des modèles déjà testés :
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. DATAVIZ-ARCHITECT (L'Architecte Décideur)                │
-│    Analyse l'intention, choisit le template dans le         │
-│    registre, qualifie le thème et la polarité métier,       │
-│    et produit le contrat dataviz-spec.json.                 │
+│ 1. L'ARCHITECTE (dataviz-architect)                         │
+│    Comprend votre besoin, choisit le bon modèle et prépare  │
+│    le fichier de configuration dataviz-spec.json.           │
 └──────────────────────────────┬──────────────────────────────┘
-                               │ Contrat dataviz-spec.json
+                               │
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 2. DATAVIZ-BUILDER (Le Constructeur / Exécuteur)            │
-│    Consomme la spec, compile le template standardisé et     │
-│    génère la page autonome dans output/<nom>/index.html.    │
+│ 2. LE CONSTRUCTEUR (dataviz-builder)                        │
+│    Assemble vos données avec le modèle et crée la page      │
+│    dans output/<nom-du-graphique>/index.html.               │
 └──────────────────────────────┬──────────────────────────────┘
-                               │ Rendu HTML / JS autonome
+                               │
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
-│ 3. DATAVIZ-REVIEWER (L'Auditeur Qualité & Linter)           │
-│    Audite automatiquement les règles de garde cognitives    │
-│    (Cleveland Axe 0, Sweller N<=7, WCAG AAA) et valide.     │
+│ 3. LE VÉRIFICATEUR (dataviz-reviewer)                       │
+│    Contrôle que le graphique est lisible, bien cadré        │
+│    et accessible à tout le monde.                           │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -52,89 +51,88 @@ Lorsqu'un modèle d'IA tente de coder un graphique à partir d'une feuille blanc
 git clone https://github.com/LouisLv-pro/kit-charts.git
 cd kit-charts
 ```
-*Zéro dépendance npm requise pour l'exécution au runtime.*
+*Rien d'autre à installer pour faire fonctionner les graphiques.*
 
-### 2. Explorer la Galerie Complète dans votre Navigateur
+### 2. Explorer la Galerie dans votre Navigateur
 Ouvrez simplement [**`index.html`**](index.html) dans votre navigateur (double-clic ou `open index.html`).
-- **100% Hors-Ligne & Zéro-CORS** : Tous les graphiques s'affichent instantanément sans avoir besoin d'un serveur HTTP local.
-- **Interactivité en direct** : Testez les 8 thèmes perceptuels en un clic, activez/désactivez les étiquettes de données et explorez les 95 templates.
+- **100% Hors-Ligne** : Tous les graphiques s'affichent immédiatement, sans avoir besoin d'un serveur web.
+- **Interactif** : Testez les 8 thèmes de couleurs en un clic et parcourez les 95 modèles.
 
-### 3. Demander à votre Agent de Créer un Graphique
-Donnez simplement votre besoin métier à votre agent IA :
+### 3. Demander à votre IA de Créer un Graphique
+Donnez simplement votre besoin en langage naturel à votre agent IA :
 
 ```text
-"Génère un graphique comparant le chiffre d'affaires réalisé par région par rapport aux objectifs annuels, avec le thème Nord et des alertes visuelles claires."
+"Fais-moi un graphique pour comparer les ventes par région par rapport aux objectifs de l'année, avec un thème sombre et des alertes claires."
 ```
 
-L'agent sélectionne le template optimal (`bullet-chart`), applique les jetons de thème, compile le fichier dans `output/ventes-regions/index.html` et valide la conformité cognitive en moins de 50 ms.
+L'agent choisit le bon modèle (`bullet-chart`), applique les bonnes couleurs et place le résultat dans `output/ventes-regions/index.html`.
 
 ---
 
 ## Ce que font les Agents du Kit
 
-| Rôle Agent | Mission Principale | Livrable Produit |
+| Rôle | Mission | Ce qu'il produit |
 | :--- | :--- | :--- |
-| **`dataviz-architect`** | Analyse le besoin métier, sélectionne le template dans le registre, qualifie la polarité et le thème. | Contrat `dataviz-spec.json` |
-| **`dataviz-builder`** | Compile le template sans coder ad-hoc via le script déterministe `compile-chart.js`. | Page `output/<projet>/index.html` + `spec.json` |
-| **`dataviz-reviewer`** | Exécute l'audit `validate-chart.js` et vérifie l'absence absolue de régressions cognitives. | Rapport de conformité (100% Valide ou feedback correctif) |
+| **`dataviz-architect`** | Analyse votre besoin et choisit le meilleur modèle du catalogue | Le fichier de configuration `dataviz-spec.json` |
+| **`dataviz-builder`** | Assemble vos données dans le modèle choisi | Le dossier prêt à l'emploi `output/<projet>/index.html` |
+| **`dataviz-reviewer`** | Vérifie que le graphique respecte toutes les règles de lisibilité | La confirmation que tout est en ordre |
 
 ---
 
-## Les 10 Familles Analytiques (95 Templates Standardisés)
+## Les 10 Familles de Graphiques (95 Modèles Prêts à l'Emploi)
 
-Chaque template est structuré en **triplet standardisé** (`template.html`, `schema.json`, `template.js`) :
+Chaque modèle est rangé dans son dossier avec sa structure standard (`template.html`, `schema.json`, `template.js`) :
 
-| Famille | Exemples de Templates | Règle Cognitive Fondamentale |
+| Famille | Exemples de modèles | Règle de bonne pratique |
 | :--- | :--- | :--- |
-| **00. Cartes KPI** | `kpi-standard`, `kpi-sparkline`, `kpi-bullet` | Valeur $\ge 24\text{px}$, police monospace tabulaire, delta explicite. |
-| **01. Comparaison** | `bar-chart-vertical`, `bar-chart-horizontal`, `bullet-chart` | Ligne de base $Y=0$ absolue (`beginAtZero: true`), bascule horizontal si $N > 7$. |
-| **02. Composition** | `doughnut-chart`, `stacked-bar-100`, `treemap` | Somme $= 100\%$, 2 à 5 tranches max, 0 3D, tri par surface décroissante. |
-| **03. Distribution** | `box-plot`, `histogramme`, `density-plot` | 5 nombres de Tukey, moustaches à $1.5 \times \text{IQR}$, bins de Freedman-Diaconis. |
-| **04. Corrélation** | `scatter-plot`, `bubble-chart`, `matrix-heatmap` | Ratio 1:1 (Cleveland), encodage taille par l'**aire** $\pi r^2$ et jamais par le rayon. |
-| **05. Évolution Temporelle** | `line-chart`, `multi-line-chart`, `area-chart` | Temps de gauche à droite, max 5 courbes simultanées (anti-spaghetti). |
-| **06. Flux & Processus** | `funnel-chart`, `waterfall-chart` | Décroissance ordonnée en entonnoir, piliers totaux distincts des incréments. |
-| **07. Hiérarchies** | `sunburst`, `network-graph`, `radial-tree` | Profondeur $\le 3$ niveaux, densité d'arêtes maîtrisée. |
-| **08. Cartographie** | `choropleth-map`, `bubble-map` | **Normalisation obligatoire** par habitant/taux (interdiction de totaux bruts surfaciques). |
-| **09. Finance & Bourse** | `candlestick-chart`, `ohlc` | Conventions boursières (Vert = Hausse $Close > Open$, Rouge = Baisse). |
-| **10. Tableaux Dataviz** | `table-sparklines`, `table-bar-in-cell` | Chiffres alignés à droite, barres miniatures intégrées. |
+| **00. Cartes KPI** | `kpi-standard`, `kpi-sparkline`, `kpi-bullet` | Gros chiffres bien lisibles et rappel clair de la période comparée. |
+| **01. Comparer des valeurs** | `bar-chart-vertical`, `bar-chart-horizontal`, `bullet-chart` | L'axe commence toujours à 0 pour ne pas tromper l'œil. Barres horizontales dès qu'il y a plus de 7 éléments. |
+| **02. Montrer des parts (100%)** | `doughnut-chart`, `stacked-bar-100`, `treemap` | Total égal à 100%, 2 à 5 tranches maximum, jamais d'effet 3D. |
+| **03. Répartition & Distribution** | `box-plot`, `histogramme`, `density-plot` | Affichage net de la médiane et des valeurs exceptionnelles (anomalies). |
+| **04. Corrélation & Liens** | `scatter-plot`, `bubble-chart`, `matrix-heatmap` | Pour les bulles, la taille représente la surface réelle et non le rayon. |
+| **05. Évolution dans le temps** | `line-chart`, `multi-line-chart`, `area-chart` | Le temps se lit toujours de gauche à droite, avec un maximum de 5 courbes. |
+| **06. Étapes & Flux** | `funnel-chart`, `waterfall-chart` | Étapes en cascade et taux de passage d'une étape à l'autre bien visibles. |
+| **07. Hiérarchies & Arbres** | `sunburst`, `network-graph`, `radial-tree` | 3 niveaux maximum pour éviter la surcharge visuelle. |
+| **08. Cartes géographiques** | `choropleth-map`, `bubble-map` | Valeurs ramenées par habitant ou par surface pour éviter les fausses impressions. |
+| **09. Bourse & Finance** | `candlestick-chart`, `ohlc` | Vert pour la hausse, rouge pour la baisse. |
+| **10. Tableaux avec graphiques** | `table-sparklines`, `table-bar-in-cell` | Chiffres alignés à droite avec mini-barres de comparaison intégrées. |
 
 ---
 
-## 8 Thèmes Perceptuels & Sémantique de Valence Métier
+## 8 Thèmes de Couleurs Adaptés à Tous
 
-Les palettes sont étalonnées sur les espaces uniformes **CIELAB / CAM02** pour garantir des contrastes $\ge 4.5:1$ (WCAG AA) et $\ge 7:1$ (WCAG AAA) :
+Toutes les palettes ont été testées pour être confortables et lisibles par tout le monde, y compris les personnes daltoniennes :
 
-1. **`colorbrewer-accessible`** (Défaut clair) : Palette éditoriale et universelle, sécurité daltonisme totale (CVD Safe).
-2. **`viridis-perceptual`** : Luminance strictement monotone (lisible même imprimé en noir et blanc).
-3. **`paul-tol-scientific`** : Calibré pour la recherche, discrimination maximale entre courbes.
-4. **`tableau-stone-categorical`** : Palette corporate élégante aux teintes assourdies.
-5. **`okabe-ito-cud`** : Standard japonais Color Universal Design (recommandé pour les publications officielles).
-6. **`tufte-minimalist-executive`** : Noir, blanc et gris, une seule touche d'accentuation rouge (Data-Ink ratio maximal).
-7. **`nord-cognitive-dark`** : Thème sombre anti-asthénopie (repos visuel pour salles de contrôle 24/7).
-8. **`atkinson-hyperlegible`** : Conçu pour les personnes malvoyantes avec typographie à forte distinction de glyphes.
+1. **`colorbrewer-accessible`** (thème clair par défaut) : Palette équilibrée et facile à lire.
+2. **`viridis-perceptual`** : Reste parfaitement lisible même si vous imprimez en noir et blanc.
+3. **`paul-tol-scientific`** : Idéal quand vous avez plusieurs courbes à bien différencier.
+4. **`tableau-stone-categorical`** : Couleurs sobres et professionnelles pour rapports d'entreprise.
+5. **`okabe-ito-cud`** : Standard international pour les documents officiels.
+6. **`tufte-minimalist-executive`** : Noir, blanc et gris, avec une seule touche de rouge pour l'essentiel.
+7. **`nord-cognitive-dark`** : Thème sombre et doux pour ne pas fatiguer les yeux.
+8. **`atkinson-hyperlegible`** : Conçu pour les personnes malvoyantes avec de forts contrastes.
 
-### Polarité Métier Déterministe
-Ne supposez jamais qu'une hausse est toujours verte :
-- **`HIGHER_IS_BETTER`** (CA, Marge, Rétention) : Hausse = Vert, Baisse = Rouge.
-- **`LOWER_IS_BETTER`** (Churn, Pannes, Latence, Coûts) : Hausse = Rouge, Baisse = Vert.
-- **`TARGET_BASED`** (SLA, Consommation) : Conforme = Vert, Tolérance = Orange, Dépassement = Rouge.
-- **`NEUTRAL_CATEGORICAL`** (Pays, Départements) : Palette neutre sans connotation de performance.
+### Des Couleurs qui ont du Sens
+Le kit adapte automatiquement le vert et le rouge selon le sujet :
+- **Chiffre d'affaires ou marge** : une hausse est verte, une baisse est rouge.
+- **Pannes, temps d'attente ou coûts** : une hausse est rouge (mauvaise nouvelle), une baisse est verte (bonne nouvelle).
+- **Objectifs à tenir** : vert quand l'objectif est atteint, orange pour un léger retard, rouge en cas d'alerte.
 
 ---
 
-## Commandes & Outillage CLI
+## Commandes Utiles
 
 ```bash
-# 1. Compiler un graphique depuis une spécification vers un sous-dossier propre
+# 1. Créer un graphique à partir d'une configuration
 node .agents/skills/kit-charts/scripts/compile-chart.js dataviz-spec.json -o output/mon-graphique/index.html
 
-# 2. Auditer la conformité cognitive et l'accessibilité d'un livrable
-node .agents/skills/kit-charts/scripts/validate-chart.js output/mon-graphique/index.html --json
+# 2. Vérifier la lisibilité d'une page générée
+node .agents/skills/kit-charts/scripts/validate-chart.js output/mon-graphique/index.html
 
-# 3. Recompiler le bundle UMD universel (95 templates)
+# 3. Mettre à jour le fichier global (catalog-bundle.js)
 npm run build
 
-# 4. Lancer la suite complète de tests d'intégration E2E
+# 4. Lancer la série de tests
 npm test
 ```
 
@@ -144,72 +142,60 @@ npm test
 
 ```
 kit-charts/
-├── index.html                        # Galerie vitrine interactive (100% hors-ligne, zéro-CORS)
-├── catalog-bundle.js                 # Bundle UMD universel pré-compilé (95 templates)
-├── package.json                      # Scripts et métadonnées du package
+├── index.html                        # Galerie interactive pour voir tous les modèles
+├── catalog-bundle.js                 # Fichier complet qui regroupe les 95 modèles
+├── package.json                      # Commandes du projet
 ├── README.md                         # Ce guide
-├── LICENSE                           # Licence open-source MIT
+├── LICENSE                           # Licence libre MIT
 │
-├── template/                         # 95 templates standardisés en triplets (HTML/JSON/JS)
-│   ├── 00-kpi-card/                  # Cartes & Métriques synthétiques
-│   ├── 01-comparaison/               # Barres, colonnes, bullet charts, lollipop
-│   ├── 02-composition/               # Doughnut, waffle, treemap, stacked bar
-│   ├── 03-distribution/              # Boxplot, histogramme, ridgeline, violon
-│   ├── 04-correlation/               # Scatter, bulle, heatmap matricielle
-│   ├── 05-evolution-temporelle/      # Courbes, aires, step-line, multi-lignes
-│   ├── 06-flux-processus/            # Entonnoirs de conversion, waterfalls
-│   ├── 07-hierarchie-reseau/         # Sunburst, graphes de réseau, dendrogrammes
-│   ├── 08-geospatial-cartes/         # Cartes choroplèthes, cartes à bulles
-│   ├── 09-financiere-bourse/         # Candlesticks, OHLC, bandes de volatilité
-│   ├── 10-tableaux-matrices/         # Tableaux dataviz, sparklines intégrées
-│   ├── tooltip/                      # Laboratoire d'infobulles anti-occlusion
-│   └── animation/                    # Catalogue des 20 patterns cinématiques
+├── template/                         # Les 95 modèles rangés par dossiers
+│   ├── 00-kpi-card/                  # Cartes et indicateurs clés
+│   ├── 01-comparaison/               # Barres, colonnes, bullet charts
+│   ├── 02-composition/               # Parts de marché, camemberts, treemaps
+│   ├── 03-distribution/              # Histogrammes, boîtes à moustaches
+│   ├── 04-correlation/               # Nuages de points, bulles, heatmaps
+│   ├── 05-evolution-temporelle/      # Courbes et aires dans le temps
+│   ├── 06-flux-processus/            # Entonnoirs de vente, cascades
+│   ├── 07-hierarchie-reseau/         # Réseaux et arbres
+│   ├── 08-geospatial-cartes/         # Cartes et pays
+│   ├── 09-financiere-bourse/         # Graphiques boursiers et chandeliers
+│   ├── 10-tableaux-matrices/         # Tableaux avec mini-graphiques
+│   ├── tooltip/                      # Infobulles intelligentes
+│   └── animation/                    # 20 animations fluides
 │
-├── themes/                           # Système des 8 thèmes & tokens chromatiques
-│   ├── theme-tokens.js               # Moteur central de tokens, contrastes & plugins
-│   └── 01-colorbrewer-accessible/ ... # Dossiers individuels des thèmes
+├── themes/                           # Les 8 thèmes de couleurs
+│   └── theme-tokens.js               # Gestion des couleurs et contrastes
 │
-├── output/                           # Dossier de sortie isolé pour les graphiques générés
+├── output/                           # Dossier où sont enregistrés vos graphiques
 │
-└── .agents/                          # Intelligence & Orchestration Agentique
-    ├── agents/                       # Prompts et rôles (Architect, Builder, Reviewer)
-    ├── rules/                        # Garde-fous et règles cognitives non-négociables
-    └── skills/kit-charts/            # Skill Antigravity, registre et scripts CLI
+└── .agents/                          # Rôles et instructions pour les agents d'IA
+    ├── agents/                       # Instructions pour l'Architecte, le Constructeur et le Vérificateur
+    ├── rules/                        # Règles de bonne lisibilité
+    └── skills/kit-charts/            # Outils de génération et de vérification
 ```
 
 ---
 
 ## Contribuer & Signaler un Problème
 
-Les contributions et signalements sont les bienvenus pour faire grandir la bibliothèque :
+Les contributions sont les bienvenues :
 
-- **Proposer un nouveau template** : Ajouter un dossier de template standardisé en triplet (`template.html`, `schema.json`, `template.js`) respectant strictement les règles cognitives (ex: ligne de base $Y=0$, encodage par l'aire).
-- **Proposer un nouveau thème accessible** : Respectant les contrastes WCAG 2.2 AAA ($\ge 4.5:1$ et $\ge 7:1$) et la sécurité daltonisme (CVD Safe).
-- **Enrichir le linter cognitif** : Ajouter de nouvelles règles d'interception psychophysique dans `validate-chart.js`.
-- **Signaler une anomalie ou un bug** : Ouvrez une [Issue GitHub](https://github.com/LouisLv-pro/kit-charts/issues) en joignant votre spécification `dataviz-spec.json` et la description du comportement constaté.
+- **Ajouter un nouveau modèle** : Proposer un dossier modèle bien structuré (`template.html`, `schema.json`, `template.js`).
+- **Ajouter un thème de couleurs** : Proposer une palette lisible et contrastée.
+- **Signaler un problème** : Ouvrez une [Issue GitHub](https://github.com/LouisLv-pro/kit-charts/issues) en expliquant ce qui ne va pas.
 
-### Vérifications Requises avant Pull Request
-
-Toute contribution doit valider l'ensemble de la suite de tests et synchroniser le bundle universel :
+### Vérifications avant d'Envoyer une Modification
 
 ```bash
-# 1. Exécuter la suite complète de validation cognitive
+# 1. Vérifier que tous les tests passent
 npm test
 
-# 2. Recompiler le bundle UMD universel (95 templates)
+# 2. Mettre à jour le fichier global
 npm run build
-```
-
-La bannière haute résolution se régénère depuis sa source HTML :
-
-```bash
-/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu \
-  --window-size=1280,420 --force-device-scale-factor=2 \
-  --screenshot=docs/banner.png file://$(pwd)/docs/banniere.html
 ```
 
 ---
 
 ## Licence
 
-Distribué sous licence **MIT**. Libre d'utilisation pour vos projets personnels, professionnels et vos agents d'IA.
+Projet sous licence libre **MIT**. Vous pouvez l'utiliser librement pour vos projets personnels, professionnels ou vos agents d'IA.
