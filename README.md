@@ -1,4 +1,6 @@
-# 📊 kit-charts
+![kit-charts](docs/banniere.png)
+
+# kit-charts
 
 Un kit de datavisualisation **agent-native** et **cognitivement déterministe** pour [Antigravity](https://github.com), [Claude Code](https://claude.com/claude-code), Cursor ou n'importe quel agent d'IA : il élimine les hallucinations graphiques et garantit un respect absolu des **sciences cognitives** (Cleveland-McGill, Tufte, Sweller, Mayer) et de l'accessibilité **WCAG 2.2 AAA**.
 
