@@ -1,4 +1,6 @@
-![kit-charts](docs/banniere.png)
+<p align="center">
+  <img src="docs/banniere.png" width="100%" alt="kit-charts">
+</p>
 
 # kit-charts
 
