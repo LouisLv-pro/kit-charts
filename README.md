@@ -10,7 +10,7 @@ L'agent n'a **plus jamais à réinventer un graphique à partir de zéro** : il 
 
 ---
 
-## 🎯 Pourquoi ce kit ? La Philosophie du Déterminisme Visuel
+## Pourquoi ce kit ? La Philosophie du Déterminisme Visuel
 
 Lorsqu'un modèle d'IA tente de coder un graphique à partir d'une feuille blanche, il commet fréquemment des erreurs psychophysiques majeures :
 - **Troncature trompeuse des axes** (violation de la ligne de base $Y=0$, exagérant artificiellement des écarts minimes).
@@ -45,7 +45,7 @@ Lorsqu'un modèle d'IA tente de coder un graphique à partir d'une feuille blanc
 
 ---
 
-## 🚀 Démarrer en 3 Étapes
+## Démarrer en 3 Étapes
 
 ### 1. Cloner le Répertoire
 ```bash
@@ -70,7 +70,7 @@ L'agent sélectionne le template optimal (`bullet-chart`), applique les jetons d
 
 ---
 
-## 👥 Ce que font les Agents du Kit
+## Ce que font les Agents du Kit
 
 | Rôle Agent | Mission Principale | Livrable Produit |
 | :--- | :--- | :--- |
@@ -80,7 +80,7 @@ L'agent sélectionne le template optimal (`bullet-chart`), applique les jetons d
 
 ---
 
-## 📊 Les 10 Familles Analytiques (95 Templates Standardisés)
+## Les 10 Familles Analytiques (95 Templates Standardisés)
 
 Chaque template est structuré en **triplet standardisé** (`template.html`, `schema.json`, `template.js`) :
 
@@ -100,7 +100,7 @@ Chaque template est structuré en **triplet standardisé** (`template.html`, `sc
 
 ---
 
-## 🎨 8 Thèmes Perceptuels & Sémantique de Valence Métier
+## 8 Thèmes Perceptuels & Sémantique de Valence Métier
 
 Les palettes sont étalonnées sur les espaces uniformes **CIELAB / CAM02** pour garantir des contrastes $\ge 4.5:1$ (WCAG AA) et $\ge 7:1$ (WCAG AAA) :
 
@@ -122,7 +122,7 @@ Ne supposez jamais qu'une hausse est toujours verte :
 
 ---
 
-## 🛠️ Commandes & Outillage CLI
+## Commandes & Outillage CLI
 
 ```bash
 # 1. Compiler un graphique depuis une spécification vers un sous-dossier propre
@@ -140,7 +140,7 @@ npm test
 
 ---
 
-## 📁 Structure du Projet
+## Structure du Projet
 
 ```
 kit-charts/
@@ -179,7 +179,7 @@ kit-charts/
 
 ---
 
-## 🤝 Contribuer & Signaler un Problème
+## Contribuer & Signaler un Problème
 
 Les contributions et signalements sont les bienvenus pour faire grandir la bibliothèque :
 
@@ -188,7 +188,7 @@ Les contributions et signalements sont les bienvenus pour faire grandir la bibli
 - **Enrichir le linter cognitif** : Ajouter de nouvelles règles d'interception psychophysique dans `validate-chart.js`.
 - **Signaler une anomalie ou un bug** : Ouvrez une [Issue GitHub](https://github.com/LouisLv-pro/kit-charts/issues) en joignant votre spécification `dataviz-spec.json` et la description du comportement constaté.
 
-### 🧪 Vérifications Requises avant Pull Request
+### Vérifications Requises avant Pull Request
 
 Toute contribution doit valider l'ensemble de la suite de tests et synchroniser le bundle universel :
 
@@ -210,6 +210,6 @@ La bannière haute résolution se régénère depuis sa source HTML :
 
 ---
 
-## 📜 Licence
+## Licence
 
 Distribué sous licence **MIT**. Libre d'utilisation pour vos projets personnels, professionnels et vos agents d'IA.
