@@ -177,6 +177,37 @@ kit-charts/
 
 ---
 
+## 🤝 Contribuer & Signaler un Problème
+
+Les contributions et signalements sont les bienvenus pour faire grandir la bibliothèque :
+
+- **Proposer un nouveau template** : Ajouter un dossier de template standardisé en triplet (`template.html`, `schema.json`, `template.js`) respectant strictement les règles cognitives (ex: ligne de base $Y=0$, encodage par l'aire).
+- **Proposer un nouveau thème accessible** : Respectant les contrastes WCAG 2.2 AAA ($\ge 4.5:1$ et $\ge 7:1$) et la sécurité daltonisme (CVD Safe).
+- **Enrichir le linter cognitif** : Ajouter de nouvelles règles d'interception psychophysique dans `validate-chart.js`.
+- **Signaler une anomalie ou un bug** : Ouvrez une [Issue GitHub](https://github.com/LouisLv-pro/kit-charts/issues) en joignant votre spécification `dataviz-spec.json` et la description du comportement constaté.
+
+### 🧪 Vérifications Requises avant Pull Request
+
+Toute contribution doit valider l'ensemble de la suite de tests et synchroniser le bundle universel :
+
+```bash
+# 1. Exécuter la suite complète de validation cognitive
+npm test
+
+# 2. Recompiler le bundle UMD universel (95 templates)
+npm run build
+```
+
+La bannière haute résolution se régénère depuis sa source HTML :
+
+```bash
+/Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu \
+  --window-size=1280,420 --force-device-scale-factor=2 \
+  --screenshot=docs/banniere.png file://$(pwd)/docs/banniere.html
+```
+
+---
+
 ## 📜 Licence
 
 Distribué sous licence **MIT**. Libre d'utilisation pour vos projets personnels, professionnels et vos agents d'IA.
