@@ -45,6 +45,20 @@
   const computeEventSegmentation = (KitChartsTheme && KitChartsTheme.computeEventSegmentation) || (typeof window !== 'undefined' && window.computeEventSegmentation) || function() { return [0]; };
   const createNarrativeScenePlayer = (KitChartsTheme && KitChartsTheme.createNarrativeScenePlayer) || (typeof window !== 'undefined' && window.createNarrativeScenePlayer) || function() { return {}; };
   const animateWithAnticipation = (KitChartsTheme && KitChartsTheme.animateWithAnticipation) || (typeof window !== 'undefined' && window.animateWithAnticipation) || function(c, fn) { if (fn) fn(c); if (c && c.update) c.update(); return Promise.resolve(); };
+  const createAnimationTicker = (KitChartsTheme && KitChartsTheme.createAnimationTicker) || (typeof window !== 'undefined' && window.createAnimationTicker) || function(o) { return { stop: () => {} }; };
+  const animatePathDrawing = (KitChartsTheme && KitChartsTheme.animatePathDrawing) || (typeof window !== 'undefined' && window.animatePathDrawing) || function() { return { stop: () => {} }; };
+  const animateCountUp = (KitChartsTheme && KitChartsTheme.animateCountUp) || (typeof window !== 'undefined' && window.animateCountUp) || function() { return { stop: () => {} }; };
+  const animateFocusContext = (KitChartsTheme && KitChartsTheme.animateFocusContext) || (typeof window !== 'undefined' && window.animateFocusContext) || function() { return { stop: () => {} }; };
+  const animateBarChartRace = (KitChartsTheme && KitChartsTheme.animateBarChartRace) || (typeof window !== 'undefined' && window.animateBarChartRace) || function() { return {}; };
+  const animatePanCamera = (KitChartsTheme && KitChartsTheme.animatePanCamera) || (typeof window !== 'undefined' && window.animatePanCamera) || function() { return { stop: () => {} }; };
+  const animateCrossTypeMorph = (KitChartsTheme && KitChartsTheme.animateCrossTypeMorph) || (typeof window !== 'undefined' && window.animateCrossTypeMorph) || function() { return { stop: () => {} }; };
+  const animateAxisRescale = (KitChartsTheme && KitChartsTheme.animateAxisRescale) || (typeof window !== 'undefined' && window.animateAxisRescale) || function() { return { stop: () => {} }; };
+  const animateMotionTrails = (KitChartsTheme && KitChartsTheme.animateMotionTrails) || (typeof window !== 'undefined' && window.animateMotionTrails) || function() { return { stop: () => {} }; };
+  const animateSeriesBuildup = (KitChartsTheme && KitChartsTheme.animateSeriesBuildup) || (typeof window !== 'undefined' && window.animateSeriesBuildup) || function() { return { stop: () => {} }; };
+  const initScrollytelling = (KitChartsTheme && KitChartsTheme.initScrollytelling) || (typeof window !== 'undefined' && window.initScrollytelling) || function() { return { destroy: () => {} }; };
+  const animateCriticalDamping = (KitChartsTheme && KitChartsTheme.animateCriticalDamping) || (typeof window !== 'undefined' && window.animateCriticalDamping) || function() { return { stop: () => {} }; };
+  const kcDeltaFlashPlugin = (KitChartsTheme && KitChartsTheme.kcDeltaFlashPlugin) || (typeof window !== 'undefined' && window.kcDeltaFlashPlugin) || { id: 'kcDeltaFlash' };
+  const attachDeltaFlash = (KitChartsTheme && KitChartsTheme.attachDeltaFlash) || (typeof window !== 'undefined' && window.attachDeltaFlash) || function() { return { stop: () => {} }; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   /**
@@ -407,6 +421,20 @@
     computeEventSegmentation: computeEventSegmentation,
     createNarrativeScenePlayer: createNarrativeScenePlayer,
     animateWithAnticipation: animateWithAnticipation,
+    createAnimationTicker: createAnimationTicker,
+    animatePathDrawing: animatePathDrawing,
+    animateCountUp: animateCountUp,
+    animateFocusContext: animateFocusContext,
+    animateBarChartRace: animateBarChartRace,
+    animatePanCamera: animatePanCamera,
+    animateCrossTypeMorph: animateCrossTypeMorph,
+    animateAxisRescale: animateAxisRescale,
+    animateMotionTrails: animateMotionTrails,
+    animateSeriesBuildup: animateSeriesBuildup,
+    initScrollytelling: initScrollytelling,
+    animateCriticalDamping: animateCriticalDamping,
+    kcDeltaFlashPlugin: kcDeltaFlashPlugin,
+    attachDeltaFlash: attachDeltaFlash,
     getStaggerDelay: getStaggerDelay,
     getAnimationDuration: getAnimationDuration,
     DEFAULT_DATA: DEFAULT_DATA,

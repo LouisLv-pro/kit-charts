@@ -162,6 +162,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       categoryPercentage: 0.8,
       barPercentage: 0.85,
+      layout: {
+        padding: {
+          top: 16
+        }
+      },
       scales: {
         x: {
           grid: {
@@ -180,6 +185,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Strict psychophysical mandate for waterfall baseline
+          grace: '10%',
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

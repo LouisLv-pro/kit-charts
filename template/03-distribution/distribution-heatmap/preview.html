@@ -10,6 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Chart.js v4.4.7 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
   <!-- Theme Tokens & Template -->
   <script src="../../../themes/theme-tokens.js"></script>
   <script src="./template.js"></script>
@@ -323,8 +324,8 @@
       const activeThemeIndicator = document.getElementById('activeThemeIndicator');
       const dataLabelsToggleBtn = document.getElementById('dataLabelsToggleBtn');
       const tokensEngine = window.KitChartsTheme || (window.KitCharts && window.KitCharts.Theme) || {};
-      let currentTheme = 'colorbrewer-accessible';
-      let showDataLabels = true;
+      let currentTheme = (typeof tokensEngine.getStoredTheme === 'function') ? tokensEngine.getStoredTheme() : (new URLSearchParams(window.location.search).get('theme') || (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_theme')) || 'colorbrewer-accessible');
+      let showDataLabels = (typeof tokensEngine.getStoredLabels === 'function') ? tokensEngine.getStoredLabels() : (new URLSearchParams(window.location.search).get('labels') !== null ? new URLSearchParams(window.location.search).get('labels') === 'true' : (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_labels') !== null ? localStorage.getItem('kitcharts_labels') === 'true' : true));
 
       const THEME_NAMES = {
         'colorbrewer-accessible': 'ColorBrewer Accessible',
@@ -347,6 +348,11 @@
 
       function updateTheme(themeName) {
         currentTheme = themeName || 'colorbrewer-accessible';
+        if (typeof tokensEngine.setStoredTheme === 'function') {
+          tokensEngine.setStoredTheme(currentTheme);
+        } else if (typeof localStorage !== 'undefined') {
+          try { localStorage.setItem('kitcharts_theme', currentTheme); } catch (e) {}
+        }
         if (typeof tokensEngine.loadGoogleFonts === 'function') {
           tokensEngine.loadGoogleFonts(currentTheme);
         }
@@ -396,6 +402,11 @@
       if (dataLabelsToggleBtn) {
         dataLabelsToggleBtn.addEventListener('click', function() {
           showDataLabels = !showDataLabels;
+          if (typeof tokensEngine.setStoredLabels === 'function') {
+            tokensEngine.setStoredLabels(showDataLabels);
+          } else if (typeof localStorage !== 'undefined') {
+            try { localStorage.setItem('kitcharts_labels', String(showDataLabels)); } catch (e) {}
+          }
           dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
           dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
           dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
@@ -403,7 +414,12 @@
         });
       }
 
-      updateTheme('colorbrewer-accessible');
+      if (dataLabelsToggleBtn) {
+        dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
+        dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
+        dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
+      }
+      updateTheme(currentTheme);
     });
   </script>
 </body>

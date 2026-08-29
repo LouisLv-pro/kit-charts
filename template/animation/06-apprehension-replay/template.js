@@ -12,9 +12,14 @@
     var tokens = global.KitChartsTheme || (global.KitCharts && global.KitCharts.Theme) || {};
     var exp = factory(tokens);
     global.KitCharts = global.KitCharts || {};
+    global.KitCharts["anim-06-apprehension-replay"] = exp;
     global.KitCharts["anim-apprehension-replay"] = exp;
     global.createChart = exp.createChart;
     global.DEFAULT_DATA = exp.DEFAULT_DATA;
+    global.TOP4_DATA = exp.TOP4_DATA;
+    global.playTransition = exp.playTransition;
+    global.replayAnimation = exp.replayAnimation;
+    global.getAnimationDuration = exp.getAnimationDuration;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : this, function(KitChartsTheme) {
   "use strict";
@@ -24,54 +29,55 @@
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || function() { return "#2B8CBE"; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || function(c) { return c; };
   const getStaggerDelay = (KitChartsTheme && KitChartsTheme.getStaggerDelay) || function() { return 0; };
-  const kcPulsePlugin = (KitChartsTheme && KitChartsTheme.kcPulsePlugin) || { id: "kcPulse" };
+  const getAnimationDuration = (KitChartsTheme && KitChartsTheme.getAnimationDuration) || function(n) { return Math.min(800, Math.round(300 + 100 * Math.log2(Math.max(1, n)))); };
 
   const DEFAULT_DATA = {
-  "labels": [
-    "Recherche & Dév.",
-    "Ingénierie Logicielle",
-    "Production & Infra",
-    "Marketing Digital",
-    "Service Client",
-    "Ressources Humaines",
-    "Finance & Audit",
-    "Logistique"
-  ],
-  "datasets": [
-    {
-      "label": "Score d'Efficacité 2026",
-      "data": [
-        88,
-        94,
-        76,
-        82,
-        69,
-        85,
-        91,
-        78
-      ]
-    },
-    {
-      "label": "Benchmark 2025",
-      "data": [
-        80,
-        85,
-        72,
-        75,
-        70,
-        80,
-        86,
-        74
-      ],
-      "type": "line",
-      "borderDash": [
-        4,
-        4
-      ],
-      "borderWidth": 2
-    }
-  ]
-};
+    labels: [
+      "Recherche & Dév.",
+      "Ingénierie Logicielle",
+      "Production & Infra",
+      "Marketing Digital",
+      "Service Client",
+      "Ressources Humaines",
+      "Finance & Audit",
+      "Logistique"
+    ],
+    datasets: [
+      {
+        label: "Score d'Efficacité 2026",
+        data: [88, 94, 76, 82, 69, 85, 91, 78]
+      },
+      {
+        label: "Benchmark 2025",
+        data: [80, 85, 72, 75, 70, 80, 86, 74],
+        type: "line",
+        borderDash: [4, 4],
+        borderWidth: 2
+      }
+    ]
+  };
+
+  const TOP4_DATA = {
+    labels: [
+      "Ingénierie Logicielle",
+      "Finance & Audit",
+      "Recherche & Dév.",
+      "Ressources Humaines"
+    ],
+    datasets: [
+      {
+        label: "Score d'Efficacité 2026",
+        data: [94, 91, 88, 85]
+      },
+      {
+        label: "Benchmark 2025",
+        data: [85, 86, 80, 80],
+        type: "line",
+        borderDash: [4, 4],
+        borderWidth: 2
+      }
+    ]
+  };
 
   function createChart(canvas, customData = null, themeName = "colorbrewer-accessible", options = {}) {
     if (!canvas) return null;
@@ -97,7 +103,9 @@
       return copy;
     });
 
-    const dur = options.reducedMotion ? 0 : (options.duration !== undefined ? options.duration : 600);
+    const n = data.labels ? data.labels.length : 8;
+    const computedDur = getAnimationDuration(n);
+    const dur = options.reducedMotion ? 0 : (options.duration !== undefined ? options.duration : computedDur);
 
     const chartOptions = {
       ...baseOptions,
@@ -125,15 +133,29 @@
       return new Chart(canvas, {
         type: "bar",
         data: { labels: data.labels, datasets: datasets },
-        options: chartOptions,
-        plugins: [kcPulsePlugin]
+        options: chartOptions
       });
     }
     return null;
   }
 
+  function replayAnimation(chart, options = {}) {
+    if (!chart || !chart.data) return;
+    const n = chart.data.labels ? chart.data.labels.length : 8;
+    const dur = options.reducedMotion ? 0 : (options.duration !== undefined ? options.duration : getAnimationDuration(n));
+    if (chart.options && chart.options.animation) {
+      chart.options.animation.duration = dur;
+      chart.options.animation.easing = "easeOutCubic";
+    }
+    chart.update();
+  }
+
   return {
     createChart: createChart,
-    DEFAULT_DATA: DEFAULT_DATA
+    playTransition: replayAnimation,
+    replayAnimation: replayAnimation,
+    getAnimationDuration: getAnimationDuration,
+    DEFAULT_DATA: DEFAULT_DATA,
+    TOP4_DATA: TOP4_DATA
   };
 });

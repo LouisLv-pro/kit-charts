@@ -530,6 +530,7 @@
     DEFAULT_DATA,
     createTable,
     createChart,
+    renderTable: createTable,
     formatNumber,
     generateSparklineSVG
   };

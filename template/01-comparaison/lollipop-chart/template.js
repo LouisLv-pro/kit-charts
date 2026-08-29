@@ -194,7 +194,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       maxBarThickness: 4,
       headRadius: ds.headRadius || (isTufte ? 4 : 6),
       categoryPercentage: typeof ds.categoryPercentage === 'number' ? ds.categoryPercentage : 0.8,
-      barPercentage: typeof ds.barPercentage === 'number' ? ds.barPercentage : 0.9
+      barPercentage: typeof ds.barPercentage === 'number' ? ds.barPercentage : 0.9,
+      datalabels: false,
+      displayDataLabels: false
     };
   });
 
@@ -210,6 +212,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       ...defaultOpts,
       _kitChartsTokens: tokens,
       showDataLabels: showDataLabels,
+      layout: {
+        padding: {
+          top: 18
+        }
+      },
       animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
       interaction: {
         mode: 'index',
@@ -285,6 +292,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Règle psychophysique obligatoire
+          grace: '12%',
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

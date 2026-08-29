@@ -1,0 +1,17 @@
+{
+  "dataviz-quality-gate": {
+    "enabled": true,
+    "PostToolUse": [
+      {
+        "matcher": "write_to_file|replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node .agents/skills/kit-charts/scripts/validate-hook.js",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}

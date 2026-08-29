@@ -12,11 +12,13 @@
     var tokens = global.KitChartsTheme || (global.KitCharts && global.KitCharts.Theme) || {};
     var exp = factory(tokens);
     global.KitCharts = global.KitCharts || {};
+    global.KitCharts["anim-01-staged-transitions"] = exp;
     global.KitCharts["anim-staged-transitions"] = exp;
     global.createChart = exp.createChart;
     global.DEFAULT_DATA = exp.DEFAULT_DATA;
     global.ALT_DATA = exp.ALT_DATA;
     global.playTransition = exp.playTransition;
+    global.triggerStagedTransition = exp.triggerStagedTransition;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : this, function(KitChartsTheme) {
   "use strict";

@@ -1,0 +1,19 @@
+<div class="kit-charts-card kit-charts-kpi" id="{{CONTAINER_ID}}" data-template-id="kpi-sparkline" style="position: relative; width: 100%; min-height: {{HEIGHT}}px; background: var(--kc-bg-card, #FFFFFF); border: 1px solid var(--kc-border, #E2E8F0); border-radius: 12px; padding: 1.25rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
+  <div class="kit-charts-kpi-header">
+    <div class="kit-charts-kpi-title" style="font-size: 0.875rem; font-weight: 500; color: var(--kc-text-secondary, #64748B);">{{TITLE}}</div>
+    <div class="kit-charts-kpi-subtitle" style="font-size: 0.75rem; color: var(--kc-text-muted, #94A3B8); margin-top: 0.25rem;">{{SUBTITLE}}</div>
+  </div>
+  <div class="kit-charts-kpi-body" style="margin: 0.75rem 0; display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem;">
+    <div class="kit-charts-kpi-value-group" style="display: flex; align-items: baseline; gap: 0.35rem;">
+      <span class="kit-charts-kpi-value" style="font-size: 2rem; font-weight: 700; color: var(--kc-text-primary, #0F172A); font-variant-numeric: tabular-nums;">--</span>
+      <span class="kit-charts-kpi-unit" style="font-size: 1rem; font-weight: 500; color: var(--kc-text-secondary, #64748B);"></span>
+    </div>
+    <div class="kit-charts-kpi-badge" style="padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; font-variant-numeric: tabular-nums;">--</div>
+  </div>
+  <div class="kit-charts-kpi-chart-wrapper" style="position: relative; width: 100%; height: 60px;">
+    <canvas id="{{CANVAS_ID}}" role="img" aria-label="{{TITLE}}"></canvas>
+  </div>
+  <div class="kit-charts-kpi-footer" style="font-size: 0.6875rem; color: var(--kc-text-muted, #94A3B8); border-top: 1px solid var(--kc-border-subtle, #F1F5F9); padding-top: 0.5rem; margin-top: 0.5rem;">
+    {{FOOTNOTE}}
+  </div>
+</div>

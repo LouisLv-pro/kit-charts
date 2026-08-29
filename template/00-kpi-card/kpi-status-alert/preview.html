@@ -325,8 +325,8 @@
       const dataLabelsToggleBtn = document.getElementById('dataLabelsToggleBtn');
       const tokensEngine = window.KitChartsTheme || (window.KitCharts && window.KitCharts.Theme) || {};
       const cardModule = (window.KitCharts && window.KitCharts['kpi-status-alert']) || {};
-      let currentTheme = 'colorbrewer-accessible';
-      let showDataLabels = true;
+      let currentTheme = (typeof tokensEngine.getStoredTheme === 'function') ? tokensEngine.getStoredTheme() : (new URLSearchParams(window.location.search).get('theme') || (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_theme')) || 'colorbrewer-accessible');
+      let showDataLabels = (typeof tokensEngine.getStoredLabels === 'function') ? tokensEngine.getStoredLabels() : (new URLSearchParams(window.location.search).get('labels') !== null ? new URLSearchParams(window.location.search).get('labels') === 'true' : (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_labels') !== null ? localStorage.getItem('kitcharts_labels') === 'true' : true));
 
       const THEME_NAMES = {
         'colorbrewer-accessible': 'ColorBrewer Accessible',
@@ -430,6 +430,11 @@
       if (dataLabelsToggleBtn) {
         dataLabelsToggleBtn.addEventListener('click', function() {
           showDataLabels = !showDataLabels;
+          if (typeof tokensEngine.setStoredLabels === 'function') {
+            tokensEngine.setStoredLabels(showDataLabels);
+          } else if (typeof localStorage !== 'undefined') {
+            try { localStorage.setItem('kitcharts_labels', String(showDataLabels)); } catch (e) {}
+          }
           dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
           dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
           dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
@@ -437,7 +442,12 @@
         });
       }
 
-      updateTheme('colorbrewer-accessible');
+      if (dataLabelsToggleBtn) {
+        dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
+        dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
+        dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
+      }
+      updateTheme(currentTheme);
     });
   </script>
 </body>

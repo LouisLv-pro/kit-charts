@@ -55,10 +55,13 @@
       cumulativePcts.push(Math.round(pct * 10) / 10);
     });
 
+    const thresholdIndex80 = cumulativePcts.findIndex(p => p >= 80);
+
     return {
       labels: sortedLabels,
       values: sortedValues,
       cumulativePcts,
+      thresholdIndex80,
       total
     };
   }
@@ -293,16 +296,39 @@
       plugins: [pareto80LinePlugin]
     };
 
-    if (typeof Chart === 'undefined') return { config, pareto, gini, computeParetoCumsum, computeGini };
+    if (typeof Chart === 'undefined') return Object.assign(config, { pareto, gini, computeParetoCumsum, computeGini });
     return new Chart(canvas, config);
+  }
+
+  const getEmphasisStyle = (KitChartsTheme && KitChartsTheme.getEmphasisStyle) || function() { return {}; };
+  const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || function() { return '#2B8CBE'; };
+  const getThresholdStatus = (KitChartsTheme && KitChartsTheme.getThresholdStatus) || function() { return 'nominal'; };
+
+  function computeParetoCumulative(labels, values) {
+    const res = computeParetoCumsum(labels, values);
+    return {
+      sortedLabels: res.labels,
+      sortedValues: res.values,
+      cumulativePcts: res.cumulativePcts,
+      cumulativePercentages: res.cumulativePcts,
+      total: res.total,
+      thresholdIndex80: res.thresholdIndex80,
+      labels: res.labels,
+      values: res.values
+    };
   }
 
   return {
     createChart,
     DEFAULT_DATA,
     computeParetoCumsum,
+    computeParetoCumulative,
     computeGini,
+    computeGiniCoefficient: computeGini,
     getDataLabelOptions,
-    formatLabelValue
+    formatLabelValue,
+    getEmphasisStyle,
+    getValenceColor,
+    getThresholdStatus
   };
 });

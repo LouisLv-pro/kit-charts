@@ -148,6 +148,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     data: chartData,
     options: {
       ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      layout: {
+        padding: {
+          left: 48,
+          right: 54,
+          top: 16,
+          bottom: 16
+        }
+      },
       animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
       interaction: {
         mode: 'index',

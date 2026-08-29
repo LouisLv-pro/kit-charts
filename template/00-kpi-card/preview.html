@@ -12,7 +12,13 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <!-- Theme Tokens & Template -->
   <script src="../../themes/theme-tokens.js"></script>
-  <script src="./template.js"></script>
+  <script src="./kpi-standard/template.js"></script>
+  <script src="./kpi-sparkline/template.js"></script>
+  <script src="./kpi-bullet/template.js"></script>
+  <script src="./kpi-comparative/template.js"></script>
+  <script src="./kpi-distribution/template.js"></script>
+  <script src="./kpi-status-alert/template.js"></script>
+  <script src="./kpi-composite/template.js"></script>
   <style>
     * {
       box-sizing: border-box;
@@ -328,8 +334,8 @@
       const activeThemeIndicator = document.getElementById('activeThemeIndicator');
       const dataLabelsToggleBtn = document.getElementById('dataLabelsToggleBtn');
       const tokensEngine = window.KitChartsTheme || (window.KitCharts && window.KitCharts.Theme) || {};
-      let currentTheme = 'colorbrewer-accessible';
-      let showDataLabels = true;
+      let currentTheme = (typeof tokensEngine.getStoredTheme === 'function') ? tokensEngine.getStoredTheme() : (new URLSearchParams(window.location.search).get('theme') || (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_theme')) || 'colorbrewer-accessible');
+      let showDataLabels = (typeof tokensEngine.getStoredLabels === 'function') ? tokensEngine.getStoredLabels() : (new URLSearchParams(window.location.search).get('labels') !== null ? new URLSearchParams(window.location.search).get('labels') === 'true' : (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_labels') !== null ? localStorage.getItem('kitcharts_labels') === 'true' : true));
 
       const THEME_NAMES = {
         'colorbrewer-accessible': 'ColorBrewer Accessible',
@@ -483,6 +489,11 @@
       if (dataLabelsToggleBtn) {
         dataLabelsToggleBtn.addEventListener('click', function() {
           showDataLabels = !showDataLabels;
+          if (typeof tokensEngine.setStoredLabels === 'function') {
+            tokensEngine.setStoredLabels(showDataLabels);
+          } else if (typeof localStorage !== 'undefined') {
+            try { localStorage.setItem('kitcharts_labels', String(showDataLabels)); } catch (e) {}
+          }
           dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
           dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
           dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
@@ -490,7 +501,12 @@
         });
       }
 
-      updateTheme('colorbrewer-accessible');
+      if (dataLabelsToggleBtn) {
+        dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
+        dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
+        dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
+      }
+      updateTheme(currentTheme);
     });
   </script>
 </body>

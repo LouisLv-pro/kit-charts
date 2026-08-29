@@ -151,9 +151,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       categoryPercentage: 0.8,
       barPercentage: 0.85,
+      layout: {
+        padding: {
+          right: 28
+        }
+      },
       scales: {
         x: {
           beginAtZero: true, // Strict length-encoding origin rule on X axis
+          grace: '15%',
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

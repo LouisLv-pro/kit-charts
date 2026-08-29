@@ -88,20 +88,27 @@
   /**
    * Calcule la bande de confiance à 95% pour la moyenne prédite.
    */
-  function computeConfidenceBand(points, reg, gridPoints = 30) {
+  function computeConfidenceBand(points, regOrGrid, gridPoints = 30) {
+    const reg = (typeof regOrGrid === 'object' && regOrGrid !== null && regOrGrid.slope !== undefined)
+      ? regOrGrid
+      : computeLinearRegression(points);
+    const numPoints = (typeof regOrGrid === 'number') ? regOrGrid : gridPoints;
+
     const clean = points.filter(p => p && !isNaN(p.x));
-    if (clean.length < 3 || reg.n < 3) return { line: [], upper: [], lower: [] };
+    if (clean.length < 2 || reg.n < 2) {
+      return { line: [], upper: [], lower: [], trendPoints: [], ciUpperPoints: [], ciLowerPoints: [] };
+    }
 
     const xMin = Math.min(...clean.map(p => p.x));
     const xMax = Math.max(...clean.map(p => p.x));
-    const step = (xMax - xMin) / (gridPoints - 1);
+    const step = numPoints > 1 ? (xMax - xMin) / (numPoints - 1) : 0;
 
     const tCrit = 1.96; // Approximation asymptotique normale
     const line = [];
     const upper = [];
     const lower = [];
 
-    for (let i = 0; i < gridPoints; i++) {
+    for (let i = 0; i < numPoints; i++) {
       const x = xMin + i * step;
       const yHat = reg.intercept + reg.slope * x;
       const seFit = reg.se * Math.sqrt((1 / reg.n) + (Math.pow(x - reg.xMean, 2) / (reg.ssx || 1)));
@@ -112,7 +119,18 @@
       lower.push({ x: Math.round(x * 10) / 10, y: Math.round((yHat - margin) * 10) / 10 });
     }
 
-    return { line, upper, lower };
+    return {
+      line,
+      upper,
+      lower,
+      trendPoints: line,
+      ciUpperPoints: upper,
+      ciLowerPoints: lower
+    };
+  }
+
+  function computeConfidenceInterval95(points, gridPoints = 30) {
+    return computeConfidenceBand(points, gridPoints);
   }
 
   const DEFAULT_DATA = {
@@ -266,15 +284,25 @@
       }
     };
 
-    if (typeof Chart === 'undefined') return { config, reg, bands, computeLinearRegression, computeConfidenceBand, computePearsonR };
+    if (typeof Chart === 'undefined') return Object.assign(config, { reg, bands, computeLinearRegression, computeConfidenceBand, computePearsonR });
     return new Chart(canvas, config);
   }
+
+  const getEmphasisStyle = (KitChartsTheme && KitChartsTheme.getEmphasisStyle) || function() { return {}; };
+  const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || function() { return '#2B8CBE'; };
+  const getThresholdStatus = (KitChartsTheme && KitChartsTheme.getThresholdStatus) || function() { return 'nominal'; };
 
   return {
     createChart,
     DEFAULT_DATA,
     computeLinearRegression,
+    computeLinearRegressionOLS: computeLinearRegression,
     computeConfidenceBand,
-    computePearsonR
+    computeConfidenceInterval95: computeConfidenceBand,
+    computePearsonR,
+    computeR2: (pts) => computeLinearRegression(pts).r2,
+    getEmphasisStyle,
+    getValenceColor,
+    getThresholdStatus
   };
 });

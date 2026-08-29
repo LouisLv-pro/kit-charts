@@ -27,3 +27,36 @@ $$\Delta = \text{Réalisé} - \text{Cible}, \quad \Delta\% = \frac{\text{Réalis
 1. **Marqueur de cible proéminent** : Trait perpendiculaire de 3px débordant légèrement de la barre.
 2. **Annotation numérique directe** : Delta en pourcentage affiché en chiffres tabulaires (`fontMono`).
 3. **Double encodage de valence** : Couleur de statut + libellé chiffré explicite avec signe.
+
+---
+
+## 4. Quand l'utiliser / Quand NE PAS l'utiliser
+
+### ✅ Quand l'utiliser
+- Suivi de budgets, KPI commerciaux avec objectifs fixes, indicateurs de performance annuelle.
+
+### ❌ Quand NE PAS l'utiliser
+- Comparaison sans cible explicite prédéfinie.
+- Séries temporelles longues avec tendance continue.
+
+---
+
+## 5. Intégration Tokens
+- Barres tracées avec `tokens.palette[0]`.
+- Marqueur d'objectif superposé avec `tokens.textPrimary`.
+- Valeurs de delta en `tokens.fontMono`.
+
+---
+
+## 6. Données de Démonstration Déterministes
+- 6 pays européens avec montants réalisés et objectifs budgétaires.
+
+---
+
+## 7. Psychophysique de l'Interaction
+- Infobulle informative indiquant le réalisé, la cible et l'écart absolu/relatif.
+
+---
+
+## 8. Règles Cognitives d'Accentuation & Valence
+- Valence tricolore sémantique selon l'atteinte d'objectif (succès, vigilance, critique).

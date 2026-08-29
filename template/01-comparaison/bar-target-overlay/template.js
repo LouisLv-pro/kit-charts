@@ -129,7 +129,9 @@
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
             const sign = item.deltaPct >= 0 ? '+' : '';
-            ctx.fillText(`${item.actual} k€ (${sign}${item.deltaPct}%)`, Math.max(xActual, xTarget) + 8, yCenter);
+            const labelStr = `${item.actual.toLocaleString('fr-FR')} k€ (${sign}${item.deltaPct}%)`;
+            const xPos = Math.max(xActual, xTarget) + 8;
+            ctx.fillText(labelStr, xPos, yCenter);
           }
         });
 
@@ -160,9 +162,8 @@
             }),
             borderWidth: 1.5,
             borderRadius: 4,
-            datalabels: {
-              display: false // Drawn in targetOverlayPlugin with complete context (value + delta)
-            }
+            datalabels: false,
+            displayDataLabels: false
           }
         ]
       },
@@ -171,6 +172,11 @@
         indexAxis: 'y',
         _kitChartsTokens: tokens,
         showDataLabels: showDataLabels,
+        layout: {
+          padding: {
+            right: 32
+          }
+        },
         animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
         interaction: {
           mode: 'index',
@@ -203,7 +209,7 @@
           x: {
             ...defaultOpts.scales.x,
             beginAtZero: true,
-            grace: '14%',
+            grace: '25%',
             grid: { color: tokens.gridColor },
             title: {
               display: true,
@@ -221,15 +227,33 @@
       plugins: [targetOverlayPlugin]
     };
 
-    if (typeof Chart === 'undefined') return { config, analysis, computeVarianceDeltas };
+    if (typeof Chart === 'undefined') return Object.assign(config, { analysis, computeVarianceDeltas });
     return new Chart(canvas, config);
   }
+
+  function computeTargetDeltas(actuals, targets, direction = 'gain') {
+    const list = computeVarianceDeltas(actuals, targets);
+    return {
+      deltasAbs: list.map(item => item.delta),
+      deltasRel: list.map(item => item.deltaPct),
+      statuses: list.map(item => item.status),
+      items: list
+    };
+  }
+
+  const getEmphasisStyle = (KitChartsTheme && KitChartsTheme.getEmphasisStyle) || function() { return {}; };
+  const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || function() { return '#2B8CBE'; };
+  const getThresholdStatus = (KitChartsTheme && KitChartsTheme.getThresholdStatus) || function() { return 'nominal'; };
 
   return {
     createChart,
     DEFAULT_DATA,
     computeVarianceDeltas,
+    computeTargetDeltas,
     getDataLabelOptions,
-    formatLabelValue
+    formatLabelValue,
+    getEmphasisStyle,
+    getValenceColor,
+    getThresholdStatus
   };
 });

@@ -1,0 +1,2513 @@
+{
+  "version": "1.0.0",
+  "totalTemplates": 95,
+  "generatedAt": "2026-08-29T16:16:50.193Z",
+  "templates": [
+    {
+      "id": "kpi-bullet",
+      "family": "00-kpi-card",
+      "name": "KPI Card Micro-Bullet — Performance vs Cible",
+      "description": "Micro-bullet linéaire de Stephen Few comparant instantanément le réalisé à l objectif et aux plages qualitatives.",
+      "dataRequirements": {
+        "labelsType": "none",
+        "minCategories": 1,
+        "maxCategories": 1,
+        "seriesCount": 3
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "10-count-up"
+        ]
+      },
+      "paths": {
+        "html": "template/00-kpi-card/kpi-bullet/template.html",
+        "schema": "template/00-kpi-card/kpi-bullet/schema.json",
+        "js": "template/00-kpi-card/kpi-bullet/template.js",
+        "preview": "template/00-kpi-card/kpi-bullet/preview.html"
+      }
+    },
+    {
+      "id": "kpi-comparative",
+      "family": "00-kpi-card",
+      "name": "KPI Card Comparative — Multi-Période",
+      "description": "Triangulation décisionnelle côte-à-côte entre Réalisé N, Historique N-1 et Budget prévisionnel pour éliminer les biais d ancrage.",
+      "dataRequirements": {
+        "labelsType": "none",
+        "minCategories": 1,
+        "maxCategories": 1,
+        "seriesCount": 3
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "10-count-up",
+          "20-delta-flash"
+        ]
+      },
+      "paths": {
+        "html": "template/00-kpi-card/kpi-comparative/template.html",
+        "schema": "template/00-kpi-card/kpi-comparative/schema.json",
+        "js": "template/00-kpi-card/kpi-comparative/template.js",
+        "preview": "template/00-kpi-card/kpi-comparative/preview.html"
+      }
+    },
+    {
+      "id": "kpi-composite",
+      "family": "00-kpi-card",
+      "name": "KPI Card Composite — Équation d Affaires",
+      "description": "Indicateur clé global relié directement à ses 3 leviers causaux décomposés selon la méthode DuPont.",
+      "dataRequirements": {
+        "labelsType": "none",
+        "minCategories": 3,
+        "maxCategories": 5,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "10-count-up"
+        ]
+      },
+      "paths": {
+        "html": "template/00-kpi-card/kpi-composite/template.html",
+        "schema": "template/00-kpi-card/kpi-composite/schema.json",
+        "js": "template/00-kpi-card/kpi-composite/template.js",
+        "preview": "template/00-kpi-card/kpi-composite/preview.html"
+      }
+    },
+    {
+      "id": "kpi-distribution",
+      "family": "00-kpi-card",
+      "name": "KPI Card Décomposition — Micro-Distribution",
+      "description": "Agrégat macro consolidé complété d une barre de décomposition normalisée 100% avec légendes contiguës directes.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 5,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "10-count-up"
+        ]
+      },
+      "paths": {
+        "html": "template/00-kpi-card/kpi-distribution/template.html",
+        "schema": "template/00-kpi-card/kpi-distribution/schema.json",
+        "js": "template/00-kpi-card/kpi-distribution/template.js",
+        "preview": "template/00-kpi-card/kpi-distribution/preview.html"
+      }
+    },
+    {
+      "id": "kpi-sparkline",
+      "family": "00-kpi-card",
+      "name": "KPI Card Sparkline — Micro-Tendance",
+      "description": "Métrique Hero associée à une micro-courbe continue de Tufte haute densité sans axes parasites pour apprécier la trajectoire historique.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 5,
+        "maxCategories": 30,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "10-count-up"
+        ]
+      },
+      "paths": {
+        "html": "template/00-kpi-card/kpi-sparkline/template.html",
+        "schema": "template/00-kpi-card/kpi-sparkline/schema.json",
+        "js": "template/00-kpi-card/kpi-sparkline/template.js",
+        "preview": "template/00-kpi-card/kpi-sparkline/preview.html"
+      }
+    },
+    {
+      "id": "kpi-standard",
+      "family": "00-kpi-card",
+      "name": "KPI Card Standard — Synthèse Exécutive",
+      "description": "Métrique Hero dominante (32px), badge de variation contextuelle avec double encodage sémantique et micro-anneau de progression.",
+      "dataRequirements": {
+        "labelsType": "none",
+        "minCategories": 1,
+        "maxCategories": 1,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "10-count-up",
+          "20-delta-flash"
+        ]
+      },
+      "paths": {
+        "html": "template/00-kpi-card/kpi-standard/template.html",
+        "schema": "template/00-kpi-card/kpi-standard/schema.json",
+        "js": "template/00-kpi-card/kpi-standard/template.js",
+        "preview": "template/00-kpi-card/kpi-standard/preview.html"
+      }
+    },
+    {
+      "id": "kpi-status-alert",
+      "family": "00-kpi-card",
+      "name": "KPI Card Statut & Seuil d Alerte RAG",
+      "description": "Supervision d infrastructure et de SLA avec jauge multi-seuils RAG et signalétique universelle doublement encodée.",
+      "dataRequirements": {
+        "labelsType": "none",
+        "minCategories": 1,
+        "maxCategories": 1,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "03-preattentive-pulse",
+          "20-delta-flash"
+        ]
+      },
+      "paths": {
+        "html": "template/00-kpi-card/kpi-status-alert/template.html",
+        "schema": "template/00-kpi-card/kpi-status-alert/schema.json",
+        "js": "template/00-kpi-card/kpi-status-alert/template.js",
+        "preview": "template/00-kpi-card/kpi-status-alert/preview.html"
+      }
+    },
+    {
+      "id": "bar-chart-horizontal",
+      "family": "01-comparaison",
+      "name": "Diagramme en Barres Horizontales (Bar Chart)",
+      "description": "Classement ordonné et comparaison pour libellés longs ou cardinalité élevée (N ≤ 25) avec axe X = 0 absolu.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 25,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger",
+          "12-bar-chart-race"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/bar-chart-horizontal/template.html",
+        "schema": "template/01-comparaison/bar-chart-horizontal/schema.json",
+        "js": "template/01-comparaison/bar-chart-horizontal/template.js",
+        "preview": "template/01-comparaison/bar-chart-horizontal/preview.html"
+      }
+    },
+    {
+      "id": "bar-chart-vertical",
+      "family": "01-comparaison",
+      "name": "Diagramme en Barres Verticales (Column Chart)",
+      "description": "Comparaison de valeurs discrètes avec labels courts (N ≤ 7). Ligne de base Y = 0 obligatoire et espacements Gestalt.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 7,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/bar-chart-vertical/template.html",
+        "schema": "template/01-comparaison/bar-chart-vertical/schema.json",
+        "js": "template/01-comparaison/bar-chart-vertical/template.js",
+        "preview": "template/01-comparaison/bar-chart-vertical/preview.html"
+      }
+    },
+    {
+      "id": "bar-target-overlay",
+      "family": "01-comparaison",
+      "name": "Barres avec Marqueur de Cible & Deltas de Variance",
+      "description": "Barres horizontales complétées d un repère de cible et de pastilles de variance absolue/relative automatiques.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 12,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "20-delta-flash"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/bar-target-overlay/template.html",
+        "schema": "template/01-comparaison/bar-target-overlay/schema.json",
+        "js": "template/01-comparaison/bar-target-overlay/template.js",
+        "preview": "template/01-comparaison/bar-target-overlay/preview.html"
+      }
+    },
+    {
+      "id": "bullet-chart",
+      "family": "01-comparaison",
+      "name": "Graphique à Puces (Bullet Chart Stephen Few)",
+      "description": "Comparaison ultra-compacte Réalisé vs Cible et bandes de performance qualitatives en niveaux de gris.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 10,
+        "seriesCount": 3
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "10-count-up"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/bullet-chart/template.html",
+        "schema": "template/01-comparaison/bullet-chart/schema.json",
+        "js": "template/01-comparaison/bullet-chart/template.js",
+        "preview": "template/01-comparaison/bullet-chart/preview.html"
+      }
+    },
+    {
+      "id": "dumbbell-chart",
+      "family": "01-comparaison",
+      "name": "Graphique en Haltères (Dumbbell Chart)",
+      "description": "Visualisation de l écart binaire ou delta avant/après pour chaque entité le long d une ligne commune.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 15,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/dumbbell-chart/template.html",
+        "schema": "template/01-comparaison/dumbbell-chart/schema.json",
+        "js": "template/01-comparaison/dumbbell-chart/template.js",
+        "preview": "template/01-comparaison/dumbbell-chart/preview.html"
+      }
+    },
+    {
+      "id": "grouped-bar-chart",
+      "family": "01-comparaison",
+      "name": "Barres Groupées Multi-Séries",
+      "description": "Comparaison de sous-groupes par catégorie nominale (max 4 barres par groupe) avec espacement intra-groupe resserré.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 6,
+        "seriesCount": 4
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/grouped-bar-chart/template.html",
+        "schema": "template/01-comparaison/grouped-bar-chart/schema.json",
+        "js": "template/01-comparaison/grouped-bar-chart/template.js",
+        "preview": "template/01-comparaison/grouped-bar-chart/preview.html"
+      }
+    },
+    {
+      "id": "lollipop-chart",
+      "family": "01-comparaison",
+      "name": "Graphique Sucette (Lollipop Chart)",
+      "description": "Classement visuel élégant à haut ratio Data-Ink remplaçant les barres épaisses pour comparaisons denses (10 à 30 items).",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 5,
+        "maxCategories": 30,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/lollipop-chart/template.html",
+        "schema": "template/01-comparaison/lollipop-chart/schema.json",
+        "js": "template/01-comparaison/lollipop-chart/template.js",
+        "preview": "template/01-comparaison/lollipop-chart/preview.html"
+      }
+    },
+    {
+      "id": "polar-area-chart",
+      "family": "01-comparaison",
+      "name": "Diagramme en Aire Polaire (Rose de Nightingale)",
+      "description": "Encodage par surface de secteurs angulaires égaux pour données cycliques saisonnières.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 8,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/polar-area-chart/template.html",
+        "schema": "template/01-comparaison/polar-area-chart/schema.json",
+        "js": "template/01-comparaison/polar-area-chart/template.js",
+        "preview": "template/01-comparaison/polar-area-chart/preview.html"
+      }
+    },
+    {
+      "id": "radar-chart",
+      "family": "01-comparaison",
+      "name": "Graphique Radar (Spider Chart)",
+      "description": "Profil multidimensionnel synthétique pour comparer au maximum 2 entités sur 3 à 8 axes.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 8,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/radar-chart/template.html",
+        "schema": "template/01-comparaison/radar-chart/schema.json",
+        "js": "template/01-comparaison/radar-chart/template.js",
+        "preview": "template/01-comparaison/radar-chart/preview.html"
+      }
+    },
+    {
+      "id": "slope-chart",
+      "family": "01-comparaison",
+      "name": "Graphique de Pente (Slope Chart)",
+      "description": "Comparaison d évolution et changement de rang entre exactement deux dates fixes sans encombrement.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 10,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "09-path-drawing"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/slope-chart/template.html",
+        "schema": "template/01-comparaison/slope-chart/schema.json",
+        "js": "template/01-comparaison/slope-chart/template.js",
+        "preview": "template/01-comparaison/slope-chart/preview.html"
+      }
+    },
+    {
+      "id": "stacked-bar-chart",
+      "family": "01-comparaison",
+      "name": "Barres Empilées Absolues",
+      "description": "Cumul et décomposition additive par catégorie. Le segment de base est prioritaire pour la précision de lecture.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 8,
+        "seriesCount": 5
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/01-comparaison/stacked-bar-chart/template.html",
+        "schema": "template/01-comparaison/stacked-bar-chart/schema.json",
+        "js": "template/01-comparaison/stacked-bar-chart/template.js",
+        "preview": "template/01-comparaison/stacked-bar-chart/preview.html"
+      }
+    },
+    {
+      "id": "doughnut-chart",
+      "family": "02-composition-part-to-whole",
+      "name": "Diagramme en Anneau (Doughnut Chart)",
+      "description": "Composition en 2 à 4 parts avec KPI central proéminent en typographie tabulaire.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 4,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "10-count-up"
+        ]
+      },
+      "paths": {
+        "html": "template/02-composition-part-to-whole/doughnut-chart/template.html",
+        "schema": "template/02-composition-part-to-whole/doughnut-chart/schema.json",
+        "js": "template/02-composition-part-to-whole/doughnut-chart/template.js",
+        "preview": "template/02-composition-part-to-whole/doughnut-chart/preview.html"
+      }
+    },
+    {
+      "id": "pareto-chart",
+      "family": "02-composition-part-to-whole",
+      "name": "Diagramme de Pareto (Loi 80/20 & Gini)",
+      "description": "Barres d effectifs triées par ordre décroissant combinées à la courbe de pourcentage cumulé à 80%.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 15,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "09-path-drawing"
+        ]
+      },
+      "paths": {
+        "html": "template/02-composition-part-to-whole/pareto-chart/template.html",
+        "schema": "template/02-composition-part-to-whole/pareto-chart/schema.json",
+        "js": "template/02-composition-part-to-whole/pareto-chart/template.js",
+        "preview": "template/02-composition-part-to-whole/pareto-chart/preview.html"
+      }
+    },
+    {
+      "id": "pie-chart",
+      "family": "02-composition-part-to-whole",
+      "name": "Diagramme Circulaire (Camembert)",
+      "description": "Décomposition d un tout en 2 à 3 tranches maximum à fort contraste. Tri décroissant horaire obligatoire.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 3,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "14-cross-type-morph"
+        ]
+      },
+      "paths": {
+        "html": "template/02-composition-part-to-whole/pie-chart/template.html",
+        "schema": "template/02-composition-part-to-whole/pie-chart/schema.json",
+        "js": "template/02-composition-part-to-whole/pie-chart/template.js",
+        "preview": "template/02-composition-part-to-whole/pie-chart/preview.html"
+      }
+    },
+    {
+      "id": "stacked-bar-100",
+      "family": "02-composition-part-to-whole",
+      "name": "Barres Empilées Normalisées à 100%",
+      "description": "Comparaison des proportions relatives entre plusieurs groupes ou entités temporelles.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 10,
+        "seriesCount": 5
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/02-composition-part-to-whole/stacked-bar-100/template.html",
+        "schema": "template/02-composition-part-to-whole/stacked-bar-100/schema.json",
+        "js": "template/02-composition-part-to-whole/stacked-bar-100/template.js",
+        "preview": "template/02-composition-part-to-whole/stacked-bar-100/preview.html"
+      }
+    },
+    {
+      "id": "stacked-total-line",
+      "family": "02-composition-part-to-whole",
+      "name": "Barres Empilées avec Ligne de Total Consolidé",
+      "description": "Décomposition empilée combinée à une courbe maîtresse de la trajectoire globale macro.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 12,
+        "seriesCount": 4
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "09-path-drawing"
+        ]
+      },
+      "paths": {
+        "html": "template/02-composition-part-to-whole/stacked-total-line/template.html",
+        "schema": "template/02-composition-part-to-whole/stacked-total-line/schema.json",
+        "js": "template/02-composition-part-to-whole/stacked-total-line/template.js",
+        "preview": "template/02-composition-part-to-whole/stacked-total-line/preview.html"
+      }
+    },
+    {
+      "id": "sunburst",
+      "family": "02-composition-part-to-whole",
+      "name": "Diagramme Rayonnement Solaire (Sunburst)",
+      "description": "Arborescence multiniveaux concentrique radialement ordonnée du centre vers la périphérie.",
+      "dataRequirements": {
+        "labelsType": "hierarchical",
+        "minCategories": 4,
+        "maxCategories": 30,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "04-continuous-zoom",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/02-composition-part-to-whole/sunburst/template.html",
+        "schema": "template/02-composition-part-to-whole/sunburst/schema.json",
+        "js": "template/02-composition-part-to-whole/sunburst/template.js",
+        "preview": "template/02-composition-part-to-whole/sunburst/preview.html"
+      }
+    },
+    {
+      "id": "treemap",
+      "family": "02-composition-part-to-whole",
+      "name": "Treemap (Carte Proportionnelle Squarifiée)",
+      "description": "Partition hiérarchique par rectangles proportionnels pour grands volumes de catégories (10 à 50+).",
+      "dataRequirements": {
+        "labelsType": "hierarchical",
+        "minCategories": 4,
+        "maxCategories": 50,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "04-continuous-zoom",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/02-composition-part-to-whole/treemap/template.html",
+        "schema": "template/02-composition-part-to-whole/treemap/schema.json",
+        "js": "template/02-composition-part-to-whole/treemap/template.js",
+        "preview": "template/02-composition-part-to-whole/treemap/preview.html"
+      }
+    },
+    {
+      "id": "waffle-chart",
+      "family": "02-composition-part-to-whole",
+      "name": "Grille Gaufre Isotype 100%",
+      "description": "Représentation discrète en 100 cellules unitaires (1 cellule = 1%) pour éliminer les biais d estimation d angle.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 5,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "05-mot-stagger",
+          "10-count-up"
+        ]
+      },
+      "paths": {
+        "html": "template/02-composition-part-to-whole/waffle-chart/template.html",
+        "schema": "template/02-composition-part-to-whole/waffle-chart/schema.json",
+        "js": "template/02-composition-part-to-whole/waffle-chart/template.js",
+        "preview": "template/02-composition-part-to-whole/waffle-chart/preview.html"
+      }
+    },
+    {
+      "id": "beeswarm-plot",
+      "family": "03-distribution",
+      "name": "Beeswarm Plot (Essaim de Points sans Collision)",
+      "description": "Distribution de points individuels empilés de manière compacte sans aucun chevauchement.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 6,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "05-mot-stagger",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/beeswarm-plot/template.html",
+        "schema": "template/03-distribution/beeswarm-plot/schema.json",
+        "js": "template/03-distribution/beeswarm-plot/template.js",
+        "preview": "template/03-distribution/beeswarm-plot/preview.html"
+      }
+    },
+    {
+      "id": "box-plot",
+      "family": "03-distribution",
+      "name": "Boîte à Moustaches de Tukey (Box Plot)",
+      "description": "Synthèse non paramétrique de dispersion (médiane, IQR, moustaches 1.5×IQR, outliers).",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 15,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/box-plot/template.html",
+        "schema": "template/03-distribution/box-plot/schema.json",
+        "js": "template/03-distribution/box-plot/template.js",
+        "preview": "template/03-distribution/box-plot/preview.html"
+      }
+    },
+    {
+      "id": "box-strip-plot",
+      "family": "03-distribution",
+      "name": "Box Plot avec Semis de Points (Strip/Jitter)",
+      "description": "Synthèse de Tukey superposée aux observations individuelles réelles avec jitter contrôlé.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 8,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/box-strip-plot/template.html",
+        "schema": "template/03-distribution/box-strip-plot/schema.json",
+        "js": "template/03-distribution/box-strip-plot/template.js",
+        "preview": "template/03-distribution/box-strip-plot/preview.html"
+      }
+    },
+    {
+      "id": "density-plot",
+      "family": "03-distribution",
+      "name": "Courbe de Densité Continue (KDE de Silverman)",
+      "description": "Estimation par noyau gaussien de la densité de probabilité continue d une variable.",
+      "dataRequirements": {
+        "labelsType": "continuous",
+        "minCategories": 30,
+        "maxCategories": 100,
+        "seriesCount": 3
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/density-plot/template.html",
+        "schema": "template/03-distribution/density-plot/schema.json",
+        "js": "template/03-distribution/density-plot/template.js",
+        "preview": "template/03-distribution/density-plot/preview.html"
+      }
+    },
+    {
+      "id": "distribution-heatmap",
+      "family": "03-distribution",
+      "name": "Heatmap de Distribution Bivariée Binnée",
+      "description": "Concentration de densité croisée sur 2 axes discrets avec gradient de luminance perceptuel.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 20,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "03-preattentive-pulse"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/distribution-heatmap/template.html",
+        "schema": "template/03-distribution/distribution-heatmap/schema.json",
+        "js": "template/03-distribution/distribution-heatmap/template.js",
+        "preview": "template/03-distribution/distribution-heatmap/preview.html"
+      }
+    },
+    {
+      "id": "histogramme",
+      "family": "03-distribution",
+      "name": "Histogramme Continu (Freedman-Diaconis)",
+      "description": "Distribution empirique d une variable continue avec binning optimal basé sur l intervalle interquartile.",
+      "dataRequirements": {
+        "labelsType": "interval",
+        "minCategories": 6,
+        "maxCategories": 25,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "15-axis-rescale"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/histogramme/template.html",
+        "schema": "template/03-distribution/histogramme/schema.json",
+        "js": "template/03-distribution/histogramme/template.js",
+        "preview": "template/03-distribution/histogramme/preview.html"
+      }
+    },
+    {
+      "id": "histogramme-kde",
+      "family": "03-distribution",
+      "name": "Histogramme avec Courbe de Densité KDE",
+      "description": "Hybride combinant l effectif empirique binné et la densité théorique lissée en double couche.",
+      "dataRequirements": {
+        "labelsType": "continuous",
+        "minCategories": 10,
+        "maxCategories": 30,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "09-path-drawing"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/histogramme-kde/template.html",
+        "schema": "template/03-distribution/histogramme-kde/schema.json",
+        "js": "template/03-distribution/histogramme-kde/template.js",
+        "preview": "template/03-distribution/histogramme-kde/preview.html"
+      }
+    },
+    {
+      "id": "raincloud-plot",
+      "family": "03-distribution",
+      "name": "Raincloud Plot (Half-KDE + Box + Jitter)",
+      "description": "Visualisation tri-hybride combinant forme continue, boîte interne et données brutes déterministes.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 6,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/raincloud-plot/template.html",
+        "schema": "template/03-distribution/raincloud-plot/schema.json",
+        "js": "template/03-distribution/raincloud-plot/template.js",
+        "preview": "template/03-distribution/raincloud-plot/preview.html"
+      }
+    },
+    {
+      "id": "strip-plot",
+      "family": "03-distribution",
+      "name": "Strip Plot (Bandes de Points avec Jitter)",
+      "description": "Affichage des données brutes individuelles (N ≤ 100) le long d un axe 1D avec espacement anti-collision.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 8,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "05-mot-stagger",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/strip-plot/template.html",
+        "schema": "template/03-distribution/strip-plot/schema.json",
+        "js": "template/03-distribution/strip-plot/template.js",
+        "preview": "template/03-distribution/strip-plot/preview.html"
+      }
+    },
+    {
+      "id": "violin-plot",
+      "family": "03-distribution",
+      "name": "Violin Plot (Violon avec KDE Bilatérale)",
+      "description": "Révélation de multimodalité et bimodalité par profil de densité symétrique bilatéral.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 1,
+        "maxCategories": 8,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger"
+        ]
+      },
+      "paths": {
+        "html": "template/03-distribution/violin-plot/template.html",
+        "schema": "template/03-distribution/violin-plot/schema.json",
+        "js": "template/03-distribution/violin-plot/template.js",
+        "preview": "template/03-distribution/violin-plot/preview.html"
+      }
+    },
+    {
+      "id": "bubble-chart",
+      "family": "04-correlation-relation",
+      "name": "Diagramme à Bulles 3D en 2D (Bubble Chart)",
+      "description": "Corrélation trivariée (X, Y) avec rayon proportionnel à la racine carrée √Z (Loi de Flannery).",
+      "dataRequirements": {
+        "labelsType": "continuous",
+        "minCategories": 5,
+        "maxCategories": 100,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "04-continuous-zoom"
+        ]
+      },
+      "paths": {
+        "html": "template/04-correlation-relation/bubble-chart/template.html",
+        "schema": "template/04-correlation-relation/bubble-chart/schema.json",
+        "js": "template/04-correlation-relation/bubble-chart/template.js",
+        "preview": "template/04-correlation-relation/bubble-chart/preview.html"
+      }
+    },
+    {
+      "id": "connected-scatter-plot",
+      "family": "04-correlation-relation",
+      "name": "Nuage de Points Relié Chronologiquement",
+      "description": "Trajectoire dynamique ordonnée de deux séries continues évoluant conjointement dans le temps.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 6,
+        "maxCategories": 40,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "16-motion-trails"
+        ]
+      },
+      "paths": {
+        "html": "template/04-correlation-relation/connected-scatter-plot/template.html",
+        "schema": "template/04-correlation-relation/connected-scatter-plot/schema.json",
+        "js": "template/04-correlation-relation/connected-scatter-plot/template.js",
+        "preview": "template/04-correlation-relation/connected-scatter-plot/preview.html"
+      }
+    },
+    {
+      "id": "density-2d-hexbin",
+      "family": "04-correlation-relation",
+      "name": "Hexagonal Binning 2D (Anti-Overplotting)",
+      "description": "Agrégation de très grands volumes bivariés (N > 2 000) en pavage hexagonal de densité.",
+      "dataRequirements": {
+        "labelsType": "continuous",
+        "minCategories": 50,
+        "maxCategories": 5000,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "04-continuous-zoom"
+        ]
+      },
+      "paths": {
+        "html": "template/04-correlation-relation/density-2d-hexbin/template.html",
+        "schema": "template/04-correlation-relation/density-2d-hexbin/schema.json",
+        "js": "template/04-correlation-relation/density-2d-hexbin/template.js",
+        "preview": "template/04-correlation-relation/density-2d-hexbin/preview.html"
+      }
+    },
+    {
+      "id": "joint-scatter-marginals",
+      "family": "04-correlation-relation",
+      "name": "Jointplot (Scatter Plot + Densités Marginales)",
+      "description": "Nuage 2D central couplé aux distributions marginales X et Y et ellipse de confiance à 95%.",
+      "dataRequirements": {
+        "labelsType": "continuous",
+        "minCategories": 20,
+        "maxCategories": 500,
+        "seriesCount": 3
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "09-path-drawing"
+        ]
+      },
+      "paths": {
+        "html": "template/04-correlation-relation/joint-scatter-marginals/template.html",
+        "schema": "template/04-correlation-relation/joint-scatter-marginals/schema.json",
+        "js": "template/04-correlation-relation/joint-scatter-marginals/template.js",
+        "preview": "template/04-correlation-relation/joint-scatter-marginals/preview.html"
+      }
+    },
+    {
+      "id": "matrix-heatmap",
+      "family": "04-correlation-relation",
+      "name": "Matrice de Corrélation & Tableaux Croisés",
+      "description": "Matrice carrée de coefficients de corrélation de Pearson avec échelle divergente et labels lisibles.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 20,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "03-preattentive-pulse"
+        ]
+      },
+      "paths": {
+        "html": "template/04-correlation-relation/matrix-heatmap/template.html",
+        "schema": "template/04-correlation-relation/matrix-heatmap/schema.json",
+        "js": "template/04-correlation-relation/matrix-heatmap/template.js",
+        "preview": "template/04-correlation-relation/matrix-heatmap/preview.html"
+      }
+    },
+    {
+      "id": "scatter-plot",
+      "family": "04-correlation-relation",
+      "name": "Nuage de Points Bivarié (Scatter Plot)",
+      "description": "Corrélation entre 2 variables continues sur axes cartésiens X et Y avec régression visuelle.",
+      "dataRequirements": {
+        "labelsType": "continuous",
+        "minCategories": 10,
+        "maxCategories": 1000,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "04-continuous-zoom",
+          "16-motion-trails"
+        ]
+      },
+      "paths": {
+        "html": "template/04-correlation-relation/scatter-plot/template.html",
+        "schema": "template/04-correlation-relation/scatter-plot/schema.json",
+        "js": "template/04-correlation-relation/scatter-plot/template.js",
+        "preview": "template/04-correlation-relation/scatter-plot/preview.html"
+      }
+    },
+    {
+      "id": "scatter-regression",
+      "family": "04-correlation-relation",
+      "name": "Scatter Plot avec Régression Linéaire OLS",
+      "description": "Nuage de points + droite de tendance OLS et bande d intervalle de confiance à 95%.",
+      "dataRequirements": {
+        "labelsType": "continuous",
+        "minCategories": 15,
+        "maxCategories": 500,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "09-path-drawing"
+        ]
+      },
+      "paths": {
+        "html": "template/04-correlation-relation/scatter-regression/template.html",
+        "schema": "template/04-correlation-relation/scatter-regression/schema.json",
+        "js": "template/04-correlation-relation/scatter-regression/template.js",
+        "preview": "template/04-correlation-relation/scatter-regression/preview.html"
+      }
+    },
+    {
+      "id": "area-chart",
+      "family": "05-evolution-temporelle",
+      "name": "Graphique en Aire Simple (Area Chart)",
+      "description": "Volume continu et masse sous la courbe (axe Y = 0 obligatoire) avec dégradé vertical subtil.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 4,
+        "maxCategories": 50,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/area-chart/template.html",
+        "schema": "template/05-evolution-temporelle/area-chart/schema.json",
+        "js": "template/05-evolution-temporelle/area-chart/template.js",
+        "preview": "template/05-evolution-temporelle/area-chart/preview.html"
+      }
+    },
+    {
+      "id": "candlestick-ohlc",
+      "family": "05-evolution-temporelle",
+      "name": "Chandeliers Japonais Financiers (OHLC)",
+      "description": "Série financière à 4 cours (Open, High, Low, Close) avec valence haussière/baissière stricte.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 10,
+        "maxCategories": 100,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "13-pan-camera"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/candlestick-ohlc/template.html",
+        "schema": "template/05-evolution-temporelle/candlestick-ohlc/schema.json",
+        "js": "template/05-evolution-temporelle/candlestick-ohlc/template.js",
+        "preview": "template/05-evolution-temporelle/candlestick-ohlc/preview.html"
+      }
+    },
+    {
+      "id": "candlestick-volume",
+      "family": "05-evolution-temporelle",
+      "name": "Cours OHLC avec Panneau de Volume Étagé",
+      "description": "Chandeliers financiers couplés au volume de transactions en 2 panneaux synchronisés.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 10,
+        "maxCategories": 100,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "13-pan-camera"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/candlestick-volume/template.html",
+        "schema": "template/05-evolution-temporelle/candlestick-volume/schema.json",
+        "js": "template/05-evolution-temporelle/candlestick-volume/template.js",
+        "preview": "template/05-evolution-temporelle/candlestick-volume/preview.html"
+      }
+    },
+    {
+      "id": "dual-axis-controlled",
+      "family": "05-evolution-temporelle",
+      "name": "Double Axe Y Contrôlé & Apparié",
+      "description": "Comparaison de 2 séries hétérogènes avec zéros alignés et corrélation de Pearson documentée.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 6,
+        "maxCategories": 30,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/dual-axis-controlled/template.html",
+        "schema": "template/05-evolution-temporelle/dual-axis-controlled/schema.json",
+        "js": "template/05-evolution-temporelle/dual-axis-controlled/template.js",
+        "preview": "template/05-evolution-temporelle/dual-axis-controlled/preview.html"
+      }
+    },
+    {
+      "id": "line-chart",
+      "family": "05-evolution-temporelle",
+      "name": "Courbe Temporelle Simple (Line Chart)",
+      "description": "Évolution continue d une grandeur dans le temps avec étiquetage direct des extrema.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 4,
+        "maxCategories": 50,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/line-chart/template.html",
+        "schema": "template/05-evolution-temporelle/line-chart/schema.json",
+        "js": "template/05-evolution-temporelle/line-chart/template.js",
+        "preview": "template/05-evolution-temporelle/line-chart/preview.html"
+      }
+    },
+    {
+      "id": "multi-line-chart",
+      "family": "05-evolution-temporelle",
+      "name": "Courbes Multiples (Focus + Context)",
+      "description": "Comparaison de 2 à 4 séries temporelles avec ligne active en surbrillance et séries de contexte en gris.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 4,
+        "maxCategories": 50,
+        "seriesCount": 4
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "11-focus-context",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/multi-line-chart/template.html",
+        "schema": "template/05-evolution-temporelle/multi-line-chart/schema.json",
+        "js": "template/05-evolution-temporelle/multi-line-chart/template.js",
+        "preview": "template/05-evolution-temporelle/multi-line-chart/preview.html"
+      }
+    },
+    {
+      "id": "price-indicator-overlays",
+      "family": "05-evolution-temporelle",
+      "name": "Série de Prix avec Moyenne Mobile & Bandes de Bollinger",
+      "description": "Cours financier + tendance SMA + canal de volatilité (±2σ) sans encombrement visuel.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 15,
+        "maxCategories": 100,
+        "seriesCount": 3
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/price-indicator-overlays/template.html",
+        "schema": "template/05-evolution-temporelle/price-indicator-overlays/schema.json",
+        "js": "template/05-evolution-temporelle/price-indicator-overlays/template.js",
+        "preview": "template/05-evolution-temporelle/price-indicator-overlays/preview.html"
+      }
+    },
+    {
+      "id": "sparkline",
+      "family": "05-evolution-temporelle",
+      "name": "Micro-Courbe Sparkline de Tufte",
+      "description": "Tendance historique ultra-compacte sans axes pour intégration dans tableaux et synthèses.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 5,
+        "maxCategories": 30,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "10-count-up"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/sparkline/template.html",
+        "schema": "template/05-evolution-temporelle/sparkline/schema.json",
+        "js": "template/05-evolution-temporelle/sparkline/template.js",
+        "preview": "template/05-evolution-temporelle/sparkline/preview.html"
+      }
+    },
+    {
+      "id": "stacked-area-chart",
+      "family": "05-evolution-temporelle",
+      "name": "Aires Empilées (Stacked Area Chart)",
+      "description": "Somme de composantes additives continues évoluant de manière coordonnée sur échelle commune.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 4,
+        "maxCategories": 30,
+        "seriesCount": 4
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/stacked-area-chart/template.html",
+        "schema": "template/05-evolution-temporelle/stacked-area-chart/schema.json",
+        "js": "template/05-evolution-temporelle/stacked-area-chart/template.js",
+        "preview": "template/05-evolution-temporelle/stacked-area-chart/preview.html"
+      }
+    },
+    {
+      "id": "streamgraph",
+      "family": "05-evolution-temporelle",
+      "name": "Streamgraph (Flux Thématique Fluide)",
+      "description": "Visualisation organique centrée sur un axe neutre pour flux thématiques et parts relatives.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 6,
+        "maxCategories": 30,
+        "seriesCount": 5
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/05-evolution-temporelle/streamgraph/template.html",
+        "schema": "template/05-evolution-temporelle/streamgraph/schema.json",
+        "js": "template/05-evolution-temporelle/streamgraph/template.js",
+        "preview": "template/05-evolution-temporelle/streamgraph/preview.html"
+      }
+    },
+    {
+      "id": "alluvial-diagram",
+      "family": "06-flux-processus",
+      "name": "Diagramme Alluvial (Redistribution de Cohortes)",
+      "description": "Évolution et redistribution de cohortes d individus à travers des étapes successives.",
+      "dataRequirements": {
+        "labelsType": "network",
+        "minCategories": 4,
+        "maxCategories": 25,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "07-event-segmentation"
+        ]
+      },
+      "paths": {
+        "html": "template/06-flux-processus/alluvial-diagram/template.html",
+        "schema": "template/06-flux-processus/alluvial-diagram/schema.json",
+        "js": "template/06-flux-processus/alluvial-diagram/template.js",
+        "preview": "template/06-flux-processus/alluvial-diagram/preview.html"
+      }
+    },
+    {
+      "id": "chord-diagram",
+      "family": "06-flux-processus",
+      "name": "Diagramme en Corde (Échanges Circulaires)",
+      "description": "Échanges bilatéraux circulaires réciproques entre entités interconnectées.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 8,
+        "seriesCount": 4
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/06-flux-processus/chord-diagram/template.html",
+        "schema": "template/06-flux-processus/chord-diagram/schema.json",
+        "js": "template/06-flux-processus/chord-diagram/template.js",
+        "preview": "template/06-flux-processus/chord-diagram/preview.html"
+      }
+    },
+    {
+      "id": "funnel-chart",
+      "family": "06-flux-processus",
+      "name": "Entonnoir de Conversion (Funnel Chart)",
+      "description": "Processus séquentiel à déperdition d étapes avec taux de rétention calculés.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 8,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "10-count-up"
+        ]
+      },
+      "paths": {
+        "html": "template/06-flux-processus/funnel-chart/template.html",
+        "schema": "template/06-flux-processus/funnel-chart/schema.json",
+        "js": "template/06-flux-processus/funnel-chart/template.js",
+        "preview": "template/06-flux-processus/funnel-chart/preview.html"
+      }
+    },
+    {
+      "id": "gantt-progress",
+      "family": "06-flux-processus",
+      "name": "Planning Gantt avec Avancement & Repère Aujourd hui",
+      "description": "Ordonnancement temporel de tâches avec barre interne d avancement et date courante en repère vertical.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 20,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "07-event-segmentation"
+        ]
+      },
+      "paths": {
+        "html": "template/06-flux-processus/gantt-progress/template.html",
+        "schema": "template/06-flux-processus/gantt-progress/schema.json",
+        "js": "template/06-flux-processus/gantt-progress/template.js",
+        "preview": "template/06-flux-processus/gantt-progress/preview.html"
+      }
+    },
+    {
+      "id": "sankey-diagram",
+      "family": "06-flux-processus",
+      "name": "Diagramme de Sankey (Flux Directionnels)",
+      "description": "Visualisation des transferts avec conservation exacte des flux de matière ou valeur entre étapes.",
+      "dataRequirements": {
+        "labelsType": "network",
+        "minCategories": 4,
+        "maxCategories": 30,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "07-event-segmentation"
+        ]
+      },
+      "paths": {
+        "html": "template/06-flux-processus/sankey-diagram/template.html",
+        "schema": "template/06-flux-processus/sankey-diagram/schema.json",
+        "js": "template/06-flux-processus/sankey-diagram/template.js",
+        "preview": "template/06-flux-processus/sankey-diagram/preview.html"
+      }
+    },
+    {
+      "id": "waterfall-chart",
+      "family": "06-flux-processus",
+      "name": "Diagramme en Cascade (Waterfall / Pont IBCS)",
+      "description": "Bilan séquentiel des flux positifs, négatifs et sous-totaux intermédiaires selon les standards IBCS.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 12,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "20-delta-flash"
+        ]
+      },
+      "paths": {
+        "html": "template/06-flux-processus/waterfall-chart/template.html",
+        "schema": "template/06-flux-processus/waterfall-chart/schema.json",
+        "js": "template/06-flux-processus/waterfall-chart/template.js",
+        "preview": "template/06-flux-processus/waterfall-chart/preview.html"
+      }
+    },
+    {
+      "id": "waterfall-cumulative-line",
+      "family": "06-flux-processus",
+      "name": "Waterfall avec Ligne de Solde Cumulé",
+      "description": "Cascade financière combinée à la trajectoire continue du solde net.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 12,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "09-path-drawing"
+        ]
+      },
+      "paths": {
+        "html": "template/06-flux-processus/waterfall-cumulative-line/template.html",
+        "schema": "template/06-flux-processus/waterfall-cumulative-line/schema.json",
+        "js": "template/06-flux-processus/waterfall-cumulative-line/template.js",
+        "preview": "template/06-flux-processus/waterfall-cumulative-line/preview.html"
+      }
+    },
+    {
+      "id": "arc-diagram",
+      "family": "07-hierarchie-reseau",
+      "name": "Diagramme en Arcs 1D",
+      "description": "Relations entre entités ordonnées linéairement le long d un axe unique.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 20,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "09-path-drawing",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/07-hierarchie-reseau/arc-diagram/template.html",
+        "schema": "template/07-hierarchie-reseau/arc-diagram/schema.json",
+        "js": "template/07-hierarchie-reseau/arc-diagram/template.js",
+        "preview": "template/07-hierarchie-reseau/arc-diagram/preview.html"
+      }
+    },
+    {
+      "id": "dendrogram",
+      "family": "07-hierarchie-reseau",
+      "name": "Dendrogramme Hiérarchique de Clustering",
+      "description": "Arbre de classification révélant les distances euclidiennes de regroupement entre sous-groupes.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 30,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "09-path-drawing"
+        ]
+      },
+      "paths": {
+        "html": "template/07-hierarchie-reseau/dendrogram/template.html",
+        "schema": "template/07-hierarchie-reseau/dendrogram/schema.json",
+        "js": "template/07-hierarchie-reseau/dendrogram/template.js",
+        "preview": "template/07-hierarchie-reseau/dendrogram/preview.html"
+      }
+    },
+    {
+      "id": "marimekko-chart",
+      "family": "07-hierarchie-reseau",
+      "name": "Graphique Marimekko (Mosaïque 100% × 100%)",
+      "description": "Tableau de contingence 2D avec largeur et hauteur de segments proportionnelles aux grandeurs.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 2,
+        "maxCategories": 8,
+        "seriesCount": 4
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "17-series-buildup"
+        ]
+      },
+      "paths": {
+        "html": "template/07-hierarchie-reseau/marimekko-chart/template.html",
+        "schema": "template/07-hierarchie-reseau/marimekko-chart/schema.json",
+        "js": "template/07-hierarchie-reseau/marimekko-chart/template.js",
+        "preview": "template/07-hierarchie-reseau/marimekko-chart/preview.html"
+      }
+    },
+    {
+      "id": "node-link-network",
+      "family": "07-hierarchie-reseau",
+      "name": "Graphe Nœuds-Liens à Force Dirigée",
+      "description": "Réseau relationnel topologique avec répulsion des nœuds et attraction des liens à équilibre mécanique.",
+      "dataRequirements": {
+        "labelsType": "network",
+        "minCategories": 5,
+        "maxCategories": 80,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "19-critical-damping",
+          "04-continuous-zoom"
+        ]
+      },
+      "paths": {
+        "html": "template/07-hierarchie-reseau/node-link-network/template.html",
+        "schema": "template/07-hierarchie-reseau/node-link-network/schema.json",
+        "js": "template/07-hierarchie-reseau/node-link-network/template.js",
+        "preview": "template/07-hierarchie-reseau/node-link-network/preview.html"
+      }
+    },
+    {
+      "id": "bubble-map",
+      "family": "08-geospatial-cartes",
+      "name": "Carte à Bulles Proportionnelles Géolocalisées",
+      "description": "Totaux absolus représentés par cercles de surface proportionnelle √N sur fond de carte géographique.",
+      "dataRequirements": {
+        "labelsType": "geographical",
+        "minCategories": 5,
+        "maxCategories": 100,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "04-continuous-zoom"
+        ]
+      },
+      "paths": {
+        "html": "template/08-geospatial-cartes/bubble-map/template.html",
+        "schema": "template/08-geospatial-cartes/bubble-map/schema.json",
+        "js": "template/08-geospatial-cartes/bubble-map/template.js",
+        "preview": "template/08-geospatial-cartes/bubble-map/preview.html"
+      }
+    },
+    {
+      "id": "cartogram-tilegram",
+      "family": "08-geospatial-cartes",
+      "name": "Cartogramme / Tilegram Équi-Surfacique",
+      "description": "Égalité visuelle stricte entre entités territoriales sous forme de tuiles régulières.",
+      "dataRequirements": {
+        "labelsType": "geographical",
+        "minCategories": 5,
+        "maxCategories": 50,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger"
+        ]
+      },
+      "paths": {
+        "html": "template/08-geospatial-cartes/cartogram-tilegram/template.html",
+        "schema": "template/08-geospatial-cartes/cartogram-tilegram/schema.json",
+        "js": "template/08-geospatial-cartes/cartogram-tilegram/template.js",
+        "preview": "template/08-geospatial-cartes/cartogram-tilegram/preview.html"
+      }
+    },
+    {
+      "id": "choropleth-map",
+      "family": "08-geospatial-cartes",
+      "name": "Carte Choroplèthe Thématique",
+      "description": "Ratios et densités normalisés par polygones géographiques administratifs avec palette séquentielle.",
+      "dataRequirements": {
+        "labelsType": "geographical",
+        "minCategories": 5,
+        "maxCategories": 100,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "04-continuous-zoom"
+        ]
+      },
+      "paths": {
+        "html": "template/08-geospatial-cartes/choropleth-map/template.html",
+        "schema": "template/08-geospatial-cartes/choropleth-map/schema.json",
+        "js": "template/08-geospatial-cartes/choropleth-map/template.js",
+        "preview": "template/08-geospatial-cartes/choropleth-map/preview.html"
+      }
+    },
+    {
+      "id": "table-bar-in-cell",
+      "family": "09-tableaux-dataviz",
+      "name": "Tableau Comparatif Bar-in-Cell",
+      "description": "Barres horizontales intégrées dans les cellules sur échelle commune alignée (Cleveland Rang 1).",
+      "dataRequirements": {
+        "labelsType": "tabular",
+        "minCategories": 3,
+        "maxCategories": 25,
+        "seriesCount": 6
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "05-mot-stagger"
+        ]
+      },
+      "paths": {
+        "html": "template/09-tableaux-dataviz/table-bar-in-cell/template.html",
+        "schema": "template/09-tableaux-dataviz/table-bar-in-cell/schema.json",
+        "js": "template/09-tableaux-dataviz/table-bar-in-cell/template.js",
+        "preview": "template/09-tableaux-dataviz/table-bar-in-cell/preview.html"
+      }
+    },
+    {
+      "id": "table-financial-variance",
+      "family": "09-tableaux-dataviz",
+      "name": "Tableau Financier & Variance IBCS",
+      "description": "Compte de résultat (P&L) avec barres de variance divergentes sur axe 0 aligné selon les normes IBCS.",
+      "dataRequirements": {
+        "labelsType": "tabular",
+        "minCategories": 5,
+        "maxCategories": 30,
+        "seriesCount": 7
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "20-delta-flash"
+        ]
+      },
+      "paths": {
+        "html": "template/09-tableaux-dataviz/table-financial-variance/template.html",
+        "schema": "template/09-tableaux-dataviz/table-financial-variance/schema.json",
+        "js": "template/09-tableaux-dataviz/table-financial-variance/template.js",
+        "preview": "template/09-tableaux-dataviz/table-financial-variance/preview.html"
+      }
+    },
+    {
+      "id": "table-heatmap-matrix",
+      "family": "09-tableaux-dataviz",
+      "name": "Tableau Heatmap Matrice 2D",
+      "description": "Matrice de concentration avec gradient continu et inversion de contraste WCAG AAA automatique.",
+      "dataRequirements": {
+        "labelsType": "tabular",
+        "minCategories": 4,
+        "maxCategories": 24,
+        "seriesCount": 12
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "03-preattentive-pulse",
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/09-tableaux-dataviz/table-heatmap-matrix/template.html",
+        "schema": "template/09-tableaux-dataviz/table-heatmap-matrix/schema.json",
+        "js": "template/09-tableaux-dataviz/table-heatmap-matrix/template.js",
+        "preview": "template/09-tableaux-dataviz/table-heatmap-matrix/preview.html"
+      }
+    },
+    {
+      "id": "table-hierarchical-tree",
+      "family": "09-tableaux-dataviz",
+      "name": "Tableau Hiérarchique (Tree Table)",
+      "description": "Arborescence multiniveaux repliable avec sous-totaux agrégés automatiques et indentations claires.",
+      "dataRequirements": {
+        "labelsType": "tabular",
+        "minCategories": 4,
+        "maxCategories": 50,
+        "seriesCount": 6
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "04-continuous-zoom"
+        ]
+      },
+      "paths": {
+        "html": "template/09-tableaux-dataviz/table-hierarchical-tree/template.html",
+        "schema": "template/09-tableaux-dataviz/table-hierarchical-tree/schema.json",
+        "js": "template/09-tableaux-dataviz/table-hierarchical-tree/template.js",
+        "preview": "template/09-tableaux-dataviz/table-hierarchical-tree/preview.html"
+      }
+    },
+    {
+      "id": "table-kpi-scorecard",
+      "family": "09-tableaux-dataviz",
+      "name": "Tableau Exécutif KPI Scorecard",
+      "description": "Synthèse multi-indicateurs exécutifs avec cibles, deltas, statuts RAG et sparklines 12 mois.",
+      "dataRequirements": {
+        "labelsType": "tabular",
+        "minCategories": 3,
+        "maxCategories": 20,
+        "seriesCount": 7
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "10-count-up",
+          "20-delta-flash"
+        ]
+      },
+      "paths": {
+        "html": "template/09-tableaux-dataviz/table-kpi-scorecard/template.html",
+        "schema": "template/09-tableaux-dataviz/table-kpi-scorecard/schema.json",
+        "js": "template/09-tableaux-dataviz/table-kpi-scorecard/template.js",
+        "preview": "template/09-tableaux-dataviz/table-kpi-scorecard/preview.html"
+      }
+    },
+    {
+      "id": "table-ranking-leaderboard",
+      "family": "09-tableaux-dataviz",
+      "name": "Tableau de Classement & Leaderboard",
+      "description": "Classement ordonné avec podium doux, delta de rang, rang antérieur et sparkbars 6 mois.",
+      "dataRequirements": {
+        "labelsType": "tabular",
+        "minCategories": 5,
+        "maxCategories": 50,
+        "seriesCount": 8
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions",
+          "12-bar-chart-race"
+        ]
+      },
+      "paths": {
+        "html": "template/09-tableaux-dataviz/table-ranking-leaderboard/template.html",
+        "schema": "template/09-tableaux-dataviz/table-ranking-leaderboard/schema.json",
+        "js": "template/09-tableaux-dataviz/table-ranking-leaderboard/template.js",
+        "preview": "template/09-tableaux-dataviz/table-ranking-leaderboard/preview.html"
+      }
+    },
+    {
+      "id": "01-staged-transitions",
+      "family": "animation",
+      "name": "Animation 01 : Transitions par Étapes (Heer & Robertson)",
+      "description": "Transitions étagées isolant les changements d échelle, de position et de valeur pour éviter la surcharge.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/01-staged-transitions/template.html",
+        "schema": "template/animation/01-staged-transitions/schema.json",
+        "js": "template/animation/01-staged-transitions/template.js",
+        "preview": "template/animation/01-staged-transitions/preview.html"
+      }
+    },
+    {
+      "id": "02-anti-change-blindness",
+      "family": "animation",
+      "name": "Animation 02 : Anti-Cécité au Changement (Rensink)",
+      "description": "Maintien de la persistance visuelle pour guider l attention lors des mises à jour partielles.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/02-anti-change-blindness/template.html",
+        "schema": "template/animation/02-anti-change-blindness/schema.json",
+        "js": "template/animation/02-anti-change-blindness/template.js",
+        "preview": "template/animation/02-anti-change-blindness/preview.html"
+      }
+    },
+    {
+      "id": "03-preattentive-pulse",
+      "family": "animation",
+      "name": "Animation 03 : Alerte Préattentive Pulse",
+      "description": "Pulsation douce et limitée dans le temps (≤ 800ms) pour diriger l attention sur un seuil critique.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/03-preattentive-pulse/template.html",
+        "schema": "template/animation/03-preattentive-pulse/schema.json",
+        "js": "template/animation/03-preattentive-pulse/template.js",
+        "preview": "template/animation/03-preattentive-pulse/preview.html"
+      }
+    },
+    {
+      "id": "04-continuous-zoom",
+      "family": "animation",
+      "name": "Animation 04 : Zoom & Drill-down Continu",
+      "description": "Conservation du repère spatial de référence lors du passage d une vue macro à micro.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/04-continuous-zoom/template.html",
+        "schema": "template/animation/04-continuous-zoom/schema.json",
+        "js": "template/animation/04-continuous-zoom/template.js",
+        "preview": "template/animation/04-continuous-zoom/preview.html"
+      }
+    },
+    {
+      "id": "05-mot-stagger",
+      "family": "animation",
+      "name": "Animation 05 : Stagger Plafonné MOT (k ≤ 4)",
+      "description": "Décalage temporel respectant la capacité du système visuel humain à suivre des cibles simultanées.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/05-mot-stagger/template.html",
+        "schema": "template/animation/05-mot-stagger/schema.json",
+        "js": "template/animation/05-mot-stagger/template.js",
+        "preview": "template/animation/05-mot-stagger/preview.html"
+      }
+    },
+    {
+      "id": "06-apprehension-replay",
+      "family": "animation",
+      "name": "Animation 06 : Principe d Appréhension & Replay (Tversky)",
+      "description": "Contrôle utilisateur complet avec pause, reprise et scrubbing temporel pour faciliter la compréhension.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/06-apprehension-replay/template.html",
+        "schema": "template/animation/06-apprehension-replay/schema.json",
+        "js": "template/animation/06-apprehension-replay/template.js",
+        "preview": "template/animation/06-apprehension-replay/preview.html"
+      }
+    },
+    {
+      "id": "07-event-segmentation",
+      "family": "animation",
+      "name": "Animation 07 : Segmentation Événementielle Narrative (Zacks)",
+      "description": "Découpage d un processus complexe en étapes sémantiques distinctes avec pauses cognitives.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/07-event-segmentation/template.html",
+        "schema": "template/animation/07-event-segmentation/schema.json",
+        "js": "template/animation/07-event-segmentation/template.js",
+        "preview": "template/animation/07-event-segmentation/preview.html"
+      }
+    },
+    {
+      "id": "08-lasseter-anticipation",
+      "family": "animation",
+      "name": "Animation 08 : Anticipation Traditionnelle (Lasseter)",
+      "description": "Micro-mouvement préparatoire orientant l œil vers la zone d action avant l exécution principale.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/08-lasseter-anticipation/template.html",
+        "schema": "template/animation/08-lasseter-anticipation/schema.json",
+        "js": "template/animation/08-lasseter-anticipation/template.js",
+        "preview": "template/animation/08-lasseter-anticipation/preview.html"
+      }
+    },
+    {
+      "id": "09-path-drawing",
+      "family": "animation",
+      "name": "Animation 09 : Révélation de Tracé Chronologique",
+      "description": "Dessin progressif de gauche à droite respectant la ligne temporelle naturelle de lecture.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 6,
+        "maxCategories": 20,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/09-path-drawing/template.html",
+        "schema": "template/animation/09-path-drawing/schema.json",
+        "js": "template/animation/09-path-drawing/template.js",
+        "preview": "template/animation/09-path-drawing/preview.html"
+      }
+    },
+    {
+      "id": "10-count-up",
+      "family": "animation",
+      "name": "Animation 10 : Compteur Numérique Tabulaire Animé",
+      "description": "Incrémentation fluide des chiffres avec amorti pour ancrer l ordre de grandeur de la valeur.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 6,
+        "maxCategories": 20,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/10-count-up/template.html",
+        "schema": "template/animation/10-count-up/schema.json",
+        "js": "template/animation/10-count-up/template.js",
+        "preview": "template/animation/10-count-up/preview.html"
+      }
+    },
+    {
+      "id": "11-focus-context",
+      "family": "animation",
+      "name": "Animation 11 : Focus + Context Dynamique",
+      "description": "Transition fluide entre vue d ensemble atténuée et série active en surbrillance.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/11-focus-context/template.html",
+        "schema": "template/animation/11-focus-context/schema.json",
+        "js": "template/animation/11-focus-context/template.js",
+        "preview": "template/animation/11-focus-context/preview.html"
+      }
+    },
+    {
+      "id": "12-bar-chart-race",
+      "family": "animation",
+      "name": "Animation 12 : Course de Barres Classée (Bar Chart Race)",
+      "description": "Réordonnancement dynamique et continu des barres au fil du temps avec transitions de rang fluides.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/12-bar-chart-race/template.html",
+        "schema": "template/animation/12-bar-chart-race/schema.json",
+        "js": "template/animation/12-bar-chart-race/template.js",
+        "preview": "template/animation/12-bar-chart-race/preview.html"
+      }
+    },
+    {
+      "id": "13-pan-camera",
+      "family": "animation",
+      "name": "Animation 13 : Panoramique Caméra & Défilement de Fenêtre",
+      "description": "Translation fluide le long d une longue série temporelle pour révéler des fenêtres glissantes.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 10,
+        "maxCategories": 50,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/13-pan-camera/template.html",
+        "schema": "template/animation/13-pan-camera/schema.json",
+        "js": "template/animation/13-pan-camera/template.js",
+        "preview": "template/animation/13-pan-camera/preview.html"
+      }
+    },
+    {
+      "id": "14-cross-type-morph",
+      "family": "animation",
+      "name": "Animation 14 : Morphing Barres ↔ Secteurs",
+      "description": "Transformation topologique continue préservant l identité visuelle des entités lors du changement de type.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 3,
+        "maxCategories": 6,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/14-cross-type-morph/template.html",
+        "schema": "template/animation/14-cross-type-morph/schema.json",
+        "js": "template/animation/14-cross-type-morph/template.js",
+        "preview": "template/animation/14-cross-type-morph/preview.html"
+      }
+    },
+    {
+      "id": "15-axis-rescale",
+      "family": "animation",
+      "name": "Animation 15 : Rescaling Linéaire ↔ Logarithmique",
+      "description": "Interpolation progressive des repères d axes lors du passage entre échelle linéaire et log.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/15-axis-rescale/template.html",
+        "schema": "template/animation/15-axis-rescale/schema.json",
+        "js": "template/animation/15-axis-rescale/template.js",
+        "preview": "template/animation/15-axis-rescale/preview.html"
+      }
+    },
+    {
+      "id": "16-motion-trails",
+      "family": "animation",
+      "name": "Animation 16 : Traînée Cométaire & Historique de Mouvement",
+      "description": "Affichage de la trajectoire passée avec estompage pour décoder la vitesse et la direction.",
+      "dataRequirements": {
+        "labelsType": "continuous",
+        "minCategories": 5,
+        "maxCategories": 30,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/16-motion-trails/template.html",
+        "schema": "template/animation/16-motion-trails/schema.json",
+        "js": "template/animation/16-motion-trails/template.js",
+        "preview": "template/animation/16-motion-trails/preview.html"
+      }
+    },
+    {
+      "id": "17-series-buildup",
+      "family": "animation",
+      "name": "Animation 17 : Construction Sérielle Étagée",
+      "description": "Apparition successive et ordonnée des couches de données pour éviter la saturation perceptive.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 4
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/17-series-buildup/template.html",
+        "schema": "template/animation/17-series-buildup/schema.json",
+        "js": "template/animation/17-series-buildup/template.js",
+        "preview": "template/animation/17-series-buildup/preview.html"
+      }
+    },
+    {
+      "id": "18-scrollytelling",
+      "family": "animation",
+      "name": "Animation 18 : Scrollytelling à Hystérésis",
+      "description": "Déclenchement d étapes narratives calé sur le défilement de la page avec mémoire d état.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/18-scrollytelling/template.html",
+        "schema": "template/animation/18-scrollytelling/schema.json",
+        "js": "template/animation/18-scrollytelling/template.js",
+        "preview": "template/animation/18-scrollytelling/preview.html"
+      }
+    },
+    {
+      "id": "19-critical-damping",
+      "family": "animation",
+      "name": "Animation 19 : Amorti Critique Physique (Spring Physics)",
+      "description": "Stabilisation sans rebond oscillatoire parasite pour un rendu naturel et rigoureux.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/19-critical-damping/template.html",
+        "schema": "template/animation/19-critical-damping/schema.json",
+        "js": "template/animation/19-critical-damping/template.js",
+        "preview": "template/animation/19-critical-damping/preview.html"
+      }
+    },
+    {
+      "id": "20-delta-flash",
+      "family": "animation",
+      "name": "Animation 20 : Flash d Onset Delta (Alerte Mise à Jour)",
+      "description": "Signal lumineux temporaire guidant l attention sur une valeur ou cellule fraîchement mise à jour.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 1
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/20-delta-flash/template.html",
+        "schema": "template/animation/20-delta-flash/schema.json",
+        "js": "template/animation/20-delta-flash/template.js",
+        "preview": "template/animation/20-delta-flash/preview.html"
+      }
+    },
+    {
+      "id": "animation",
+      "family": "animation",
+      "name": "Laboratoire Complet d Animations Cognitives",
+      "description": "Showcase interactif intégrant les 20 motifs d animation et les contrôles cognitifs accessibles.",
+      "dataRequirements": {
+        "labelsType": "categorical",
+        "minCategories": 4,
+        "maxCategories": 10,
+        "seriesCount": 2
+      },
+      "supportedFeatures": {
+        "dataLabels": true,
+        "antiOcclusionTooltip": true,
+        "semanticValence": false,
+        "compatibleAnimations": []
+      },
+      "paths": {
+        "html": "template/animation/template.html",
+        "schema": "template/animation/schema.json",
+        "js": "template/animation/template.js",
+        "preview": "template/animation/preview.html"
+      }
+    },
+    {
+      "id": "tooltip",
+      "family": "tooltip",
+      "name": "Laboratoire Ergonomique des Infobulles",
+      "description": "Infobulles anti-occlusion (Mayer), zone de frappe élargie (Fitts) et chiffres tabulaires synchronisés.",
+      "dataRequirements": {
+        "labelsType": "temporal",
+        "minCategories": 4,
+        "maxCategories": 12,
+        "seriesCount": 3
+      },
+      "supportedFeatures": {
+        "dataLabels": false,
+        "antiOcclusionTooltip": true,
+        "semanticValence": true,
+        "compatibleAnimations": [
+          "01-staged-transitions"
+        ]
+      },
+      "paths": {
+        "html": "template/tooltip/template.html",
+        "schema": "template/tooltip/schema.json",
+        "js": "template/tooltip/template.js",
+        "preview": "template/tooltip/preview.html"
+      }
+    }
+  ]
+}

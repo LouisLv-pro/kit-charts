@@ -232,17 +232,56 @@
       }
     };
 
-    if (typeof Chart === 'undefined') return { config, pearsonR, bounds, computeBase100, computePearsonR, computeZeroAlignedBounds };
+    if (typeof Chart === 'undefined') return Object.assign(config, { pearsonR, bounds, computeBase100, computePearsonR, computeZeroAlignedBounds });
     return new Chart(canvas, config);
   }
+
+  function computeZScores(series) {
+    if (!Array.isArray(series) || series.length === 0) return [];
+    const n = series.length;
+    if (n === 1) return [0];
+    const mean = series.reduce((s, v) => s + v, 0) / n;
+    const std = Math.sqrt(series.reduce((s, v) => s + Math.pow(v - mean, 2), 0) / (n - 1)) || 1;
+    return series.map(v => Math.round(((v - mean) / std) * 1000) / 1000);
+  }
+
+  function alignZeroScales(y1Min, y1Max, y2Min, y2Max) {
+    const ratio1 = Math.abs(y1Min) / (y1Max - y1Min);
+    const ratio2 = Math.abs(y2Min) / (y2Max - y2Min);
+    const maxRatio = Math.max(ratio1, ratio2);
+
+    let newY1Min = y1Min, newY1Max = y1Max;
+    let newY2Min = y2Min, newY2Max = y2Max;
+
+    if (y1Min < 0 && y1Max > 0 && y2Min < 0 && y2Max > 0) {
+      newY1Min = -maxRatio * y1Max / (1 - maxRatio);
+      newY2Min = -maxRatio * y2Max / (1 - maxRatio);
+    }
+    return {
+      y1Min: newY1Min,
+      y1Max: newY1Max,
+      y2Min: newY2Min,
+      y2Max: newY2Max
+    };
+  }
+
+  const getEmphasisStyle = (KitChartsTheme && KitChartsTheme.getEmphasisStyle) || function() { return {}; };
+  const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || function() { return '#2B8CBE'; };
+  const getThresholdStatus = (KitChartsTheme && KitChartsTheme.getThresholdStatus) || function() { return 'nominal'; };
 
   return {
     createChart,
     DEFAULT_DATA,
     computeBase100,
+    computeBase100Index: computeBase100,
+    computeZScores,
     computePearsonR,
     computeZeroAlignedBounds,
+    alignZeroScales,
     getDataLabelOptions,
-    formatLabelValue
+    formatLabelValue,
+    getEmphasisStyle,
+    getValenceColor,
+    getThresholdStatus
   };
 });

@@ -202,7 +202,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       borderWidth: 2,
       pointRadius: isTufte ? 5 : 7,
       pointHoverRadius: 9,
-      pointHitRadius: 12
+      pointHitRadius: 12,
+      datalabels: false,
+      displayDataLabels: false
     };
   });
 
@@ -218,6 +220,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       ...defaultOpts,
       _kitChartsTokens: tokens,
       showDataLabels: showDataLabels,
+      layout: {
+        padding: {
+          right: 24,
+          left: 12,
+          top: 12,
+          bottom: 12
+        }
+      },
       animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
       interaction: {
         mode: 'nearest',
@@ -290,7 +300,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         x: {
           min: 0,
           beginAtZero: true,
-          grace: '8%',
+          grace: '14%',
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

@@ -176,6 +176,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     plugins: pluginsList,
     options: {
       ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      layout: {
+        padding: {
+          top: 16
+        }
+      },
       animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
       interaction: {
         mode: 'index',
@@ -258,6 +265,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Règle psychophysique absolue
+          grace: '10%',
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

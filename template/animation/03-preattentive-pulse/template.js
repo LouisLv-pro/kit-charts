@@ -12,9 +12,12 @@
     var tokens = global.KitChartsTheme || (global.KitCharts && global.KitCharts.Theme) || {};
     var exp = factory(tokens);
     global.KitCharts = global.KitCharts || {};
+    global.KitCharts["anim-03-preattentive-pulse"] = exp;
     global.KitCharts["anim-preattentive-pulse"] = exp;
     global.createChart = exp.createChart;
     global.DEFAULT_DATA = exp.DEFAULT_DATA;
+    global.playTransition = exp.playTransition;
+    global.triggerAlertPulse = exp.triggerAlertPulse;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : this, function(KitChartsTheme) {
   "use strict";
@@ -23,36 +26,27 @@
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || function() { return "#2B8CBE"; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || function(c) { return c; };
-  const getStaggerDelay = (KitChartsTheme && KitChartsTheme.getStaggerDelay) || function() { return 0; };
   const kcPulsePlugin = (KitChartsTheme && KitChartsTheme.kcPulsePlugin) || { id: "kcPulse" };
+  const attachPulseAlert = (KitChartsTheme && KitChartsTheme.attachPulseAlert) || function() { return { stop: () => {} }; };
 
   const DEFAULT_DATA = {
-  "labels": [
-    "Recherche & Dév.",
-    "Ingénierie Logicielle",
-    "Production & Infra",
-    "Marketing Digital",
-    "Service Client",
-    "Ressources Humaines",
-    "Finance & Audit",
-    "Logistique"
-  ],
-  "datasets": [
-    {
-      "label": "Score Opérationnel (Seuil Alerte = 88%)",
-      "data": [
-        88,
-        94,
-        76,
-        82,
-        69,
-        85,
-        91,
-        78
-      ]
-    }
-  ]
-};
+    labels: [
+      "Recherche & Dév.",
+      "Ingénierie Logicielle",
+      "Production & Infra",
+      "Marketing Digital",
+      "Service Client",
+      "Ressources Humaines",
+      "Finance & Audit",
+      "Logistique"
+    ],
+    datasets: [
+      {
+        label: "Score Opérationnel (Seuil Alerte = 88%)",
+        data: [88, 94, 76, 82, 69, 85, 91, 78]
+      }
+    ]
+  };
 
   function createChart(canvas, customData = null, themeName = "colorbrewer-accessible", options = {}) {
     if (!canvas) return null;
@@ -60,21 +54,14 @@
     const data = customData || JSON.parse(JSON.stringify(DEFAULT_DATA));
     const baseOptions = getChartDefaultOptions(tokens);
     const barColor = getColor(tokens, 0);
-    const lineColor = getColor(tokens, 1);
 
-    const datasets = (data.datasets || []).map((ds, idx) => {
+    const datasets = (data.datasets || []).map((ds) => {
       const copy = { ...ds };
-      if (ds.type === "line" || idx === 1) {
-        copy.type = "line";
-        copy.borderColor = lineColor;
-        copy.backgroundColor = lineColor;
-      } else {
-        copy.type = "bar";
-        copy.backgroundColor = hexToRgba(barColor, 0.85);
-        copy.borderColor = barColor;
-        copy.borderWidth = 1.5;
-        copy.borderRadius = 4;
-      }
+      copy.type = "bar";
+      copy.backgroundColor = hexToRgba(barColor, 0.85);
+      copy.borderColor = barColor;
+      copy.borderWidth = 1.5;
+      copy.borderRadius = 4;
       return copy;
     });
 
@@ -86,11 +73,7 @@
       maintainAspectRatio: false,
       animation: {
         duration: dur,
-        easing: "easeOutCubic",
-        delay: (ctx) => {
-          if (dur === 0) return 0;
-          return getStaggerDelay(ctx, { unitMs: 300, overlapCap: 4, duration: dur });
-        }
+        easing: "easeOutCubic"
       },
       plugins: {
         ...baseOptions.plugins,
@@ -113,8 +96,23 @@
     return null;
   }
 
+  function playTransition(chart, options = {}) {
+    return attachPulseAlert(chart, {
+      threshold: 88,
+      amplitude: 0.09,
+      frequency: 2,
+      tau: 1.2,
+      color: "#D95F02",
+      ...options
+    });
+  }
+
   return {
     createChart: createChart,
+    playTransition: playTransition,
+    triggerAlertPulse: playTransition,
+    attachPulseAlert: attachPulseAlert,
+    kcPulsePlugin: kcPulsePlugin,
     DEFAULT_DATA: DEFAULT_DATA
   };
 });

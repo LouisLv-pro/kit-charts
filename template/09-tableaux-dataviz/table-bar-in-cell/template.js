@@ -383,6 +383,7 @@
     DEFAULT_DATA,
     createTable,
     createChart,
+    renderTable: createTable,
     generateDataBarSVG,
     generateBulletGraphSVG
   };

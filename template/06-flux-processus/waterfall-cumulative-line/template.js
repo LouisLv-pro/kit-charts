@@ -171,6 +171,11 @@
         ...defaultOpts,
         _kitChartsTokens: tokens,
         showDataLabels: showDataLabels,
+        layout: {
+          padding: {
+            top: 16
+          }
+        },
         animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
         interaction: {
           mode: 'index',
@@ -226,7 +231,7 @@
           y: {
             ...defaultOpts.scales.y,
             beginAtZero: true,
-            grace: '8%',
+            grace: '12%',
             grid: { color: tokens.gridColor },
             title: {
               display: true,

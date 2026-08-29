@@ -24,14 +24,14 @@ Le système visuel humain ne perçoit pas les variations de couleur de manière 
 
 | Thème | Dossier | Fondement Scientifique | Profil Idéal | Mode |
 | :--- | :--- | :--- | :--- | :--- |
-| **ColorBrewer Accessible** | [`01-colorbrewer-accessible/`](file:///Users/louislaville/Desktop/kit-charts/themes/01-colorbrewer-accessible) | Cynthia Brewer & Mark Harrower (Penn State) | Polyvalent, cartographie, dashboards généralistes | Light |
-| **Viridis Perceptual** | [`02-viridis-perceptual/`](file:///Users/louislaville/Desktop/kit-charts/themes/02-viridis-perceptual) | Stéfan van der Walt & Nathaniel Smith (SciPy) | Données scientifiques, matrices Heatmap, KDE | Light / Dark |
-| **Paul Tol Scientific** | [`03-paul-tol-scientific/`](file:///Users/louislaville/Desktop/kit-charts/themes/03-paul-tol-scientific) | Dr. Paul Tol (SRON Space Research) | Séries multicatégorielles denses, contrastes optimisés CVD | Light |
-| **Tableau Stone Categorical** | [`04-tableau-stone-categorical/`](file:///Users/louislaville/Desktop/kit-charts/themes/04-tableau-stone-categorical) | Maureen Stone, Cristy Miller, Jeffrey Heer (IEEE InfoVis) | Dashboards décisionnels business, nomination rapide des couleurs | Light |
-| **Okabe-Ito CUD** | [`05-okabe-ito-cud/`](file:///Users/louislaville/Desktop/kit-charts/themes/05-okabe-ito-cud) | Masataka Okabe & Kei Ito (Color Universal Design) | Accessibilité stricte, rapports officiels & académiques | Light |
-| **Tufte Minimalist Executive** | [`06-tufte-minimalist-executive/`](file:///Users/louislaville/Desktop/kit-charts/themes/06-tufte-minimalist-executive) | Edward Tufte (Data-Ink) & Stephen Few | Direction financière, rapports exécutifs, minimalisme absolu | Light |
-| **Nord Cognitive Dark** | [`07-nord-cognitive-dark/`](file:///Users/louislaville/Desktop/kit-charts/themes/07-nord-cognitive-dark) | Ergonomie du mode sombre & Réduction de la fatigue oculaire | Monitoring 24/7, NOC, salles de contrôle, faible luminosité | Dark |
-| **Atkinson Hyperlegible** | [`08-atkinson-hyperlegible/`](file:///Users/louislaville/Desktop/kit-charts/themes/08-atkinson-hyperlegible) | Braille Institute of America & Applied Vision Science | Basse vision, accessibilité universelle maximale | High Contrast |
+| **ColorBrewer Accessible** | [`01-colorbrewer-accessible/`](./01-colorbrewer-accessible) | Cynthia Brewer & Mark Harrower (Penn State) | Polyvalent, cartographie, dashboards généralistes | Light |
+| **Viridis Perceptual** | [`02-viridis-perceptual/`](./02-viridis-perceptual) | Stéfan van der Walt & Nathaniel Smith (SciPy) | Données scientifiques, matrices Heatmap, KDE | Light / Dark |
+| **Paul Tol Scientific** | [`03-paul-tol-scientific/`](./03-paul-tol-scientific) | Dr. Paul Tol (SRON Space Research) | Séries multicatégorielles denses, contrastes optimisés CVD | Light |
+| **Tableau Stone Categorical** | [`04-tableau-stone-categorical/`](./04-tableau-stone-categorical) | Maureen Stone, Cristy Miller, Jeffrey Heer (IEEE InfoVis) | Dashboards décisionnels business, nomination rapide des couleurs | Light |
+| **Okabe-Ito CUD** | [`05-okabe-ito-cud/`](./05-okabe-ito-cud) | Masataka Okabe & Kei Ito (Color Universal Design) | Accessibilité stricte, rapports officiels & académiques | Light |
+| **Tufte Minimalist Executive** | [`06-tufte-minimalist-executive/`](./06-tufte-minimalist-executive) | Edward Tufte (Data-Ink) & Stephen Few | Direction financière, rapports exécutifs, minimalisme absolu | Light |
+| **Nord Cognitive Dark** | [`07-nord-cognitive-dark/`](./07-nord-cognitive-dark) | Ergonomie du mode sombre & Réduction de la fatigue oculaire | Monitoring 24/7, NOC, salles de contrôle, faible luminosité | Dark |
+| **Atkinson Hyperlegible** | [`08-atkinson-hyperlegible/`](./08-atkinson-hyperlegible) | Braille Institute of America & Applied Vision Science | Basse vision, accessibilité universelle maximale | High Contrast |
 
 ---
 

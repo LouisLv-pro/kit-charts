@@ -40,3 +40,25 @@ $$G = \frac{\sum_{i=1}^n \sum_{j=1}^n |x_i - x_j|}{2 n^2 \bar{x}}$$
 ### ❌ Quand NE PAS l'utiliser
 - Catégories ordinales ou temporelles où le tri détruirait l'ordre chronologique (👉 *utiliser Bar Chart ou Line Chart*).
 - Données non sommables ou non additives.
+
+---
+
+## 5. Intégration Tokens
+- Utilisation de `tokens.palette[0]` pour la série principale de barres.
+- Accentuation binaire pour le seuil 80% via `tokens.palette[1]` ou `tokens.border`.
+- Typographie `tokens.fontMono` pour les pourcentages cumulés.
+
+---
+
+## 6. Données de Démonstration Déterministes
+- 8 causes avec distribution décroissante respectant le principe 80/20.
+
+---
+
+## 7. Psychophysique de l'Interaction
+- Survol synchrone avec infobulle combinée affichant effectif absolu et pourcentage cumulé.
+
+---
+
+## 8. Règles Cognitives d'Accentuation & Valence
+- Accentuation des 20% des causes critiques représentant 80% des effets.

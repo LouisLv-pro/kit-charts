@@ -180,6 +180,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     options: {
       ...defaultOpts,
       indexAxis: 'y', // Orientation horizontale
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      layout: {
+        padding: {
+          right: 28
+        }
+      },
       animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
       interaction: {
         mode: 'index',
@@ -255,7 +262,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         x: {
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage horizontal
-          grace: '10%',
+          grace: '15%',
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

@@ -33,12 +33,28 @@
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   function computeGanttSchedule(tasks, todayWeek = 6) {
-    return tasks.map(t => {
+    if (!Array.isArray(tasks)) {
+      const empty = [];
+      empty.tasks = [];
+      empty.summary = { completed: 0, delayed: 0, onTrack: 0 };
+      return empty;
+    }
+    let completed = 0;
+    let onTrack = 0;
+    let delayed = 0;
+    const computedTasks = tasks.map(t => {
       const start = Number(t.start) || 0;
       const end = Number(t.end) || 0;
-      const progress = Math.max(0, Math.min(100, Number(t.progress) || 0));
+      const rawProg = Number(t.progress) || 0;
+      const progress = rawProg <= 1.0 && rawProg > 0 ? rawProg * 100 : Math.max(0, Math.min(100, rawProg));
       const duration = end - start;
       const doneTime = start + (duration * (progress / 100));
+      const isCompleted = progress >= 100;
+      const isLate = !isCompleted && todayWeek > doneTime;
+      const status = isCompleted ? 'completed' : (isLate ? 'delayed' : 'on-track');
+      if (status === 'completed') completed++;
+      else if (status === 'delayed') delayed++;
+      else onTrack++;
 
       return {
         ...t,
@@ -47,9 +63,13 @@
         duration,
         progress,
         doneTime,
-        isLate: todayWeek > doneTime && progress < 100
+        status,
+        isLate
       };
     });
+    computedTasks.tasks = computedTasks;
+    computedTasks.summary = { completed, delayed, onTrack };
+    return computedTasks;
   }
 
   const DEFAULT_DATA = {
@@ -170,9 +190,8 @@
           borderColor: schedule.map(t => getColor(tokens, t.category || 0)),
           borderWidth: 1.5,
           borderRadius: 4,
-          datalabels: {
-            display: false // Drawn precisely in ganttPainterPlugin
-          }
+          datalabels: false,
+          displayDataLabels: false
         }]
       },
       options: {
@@ -180,6 +199,12 @@
         indexAxis: 'y',
         _kitChartsTokens: tokens,
         showDataLabels: showDataLabels,
+        layout: {
+          padding: {
+            right: 30,
+            top: 16
+          }
+        },
         animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
         interaction: {
           mode: 'index',
@@ -212,7 +237,7 @@
             type: 'linear',
             ...defaultOpts.scales.x,
             min: 0,
-            max: 14,
+            max: 15,
             grid: { color: tokens.gridColor },
             ticks: {
               stepSize: 1,
@@ -242,7 +267,11 @@
     createChart,
     DEFAULT_DATA,
     computeGanttSchedule,
+    computeGanttProgress: computeGanttSchedule,
     getDataLabelOptions,
-    formatLabelValue
+    formatLabelValue,
+    getEmphasisStyle: (KitChartsTheme && KitChartsTheme.getEmphasisStyle),
+    getValenceColor: (KitChartsTheme && KitChartsTheme.getValenceColor),
+    getThresholdStatus: (KitChartsTheme && KitChartsTheme.getThresholdStatus)
   };
 });

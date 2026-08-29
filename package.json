@@ -1,0 +1,31 @@
+{
+  "name": "kit-charts",
+  "version": "1.0.0",
+  "description": "Bibliothèque de datavisualisation agent-native pour Chart.js, fondée sur les sciences cognitives et WCAG 2.2.",
+  "main": "catalog-bundle.js",
+  "scripts": {
+    "build": "node .agents/skills/kit-charts/scripts/build-bundle.js",
+    "compile": "node .agents/skills/kit-charts/scripts/compile-chart.js",
+    "validate": "node .agents/skills/kit-charts/scripts/validate-chart.js",
+    "lint": "node .agents/skills/kit-charts/scripts/validate-chart.js",
+    "test": "node test/run-integration-tests.js"
+  },
+  "keywords": [
+    "dataviz",
+    "chartjs",
+    "cognitive-science",
+    "agent-native",
+    "antigravity",
+    "wcag",
+    "data-visualization",
+    "accessibility",
+    "tufte",
+    "cleveland-mcgill"
+  ],
+  "author": "kit-charts team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/LouisLv-pro/kit-charts.git"
+  }
+}

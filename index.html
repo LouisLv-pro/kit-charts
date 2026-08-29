@@ -786,17 +786,6 @@
       gap: 0.75rem;
     }
 
-    .section-count-tag {
-      font-size: 0.95rem;
-      font-family: var(--font-mono);
-      font-weight: 600;
-      color: var(--text-muted);
-      background: var(--surface-subtle);
-      border: 1px solid var(--border);
-      padding: 0.2rem 0.65rem;
-      border-radius: var(--radius-full);
-    }
-
     .section-desc {
       font-size: 1rem;
       color: var(--text-secondary);
@@ -1153,7 +1142,7 @@
 
     .footer-grid {
       display: grid;
-      grid-template-columns: 2fr 1fr 1fr 1.5fr;
+      grid-template-columns: 2fr 1.2fr 1.8fr;
       gap: 3rem;
       margin-bottom: 3.5rem;
     }
@@ -1470,8 +1459,6 @@
             <circle cx="7" cy="7" r="1.5" fill="currentColor"></circle>
           </svg>
         </button>
-
-        <div class="toolbar-badge-total">83 Templates • 8 Thèmes</div>
       </div>
     </nav>
 
@@ -1483,7 +1470,6 @@
         <div class="section-badge"><span>🎨</span> 00. Systèmes de Thèmes & Ergonomie Chromatique</div>
         <h2 class="section-title">
           Thèmes Cognitifs & Palettes Perceptuelles
-          <span class="section-count-tag">8 thèmes</span>
         </h2>
         <p class="section-desc">
           Systèmes chromatiques et typographiques scientifiquement calibrés sur les espaces uniformes CIELAB / CAM02 : discrimination optimale sous toutes les formes de daltonisme (CVD Safe), luminance monotone, typographies haute lisibilité et chiffres tabulaires.
@@ -1503,7 +1489,6 @@
         <div class="section-badge"><span>💳</span> 00. KPI Cards</div>
         <h2 class="section-title">
           Cartes & Métriques KPI
-          <span class="section-count-tag">7 templates</span>
         </h2>
         <p class="section-desc">
           Cartes synthétiques haute densité pour tableaux de bord exécutifs, micro-sparklines temporelles, indicateurs d'objectifs bullet et décompositions conformes aux principes de Sweller et Cowan.
@@ -1523,7 +1508,6 @@
         <div class="section-badge"><span>📊</span> 01 à 08. Graphiques Dataviz</div>
         <h2 class="section-title">
           Graphiques & Visualisations
-          <span class="section-count-tag">60 templates</span>
         </h2>
         <p class="section-desc">
           Suite exhaustive de visualisations calibrées rigoureusement selon les lois de Cleveland-McGill, Tufte et Stevens : comparaison, composition, distribution, corrélation, séries temporelles, flux et géospatial.
@@ -1595,7 +1579,6 @@
         <div class="section-badge"><span>📋</span> 09. Tableaux Dataviz</div>
         <h2 class="section-title">
           Tableaux & Matrices Dataviz
-          <span class="section-count-tag">6 templates</span>
         </h2>
         <p class="section-desc">
           Tableaux analytiques conformes aux standards de Stephen Few, Edward Tufte et IBCS® : bar-in-cell, matrices heatmap, arborescences repliables, variances financières et classements.
@@ -1615,7 +1598,6 @@
         <div class="section-badge"><span>🔍</span> 10. Ergonomie & Interaction</div>
         <h2 class="section-title">
           Tooltips & Infobulles Cognitives
-          <span class="section-count-tag">1 laboratoire</span>
         </h2>
         <p class="section-desc">
           Système d'infobulles dynamiques anti-occlusion respectant la loi de Fitts, le principe de contiguïté de Mayer et les exigences de contraste WCAG AAA.
@@ -1635,7 +1617,6 @@
         <div class="section-badge"><span>⚡</span> 11. Micro-Animations Cognitives</div>
         <h2 class="section-title">
           Animations & Dynamique de Transition
-          <span class="section-count-tag">9 templates</span>
         </h2>
         <p class="section-desc">
           Patterns d'animations cognitives basés sur les recherches de Heer & Robertson, Simons & Levin et Bartram : transitions par étapes, anti-change blindness, pulsations préattentionnelles et banc d'essai cinématique.
@@ -1671,12 +1652,6 @@
           <p>
             Suite cognitive de visualisation graphique pour Chart.js v4+ calibrée pour une clarté analytique absolue, une discrimination psychophysique optimale et une conformité WCAG AAA.
           </p>
-          <div class="footer-badges-wrap">
-            <span class="footer-badge">100% Hors-Ligne</span>
-            <span class="footer-badge">Zero-CORS</span>
-            <span class="footer-badge">8 Thèmes Perceptuels</span>
-            <span class="footer-badge">Chart.js v4.4+</span>
-          </div>
         </div>
 
         <!-- Colonne 2 : Navigation Directe -->
@@ -1692,18 +1667,7 @@
           </ul>
         </div>
 
-        <!-- Colonne 3 : Démos & Laboratoires -->
-        <div>
-          <h4 class="footer-col-title">Laboratoires</h4>
-          <ul class="footer-col-links">
-            <li><a href="template/00-kpi-card/preview.html" target="_blank" rel="noopener">💳 Scorecard KPI Hub</a></li>
-            <li><a href="template/tooltip/preview.html" target="_blank" rel="noopener">🔍 Laboratoire Tooltips</a></li>
-            <li><a href="template/animation/preview.html" target="_blank" rel="noopener">⚡ Laboratoire Animations</a></li>
-            <li><a href="themes/README.md" target="_blank" rel="noopener">🎨 Guide des 8 Thèmes</a></li>
-          </ul>
-        </div>
-
-        <!-- Colonne 4 : Fondements & Normes -->
+        <!-- Colonne 3 : Fondements & Normes -->
         <div>
           <h4 class="footer-col-title">Fondements Cognitifs</h4>
           <ul class="footer-col-links">
@@ -2671,12 +2635,144 @@
         tags: ['animation', 'anticipation', 'lasseter', 'recul', 'tri', 'disney', 'siggraph']
       },
       {
+        id: 'anim-path-drawing',
+        title: '9. Révélation de Tracé',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Tversky & Heer (2007)',
+        cognitiveRank: 'Révélation par Longueur d\'Arc',
+        cognitiveSummary: 'Révélation chronologique point-par-point d\'une courbe pour une narration temporelle captivante.',
+        tags: ['animation', 'path', 'line', 'reveal', 'tversky', 'storytelling', 'chronologique']
+      },
+      {
+        id: 'anim-count-up',
+        title: '10. Compteur Animé',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Dehaene & Tversky (2002)',
+        cognitiveRank: 'Magnitude Analogique Tabulaire',
+        cognitiveSummary: 'Montée progressive fluide d\'un chiffre-clé héros sans tremblement de largeur.',
+        tags: ['animation', 'odometer', 'countup', 'kpi', 'hero', 'dehaene', 'tabular']
+      },
+      {
+        id: 'anim-focus-context',
+        title: '11. Focus + Context',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Pirolli, Card & Furnas',
+        cognitiveRank: 'Atténuation Préattentive (Dimming)',
+        cognitiveSummary: 'Mise en valeur d\'une série cible par estompage sélectif de la périphérie sans déplacement.',
+        tags: ['animation', 'focus', 'context', 'dimming', 'survol', 'selection', 'treisman']
+      },
+      {
+        id: 'anim-bar-chart-race',
+        title: '12. Course de Barres Classée',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Robertson et al. (CHI 2008)',
+        cognitiveRank: 'Morphing de Rangs (k≤4)',
+        cognitiveSummary: 'Évolution animée de classements avec couleurs stables et transitions pas-à-pas contrôlées.',
+        tags: ['animation', 'race', 'ranking', 'classement', 'robertson', 'morphing', 'mot']
+      },
+      {
+        id: 'anim-pan-camera',
+        title: '13. Panoramique Caméra',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Shneiderman (1996)',
+        cognitiveRank: 'Balayage Horizontal Continu',
+        cognitiveSummary: 'Déplacement de caméra fluide sur un domaine étendu préservant la continuité de l\'axe.',
+        tags: ['animation', 'pan', 'camera', 'overview', 'detail', 'shneiderman', 'echelle']
+      },
+      {
+        id: 'anim-cross-type-morph',
+        title: '14. Morphing Barres ↔ Secteurs',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Cleveland & McGill (1984)',
+        cognitiveRank: 'Transition Géométrique Continue',
+        cognitiveSummary: 'Morphing 2D fluide entre encodages cartésiens et polaires sur 32 points de contour.',
+        tags: ['animation', 'morphing', 'bar', 'pie', 'cross-type', 'cleveland', 'contour']
+      },
+      {
+        id: 'anim-axis-rescale',
+        title: '15. Rescaling Linéaire ↔ Log',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Cleveland (1984) & Tufte',
+        cognitiveRank: 'Changement d\'Échelle Synchrone',
+        cognitiveSummary: 'Transition animée entre échelle linéaire et logarithmique avec fondu croisé des graduations.',
+        tags: ['animation', 'log', 'linear', 'rescale', 'echelle', 'tufte', 'cleveland']
+      },
+      {
+        id: 'anim-motion-trails',
+        title: '16. Traînée Cométaire',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Heer & Robertson (2007)',
+        cognitiveRank: 'Trajectoire Cométaire X-Y',
+        cognitiveSummary: 'Visualisation de trajectoires 2D avec traînée à extinction exponentielle.',
+        tags: ['animation', 'comet', 'trails', 'scatter', 'trajectoire', 'gapminder', 'heer']
+      },
+      {
+        id: 'anim-series-buildup',
+        title: '17. Construction Sérielle',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Hullman et al. (2013)',
+        cognitiveRank: 'Échafaudage Cognitif Séquentiel',
+        cognitiveSummary: 'Introduction progressive des séries temporelles une à une pour faciliter la rétention.',
+        tags: ['animation', 'buildup', 'series', 'scaffolding', 'hullman', 'miller', 'sequence']
+      },
+      {
+        id: 'anim-scrollytelling',
+        title: '18. Scrollytelling à Hystérésis',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Conlen & Heer (2019)',
+        cognitiveRank: 'Navigation Narrative par Défilement',
+        cognitiveSummary: 'Contrôle du récit par fraction de scroll avec bande morte hystérésis anti-saccades.',
+        tags: ['animation', 'scroll', 'scrollytelling', 'hysteresis', 'conlen', 'narration', 'recit']
+      },
+      {
+        id: 'anim-critical-damping',
+        title: '19. Amorti Critique Physique',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Card & Dragicevic (2011)',
+        cognitiveRank: 'Ressort Analytique sans Rebond',
+        cognitiveSummary: 'Mouvement physique amorti critique (ζ=1) en temps réel garantissant zéro dépassement.',
+        tags: ['animation', 'spring', 'damping', 'ressort', 'critique', 'dragicevic', 'physique']
+      },
+      {
+        id: 'anim-delta-flash',
+        title: '20. Flash d\'Onset Delta',
+        category: 'animation',
+        categoryLabel: '11. Animation',
+        plugin: null,
+        pluginLabel: 'Jonides & Healey (2012)',
+        cognitiveRank: 'Surbrillance de Modification Temps Réel',
+        cognitiveSummary: 'Signalement immédiat des valeurs modifiées par pulsation d\'onset auto-extinguible.',
+        tags: ['animation', 'flash', 'onset', 'delta', 'temps-reel', 'jonides', 'healey', 'wcag']
+      },
+      {
         id: 'animation',
         title: '🔬 Laboratoire Complet d\'Animations',
         category: 'animation',
         categoryLabel: '11. Animation',
         plugin: null,
-        pluginLabel: 'Suite 10 Principes',
+        pluginLabel: 'Suite 20 Principes',
         cognitiveRank: 'Banc d\'Essai & Télémétrie Cinématique',
         cognitiveSummary: 'Démonstrateur des principes d\'animation cognitive respectant l\'accessibilité et la fluidité perceptuelle.',
         tags: ['animation', 'lab', 'laboratoire', 'telemetrie', 'easing', 'tous']
@@ -2796,11 +2892,28 @@
     // ========================================================================
     // ÉTAT DE L'APPLICATION
     // ========================================================================
-    let currentTheme = localStorage.getItem('kitcharts_theme') || DEFAULT_THEME;
-    let globalShowDataLabels = true;
+    let currentTheme = (typeof getStoredTheme === 'function' ? getStoredTheme() : (localStorage.getItem('kitcharts_theme') || DEFAULT_THEME));
+    let globalShowDataLabels = (typeof getStoredLabels === 'function' ? getStoredLabels() : true);
     const chartRegistry = new Map();
     let heroChartGraphs = null;
     let heroAnimFrameId = null;
+
+    function getPreviewUrlWithParams(baseUrl, theme = currentTheme, showLabels = globalShowDataLabels) {
+      if (!baseUrl) return '#';
+      const sep = baseUrl.includes('?') ? '&' : '?';
+      return `${baseUrl}${sep}theme=${encodeURIComponent(theme)}&labels=${showLabels}`;
+    }
+
+    function updateAllCardLinks() {
+      document.querySelectorAll('.card-btn-demo').forEach(btn => {
+        if (btn.dataset.baseUrl) {
+          const isThemeCard = btn.dataset.baseUrl.startsWith('./themes/');
+          if (!isThemeCard) {
+            btn.href = getPreviewUrlWithParams(btn.dataset.baseUrl, currentTheme, globalShowDataLabels);
+          }
+        }
+      });
+    }
 
     // Références DOM
     const globalDataLabelsToggleBtn = document.getElementById('globalDataLabelsToggleBtn');
@@ -2863,7 +2976,7 @@
         </div>
 
         <div class="card-footer">
-          <a href="./themes/${theme.id}/preview.html" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir le template dans une page dédiée autonome">
+          <a href="${getPreviewUrlWithParams('./themes/' + theme.id + '/preview.html', theme.themeName)}" data-base-url="./themes/${theme.id}/preview.html" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir le template dans une page dédiée autonome">
             <span>▶</span> Ouvrir le template
           </a>
         </div>
@@ -2890,7 +3003,19 @@
           'anim-mot-stagger': '05-mot-stagger',
           'anim-apprehension-replay': '06-apprehension-replay',
           'anim-event-segmentation': '07-event-segmentation',
-          'anim-lasseter-anticipation': '08-lasseter-anticipation'
+          'anim-lasseter-anticipation': '08-lasseter-anticipation',
+          'anim-path-drawing': '09-path-drawing',
+          'anim-count-up': '10-count-up',
+          'anim-focus-context': '11-focus-context',
+          'anim-bar-chart-race': '12-bar-chart-race',
+          'anim-pan-camera': '13-pan-camera',
+          'anim-cross-type-morph': '14-cross-type-morph',
+          'anim-axis-rescale': '15-axis-rescale',
+          'anim-motion-trails': '16-motion-trails',
+          'anim-series-buildup': '17-series-buildup',
+          'anim-scrollytelling': '18-scrollytelling',
+          'anim-critical-damping': '19-critical-damping',
+          'anim-delta-flash': '20-delta-flash'
         };
         previewUrl = `./template/animation/${folderMap[chart.id] || chart.id}/preview.html`;
       }
@@ -2913,11 +3038,6 @@
             </div>
           </div>
 
-          <div class="card-cognitive-rule">
-            <strong>${chart.cognitiveRank}</strong>
-            ${chart.cognitiveSummary}
-          </div>
-
           <div class="card-canvas-container" id="container-${chart.id}">
             <div class="chart-skeleton" id="skeleton-${chart.id}">
               <div class="skeleton-spinner"></div>
@@ -2928,7 +3048,7 @@
         </div>
 
         <div class="card-footer">
-          <a href="${previewUrl}" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir le template dans une page dédiée autonome">
+          <a href="${getPreviewUrlWithParams(previewUrl)}" data-base-url="${previewUrl}" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir le template dans une page dédiée autonome">
             <span>▶</span> Ouvrir le template
           </a>
         </div>
@@ -3274,6 +3394,13 @@
     // ========================================================================
     function toggleGlobalDataLabels() {
       globalShowDataLabels = !globalShowDataLabels;
+      if (typeof setStoredLabels === 'function') {
+        setStoredLabels(globalShowDataLabels);
+      } else {
+        try { localStorage.setItem('kitcharts_labels', String(globalShowDataLabels)); } catch (e) {}
+      }
+      updateAllCardLinks();
+
       if (globalDataLabelsToggleBtn) {
         globalDataLabelsToggleBtn.setAttribute('aria-pressed', globalShowDataLabels);
         if (globalShowDataLabels) {
@@ -3316,9 +3443,14 @@
 
     function applyGlobalTheme(themeName) {
       currentTheme = themeName;
-      try {
-        localStorage.setItem('kitcharts_theme', themeName);
-      } catch (e) {}
+      if (typeof setStoredTheme === 'function') {
+        setStoredTheme(themeName);
+      } else {
+        try {
+          localStorage.setItem('kitcharts_theme', themeName);
+        } catch (e) {}
+      }
+      updateAllCardLinks();
 
       if (ThemeTokensModule.loadGoogleFonts) {
         ThemeTokensModule.loadGoogleFonts(themeName);
@@ -3421,6 +3553,18 @@
 
       // 2. Initialisation des événements d'interaction
       initEvents();
+
+      // Synchronisation état data labels UI
+      if (globalDataLabelsToggleBtn) {
+        globalDataLabelsToggleBtn.setAttribute('aria-pressed', globalShowDataLabels);
+        if (globalShowDataLabels) {
+          globalDataLabelsToggleBtn.classList.add('active');
+          globalDataLabelsToggleBtn.setAttribute('title', 'Étiquettes de données (Labels) : Activées');
+        } else {
+          globalDataLabelsToggleBtn.classList.remove('active');
+          globalDataLabelsToggleBtn.setAttribute('title', 'Étiquettes de données (Labels) : Désactivées');
+        }
+      }
 
       // 3. Application du thème initial
       applyGlobalTheme(currentTheme);

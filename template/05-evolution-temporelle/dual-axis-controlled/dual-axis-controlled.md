@@ -3,7 +3,7 @@
 ## 1. Fondements Scientifiques & Justification Cognitive
 Le graphique à double axe Y est historiquement documenté depuis **Croxton & Stryker (1927)** mais constitue **le template le plus sujet aux manipulations perceptives et aux erreurs d'interprétation** (Few 2008, Franconeri et al. 2021).
 
-### ⚠️ Risque Majeur : Corrélations Fallacieuses (*Spurious Correlations*)
+### ⚠️ Danger : Corrélation Fallacieuse (*Spurious Correlations*)
 Ajuster manuellement les minima et maxima de deux axes indépendants permet visuellement de faire coïncider deux courbes arbitraires sans aucun lien causal sous-jacent.
 Pour neutraliser ce biais, ce template impose **5 garde-fous cognitifs stricts et non négociables** :
 1. **Titrage explicite et unités sur chaque axe**.
@@ -35,3 +35,36 @@ $$r = \frac{\sum_{t=1}^n (z_{1,t} \cdot z_{2,t})}{n - 1}, \quad z_{i,t} = \frac{
 2. **Axe Droit** : Titre et graduations dans la couleur de la Série 2.
 3. **Zéro partagé** : Ligne de base $Y=0$ commune.
 4. **Infobulle indicée** : Rappel du coefficient $r$ à chaque survol.
+
+---
+
+## 4. Quand l'utiliser / Quand NE PAS l'utiliser
+
+### ✅ Quand l'utiliser
+- Comparaison temporelle de 2 grandeurs hétérogènes reliées par une hypothèse causale documentée.
+
+### ❌ Quand NE PAS l'utiliser
+- Plus de 2 séries (utiliser des petits multiples ou la normalisation Base 100).
+- Données sans relation explicite.
+
+---
+
+## 5. Intégration Tokens
+- Série 1 avec `tokens.palette[0]`.
+- Série 2 avec `tokens.palette[1]`.
+- Graduations et axes chromatiquement synchronisés.
+
+---
+
+## 6. Données de Démonstration Déterministes
+- 12 mois de température moyenne (°C) vs consommation électrique (GWh).
+
+---
+
+## 7. Psychophysique de l'Interaction
+- Curseur vertical synchronisé sur les 2 axes.
+
+---
+
+## 8. Règles Cognitives d'Accentuation & Valence
+- Affichage direct du coefficient de Pearson pour prévenir toute interprétation biaisée.

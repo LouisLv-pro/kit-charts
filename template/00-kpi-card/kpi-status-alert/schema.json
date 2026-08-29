@@ -1,0 +1,155 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "KPI Card Statut & Seuil d Alerte RAG",
+  "description": "Supervision d infrastructure et de SLA avec jauge multi-seuils RAG et signalétique universelle doublement encodée.",
+  "type": "object",
+  "properties": {
+    "targetTemplateId": {
+      "type": "string",
+      "enum": [
+        "kpi-status-alert"
+      ]
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 2000,
+          "default": 400
+        }
+      }
+    },
+    "colorStrategy": {
+      "type": "object",
+      "properties": {
+        "themeName": {
+          "type": "string",
+          "enum": [
+            "colorbrewer-accessible",
+            "viridis-perceptual",
+            "paul-tol-scientific",
+            "tableau-stone-categorical",
+            "okabe-ito-cud",
+            "tufte-minimalist-executive",
+            "nord-cognitive-dark",
+            "atkinson-hyperlegible"
+          ],
+          "default": "colorbrewer-accessible"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "semantic-valence",
+            "categorical",
+            "sequential",
+            "diverging"
+          ],
+          "default": "categorical"
+        },
+        "metricPolarity": {
+          "type": "string",
+          "enum": [
+            "HIGHER_IS_BETTER",
+            "LOWER_IS_BETTER",
+            "TARGET_BASED",
+            "NEUTRAL_CATEGORICAL"
+          ]
+        }
+      }
+    },
+    "cognitiveFeatures": {
+      "type": "object",
+      "properties": {
+        "showDataLabels": {
+          "type": "boolean",
+          "default": false
+        },
+        "tooltip": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "antiOcclusion": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "animation": {
+          "type": "object",
+          "properties": {
+            "patternId": {
+              "type": "string"
+            },
+            "durationMs": {
+              "type": "integer",
+              "maximum": 800,
+              "default": 600
+            }
+          }
+        }
+      }
+    },
+    "formattedData": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "value": {
+          "type": "number"
+        },
+        "unit": {
+          "type": "string"
+        },
+        "delta": {
+          "type": "number"
+        },
+        "deltaLabel": {
+          "type": "string"
+        },
+        "metricType": {
+          "type": "string",
+          "enum": [
+            "gain",
+            "cost",
+            "revenue",
+            "neutral"
+          ]
+        },
+        "target": {
+          "type": "number"
+        },
+        "benchmark": {
+          "type": "number"
+        },
+        "history": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          }
+        },
+        "footnote": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "value"
+      ]
+    }
+  },
+  "required": [
+    "formattedData"
+  ]
+}

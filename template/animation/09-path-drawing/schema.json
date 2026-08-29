@@ -1,0 +1,150 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Animation 09 : Révélation de Tracé Chronologique",
+  "description": "Dessin progressif de gauche à droite respectant la ligne temporelle naturelle de lecture.",
+  "type": "object",
+  "properties": {
+    "targetTemplateId": {
+      "type": "string",
+      "enum": [
+        "09-path-drawing"
+      ]
+    },
+    "layout": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "subtitle": {
+          "type": "string"
+        },
+        "height": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 2000,
+          "default": 400
+        }
+      }
+    },
+    "colorStrategy": {
+      "type": "object",
+      "properties": {
+        "themeName": {
+          "type": "string",
+          "enum": [
+            "colorbrewer-accessible",
+            "viridis-perceptual",
+            "paul-tol-scientific",
+            "tableau-stone-categorical",
+            "okabe-ito-cud",
+            "tufte-minimalist-executive",
+            "nord-cognitive-dark",
+            "atkinson-hyperlegible"
+          ],
+          "default": "colorbrewer-accessible"
+        },
+        "mode": {
+          "type": "string",
+          "enum": [
+            "semantic-valence",
+            "categorical",
+            "sequential",
+            "diverging"
+          ],
+          "default": "categorical"
+        },
+        "metricPolarity": {
+          "type": "string",
+          "enum": [
+            "HIGHER_IS_BETTER",
+            "LOWER_IS_BETTER",
+            "TARGET_BASED",
+            "NEUTRAL_CATEGORICAL"
+          ]
+        }
+      }
+    },
+    "cognitiveFeatures": {
+      "type": "object",
+      "properties": {
+        "showDataLabels": {
+          "type": "boolean",
+          "default": false
+        },
+        "tooltip": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "default": true
+            },
+            "antiOcclusion": {
+              "type": "boolean",
+              "default": true
+            }
+          }
+        },
+        "animation": {
+          "type": "object",
+          "properties": {
+            "patternId": {
+              "type": "string"
+            },
+            "durationMs": {
+              "type": "integer",
+              "maximum": 800,
+              "default": 600
+            }
+          }
+        }
+      }
+    },
+    "formattedData": {
+      "type": "object",
+      "properties": {
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "minItems": 6,
+          "maxItems": 20
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": {
+                "type": "string"
+              },
+              "data": {
+                "type": "array",
+                "items": {
+                  "type": [
+                    "number",
+                    "null",
+                    "object"
+                  ]
+                }
+              }
+            },
+            "required": [
+              "data"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 2
+        }
+      },
+      "required": [
+        "labels",
+        "datasets"
+      ]
+    }
+  },
+  "required": [
+    "formattedData"
+  ]
+}

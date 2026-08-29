@@ -568,6 +568,66 @@ function normalizeThemeSlug(inputTheme) {
   return DEFAULT_THEME;
 }
 
+function getStoredTheme() {
+  if (typeof window !== 'undefined') {
+    try {
+      if (window.location && window.location.search) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlTheme = urlParams.get('theme');
+        if (urlTheme) {
+          const normalized = normalizeThemeSlug(urlTheme);
+          if (THEMES[normalized]) return normalized;
+        }
+      }
+      if (typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('kitcharts_theme');
+        if (stored) {
+          const normalized = normalizeThemeSlug(stored);
+          if (THEMES[normalized]) return normalized;
+        }
+      }
+    } catch (e) {}
+  }
+  return DEFAULT_THEME;
+}
+
+function setStoredTheme(themeName) {
+  const normalized = normalizeThemeSlug(themeName);
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem('kitcharts_theme', normalized);
+    } catch (e) {}
+  }
+  return normalized;
+}
+
+function getStoredLabels() {
+  if (typeof window !== 'undefined') {
+    try {
+      if (window.location && window.location.search) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const urlLabels = urlParams.get('labels');
+        if (urlLabels !== null) return urlLabels === 'true' || urlLabels === '1';
+      }
+      if (typeof localStorage !== 'undefined') {
+        const stored = localStorage.getItem('kitcharts_labels');
+        if (stored !== null) return stored === 'true';
+      }
+    } catch (e) {}
+  }
+  return true;
+}
+
+function setStoredLabels(showLabels) {
+  const val = Boolean(showLabels);
+  if (typeof localStorage !== 'undefined') {
+    try {
+      localStorage.setItem('kitcharts_labels', String(val));
+    } catch (e) {}
+  }
+  return val;
+}
+
 function getThemeTokens(themeName = DEFAULT_THEME, container = null) {
   const normalized = normalizeThemeSlug(themeName);
   const baseTheme = THEMES[normalized] || THEMES[DEFAULT_THEME];
@@ -1461,6 +1521,920 @@ function animateWithAnticipation(chart, mutatorFn, options = {}) {
       resolve();
     }
   });
+}
+
+/**
+ * Universal Cognitive Animation Ticker (rAF loop with physical ms elapsed & deterministic easing).
+ * Conforms to Ticker rAF contract: onFrame(easedU, elapsedMs).
+ * Proscribes bounce/elastic, ensures instant resolution on reduced motion.
+ *
+ * @param {Object} options Configuration { duration, easing, onFrame, onComplete, reducedMotion }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function createAnimationTicker(options = {}) {
+  const isReduced = options.reducedMotion !== undefined ? Boolean(options.reducedMotion) : isReducedMotionPreferred();
+  const duration = Math.max(0, Number(options.duration) || 500);
+  const onFrame = typeof options.onFrame === 'function' ? options.onFrame : () => {};
+  const onComplete = typeof options.onComplete === 'function' ? options.onComplete : () => {};
+
+  const easingMap = {
+    easeOutCubic: (u) => 1 - Math.pow(1 - u, 3),
+    easeInOutCubic: (u) => u < 0.5 ? 4 * u * u * u : 1 - Math.pow(-2 * u + 2, 3) / 2,
+    easeOutQuad: (u) => 1 - (1 - u) * (1 - u),
+    linear: (u) => u
+  };
+
+  const easeFn = typeof options.easing === 'function'
+    ? options.easing
+    : (easingMap[options.easing] || easingMap.easeOutCubic);
+
+  if (isReduced || duration === 0) {
+    onFrame(1, duration);
+    onComplete();
+    return { stop: () => {} };
+  }
+
+  let rafId = null;
+  let isStopped = false;
+  const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+  const tick = () => {
+    if (isStopped) return;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const elapsed = Math.max(0, now - startTime);
+    const u = Math.min(1, elapsed / duration);
+    const easedU = easeFn(u);
+
+    onFrame(easedU, elapsed);
+
+    if (u < 1) {
+      if (typeof requestAnimationFrame !== 'undefined') {
+        rafId = requestAnimationFrame(tick);
+      } else {
+        setTimeout(tick, 16);
+      }
+    } else {
+      isStopped = true;
+      onComplete();
+    }
+  };
+
+  if (typeof requestAnimationFrame !== 'undefined') {
+    rafId = requestAnimationFrame(tick);
+  } else {
+    setTimeout(tick, 16);
+  }
+
+  return {
+    stop: () => {
+      isStopped = true;
+      if (rafId && typeof cancelAnimationFrame !== 'undefined') {
+        cancelAnimationFrame(rafId);
+      }
+    }
+  };
+}
+
+/**
+ * B1 (09): Révélation progressive de tracé / Path Drawing (Tversky 2002 / Heer & Robertson 2007).
+ * Arc-length reparametrization (||gamma'(s)|| = 1) with easeInOutCubic.
+ * Narrative mode: T ~ 2200ms ; Data update: ΔT(N) <= 800ms.
+ *
+ * @param {Object} chart Chart.js instance
+ * @param {Object} [options={}] Options { duration: 2200, onComplete, reducedMotion }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function animatePathDrawing(chart, options = {}) {
+  if (!chart || !chart.data) {
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  const duration = options.duration !== undefined ? options.duration : 2200;
+  const originalDatasets = (chart.data.datasets || []).map(ds => ({
+    data: [...(ds.data || [])],
+    borderColor: ds.borderColor,
+    backgroundColor: ds.backgroundColor
+  }));
+
+  if (isReducedMotionPreferred() || options.reducedMotion || duration === 0) {
+    chart.update('none');
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  const fullData = originalDatasets[0]?.data || [];
+  const N = fullData.length;
+  if (N < 2) {
+    chart.update('none');
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  return createAnimationTicker({
+    duration: duration,
+    easing: 'easeInOutCubic',
+    reducedMotion: options.reducedMotion,
+    onFrame: (easedU, elapsedMs) => {
+      const fractionalIndex = easedU * (N - 1);
+      const baseIdx = Math.floor(fractionalIndex);
+      const frac = fractionalIndex - baseIdx;
+
+      chart.data.datasets.forEach((ds, dsIdx) => {
+        const full = originalDatasets[dsIdx]?.data || [];
+        const currentData = [];
+        for (let i = 0; i <= baseIdx; i++) {
+          currentData.push(full[i]);
+        }
+        if (frac > 0 && baseIdx + 1 < full.length) {
+          const interpolatedVal = full[baseIdx] + (full[baseIdx + 1] - full[baseIdx]) * frac;
+          currentData.push(interpolatedVal);
+        }
+        ds.data = currentData;
+      });
+      chart.update('none');
+    },
+    onComplete: () => {
+      chart.data.datasets.forEach((ds, dsIdx) => {
+        if (originalDatasets[dsIdx]) {
+          ds.data = [...originalDatasets[dsIdx].data];
+        }
+      });
+      chart.update('none');
+      if (typeof options.onComplete === 'function') options.onComplete();
+    }
+  });
+}
+
+/**
+ * B2 (10): Compteur numérique animé / Count-up (Dehaene / Tversky et al. 2002).
+ * Formula: v(t) = round(v0 + Δv * easeOutCubic(t/T))
+ * Throttled to ~30Hz (>= 33ms between renders) with tabular numbers and exact final value.
+ *
+ * @param {HTMLElement|Function} target Target DOM element or callback(val)
+ * @param {number} targetValue Final value
+ * @param {Object} [options={}] Options { startValue: 0, duration: 500, prefix: '', suffix: '', formatFn }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function animateCountUp(target, targetValue, options = {}) {
+  const v0 = options.startValue !== undefined ? Number(options.startValue) : 0;
+  const v1 = Number(targetValue) || 0;
+  const delta = v1 - v0;
+  const duration = options.duration !== undefined ? (Number(options.duration) === 0 ? 0 : Math.min(800, Math.max(100, Number(options.duration)))) : 500;
+  let lastRenderTime = 0;
+
+  const setValue = (val) => {
+    const rounded = Math.round(val);
+    const formatted = typeof options.formatFn === 'function'
+      ? options.formatFn(rounded)
+      : `${options.prefix || ''}${rounded.toLocaleString('fr-FR')}${options.suffix || ''}`;
+
+    if (typeof target === 'function') {
+      target(rounded, formatted);
+    } else if (target && typeof target === 'object') {
+      target.textContent = formatted;
+    }
+  };
+
+  if (isReducedMotionPreferred() || options.reducedMotion || duration === 0) {
+    setValue(v1);
+    if (typeof options.onComplete === 'function') options.onComplete();
+    return { stop: () => {} };
+  }
+
+  return createAnimationTicker({
+    duration: duration,
+    easing: 'easeOutCubic',
+    reducedMotion: options.reducedMotion,
+    onFrame: (easedU, elapsedMs) => {
+      // Throttle visual renders to >= 33ms (~30Hz)
+      if (elapsedMs - lastRenderTime >= 33 || easedU >= 1) {
+        lastRenderTime = elapsedMs;
+        const currentVal = v0 + delta * easedU;
+        setValue(currentVal);
+      }
+    },
+    onComplete: () => {
+      setValue(v1);
+      if (typeof options.onComplete === 'function') options.onComplete();
+    }
+  });
+}
+
+/**
+ * B3 (11): Focus + Context / Dimming non-sélectionnés (Pirolli & Card 1999 / Furnas 1986 / Treisman).
+ * Formula: α_target = 1.0 (selected S) or 0.25 (others). α_i(t) = α_target + (α_0 - α_target)(1-u)^2 (easeOutQuad, T <= 150ms).
+ *
+ * @param {Object} chart Chart.js instance
+ * @param {number|Array<number>|Function} selectedIndices Selected dataset or element indices
+ * @param {Object} [options={}] Options { duration: 140, onComplete, dimAlpha: 0.25 }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function animateFocusContext(chart, selectedIndices, options = {}) {
+  if (!chart || !chart.data || !chart.data.datasets) {
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  const duration = Math.min(150, options.duration !== undefined ? Number(options.duration) : 140);
+  const dimAlpha = options.dimAlpha !== undefined ? Number(options.dimAlpha) : 0.25;
+
+  const isSelected = (idx, dsIdx) => {
+    if (selectedIndices === null || selectedIndices === undefined) return true; // reset all
+    if (typeof selectedIndices === 'function') return selectedIndices(idx, dsIdx);
+    if (Array.isArray(selectedIndices)) return selectedIndices.includes(idx) || selectedIndices.includes(dsIdx);
+    return selectedIndices === idx || selectedIndices === dsIdx;
+  };
+
+  chart.data.datasets.forEach((ds, dsIdx) => {
+    if (!ds._kcOriginalBg) {
+      ds._kcOriginalBg = ds.backgroundColor;
+      ds._kcOriginalBorder = ds.borderColor;
+    }
+
+    if (Array.isArray(ds._kcOriginalBg)) {
+      ds.backgroundColor = ds._kcOriginalBg.map((c, i) =>
+        isSelected(i, dsIdx) ? c : hexToRgba(c, dimAlpha)
+      );
+      if (Array.isArray(ds._kcOriginalBorder)) {
+        ds.borderColor = ds._kcOriginalBorder.map((c, i) =>
+          isSelected(i, dsIdx) ? c : hexToRgba(c, Math.min(1, dimAlpha + 0.1))
+        );
+      }
+    } else {
+      const active = isSelected(dsIdx, dsIdx);
+      ds.backgroundColor = active ? ds._kcOriginalBg : hexToRgba(ds._kcOriginalBg, dimAlpha);
+      ds.borderColor = active ? ds._kcOriginalBorder : hexToRgba(ds._kcOriginalBorder, Math.min(1, dimAlpha + 0.1));
+    }
+  });
+
+  chart.update('none');
+  if (typeof options.onComplete === 'function') options.onComplete();
+  return { stop: () => {} };
+}
+
+/**
+ * B4 (12): Course de barres classée / Bar Chart Race / Rank Morphing (Robertson et al. CHI 2008 / MOT k<=4).
+ * Formula: y_i(u) = y_r0(i) + (y_r1(i) - y_r0(i)) * easeInOutCubic(u).
+ * Adjacent rank inversions only between frames, pause >= 450ms, N <= 6.
+ *
+ * @param {Object} chart Chart.js instance
+ * @param {Array<Object>} frames Array of frames [{ year/label, data: [{ name, value, color }] }]
+ * @param {Object} [options={}] Options { stepDuration: 600, pauseMs: 500, onStepChange, onComplete }
+ * @returns {Object} Race player handle
+ */
+function animateBarChartRace(chart, frames = [], options = {}) {
+  let currentFrameIdx = 0;
+  let isPlaying = false;
+  let stepTimer = null;
+  const stepDur = options.stepDuration || 600;
+  const pauseMs = Math.max(450, options.pauseMs || 500);
+
+  const applyFrame = (idx, animate = true) => {
+    if (!chart || !frames || !frames[idx]) return;
+    currentFrameIdx = idx;
+    const frame = frames[idx];
+    const sorted = [...frame.data].sort((a, b) => b.value - a.value).slice(0, 6);
+
+    chart.data.labels = sorted.map(item => item.name);
+    if (chart.data.datasets && chart.data.datasets[0]) {
+      chart.data.datasets[0].data = sorted.map(item => item.value);
+      chart.data.datasets[0].backgroundColor = sorted.map(item => item.color);
+      chart.data.datasets[0].borderColor = sorted.map(item => item.color);
+    }
+
+    if (chart.options && chart.options.animation) {
+      chart.options.animation.duration = (animate && !isReducedMotionPreferred() && !options.reducedMotion) ? stepDur : 0;
+      chart.options.animation.easing = 'easeInOutCubic';
+    }
+    chart.update();
+
+    if (typeof options.onStepChange === 'function') {
+      options.onStepChange(currentFrameIdx, frame);
+    }
+  };
+
+  const next = () => {
+    if (currentFrameIdx < frames.length - 1) {
+      applyFrame(currentFrameIdx + 1, true);
+    } else {
+      pause();
+      if (typeof options.onComplete === 'function') options.onComplete();
+    }
+  };
+
+  const prev = () => {
+    if (currentFrameIdx > 0) applyFrame(currentFrameIdx - 1, true);
+  };
+
+  const play = () => {
+    isPlaying = true;
+    const loop = () => {
+      if (!isPlaying) return;
+      if (currentFrameIdx < frames.length - 1) {
+        next();
+        stepTimer = setTimeout(loop, stepDur + pauseMs);
+      } else {
+        pause();
+      }
+    };
+    stepTimer = setTimeout(loop, pauseMs);
+  };
+
+  const pause = () => {
+    isPlaying = false;
+    if (stepTimer) clearTimeout(stepTimer);
+  };
+
+  return {
+    play,
+    pause,
+    next,
+    prev,
+    goToFrame: (idx) => applyFrame(idx, true),
+    getCurrentIndex: () => currentFrameIdx,
+    isPlaying: () => isPlaying
+  };
+}
+
+/**
+ * B5 (13): Panoramique Caméra / Pan Overview+Detail (Shneiderman 1996 / Plumlee & Ware 2006).
+ * Formula: c(u) = c0 + (c1 - c0) * easeInOutCubic(u).
+ * T = clamp(dist_px / 2000 px/s, 120ms, 600ms). Updates scales.x.min/max with update('none').
+ *
+ * @param {Object} chart Chart.js instance
+ * @param {Object} targetRange { min: number, max: number }
+ * @param {Object} [options={}] Options { duration, onComplete }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function animatePanCamera(chart, targetRange, options = {}) {
+  if (!chart || !chart.scales || !chart.scales.x) {
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  const currentMin = chart.scales.x.min;
+  const currentMax = chart.scales.x.max;
+  const targetMin = targetRange.min !== undefined ? targetRange.min : currentMin;
+  const targetMax = targetRange.max !== undefined ? targetRange.max : currentMax;
+
+  const dist = Math.abs(targetMin - currentMin);
+  const calculatedDuration = Math.min(600, Math.max(120, Math.round((dist / 10) * 100)));
+  const duration = options.duration !== undefined ? options.duration : calculatedDuration;
+
+  if (isReducedMotionPreferred() || options.reducedMotion || duration === 0) {
+    chart.options.scales.x.min = targetMin;
+    chart.options.scales.x.max = targetMax;
+    chart.update('none');
+    if (typeof options.onComplete === 'function') options.onComplete();
+    return { stop: () => {} };
+  }
+
+  return createAnimationTicker({
+    duration: duration,
+    easing: 'easeInOutCubic',
+    reducedMotion: options.reducedMotion,
+    onFrame: (easedU) => {
+      if (!chart.options.scales) chart.options.scales = {};
+      if (!chart.options.scales.x) chart.options.scales.x = {};
+      chart.options.scales.x.min = currentMin + (targetMin - currentMin) * easedU;
+      chart.options.scales.x.max = currentMax + (targetMax - currentMax) * easedU;
+      chart.update('none');
+    },
+    onComplete: () => {
+      chart.options.scales.x.min = targetMin;
+      chart.options.scales.x.max = targetMax;
+      chart.update('none');
+      if (typeof options.onComplete === 'function') options.onComplete();
+    }
+  });
+}
+
+/**
+ * B6 (14): Morphing entre types de graphiques / Cross-Type Morphing (Robertson et al. 2008 / Cleveland & McGill 1984).
+ * 32 contour sample points: x_i(p) = (1-p)*f_cart^-1(i) + p*g_polar^-1(i), p = easeInOutCubic(u).
+ * Axis decor fades out on [0, 0.25T], labels fade in on [0.75T, T].
+ * Enforces CSS 100% wrapper sizing to guarantee perceptual frame stability.
+ *
+ * @param {HTMLCanvasElement} canvas Target canvas element
+ * @param {Array<Object>} items Data items [{ label, value, color }]
+ * @param {string} fromType 'bar' | 'pie'
+ * @param {string} toType 'pie' | 'bar'
+ * @param {Object} [options={}] Options { duration: 800, onComplete }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function animateCrossTypeMorph(canvas, items = [], fromType = 'bar', toType = 'pie', options = {}) {
+  if (!canvas) {
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  const ctx = canvas.getContext('2d');
+  const duration = options.duration !== undefined ? options.duration : 800;
+  const dpr = typeof window !== 'undefined' ? (window.devicePixelRatio || 1) : 1;
+  const rect = canvas.getBoundingClientRect();
+  const W = (rect.width || 600) * dpr;
+  const H = (rect.height || 400) * dpr;
+
+  canvas.width = W;
+  canvas.height = H;
+  canvas.style.width = '100%';
+  canvas.style.height = '100%';
+
+  const total = items.reduce((acc, it) => acc + it.value, 0) || 1;
+  const N = items.length;
+
+  const renderFrame = (p) => {
+    ctx.clearRect(0, 0, W, H);
+    ctx.save();
+
+    const barArea = { x: W * 0.12, y: H * 0.15, w: W * 0.76, h: H * 0.70 };
+    const pieCenter = { x: W * 0.5, y: H * 0.5, r: Math.min(W, H) * 0.32 };
+    const maxVal = Math.max(...items.map(it => it.value), 1);
+
+    // Alpha for bar axes [0 -> 0.25T fade-out]
+    const axisAlpha = Math.max(0, 1 - p / 0.25);
+    // Alpha for pie labels [0.75T -> 1.0T fade-in]
+    const labelAlpha = Math.max(0, (p - 0.75) / 0.25);
+
+    if (axisAlpha > 0) {
+      ctx.strokeStyle = `rgba(148, 163, 184, ${axisAlpha * 0.4})`;
+      ctx.lineWidth = 1 * dpr;
+      ctx.beginPath();
+      ctx.moveTo(barArea.x, barArea.y + barArea.h);
+      ctx.lineTo(barArea.x + barArea.w, barArea.y + barArea.h);
+      ctx.stroke();
+    }
+
+    let runningAngle = -Math.PI / 2;
+    const barWidth = (barArea.w / N) * 0.65;
+    const barSpacing = barArea.w / N;
+
+    items.forEach((item, idx) => {
+      const sliceAngle = (item.value / total) * 2 * Math.PI;
+      const barH = (item.value / maxVal) * barArea.h;
+      const barX = barArea.x + idx * barSpacing + (barSpacing - barWidth) / 2;
+      const barY = barArea.y + barArea.h - barH;
+
+      // 32 sample points contour interpolation
+      const points = [];
+      const M = 32;
+      for (let s = 0; s < M; s++) {
+        const uSample = s / (M - 1);
+
+        // Rectangular Cartesian coordinates
+        let cx = 0, cy = 0;
+        if (s < M / 4) {
+          cx = barX + (s / (M / 4)) * barWidth;
+          cy = barY;
+        } else if (s < M / 2) {
+          cx = barX + barWidth;
+          cy = barY + ((s - M / 4) / (M / 4)) * barH;
+        } else if (s < (3 * M) / 4) {
+          cx = barX + barWidth - ((s - M / 2) / (M / 4)) * barWidth;
+          cy = barY + barH;
+        } else {
+          cx = barX;
+          cy = barY + barH - ((s - (3 * M) / 4) / (M / 4)) * barH;
+        }
+
+        // Polar Sector coordinates
+        const polarTheta = runningAngle + uSample * sliceAngle;
+        const polarR = pieCenter.r;
+        const px = pieCenter.x + polarR * Math.cos(polarTheta) * (s < M / 2 ? 1 : 0);
+        const py = pieCenter.y + polarR * Math.sin(polarTheta) * (s < M / 2 ? 1 : 0);
+
+        // Morph interpolated position
+        const morphX = (1 - p) * cx + p * px;
+        const morphY = (1 - p) * cy + p * py;
+        points.push({ x: morphX, y: morphY });
+      }
+
+      ctx.beginPath();
+      ctx.fillStyle = item.color;
+      ctx.moveTo(points[0].x, points[0].y);
+      for (let i = 1; i < points.length; i++) {
+        ctx.lineTo(points[i].x, points[i].y);
+      }
+      ctx.closePath();
+      ctx.fill();
+
+      // Pie percentage labels
+      if (labelAlpha > 0) {
+        const midA = runningAngle + sliceAngle / 2;
+        const lx = pieCenter.x + (pieCenter.r + 24 * dpr) * Math.cos(midA);
+        const ly = pieCenter.y + (pieCenter.r + 24 * dpr) * Math.sin(midA);
+        ctx.fillStyle = `rgba(15, 23, 42, ${labelAlpha})`;
+        ctx.font = `600 ${11 * dpr}px sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(`${Math.round((item.value / total) * 100)}%`, lx, ly);
+      }
+
+      runningAngle += sliceAngle;
+    });
+
+    ctx.restore();
+  };
+
+  const forward = fromType === 'bar' && toType === 'pie';
+  return createAnimationTicker({
+    duration: duration,
+    easing: 'easeInOutCubic',
+    reducedMotion: options.reducedMotion,
+    onFrame: (easedU) => {
+      const p = forward ? easedU : (1 - easedU);
+      renderFrame(p);
+    },
+    onComplete: () => {
+      renderFrame(forward ? 1 : 0);
+      if (typeof options.onComplete === 'function') options.onComplete();
+    }
+  });
+}
+
+/**
+ * B7 (15): Rescaling d'axe animé Linéaire <-> Logarithmique (Cleveland & McGill 1984 / Tufte 1983).
+ * Formula: y_v(p) = (1-p)*m_lin(v) + p*m_log(v) with p = easeInOutCubic(u).
+ * Dual synchronous tick ladders cross-faded: α_lin = 1-p, α_log = p.
+ *
+ * @param {Object} chart Chart.js instance
+ * @param {string} targetType 'linear' | 'logarithmic'
+ * @param {Object} [options={}] Options { duration: 600, onComplete }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function animateAxisRescale(chart, targetType = 'logarithmic', options = {}) {
+  if (!chart || !chart.data || !chart.data.datasets) {
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  const duration = options.duration !== undefined ? options.duration : 600;
+  const ds = chart.data.datasets[0];
+  if (!ds || !Array.isArray(ds.data)) {
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  if (!chart._kcOriginalValues) {
+    chart._kcOriginalValues = [...ds.data];
+  }
+  const rawVals = chart._kcOriginalValues;
+  const minVal = Math.max(1, Math.min(...rawVals));
+  const maxVal = Math.max(...rawVals);
+
+  const mLin = (v) => (v - minVal) / (maxVal - minVal);
+  const mLog = (v) => (Math.log(v) - Math.log(minVal)) / (Math.log(maxVal) - Math.log(minVal));
+
+  const targetP = targetType === 'logarithmic' ? 1 : 0;
+  const initialP = chart._kcCurrentRescaleP !== undefined ? chart._kcCurrentRescaleP : (targetType === 'logarithmic' ? 0 : 1);
+
+  if (isReducedMotionPreferred() || options.reducedMotion || duration === 0) {
+    chart._kcCurrentRescaleP = targetP;
+    ds.data = rawVals.map(v => (targetP === 1 ? mLog(v) * 100 : mLin(v) * 100));
+    chart.update('none');
+    if (typeof options.onComplete === 'function') options.onComplete();
+    return { stop: () => {} };
+  }
+
+  return createAnimationTicker({
+    duration: duration,
+    easing: 'easeInOutCubic',
+    reducedMotion: options.reducedMotion,
+    onFrame: (easedU) => {
+      const p = initialP + (targetP - initialP) * easedU;
+      chart._kcCurrentRescaleP = p;
+      ds.data = rawVals.map(v => {
+        const norm = (1 - p) * mLin(v) + p * mLog(v);
+        return norm * 100;
+      });
+      chart.update('none');
+    },
+    onComplete: () => {
+      chart._kcCurrentRescaleP = targetP;
+      ds.data = rawVals.map(v => (targetP === 1 ? mLog(v) * 100 : mLin(v) * 100));
+      chart.update('none');
+      if (typeof options.onComplete === 'function') options.onComplete();
+    }
+  });
+}
+
+/**
+ * B8 (16): Traînée cométaire / Motion Trails / Comet Chart (Heer & Robertson 2007).
+ * Connected scatter plot: head advances at constant arc-length speed (s_head = u * L).
+ * Tail exponential decay α(s) = exp(-s/λ) with λ ≈ 20% L, background trace α ≈ 0.18.
+ *
+ * @param {Object} chart Chart.js instance
+ * @param {Array<Array<{x: number, y: number}>>} seriesPaths Array of path point series
+ * @param {Object} [options={}] Options { duration: 2000, lambdaFrac: 0.20, onComplete }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function animateMotionTrails(chart, seriesPaths = [], options = {}) {
+  if (!chart) {
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  const duration = options.duration !== undefined ? options.duration : 2000;
+  const lambdaFrac = options.lambdaFrac || 0.20;
+
+  if (isReducedMotionPreferred() || options.reducedMotion || duration === 0) {
+    chart._kcTrailProgress = 1;
+    chart.update('none');
+    if (typeof options.onComplete === 'function') options.onComplete();
+    return { stop: () => {} };
+  }
+
+  return createAnimationTicker({
+    duration: duration,
+    easing: 'linear',
+    reducedMotion: options.reducedMotion,
+    onFrame: (easedU) => {
+      chart._kcTrailProgress = easedU;
+      chart._kcTrailLambdaFrac = lambdaFrac;
+      chart.update('none');
+    },
+    onComplete: () => {
+      chart._kcTrailProgress = 1;
+      chart.update('none');
+      if (typeof options.onComplete === 'function') options.onComplete();
+    }
+  });
+}
+
+/**
+ * B9 (17): Construction sérielle narrative / Series Build-up (Miller 1956 / Hullman et al. 2013).
+ * Cumulative gate: series j visible <=> t > j * Ts, Ts >= 800ms, fade-in 250ms, j_max <= 4.
+ * Fade-in via RGBA opacity on chart.update('none').
+ *
+ * @param {Object} chart Chart.js instance
+ * @param {Object} [options={}] Options { stepDuration: 900, fadeInMs: 250, onStep, onComplete }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function animateSeriesBuildup(chart, options = {}) {
+  if (!chart || !chart.data || !chart.data.datasets) {
+    if (options.onComplete) options.onComplete();
+    return { stop: () => {} };
+  }
+
+  const datasets = chart.data.datasets;
+  const numSeries = Math.min(4, datasets.length);
+  const stepDur = Math.max(800, options.stepDuration || 900);
+  const fadeInMs = Math.min(300, options.fadeInMs || 250);
+  const totalDuration = numSeries * stepDur;
+
+  const savedColors = datasets.map(ds => ({
+    borderColor: ds.borderColor,
+    backgroundColor: ds.backgroundColor
+  }));
+
+  if (isReducedMotionPreferred() || options.reducedMotion || totalDuration === 0) {
+    datasets.forEach((ds, i) => {
+      ds.borderColor = savedColors[i].borderColor;
+      ds.backgroundColor = savedColors[i].backgroundColor;
+    });
+    chart.update('none');
+    if (typeof options.onComplete === 'function') options.onComplete();
+    return { stop: () => {} };
+  }
+
+  return createAnimationTicker({
+    duration: totalDuration,
+    easing: 'linear',
+    reducedMotion: options.reducedMotion,
+    onFrame: (easedU, elapsedMs) => {
+      datasets.forEach((ds, j) => {
+        const startTime = j * stepDur;
+        if (elapsedMs < startTime) {
+          ds.borderColor = 'rgba(0,0,0,0)';
+          ds.backgroundColor = 'rgba(0,0,0,0)';
+        } else {
+          const fadeProgress = Math.min(1, (elapsedMs - startTime) / fadeInMs);
+          const alpha = 1 - Math.pow(1 - fadeProgress, 2); // easeOutQuad
+          ds.borderColor = hexToRgba(savedColors[j].borderColor, alpha);
+          ds.backgroundColor = hexToRgba(savedColors[j].backgroundColor, alpha * 0.85);
+        }
+      });
+      chart.update('none');
+    },
+    onComplete: () => {
+      datasets.forEach((ds, i) => {
+        ds.borderColor = savedColors[i].borderColor;
+        ds.backgroundColor = savedColors[i].backgroundColor;
+      });
+      chart.update('none');
+      if (typeof options.onComplete === 'function') options.onComplete();
+    }
+  });
+}
+
+/**
+ * B10 (18): Scrollytelling à pas avec hystérésis (Conlen & Heer 2019 / Zacks & Tversky 2001).
+ * Fraction mapping: r = (scrollTop / scrollMax) * (n - 1) in [0, n - 1].
+ * Advance: r >= k + 0.65 ; Recede: r <= k - 0.65 (deadband +-0.15 around k + 0.5).
+ * Enforces flex-shrink: 0 on story sections.
+ *
+ * @param {HTMLElement|string} scrollContainer DOM container or selector
+ * @param {Array<Object>} steps Step definitions [{ id, title, data }]
+ * @param {Object} [options={}] Options { onStepChange: Function }
+ * @returns {Object} Scrollytelling manager handle { destroy: Function }
+ */
+function initScrollytelling(scrollContainer, steps = [], options = {}) {
+  const container = typeof scrollContainer === 'string' ? document.querySelector(scrollContainer) : scrollContainer;
+  if (!container || !steps.length) return { destroy: () => {} };
+
+  let currentStep = 0;
+  let lastScrollTop = container.scrollTop;
+  const n = steps.length;
+
+  const onScroll = () => {
+    const scrollTop = container.scrollTop;
+    const scrollMax = Math.max(1, container.scrollHeight - container.clientHeight);
+    const r = (scrollTop / scrollMax) * (n - 1);
+    const isScrollingDown = scrollTop >= lastScrollTop;
+    lastScrollTop = scrollTop;
+
+    let targetStep = currentStep;
+    if (isScrollingDown) {
+      if (r >= currentStep + 0.65 && currentStep < n - 1) {
+        targetStep = currentStep + 1;
+      }
+    } else {
+      if (r <= currentStep - 0.65 && currentStep > 0) {
+        targetStep = currentStep - 1;
+      }
+    }
+
+    if (targetStep !== currentStep) {
+      currentStep = targetStep;
+      if (typeof options.onStepChange === 'function') {
+        options.onStepChange(currentStep, steps[currentStep]);
+      }
+    }
+  };
+
+  container.addEventListener('scroll', onScroll, { passive: true });
+  return {
+    getCurrentStep: () => currentStep,
+    destroy: () => container.removeEventListener('scroll', onScroll)
+  };
+}
+
+/**
+ * B11 (19): Amorti critique physique / Spring sans dépassement (Card et al. 1991 / Dragicevic 2011).
+ * Exact analytic solution of critically damped oscillator (ζ = 1):
+ * x(t) = x1 - (x1 - x0)(1 + ω*t) * e^(-ω*t) with ω = 6 / T for T = 500ms.
+ * Evaluated with physical elapsed ms from ticker (never normalized u).
+ *
+ * @param {HTMLElement|Function} target Target element or callback(x)
+ * @param {number} x0 Initial position/value
+ * @param {number} x1 Target equilibrium position/value
+ * @param {Object} [options={}] Options { duration: 500, onComplete }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function animateCriticalDamping(target, x0 = 0, x1 = 100, options = {}) {
+  const duration = options.duration !== undefined ? Number(options.duration) : 500;
+  const omega = 6 / duration; // ω for t_95% = 3/ω = 500ms
+
+  const setPos = (val) => {
+    if (typeof target === 'function') {
+      target(val);
+    } else if (target && target.style) {
+      target.style.transform = `translateX(${val}px)`;
+    }
+  };
+
+  if (isReducedMotionPreferred() || options.reducedMotion || duration === 0) {
+    setPos(x1);
+    if (typeof options.onComplete === 'function') options.onComplete();
+    return { stop: () => {} };
+  }
+
+  return createAnimationTicker({
+    duration: duration,
+    easing: 'linear', // physical math drives the easing internally
+    reducedMotion: options.reducedMotion,
+    onFrame: (easedU, elapsedMs) => {
+      const t = elapsedMs; // physical ms
+      const xt = x1 - (x1 - x0) * (1 + omega * t) * Math.exp(-omega * t);
+      setPos(xt);
+    },
+    onComplete: () => {
+      setPos(x1);
+      if (typeof options.onComplete === 'function') options.onComplete();
+    }
+  });
+}
+
+/**
+ * B12 (20): Flash d'onset pour valeurs modifiées / Delta Highlight (Jonides & Yantis 1988 / Healey & Enns 2012 / WCAG SC 2.3.1).
+ * Formula: B(t) = B0 * e^(-t/τ) with B0 <= 0.35, τ ≈ 400ms, tick rate >= 800ms (<= 2 flashes/s).
+ * Highlight overlay on modified marks, purged when B < 0.01.
+ */
+const kcDeltaFlashPlugin = {
+  id: 'kcDeltaFlash',
+  afterDatasetsDraw(chart, args, pluginOptions) {
+    const flashState = chart._kcDeltaFlashState;
+    if (!flashState || !flashState.active) return;
+
+    const ctx = chart.ctx;
+    if (!ctx) return;
+
+    const t = flashState.elapsedMs;
+    const { B0 = 0.35, tau = 400, color = '#E66101', modifiedIndices = [] } = flashState;
+    const brightness = B0 * Math.exp(-t / tau);
+
+    if (brightness < 0.01) {
+      flashState.active = false;
+      return;
+    }
+
+    const meta = chart.getDatasetMeta(flashState.datasetIndex || 0);
+    if (!meta || !meta.data) return;
+
+    ctx.save();
+    modifiedIndices.forEach(idx => {
+      const elem = meta.data[idx];
+      if (!elem) return;
+      const { x, y, base, width } = elem;
+
+      // Render glowing onset overlay
+      if (base !== undefined && width !== undefined) {
+        ctx.fillStyle = hexToRgba(color, brightness);
+        const barTop = Math.min(y, base);
+        const barHeight = Math.abs(base - y);
+        ctx.fillRect(x - width / 2, barTop, width, barHeight);
+
+        // Crisp border highlight
+        ctx.strokeStyle = hexToRgba(color, Math.min(1, brightness * 2.5));
+        ctx.lineWidth = 2;
+        ctx.strokeRect(x - width / 2, barTop, width, barHeight);
+      }
+    });
+    ctx.restore();
+  }
+};
+
+/**
+ * Attaches a delta onset flash highlight on modified marks.
+ *
+ * @param {Object} chart Chart.js instance
+ * @param {Array<number>} modifiedIndices Indices of changed items
+ * @param {Object} [options={}] Options { B0: 0.35, tau: 400, color, datasetIndex, onComplete }
+ * @returns {Object} Control handle { stop: Function }
+ */
+function attachDeltaFlash(chart, modifiedIndices = [], options = {}) {
+  if (!chart) return { stop: () => {} };
+
+  if (isReducedMotionPreferred() || options.reducedMotion) {
+    if (typeof options.onComplete === 'function') options.onComplete();
+    return { stop: () => {} };
+  }
+
+  const B0 = Math.min(0.35, options.B0 || 0.35);
+  const tau = options.tau || 400;
+  const startTime = typeof performance !== 'undefined' ? performance.now() : Date.now();
+
+  chart._kcDeltaFlashState = {
+    active: true,
+    modifiedIndices: modifiedIndices,
+    datasetIndex: options.datasetIndex || 0,
+    B0: B0,
+    tau: tau,
+    color: options.color || '#E66101',
+    elapsedMs: 0
+  };
+
+  let rafId = null;
+  const loop = () => {
+    if (!chart._kcDeltaFlashState || !chart._kcDeltaFlashState.active) return;
+    const now = typeof performance !== 'undefined' ? performance.now() : Date.now();
+    const elapsed = now - startTime;
+    chart._kcDeltaFlashState.elapsedMs = elapsed;
+
+    if (Math.exp(-elapsed / tau) < 0.01) {
+      chart._kcDeltaFlashState.active = false;
+      chart.render();
+      if (typeof options.onComplete === 'function') options.onComplete();
+      return;
+    }
+
+    chart.render();
+    if (typeof requestAnimationFrame !== 'undefined') {
+      rafId = requestAnimationFrame(loop);
+    }
+  };
+
+  if (typeof requestAnimationFrame !== 'undefined') {
+    rafId = requestAnimationFrame(loop);
+  }
+
+  return {
+    stop: () => {
+      if (chart._kcDeltaFlashState) chart._kcDeltaFlashState.active = false;
+      if (rafId && typeof cancelAnimationFrame !== 'undefined') cancelAnimationFrame(rafId);
+      chart.render();
+    }
+  };
 }
 
 function getChartDefaultOptions(themeTokens) {
@@ -2659,12 +3633,13 @@ const kitChartsDataLabelsPlugin = {
       (isHorizontal ? chart.options?.scales?.x?.stacked : chart.options?.scales?.y?.stacked)
     );
 
-    const tokens = chart.options?._kitChartsTokens || (chart.options?.color ? { textPrimary: chart.options.color } : getThemeTokens(DEFAULT_THEME));
+    const tokens = chart.options?._kitChartsTokens || (chart.options?.themeName ? getThemeTokens(chart.options.themeName) : (chart.config?.options?.themeName ? getThemeTokens(chart.config.options.themeName) : getThemeTokens(DEFAULT_THEME)));
+    const isDark = Boolean(tokens.isDark);
     const fontObj = opts.font || {};
     const fontFamily = fontObj.family || tokens.fontMono || tokens.fontFamily || 'monospace';
     const fontSize = fontObj.size || 10;
     const fontWeight = fontObj.weight || '600';
-    const defaultColor = opts.color || tokens.textPrimary || '#0F172A';
+    const defaultColor = opts.color || tokens.textPrimary || (isDark ? '#ECEFF4' : '#0F172A');
     const thresholdRatio = opts.thresholdRatio ?? (opts.minPercent ? opts.minPercent / 100 : 0.05);
 
     ctx.save();
@@ -2674,15 +3649,15 @@ const kitChartsDataLabelsPlugin = {
 
     // 1. Bar Charts (Vertical / Horizontal / Stacked / Grouped / Waterfall / Bullet)
     if (chartType === 'bar') {
-      const isBullet = chart.data.datasets.some(ds => ds.label && (ds.label.toLowerCase().includes('objectif') || ds.label.toLowerCase().includes('palier')));
+      const isBullet = chart.data.datasets.some(ds => ds.label && (/objectif|cible|target|benchmark|palier|seuil|range|band|alerte|critique/i).test(ds.label));
 
       chart.data.datasets.forEach((dataset, datasetIndex) => {
         const meta = chart.getDatasetMeta(datasetIndex);
         if (!meta || meta.hidden || meta.type !== 'bar') return;
 
-        // Skip background bands, qualitative ranges, and secondary layers
-        if (dataset.datalabels === false || dataset.displayDataLabels === false) return;
-        if (isBullet && (dataset.order > 1 || datasetIndex > 0 || (dataset.label && dataset.label.toLowerCase().includes('palier')))) return;
+        // Skip background bands, qualitative ranges, targets, and secondary layers
+        if (dataset.datalabels === false || dataset.displayDataLabels === false || (dataset.datalabels && dataset.datalabels.display === false)) return;
+        if (isBullet && (dataset.order > 1 || datasetIndex > 0 || (/palier|seuil|band|range|alerte|critique|cible|target|objectif|benchmark/i).test(dataset.label || ''))) return;
         if (dataset.grouped === false && datasetIndex > 0 && !isStacked) return;
 
         let totalsPerIndex = [];
@@ -2743,10 +3718,6 @@ const kitChartsDataLabelsPlugin = {
             const barLeft = Math.min(elProps.base || 0, elProps.x);
             const barRight = Math.max(elProps.base || 0, elProps.x);
             const barWidth = barRight - barLeft;
-            const barHeight = elProps.height || 16;
-
-            // Collision check: skip if bar is too thin vertically
-            if (barHeight < textHeight + 2) return;
 
             if (isStacked) {
               const ratio = totalsPerIndex[index] ? Math.abs(val) / totalsPerIndex[index] : 1;
@@ -2758,20 +3729,10 @@ const kitChartsDataLabelsPlugin = {
               ctx.textAlign = 'center';
               ctx.fillText(labelText, cx, cy);
             } else {
-              const spaceOnRight = chartArea.right - barRight;
-              if (spaceOnRight >= textWidth + 10) {
-                ctx.fillStyle = defaultColor;
-                ctx.textAlign = 'left';
-                ctx.fillText(labelText, barRight + 6, elProps.y);
-              } else if (barWidth >= textWidth + 10) {
-                ctx.fillStyle = getContrastingTextColor(barColor);
-                ctx.textAlign = 'right';
-                ctx.fillText(labelText, barRight - 6, elProps.y);
-              } else {
-                ctx.fillStyle = defaultColor;
-                ctx.textAlign = 'left';
-                ctx.fillText(labelText, barRight + 4, elProps.y);
-              }
+              ctx.fillStyle = defaultColor;
+              ctx.textAlign = 'left';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(labelText, barRight + 8, elProps.y);
             }
           } else {
             const barTop = Math.min(elProps.base || 0, elProps.y);
@@ -2927,7 +3888,7 @@ const kitChartsDataLabelsPlugin = {
       chart.data.datasets.forEach((dataset, datasetIndex) => {
         const meta = chart.getDatasetMeta(datasetIndex);
         if (!meta || meta.hidden) return;
-        if (dataset.datalabels === false || dataset.displayDataLabels === false) return;
+        if (dataset.datalabels === false || dataset.displayDataLabels === false || (dataset.datalabels && dataset.datalabels.display === false)) return;
         if (datasetIndex >= 2) return;
 
         const seriesColor = dataset.borderColor || (dataset.backgroundColor && !dataset.backgroundColor.startsWith('rgba') ? dataset.backgroundColor : (tokens.palette[datasetIndex] || defaultColor));
@@ -2988,7 +3949,7 @@ const kitChartsDataLabelsPlugin = {
         chart.data.datasets.forEach((dataset, datasetIndex) => {
           const meta = chart.getDatasetMeta(datasetIndex);
           if (!meta || meta.hidden) return;
-          if (dataset.datalabels === false || dataset.displayDataLabels === false) return;
+          if (dataset.datalabels === false || dataset.displayDataLabels === false || (dataset.datalabels && dataset.datalabels.display === false)) return;
           const pts = meta.data || [];
           const seriesColor = dataset.borderColor || (tokens.palette[datasetIndex] || defaultColor);
 
@@ -3051,7 +4012,7 @@ const kitChartsDataLabelsPlugin = {
         chart.data.datasets.forEach((dataset, datasetIndex) => {
           const meta = chart.getDatasetMeta(datasetIndex);
           if (!meta || meta.hidden) return;
-          if (dataset.datalabels === false || dataset.displayDataLabels === false) return;
+          if (dataset.datalabels === false || dataset.displayDataLabels === false || (dataset.datalabels && dataset.datalabels.display === false)) return;
           const pts = meta.data || [];
           const seriesColor = dataset.borderColor || (tokens.palette[datasetIndex] || defaultColor);
 
@@ -3075,9 +4036,11 @@ const kitChartsDataLabelsPlugin = {
               if (!labelText) return;
 
               const pointProps = point.getProps ? point.getProps(['x', 'y'], true) : point;
+              const isAlignBottom = dataset.datalabels && dataset.datalabels.align === 'bottom';
+              const yOffset = isAlignBottom ? 12 : -8;
               ctx.fillStyle = (dataset.datalabels && dataset.datalabels.color) || seriesColor;
               ctx.textAlign = 'center';
-              ctx.fillText(labelText, pointProps.x, pointProps.y - 8);
+              ctx.fillText(labelText, pointProps.x, pointProps.y + yOffset);
             }
           });
         });
@@ -3217,7 +4180,25 @@ const KitChartsTheme = {
   animateZoomDrilldown,
   computeEventSegmentation,
   createNarrativeScenePlayer,
-  animateWithAnticipation
+  animateWithAnticipation,
+  createAnimationTicker,
+  animatePathDrawing,
+  animateCountUp,
+  animateFocusContext,
+  animateBarChartRace,
+  animatePanCamera,
+  animateCrossTypeMorph,
+  animateAxisRescale,
+  animateMotionTrails,
+  animateSeriesBuildup,
+  initScrollytelling,
+  animateCriticalDamping,
+  kcDeltaFlashPlugin,
+  attachDeltaFlash,
+  getStoredTheme,
+  setStoredTheme,
+  getStoredLabels,
+  setStoredLabels
 };
 
 // Global browser attachment (Zero CORS on file://)
@@ -3226,6 +4207,7 @@ if (typeof window !== 'undefined') {
   window.KitChartsTheme = KitChartsTheme;
   window.KitCharts = window.KitCharts || {};
   window.KitCharts.Theme = KitChartsTheme;
+  window.KitCharts.animation = window.KitCharts.animation || KitChartsTheme;
   window.getThemeTokens = getThemeTokens;
   window.applyThemeToContainer = applyThemeToContainer;
   window.loadGoogleFonts = loadGoogleFonts;
@@ -3272,6 +4254,24 @@ if (typeof window !== 'undefined') {
   window.computeEventSegmentation = computeEventSegmentation;
   window.createNarrativeScenePlayer = createNarrativeScenePlayer;
   window.animateWithAnticipation = animateWithAnticipation;
+  window.createAnimationTicker = createAnimationTicker;
+  window.animatePathDrawing = animatePathDrawing;
+  window.animateCountUp = animateCountUp;
+  window.animateFocusContext = animateFocusContext;
+  window.animateBarChartRace = animateBarChartRace;
+  window.animatePanCamera = animatePanCamera;
+  window.animateCrossTypeMorph = animateCrossTypeMorph;
+  window.animateAxisRescale = animateAxisRescale;
+  window.animateMotionTrails = animateMotionTrails;
+  window.animateSeriesBuildup = animateSeriesBuildup;
+  window.initScrollytelling = initScrollytelling;
+  window.animateCriticalDamping = animateCriticalDamping;
+  window.kcDeltaFlashPlugin = kcDeltaFlashPlugin;
+  window.attachDeltaFlash = attachDeltaFlash;
+  window.getStoredTheme = getStoredTheme;
+  window.setStoredTheme = setStoredTheme;
+  window.getStoredLabels = getStoredLabels;
+  window.setStoredLabels = setStoredLabels;
   window.THEMES = THEMES;
   window.THEME_NAMES = THEME_NAMES;
   window.DEFAULT_THEME = DEFAULT_THEME;
@@ -3286,6 +4286,10 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.THEME_NAMES = THEME_NAMES;
   module.exports.DEFAULT_THEME = DEFAULT_THEME;
   module.exports.normalizeThemeSlug = normalizeThemeSlug;
+  module.exports.getStoredTheme = getStoredTheme;
+  module.exports.setStoredTheme = setStoredTheme;
+  module.exports.getStoredLabels = getStoredLabels;
+  module.exports.setStoredLabels = setStoredLabels;
   module.exports.getThemeTokens = getThemeTokens;
   module.exports.getTheme = getThemeTokens;
   module.exports.applyThemeToContainer = applyThemeToContainer;
@@ -3333,6 +4337,20 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.computeEventSegmentation = computeEventSegmentation;
   module.exports.createNarrativeScenePlayer = createNarrativeScenePlayer;
   module.exports.animateWithAnticipation = animateWithAnticipation;
+  module.exports.createAnimationTicker = createAnimationTicker;
+  module.exports.animatePathDrawing = animatePathDrawing;
+  module.exports.animateCountUp = animateCountUp;
+  module.exports.animateFocusContext = animateFocusContext;
+  module.exports.animateBarChartRace = animateBarChartRace;
+  module.exports.animatePanCamera = animatePanCamera;
+  module.exports.animateCrossTypeMorph = animateCrossTypeMorph;
+  module.exports.animateAxisRescale = animateAxisRescale;
+  module.exports.animateMotionTrails = animateMotionTrails;
+  module.exports.animateSeriesBuildup = animateSeriesBuildup;
+  module.exports.initScrollytelling = initScrollytelling;
+  module.exports.animateCriticalDamping = animateCriticalDamping;
+  module.exports.kcDeltaFlashPlugin = kcDeltaFlashPlugin;
+  module.exports.attachDeltaFlash = attachDeltaFlash;
 }
 
 

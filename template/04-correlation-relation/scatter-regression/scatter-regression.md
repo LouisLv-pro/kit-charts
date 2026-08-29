@@ -28,4 +28,37 @@ $$SE(\hat{y}(x)) = s_e \sqrt{\frac{1}{n} + \frac{(x - \bar{x})^2}{\sum(x_i - \ba
 ## 3. Double-Encodage & Garde-Fous Cognitifs
 1. **Points individuels** : Disques transparents ($\alpha = 0.75$) permettant d'observer les chevauchements.
 2. **Droite de régression** : Trait plein contrasté 2.5px.
-3. **Bande de confiance 95%** : Zone ombrée douce ($lpha = 0.12$) signalant l'incertitude croissante aux extrémités de l'échantillon.
+3. **Bande de confiance 95%** : Zone ombrée douce ($ lpha = 0.12$) signalant l'incertitude croissante aux extrémités de l'échantillon.
+
+---
+
+## 4. Quand l'utiliser / Quand NE PAS l'utiliser
+
+### ✅ Quand l'utiliser
+- Analyse de corrélation bivariée continue, ajustement de modèles de prédiction, analyse d'élasticité.
+
+### ❌ Quand NE PAS l'utiliser
+- Variables catégorielles ou qualitatives pures (👉 *utiliser Box Plot ou Bar Chart*).
+- Relations manifestement non linéaires sans transformation appropriée.
+
+---
+
+## 5. Intégration Tokens
+- Points tracés avec `tokens.palette[0]`.
+- Droite de régression avec `tokens.palette[1]`.
+- Bande de confiance remplie avec `hexToRgba(tokens.palette[1], 0.12)`.
+
+---
+
+## 6. Données de Démonstration Déterministes
+- 15 points continus avec corrélation positive $r > 0.95$.
+
+---
+
+## 7. Psychophysique de l'Interaction
+- Infobulle de proximité spatiale avec coordonnées $(X, Y)$ et résidu estimé.
+
+---
+
+## 8. Règles Cognitives d'Accentuation & Valence
+- Accentuation des points extrêmes à fort résidu pour détecter les anomalies.

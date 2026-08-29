@@ -302,8 +302,8 @@
       </div>
 
       <div class="interactive-toolbar" style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid #E2E8F0; align-items: center;">
-        <button class="btn-action btn-primary" id="btnAction1">▶ Lancer Démonstration</button>
-        <button class="btn-action" id="btnAction2">Alternative / Reconfiguration</button>
+        <button class="btn-action btn-primary" id="btnAction1">▶ Cascade MOT Plafonnée (k=4)</button>
+        <button class="btn-action" id="btnAction2">Nouvelle Série en Cascade</button>
         <button class="btn-action" id="btnAction3">Données Initiales</button>
         <button class="btn-action" id="btnReducedMotion" style="margin-left: auto;">Reduced Motion : Inactif</button>
       </div>
@@ -339,8 +339,8 @@
       const btnReducedMotion = document.getElementById('btnReducedMotion');
       const tokensEngine = window.KitChartsTheme || (window.KitCharts && window.KitCharts.Theme) || {};
 
-      let currentTheme = 'colorbrewer-accessible';
-      let showDataLabels = true;
+      let currentTheme = (typeof tokensEngine.getStoredTheme === 'function') ? tokensEngine.getStoredTheme() : (new URLSearchParams(window.location.search).get('theme') || (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_theme')) || 'colorbrewer-accessible');
+      let showDataLabels = (typeof tokensEngine.getStoredLabels === 'function') ? tokensEngine.getStoredLabels() : (new URLSearchParams(window.location.search).get('labels') !== null ? new URLSearchParams(window.location.search).get('labels') === 'true' : (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_labels') !== null ? localStorage.getItem('kitcharts_labels') === 'true' : true));
 
       const THEME_NAMES = {
         'colorbrewer-accessible': 'ColorBrewer Accessible',
@@ -355,11 +355,11 @@
 
       const data1 = {
         labels: ["Recherche & Dév.", "Ingénierie Logicielle", "Production & Infra", "Marketing Digital", "Service Client", "Ressources Humaines", "Finance & Audit", "Logistique"],
-        datasets: [{ label: "Score d'Efficacité 2026", data: [88, 94, 76, 82, 69, 85, 91, 78] }]
+        datasets: [{ label: "Score Opérationnel", data: [88, 94, 76, 82, 69, 85, 91, 78] }]
       };
       const data2 = {
-        labels: ["R&D", "Logiciel", "Cloud Infra", "Marketing", "Support", "RH", "Audit", "Logistique"],
-        datasets: [{ label: "Projection Budgétaire Q4", data: [95, 98, 85, 90, 78, 82, 94, 88] }]
+        labels: ["Recherche & Dév.", "Ingénierie Logicielle", "Production & Infra", "Marketing Digital", "Service Client", "Ressources Humaines", "Finance & Audit", "Logistique"],
+        datasets: [{ label: "Score Actualisé en Cascade", data: [92, 85, 80, 95, 74, 90, 86, 92] }]
       };
 
       function renderCurrentChart() {
@@ -388,7 +388,7 @@
             chartInstance.destroy();
           }
           chartInstance = mod.createChart(canvas, JSON.parse(JSON.stringify(data1)), currentTheme, {
-            duration: isReducedMotion ? 0 : 750,
+            duration: isReducedMotion ? 0 : 700,
             reducedMotion: isReducedMotion,
             showDataLabels: showDataLabels
           });
@@ -397,6 +397,11 @@
 
       function updateTheme(themeName) {
         currentTheme = themeName || 'colorbrewer-accessible';
+        if (typeof tokensEngine.setStoredTheme === 'function') {
+          tokensEngine.setStoredTheme(currentTheme);
+        } else if (typeof localStorage !== 'undefined') {
+          try { localStorage.setItem('kitcharts_theme', currentTheme); } catch (e) {}
+        }
         setActiveThemeUI(currentTheme);
         renderCurrentChart();
       }
@@ -427,6 +432,11 @@
       if (dataLabelsToggleBtn) {
         dataLabelsToggleBtn.addEventListener('click', function() {
           showDataLabels = !showDataLabels;
+          if (typeof tokensEngine.setStoredLabels === 'function') {
+            tokensEngine.setStoredLabels(showDataLabels);
+          } else if (typeof localStorage !== 'undefined') {
+            try { localStorage.setItem('kitcharts_labels', String(showDataLabels)); } catch (e) {}
+          }
           dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
           dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
           dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
@@ -443,15 +453,17 @@
         });
       }
 
+      let isAlt = false;
       if (btnAction1) {
         btnAction1.addEventListener('click', () => {
           if (!chartInstance) return;
+          isAlt = !isAlt;
+          const next = isAlt ? data2 : data1;
           const mod = window.KitCharts && (window.KitCharts['anim-mot-stagger'] || window.KitCharts['05-mot-stagger'] || window.KitCharts['animation']);
           if (mod && typeof mod.playTransition === 'function') {
-            mod.playTransition(chartInstance, data2, { reducedMotion: isReducedMotion });
+            mod.playTransition(chartInstance, next, { reducedMotion: isReducedMotion, duration: 700 });
           } else {
-            chartInstance.data.labels = [...data2.labels];
-            chartInstance.data.datasets[0].data = [...data2.datasets[0].data];
+            chartInstance.data.datasets[0].data = [...next.datasets[0].data];
             chartInstance.update();
           }
         });
@@ -460,19 +472,36 @@
       if (btnAction2) {
         btnAction2.addEventListener('click', () => {
           if (!chartInstance) return;
-          const nextType = chartInstance.config.type === 'bar' ? 'line' : 'bar';
-          chartInstance.config.type = nextType;
-          chartInstance.update();
+          const randomData = Array.from({ length: 8 }, () => Math.round(55 + Math.random() * 40));
+          const mod = window.KitCharts && (window.KitCharts['anim-mot-stagger'] || window.KitCharts['05-mot-stagger'] || window.KitCharts['animation']);
+          if (mod && typeof mod.playTransition === 'function') {
+            mod.playTransition(chartInstance, randomData, { reducedMotion: isReducedMotion, duration: 700 });
+          } else {
+            chartInstance.data.datasets[0].data = randomData;
+            chartInstance.update();
+          }
         });
       }
 
       if (btnAction3) {
         btnAction3.addEventListener('click', () => {
-          renderCurrentChart();
+          isAlt = false;
+          if (!chartInstance) return;
+          const mod = window.KitCharts && (window.KitCharts['anim-mot-stagger'] || window.KitCharts['05-mot-stagger'] || window.KitCharts['animation']);
+          if (mod && typeof mod.playTransition === 'function') {
+            mod.playTransition(chartInstance, data1, { reducedMotion: isReducedMotion, duration: 700 });
+          } else {
+            renderCurrentChart();
+          }
         });
       }
 
-      updateTheme('colorbrewer-accessible');
+      if (dataLabelsToggleBtn) {
+        dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
+        dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
+        dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
+      }
+      updateTheme(currentTheme);
     });
   </script>
 </body>

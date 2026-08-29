@@ -495,6 +495,7 @@
     DEFAULT_DATA,
     createTable,
     createChart,
+    renderTable: createTable,
     flattenTree
   };
 

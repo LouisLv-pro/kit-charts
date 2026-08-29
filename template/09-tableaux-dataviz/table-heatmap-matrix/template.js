@@ -493,6 +493,7 @@
     DEFAULT_DATA,
     createTable,
     createChart,
+    renderTable: createTable,
     getRelativeLuminance,
     interpolateRgb
   };

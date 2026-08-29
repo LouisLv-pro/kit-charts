@@ -302,9 +302,10 @@
       </div>
 
       <div class="interactive-toolbar" style="display: flex; flex-wrap: wrap; gap: 0.5rem; padding-top: 0.75rem; border-top: 1px solid #E2E8F0; align-items: center;">
-        <button class="btn-action btn-primary" id="btnAction1">▶ Lancer Démonstration</button>
-        <button class="btn-action" id="btnAction2">Alternative / Reconfiguration</button>
-        <button class="btn-action" id="btnAction3">Données Initiales</button>
+        <div id="sceneIndicator" style="font-size: 0.875rem; font-weight: 600; color: #2B8CBE; margin-bottom: 0.25rem;">Scène 1/4 : Phase 1 : Diagnostic Initial</div>
+        <button class="btn-action btn-primary" id="btnAction1">▶ Scène Suivante</button>
+        <button class="btn-action" id="btnAction2">Scène Précédente</button>
+        <button class="btn-action" id="btnAction3">Réinitialiser (Scène 1)</button>
         <button class="btn-action" id="btnReducedMotion" style="margin-left: auto;">Reduced Motion : Inactif</button>
       </div>
     </div>
@@ -327,11 +328,13 @@
     document.addEventListener('DOMContentLoaded', function() {
       let chartInstance = null;
       let isReducedMotion = false;
+      let narrativePlayer = null;
       const canvas = document.getElementById('chartCanvas');
       const chartContainer = document.getElementById('chartContainer');
       const rulesCard = document.getElementById('cognitiveRulesCard');
       const themeSwatchesGroup = document.getElementById('themeSwatchesGroup');
       const activeThemeIndicator = document.getElementById('activeThemeIndicator');
+      const sceneIndicator = document.getElementById('sceneIndicator');
       const dataLabelsToggleBtn = document.getElementById('dataLabelsToggleBtn');
       const btnAction1 = document.getElementById('btnAction1');
       const btnAction2 = document.getElementById('btnAction2');
@@ -339,8 +342,8 @@
       const btnReducedMotion = document.getElementById('btnReducedMotion');
       const tokensEngine = window.KitChartsTheme || (window.KitCharts && window.KitCharts.Theme) || {};
 
-      let currentTheme = 'colorbrewer-accessible';
-      let showDataLabels = true;
+      let currentTheme = (typeof tokensEngine.getStoredTheme === 'function') ? tokensEngine.getStoredTheme() : (new URLSearchParams(window.location.search).get('theme') || (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_theme')) || 'colorbrewer-accessible');
+      let showDataLabels = (typeof tokensEngine.getStoredLabels === 'function') ? tokensEngine.getStoredLabels() : (new URLSearchParams(window.location.search).get('labels') !== null ? new URLSearchParams(window.location.search).get('labels') === 'true' : (typeof localStorage !== 'undefined' && localStorage.getItem('kitcharts_labels') !== null ? localStorage.getItem('kitcharts_labels') === 'true' : true));
 
       const THEME_NAMES = {
         'colorbrewer-accessible': 'ColorBrewer Accessible',
@@ -353,14 +356,30 @@
         'atkinson-hyperlegible': 'Atkinson Hyperlegible'
       };
 
-      const data1 = {
+      const NARRATIVE_DATA = {
         labels: ["Recherche & Dév.", "Ingénierie Logicielle", "Production & Infra", "Marketing Digital", "Service Client", "Ressources Humaines", "Finance & Audit", "Logistique"],
-        datasets: [{ label: "Score d'Efficacité 2026", data: [88, 94, 76, 82, 69, 85, 91, 78] }]
+        scenes: [
+          { id: "scene-1", title: "Phase 1 : Diagnostic Initial", data: [65, 72, 58, 60, 50, 68, 74, 62] },
+          { id: "scene-2", title: "Phase 2 : Restructuration Cloud & Infra", data: [78, 94, 82, 64, 52, 70, 78, 66] },
+          { id: "scene-3", title: "Phase 3 : Automatisation & IA", data: [88, 94, 76, 82, 69, 85, 91, 78] },
+          { id: "scene-4", title: "Phase 4 : Performance Cible 2026", data: [92, 98, 88, 90, 84, 91, 95, 87] }
+        ]
       };
-      const data2 = {
-        labels: ["R&D", "Logiciel", "Cloud Infra", "Marketing", "Support", "RH", "Audit", "Logistique"],
-        datasets: [{ label: "Projection Budgétaire Q4", data: [95, 98, 85, 90, 78, 82, 94, 88] }]
-      };
+
+      function initPlayer() {
+        const scenes = NARRATIVE_DATA.scenes;
+        if (typeof tokensEngine.createNarrativeScenePlayer === 'function') {
+          narrativePlayer = tokensEngine.createNarrativeScenePlayer(chartInstance, scenes, {
+            sceneDuration: isReducedMotion ? 0 : 600,
+            dwellMs: 2500,
+            onSceneChange: (idx, scene) => {
+              if (sceneIndicator) {
+                sceneIndicator.textContent = "Scène " + (idx + 1) + "/" + scenes.length + " : " + scene.title;
+              }
+            }
+          });
+        }
+      }
 
       function renderCurrentChart() {
         if (typeof tokensEngine.loadGoogleFonts === 'function') {
@@ -387,16 +406,25 @@
           if (chartInstance && typeof chartInstance.destroy === 'function') {
             chartInstance.destroy();
           }
-          chartInstance = mod.createChart(canvas, JSON.parse(JSON.stringify(data1)), currentTheme, {
-            duration: isReducedMotion ? 0 : 750,
+          chartInstance = mod.createChart(canvas, {
+            labels: NARRATIVE_DATA.labels,
+            datasets: [{ label: NARRATIVE_DATA.scenes[0].title, data: [...NARRATIVE_DATA.scenes[0].data] }]
+          }, currentTheme, {
+            duration: isReducedMotion ? 0 : 600,
             reducedMotion: isReducedMotion,
             showDataLabels: showDataLabels
           });
         }
+        initPlayer();
       }
 
       function updateTheme(themeName) {
         currentTheme = themeName || 'colorbrewer-accessible';
+        if (typeof tokensEngine.setStoredTheme === 'function') {
+          tokensEngine.setStoredTheme(currentTheme);
+        } else if (typeof localStorage !== 'undefined') {
+          try { localStorage.setItem('kitcharts_theme', currentTheme); } catch (e) {}
+        }
         setActiveThemeUI(currentTheme);
         renderCurrentChart();
       }
@@ -427,6 +455,11 @@
       if (dataLabelsToggleBtn) {
         dataLabelsToggleBtn.addEventListener('click', function() {
           showDataLabels = !showDataLabels;
+          if (typeof tokensEngine.setStoredLabels === 'function') {
+            tokensEngine.setStoredLabels(showDataLabels);
+          } else if (typeof localStorage !== 'undefined') {
+            try { localStorage.setItem('kitcharts_labels', String(showDataLabels)); } catch (e) {}
+          }
           dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
           dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
           dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
@@ -445,34 +478,31 @@
 
       if (btnAction1) {
         btnAction1.addEventListener('click', () => {
-          if (!chartInstance) return;
-          const mod = window.KitCharts && (window.KitCharts['anim-event-segmentation'] || window.KitCharts['07-event-segmentation'] || window.KitCharts['animation']);
-          if (mod && typeof mod.playTransition === 'function') {
-            mod.playTransition(chartInstance, data2, { reducedMotion: isReducedMotion });
-          } else {
-            chartInstance.data.labels = [...data2.labels];
-            chartInstance.data.datasets[0].data = [...data2.datasets[0].data];
-            chartInstance.update();
-          }
+          if (!narrativePlayer) initPlayer();
+          if (narrativePlayer) narrativePlayer.nextScene();
         });
       }
 
       if (btnAction2) {
         btnAction2.addEventListener('click', () => {
-          if (!chartInstance) return;
-          const nextType = chartInstance.config.type === 'bar' ? 'line' : 'bar';
-          chartInstance.config.type = nextType;
-          chartInstance.update();
+          if (!narrativePlayer) initPlayer();
+          if (narrativePlayer) narrativePlayer.prevScene();
         });
       }
 
       if (btnAction3) {
         btnAction3.addEventListener('click', () => {
-          renderCurrentChart();
+          if (!narrativePlayer) initPlayer();
+          if (narrativePlayer) narrativePlayer.goToScene(0);
         });
       }
 
-      updateTheme('colorbrewer-accessible');
+      if (dataLabelsToggleBtn) {
+        dataLabelsToggleBtn.classList.toggle('active', showDataLabels);
+        dataLabelsToggleBtn.setAttribute('aria-pressed', String(showDataLabels));
+        dataLabelsToggleBtn.title = showDataLabels ? 'Étiquettes de données (Labels) : Activées' : 'Étiquettes de données (Labels) : Désactivées';
+      }
+      updateTheme(currentTheme);
     });
   </script>
 </body>

@@ -32,16 +32,34 @@
 
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
-  function computeStackedTotals(datasets) {
-    if (!Array.isArray(datasets) || datasets.length === 0) return [];
-    const len = datasets[0].data.length;
+  function computeStackedTotals(labelsOrDatasets, maybeDatasets) {
+    const datasets = Array.isArray(maybeDatasets) ? maybeDatasets : (Array.isArray(labelsOrDatasets) ? labelsOrDatasets : []);
+    if (!Array.isArray(datasets) || datasets.length === 0) {
+      const empty = [];
+      empty.totals = [];
+      empty.maxTotal = 0;
+      empty.shares = [];
+      return empty;
+    }
+    const len = (datasets[0] && Array.isArray(datasets[0].data)) ? datasets[0].data.length : 0;
     const totals = new Array(len).fill(0);
     datasets.forEach(ds => {
-      ds.data.forEach((val, idx) => {
-        totals[idx] += Number(val) || 0;
-      });
+      if (Array.isArray(ds.data)) {
+        ds.data.forEach((val, idx) => {
+          totals[idx] += Number(val) || 0;
+        });
+      }
     });
-    return totals.map(v => Math.round(v * 10) / 10);
+    const roundedTotals = totals.map(v => Math.round(v * 10) / 10);
+    const maxTotal = Math.max(...roundedTotals, 0);
+    const shares = datasets.map(ds => {
+      if (!Array.isArray(ds.data)) return [];
+      return ds.data.map((val, idx) => (roundedTotals[idx] > 0 ? (Number(val) / roundedTotals[idx]) * 100 : 0));
+    });
+    roundedTotals.totals = roundedTotals;
+    roundedTotals.maxTotal = maxTotal;
+    roundedTotals.shares = shares;
+    return roundedTotals;
   }
 
   const DEFAULT_DATA = {
@@ -192,6 +210,9 @@
     DEFAULT_DATA,
     computeStackedTotals,
     getDataLabelOptions,
-    formatLabelValue
+    formatLabelValue,
+    getEmphasisStyle: (KitChartsTheme && KitChartsTheme.getEmphasisStyle),
+    getValenceColor: (KitChartsTheme && KitChartsTheme.getValenceColor),
+    getThresholdStatus: (KitChartsTheme && KitChartsTheme.getThresholdStatus)
   };
 });

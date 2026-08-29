@@ -331,6 +331,7 @@
     DEFAULT_DATA,
     createTable,
     createChart,
+    renderTable: createTable,
     formatAccounting,
     generateIBCSVarianceBarSVG
   };

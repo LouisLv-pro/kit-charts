@@ -132,8 +132,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       };
     }
 
-    // 2. Marqueur d'objectif cible (Objectif / Target)
-    if (label.includes('objectif') || label.includes('target') || idx === 1) {
+    // 2. Marqueur d'objectif cible (Objectif / Target / Cible / Benchmark)
+    if (label.includes('objectif') || label.includes('target') || label.includes('cible') || label.includes('benchmark') || idx === 1) {
       const benchmarkColor = benchmarkStyle.borderColor || tokens.emphasis?.benchmark || tokens.textPrimary;
       return {
         label: ds.label || 'Objectif',
@@ -154,21 +154,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     }
 
     // 3. Paliers de contexte qualitatif (Bandes de fond)
-    const bandOpacities = isDark
-      ? [0.35, 0.22, 0.12]
-      : [0.18, 0.10, 0.04];
-    const bandIdx = Math.max(0, idx - 2);
-    const alpha = bandOpacities[bandIdx % bandOpacities.length];
-    const bandColor = isDark
-      ? `rgba(236, 239, 244, ${alpha})`
-      : `rgba(15, 23, 42, ${alpha})`;
+    const bandColor = isDark ? '#4C566A' : '#CBD5E1';
+    const alertBorderColor = isDark ? '#4C566A' : '#CBD5E1';
 
     return {
       label: ds.label || `Palier ${idx}`,
       type: 'bar',
       data: Array.isArray(ds.data) ? [...ds.data] : [],
       backgroundColor: ds.backgroundColor || bandColor,
-      borderColor: 'transparent',
+      borderColor: ds.borderColor || alertBorderColor,
       borderWidth: 0,
       borderRadius: 0,
       barPercentage: 0.85,
@@ -205,23 +199,49 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ...defaultOpts.plugins,
         datalabels: getDataLabelOptions(tokens, {
           display: showDataLabels,
+          anchor: 'end',
+          align: 'right',
+          offset: 8,
+          clip: false,
+          color: isDark ? '#ECEFF4' : '#0F172A',
+          font: {
+            family: tokens.fontMono || 'monospace',
+            size: 11,
+            weight: '600'
+          },
           formatter: (val, ctx) => {
             // Only label dataset 0 (Réalisé)
             if (ctx && ctx.datasetIndex !== 0) return null;
-            if (typeof val === 'number' && Math.abs(val) >= 1000) {
-              return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
+            const rawVal = typeof val === 'object' && val !== null ? (val.x ?? val.value ?? 0) : val;
+            if (typeof rawVal === 'number') {
+              return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(rawVal) + ' MW';
             }
-            return val;
+            return String(rawVal || '');
           }
         }),
         legend: {
           ...defaultOpts.plugins.legend,
           display: !isTufte,
           position: 'top',
-          align: 'end'
+          align: 'end',
+          labels: {
+            usePointStyle: true,
+            boxWidth: 10,
+            boxHeight: 10,
+            color: tokens.textPrimary,
+            font: {
+              family: tokens.fontFamily,
+              size: 11,
+              weight: '500'
+            }
+          }
         },
         tooltip: {
           ...defaultOpts.plugins.tooltip,
+          usePointStyle: true,
+          boxWidth: 10,
+          boxHeight: 10,
+          boxPadding: 4,
           padding: { top: 10, bottom: 10, left: 14, right: 14 },
           cornerRadius: isTufte ? 0 : 6,
           titleFont: {
@@ -236,15 +256,37 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           },
           animation: (isTufte || isReducedMotionPreferred()) ? false : { duration: 150, easing: 'easeOutQuad' },
           callbacks: {
+            title: (items) => {
+              if (!items || items.length === 0) return '';
+              return items[0].label || '';
+            },
             label: (context) => {
+              const ds = context.dataset;
               const rawVal = context.raw;
               const val = typeof rawVal === 'object' && rawVal !== null
                 ? (rawVal.x ?? rawVal.y ?? 0)
                 : rawVal;
               const formatted = typeof val === 'number'
-                ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val)
+                ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val)
                 : val;
-              return ` ${context.dataset.label || ''}: ${formatted}`;
+              return ` ${ds.label || ''}: ${formatted}`;
+            },
+            labelColor: (context) => {
+              const ds = context.dataset;
+              const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[context.dataIndex] : ds.backgroundColor;
+              const border = Array.isArray(ds.borderColor) ? ds.borderColor[context.dataIndex] : (ds.borderColor || bg);
+              return {
+                borderColor: border,
+                backgroundColor: bg,
+                borderWidth: 1,
+                borderRadius: 2
+              };
+            },
+            labelPointStyle: (context) => {
+              return {
+                pointStyle: 'circle',
+                rotation: 0
+              };
             }
           }
         }
@@ -267,6 +309,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         x: {
           beginAtZero: true, // Règle psychophysique obligatoire
+          grace: '15%', // Espace suffisant pour les étiquettes à droite
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

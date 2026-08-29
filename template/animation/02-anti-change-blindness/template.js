@@ -12,11 +12,13 @@
     var tokens = global.KitChartsTheme || (global.KitCharts && global.KitCharts.Theme) || {};
     var exp = factory(tokens);
     global.KitCharts = global.KitCharts || {};
+    global.KitCharts["anim-02-anti-change-blindness"] = exp;
     global.KitCharts["anim-anti-change-blindness"] = exp;
     global.createChart = exp.createChart;
     global.DEFAULT_DATA = exp.DEFAULT_DATA;
     global.ALT_DATA = exp.ALT_DATA;
     global.playTransition = exp.playTransition;
+    global.triggerAntiChangeBlindness = exp.triggerAntiChangeBlindness;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : this, function(KitChartsTheme) {
   "use strict";

@@ -12,9 +12,13 @@
     var tokens = global.KitChartsTheme || (global.KitCharts && global.KitCharts.Theme) || {};
     var exp = factory(tokens);
     global.KitCharts = global.KitCharts || {};
+    global.KitCharts["anim-05-mot-stagger"] = exp;
     global.KitCharts["anim-mot-stagger"] = exp;
     global.createChart = exp.createChart;
     global.DEFAULT_DATA = exp.DEFAULT_DATA;
+    global.ALT_DATA = exp.ALT_DATA;
+    global.playTransition = exp.playTransition;
+    global.triggerMotStagger = exp.triggerMotStagger;
   }
 })(typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof self !== 'undefined' ? self : this, function(KitChartsTheme) {
   "use strict";
@@ -24,35 +28,44 @@
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || function() { return "#2B8CBE"; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || function(c) { return c; };
   const getStaggerDelay = (KitChartsTheme && KitChartsTheme.getStaggerDelay) || function() { return 0; };
-  const kcPulsePlugin = (KitChartsTheme && KitChartsTheme.kcPulsePlugin) || { id: "kcPulse" };
 
   const DEFAULT_DATA = {
-  "labels": [
-    "Recherche & Dév.",
-    "Ingénierie Logicielle",
-    "Production & Infra",
-    "Marketing Digital",
-    "Service Client",
-    "Ressources Humaines",
-    "Finance & Audit",
-    "Logistique"
-  ],
-  "datasets": [
-    {
-      "label": "Score Opérationnel",
-      "data": [
-        88,
-        94,
-        76,
-        82,
-        69,
-        85,
-        91,
-        78
-      ]
-    }
-  ]
-};
+    labels: [
+      "Recherche & Dév.",
+      "Ingénierie Logicielle",
+      "Production & Infra",
+      "Marketing Digital",
+      "Service Client",
+      "Ressources Humaines",
+      "Finance & Audit",
+      "Logistique"
+    ],
+    datasets: [
+      {
+        label: "Score Opérationnel",
+        data: [88, 94, 76, 82, 69, 85, 91, 78]
+      }
+    ]
+  };
+
+  const ALT_DATA = {
+    labels: [
+      "Recherche & Dév.",
+      "Ingénierie Logicielle",
+      "Production & Infra",
+      "Marketing Digital",
+      "Service Client",
+      "Ressources Humaines",
+      "Finance & Audit",
+      "Logistique"
+    ],
+    datasets: [
+      {
+        label: "Score Actualisé en Cascade",
+        data: [92, 85, 80, 95, 74, 90, 86, 92]
+      }
+    ]
+  };
 
   function createChart(canvas, customData = null, themeName = "colorbrewer-accessible", options = {}) {
     if (!canvas) return null;
@@ -60,25 +73,18 @@
     const data = customData || JSON.parse(JSON.stringify(DEFAULT_DATA));
     const baseOptions = getChartDefaultOptions(tokens);
     const barColor = getColor(tokens, 0);
-    const lineColor = getColor(tokens, 1);
 
-    const datasets = (data.datasets || []).map((ds, idx) => {
+    const datasets = (data.datasets || []).map((ds) => {
       const copy = { ...ds };
-      if (ds.type === "line" || idx === 1) {
-        copy.type = "line";
-        copy.borderColor = lineColor;
-        copy.backgroundColor = lineColor;
-      } else {
-        copy.type = "bar";
-        copy.backgroundColor = hexToRgba(barColor, 0.85);
-        copy.borderColor = barColor;
-        copy.borderWidth = 1.5;
-        copy.borderRadius = 4;
-      }
+      copy.type = "bar";
+      copy.backgroundColor = hexToRgba(barColor, 0.85);
+      copy.borderColor = barColor;
+      copy.borderWidth = 1.5;
+      copy.borderRadius = 4;
       return copy;
     });
 
-    const dur = options.reducedMotion ? 0 : (options.duration !== undefined ? options.duration : 600);
+    const dur = options.reducedMotion ? 0 : (options.duration !== undefined ? options.duration : 700);
 
     const chartOptions = {
       ...baseOptions,
@@ -106,15 +112,37 @@
       return new Chart(canvas, {
         type: "bar",
         data: { labels: data.labels, datasets: datasets },
-        options: chartOptions,
-        plugins: [kcPulsePlugin]
+        options: chartOptions
       });
     }
     return null;
   }
 
+  function playTransition(chart, targetData = null, options = {}) {
+    if (!chart || !chart.data || !chart.data.datasets || !chart.data.datasets[0]) return;
+    const next = targetData || ALT_DATA;
+    const nextValues = Array.isArray(next) ? next : (next.datasets ? next.datasets[0].data : DEFAULT_DATA.datasets[0].data);
+    const nextLabel = (!Array.isArray(next) && next.datasets && next.datasets[0].label) ? next.datasets[0].label : chart.data.datasets[0].label;
+
+    chart.data.datasets[0].data = [...nextValues];
+    chart.data.datasets[0].label = nextLabel;
+    const dur = options.reducedMotion ? 0 : (options.duration !== undefined ? options.duration : 700);
+    if (chart.options && chart.options.animation) {
+      chart.options.animation.duration = dur;
+      chart.options.animation.easing = "easeOutCubic";
+      chart.options.animation.delay = (ctx) => {
+        if (dur === 0) return 0;
+        return getStaggerDelay(ctx, { unitMs: 300, overlapCap: 4, duration: dur });
+      };
+    }
+    chart.update();
+  }
+
   return {
     createChart: createChart,
-    DEFAULT_DATA: DEFAULT_DATA
+    playTransition: playTransition,
+    triggerMotStagger: playTransition,
+    DEFAULT_DATA: DEFAULT_DATA,
+    ALT_DATA: ALT_DATA
   };
 });
