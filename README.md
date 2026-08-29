@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/banniere.png" width="100%" alt="kit-charts">
+  <img src="docs/banner.png" width="100%" alt="kit-charts">
 </p>
 
 # kit-charts
@@ -205,7 +205,7 @@ La bannière haute résolution se régénère depuis sa source HTML :
 ```bash
 /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --headless --disable-gpu \
   --window-size=1280,420 --force-device-scale-factor=2 \
-  --screenshot=docs/banniere.png file://$(pwd)/docs/banniere.html
+  --screenshot=docs/banner.png file://$(pwd)/docs/banniere.html
 ```
 
 ---
