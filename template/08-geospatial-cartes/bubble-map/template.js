@@ -320,21 +320,6 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 }
 
-  if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
-    return new Chart(canvas, config);
-  }
-  return {
-    canvas,
-    config,
-    data: config.data,
-    options: config.options,
-    ctx: canvas?.getContext ? canvas.getContext('2d') : {},
-    destroy: () => {},
-    update: () => {},
-    resize: () => {}
-  };
-}
-
   const moduleExports = {
     DEFAULT_DATA: typeof DEFAULT_DATA !== 'undefined' ? DEFAULT_DATA : (typeof defaultData !== 'undefined' ? defaultData : {}),
     createChart: typeof createChart === 'function' ? createChart : null,

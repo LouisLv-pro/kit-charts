@@ -3,7 +3,7 @@
  * @description All kit-charts template generators pre-bundled for instant zero-CORS execution.
  * Allows index.html and npm consumers to render all 95 charts immediately on file://, http://, and Node.js.
  * @version 1.0.0
- * @generated 2026-08-30T21:51:22.831Z
+ * @generated 2026-08-30T21:54:49.396Z
  */
 
 (function(global) {
@@ -19538,21 +19538,6 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       }
     };
   }
-
-  if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
-    return new Chart(canvas, config);
-  }
-  return {
-    canvas,
-    config,
-    data: config.data,
-    options: config.options,
-    ctx: canvas?.getContext ? canvas.getContext('2d') : {},
-    destroy: () => {},
-    update: () => {},
-    resize: () => {}
-  };
-}
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
     return new Chart(canvas, config);
