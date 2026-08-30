@@ -46,7 +46,7 @@ const DEFAULT_DATA = {
   features: EUROPE_DATA.features
 };
 
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string'
     ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
     : canvasTarget;
@@ -58,183 +58,203 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     if (existing) existing.destroy();
   }
 
+  // Register ChartGeo if available in window / environment
+  if (typeof Chart !== 'undefined' && typeof ChartGeo !== 'undefined' && Chart.register) {
+    try {
+      Chart.register(
+        ChartGeo.ChoroplethController,
+        ChartGeo.BubbleMapController,
+        ChartGeo.GeoFeature,
+        ChartGeo.ProjectionScale,
+        ChartGeo.ColorScale,
+        ChartGeo.SizeScale
+      );
+    } catch (e) {}
+  }
+
   const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
   const tokens = getThemeTokens(themeName, container);
   const isTufte = tokens.name === 'tufte-minimalist-executive';
-  const reduceMotion = isReducedMotionPreferred();
 
   const rawData = customData || DEFAULT_DATA;
   const features = rawData.features || EUROPE_DATA.features;
+  const unit = rawData.unit || 'Mds €';
+  const projectionType = rawData.projection || 'equalEarth';
 
-  const values = features.map(f => f.properties.value);
+  const values = features.map(f => (f.properties && f.properties.value !== undefined) ? f.properties.value : (f.value || 0));
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
 
-  // Standalone Vector Canvas Map Renderer with True Conformal Aspect Ratio
-  const mapPlugin = {
-    id: 'choroplethVectorMap_' + Math.random().toString(36).substring(2, 7),
-    afterDraw(chart) {
-      const { ctx, chartArea } = chart;
-      if (!chartArea) return;
+  const hasChoropleth = typeof Chart !== 'undefined' && (
+    (Chart.registry && Chart.registry.controllers && Chart.registry.controllers.get('choropleth')) ||
+    (Chart.controllers && Chart.controllers.choropleth) ||
+    typeof ChartGeo !== 'undefined'
+  );
 
-      const { left, top, right, bottom, width, height } = chartArea;
-      ctx.save();
+  let config;
 
-      // Europe Bounding Box with Latitude cosine aspect ratio correction (50°N)
-      const lonMin = -11, lonMax = 28;
-      const latMin = 35, latMax = 71;
-      const cosLat = Math.cos(50 * Math.PI / 180); // ~0.6428
-
-      const geoWidth = (lonMax - lonMin) * cosLat;
-      const geoHeight = (latMax - latMin);
-
-      // Fit within available chartArea preserving aspect ratio
-      const padding = 12;
-      const scale = Math.min((width - padding * 2) / geoWidth, (height - padding * 2) / geoHeight);
-
-      const mapPixelWidth = geoWidth * scale;
-      const mapPixelHeight = geoHeight * scale;
-      const offsetX = left + (width - mapPixelWidth) / 2;
-      const offsetY = top + (height - mapPixelHeight) / 2;
-
-      const project = (lon, lat) => {
-        const x = offsetX + (lon - lonMin) * cosLat * scale;
-        const y = offsetY + (latMax - lat) * scale;
-        return [x, y];
-      };
-
-      // 1. Draw each country polygon
-      features.forEach((feature) => {
-        const val = feature.properties.value;
-        const ratio = (val - minVal) / (maxVal - minVal || 1);
-        let fillColor = getSequentialColor(tokens, ratio);
-        let strokeColor = tokens.isDark ? '#4C566A' : '#CBD5E1';
-        let strokeWidth = 1.0;
-
-        if (feature.properties.role === 'focal') {
-          strokeColor = tokens.emphasis?.focal || (tokens.isDark ? '#ECEFF4' : '#0F172A');
-          strokeWidth = 2.5;
-        } else if (feature.properties.role === 'anomaly') {
-          strokeColor = (tokens.status && tokens.status.danger) || (tokens.emphasis && tokens.emphasis.anomaly) || '#C62828';
-          strokeWidth = 2.0;
-        }
-
-        const coords = feature.geometry.coordinates[0];
-        if (!coords || coords.length < 3) return;
-
-        ctx.beginPath();
-        const [startX, startY] = project(coords[0][0], coords[0][1]);
-        ctx.moveTo(startX, startY);
-
-        for (let i = 1; i < coords.length; i++) {
-          const [px, py] = project(coords[i][0], coords[i][1]);
-          ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-
-        ctx.fillStyle = fillColor;
-        ctx.fill();
-
-        ctx.strokeStyle = strokeColor;
-        ctx.lineWidth = strokeWidth;
-        ctx.stroke();
-
-        // Label on capital
-        if (feature.properties.code && feature.properties.lon && feature.properties.lat) {
-          const [cx, cy] = project(feature.properties.lon, feature.properties.lat);
-          if (cx >= left && cx <= right && cy >= top && cy <= bottom) {
-            ctx.fillStyle = ratio > 0.6 ? '#FFFFFF' : (tokens.isDark ? '#ECEFF4' : '#0F172A');
-            ctx.font = `700 9px ${tokens.fontFamily || 'sans-serif'}`;
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(feature.properties.code, cx, cy);
-          }
-        }
-      });
-
-      // 2. Sequential Colorbar Legend (bottom right)
-      const barW = 80;
-      const barH = 8;
-      const barX = right - barW - 10;
-      const barY = bottom - barH - 10;
-
-      const grad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
-      grad.addColorStop(0, getSequentialColor(tokens, 0));
-      grad.addColorStop(0.5, getSequentialColor(tokens, 0.5));
-      grad.addColorStop(1, getSequentialColor(tokens, 1));
-
-      ctx.fillStyle = grad;
-      ctx.fillRect(barX, barY, barW, barH);
-      ctx.strokeStyle = tokens.border || '#CBD5E1';
-      ctx.strokeRect(barX, barY, barW, barH);
-
-      ctx.fillStyle = tokens.textSecondary || '#334155';
-      ctx.font = `600 8px ${tokens.fontMono || 'monospace'}`;
-      ctx.fillText(minVal + ' Mds', barX - 2, barY + barH + 9);
-      ctx.fillText(maxVal + ' Mds', barX + barW - 16, barY + barH + 9);
-
-      ctx.restore();
-    }
-  };
-
-  const config = {
-    type: 'scatter',
-    data: { datasets: [{ data: [] }] },
-    plugins: [mapPlugin],
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 400,
-        easing: 'easeOutQuart'
-      }),
-      interaction: {
-        mode: 'nearest',
-        intersect: false,
-        axis: 'xy'
-      },
-      hover: {
-        mode: 'nearest',
-        intersect: false,
-        animationDuration: (isTufte || reduceMotion) ? 0 : 100
-      },
-      scales: {
-        x: { display: false, grid: { display: false } },
-        y: { display: false, grid: { display: false } }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: tokens.tooltipBg || '#0F172A',
-          titleColor: tokens.tooltipText || '#F8FAFC',
-          bodyColor: tokens.tooltipText || '#F8FAFC',
-          borderColor: tokens.borderStrong || tokens.border || '#334155',
-          borderWidth: 1,
-          padding: { top: 10, bottom: 10, left: 14, right: 14 },
-          cornerRadius: isTufte ? 0 : 6,
-          boxPadding: 6,
-          titleFont: {
-            family: tokens.fontFamily,
-            size: 12,
-            weight: '600'
+  if (hasChoropleth) {
+    config = {
+      type: 'choropleth',
+      data: {
+        labels: features.map(f => (f.properties && f.properties.name) || f.id || ''),
+        datasets: [{
+          label: rawData.title || 'PIB Régional',
+          outline: features,
+          showOutline: true,
+          data: features.map(f => ({
+            feature: f,
+            value: (f.properties && f.properties.value !== undefined) ? f.properties.value : (f.value || 0)
+          })),
+          backgroundColor(context) {
+            if (context.dataIndex == null) return null;
+            const item = context.dataset.data[context.dataIndex];
+            const val = item?.value;
+            if (val === undefined || val === null) return tokens.isDark ? '#334155' : '#E2E8F0';
+            const ratio = (val - minVal) / (maxVal - minVal || 1);
+            return getSequentialColor(tokens, ratio);
           },
-          bodyFont: {
-            family: tokens.fontMono,
-            size: 12,
-            weight: '400'
+          borderColor: tokens.isDark ? '#4C566A' : '#CBD5E1',
+          borderWidth: 1.2,
+          hoverBackgroundColor: tokens.palette[0] || '#2B8CBE',
+          hoverBorderColor: tokens.isDark ? '#ECEFF4' : '#0F172A',
+          hoverBorderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: {
+          legend: {
+            display: false
           },
-          callbacks: {
-            label: (ctx) => {
-              const item = ctx.raw;
-              if (!item) return '';
-              const formatted = typeof item.value === 'number' ? item.value.toLocaleString('fr-FR') : item.value;
-              return ` ${item.name || ''} : ${formatted} Mds €`;
+          tooltip: {
+            enabled: true,
+            animation: false,
+            backgroundColor: tokens.tooltipBg || '#0F172A',
+            titleColor: tokens.tooltipText || '#F8FAFC',
+            bodyColor: tokens.tooltipText || '#F8FAFC',
+            borderColor: tokens.borderStrong || tokens.border || '#334155',
+            borderWidth: 1,
+            padding: { top: 8, bottom: 8, left: 12, right: 12 },
+            cornerRadius: isTufte ? 0 : 6,
+            callbacks: {
+              label(ctx) {
+                const item = ctx.raw;
+                const name = item?.feature?.properties?.name || ctx.label || '';
+                const val = item?.value;
+                const formatted = typeof val === 'number' ? val.toLocaleString('fr-FR') : (val ?? '');
+                return ` ${name} : ${formatted} ${unit}`;
+              }
             }
+          }
+        },
+        scales: {
+          projection: {
+            axis: 'x',
+            projection: projectionType
+          },
+          color: {
+            axis: 'x',
+            display: true,
+            position: 'bottom',
+            interpolate: (v) => getSequentialColor(tokens, v)
           }
         }
       }
-    }
-  };
+    };
+  } else {
+    // Fallback vector map plugin for offline/mock environments without ChartGeo
+    const mapPlugin = {
+      id: 'choroplethVectorMap_' + Math.random().toString(36).substring(2, 7),
+      afterDraw(chart) {
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return;
+
+        const { left, top, right, bottom, width, height } = chartArea;
+        ctx.save();
+
+        const lonMin = -11, lonMax = 28;
+        const latMin = 35, latMax = 71;
+        const cosLat = Math.cos(50 * Math.PI / 180);
+
+        const geoWidth = (lonMax - lonMin) * cosLat;
+        const geoHeight = (latMax - latMin);
+
+        const padding = 12;
+        const scale = Math.min((width - padding * 2) / geoWidth, (height - padding * 2) / geoHeight);
+
+        const mapPixelWidth = geoWidth * scale;
+        const mapPixelHeight = geoHeight * scale;
+        const offsetX = left + (width - mapPixelWidth) / 2;
+        const offsetY = top + (height - mapPixelHeight) / 2;
+
+        const project = (lon, lat) => {
+          const x = offsetX + (lon - lonMin) * cosLat * scale;
+          const y = offsetY + (latMax - lat) * scale;
+          return [x, y];
+        };
+
+        features.forEach((feature) => {
+          const val = (feature.properties && feature.properties.value !== undefined) ? feature.properties.value : (feature.value || 0);
+          const ratio = (val - minVal) / (maxVal - minVal || 1);
+          let fillColor = getSequentialColor(tokens, ratio);
+          let strokeColor = tokens.isDark ? '#4C566A' : '#CBD5E1';
+          let strokeWidth = 1.0;
+
+          if (feature.properties && feature.properties.role === 'focal') {
+            strokeColor = tokens.emphasis?.focal || (tokens.isDark ? '#ECEFF4' : '#0F172A');
+            strokeWidth = 2.5;
+          } else if (feature.properties && feature.properties.role === 'anomaly') {
+            strokeColor = (tokens.status && tokens.status.danger) || '#C62828';
+            strokeWidth = 2.0;
+          }
+
+          const coords = feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates[0];
+          if (!coords || coords.length < 3) return;
+
+          ctx.beginPath();
+          const [startX, startY] = project(coords[0][0], coords[0][1]);
+          ctx.moveTo(startX, startY);
+
+          for (let i = 1; i < coords.length; i++) {
+            const [px, py] = project(coords[i][0], coords[i][1]);
+            ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+
+          ctx.fillStyle = fillColor;
+          ctx.fill();
+
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = strokeWidth;
+          ctx.stroke();
+        });
+
+        ctx.restore();
+      }
+    };
+
+    config = {
+      type: 'scatter',
+      data: { datasets: [{ data: [] }] },
+      plugins: [mapPlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          x: { display: false, grid: { display: false } },
+          y: { display: false, grid: { display: false } }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false }
+        }
+      }
+    };
+  }
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
     return new Chart(canvas, config);

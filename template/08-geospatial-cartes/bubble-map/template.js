@@ -71,187 +71,254 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     if (existing) existing.destroy();
   }
 
+  // Register ChartGeo if available in window / environment
+  if (typeof Chart !== 'undefined' && typeof ChartGeo !== 'undefined' && Chart.register) {
+    try {
+      Chart.register(
+        ChartGeo.ChoroplethController,
+        ChartGeo.BubbleMapController,
+        ChartGeo.GeoFeature,
+        ChartGeo.ProjectionScale,
+        ChartGeo.ColorScale,
+        ChartGeo.SizeScale
+      );
+    } catch (e) {}
+  }
+
   const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
   const tokens = getThemeTokens(themeName, container);
   const isTufte = tokens.name === 'tufte-minimalist-executive';
-  const reduceMotion = isReducedMotionPreferred();
   const showDataLabels = (customData && customData.showDataLabels !== undefined) ? customData.showDataLabels : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
   const rawData = customData || DEFAULT_DATA;
   const features = rawData.features || EUROPE_DATA.features;
   const bubbles = rawData.bubbles || DEFAULT_DATA.bubbles;
+  const unit = rawData.unit || 'M€';
+  const projectionType = rawData.projection || 'equalEarth';
 
   const defaultBubbleColor = getColor(tokens, 0);
 
-  const bubbleMapPlugin = {
-    id: 'bubbleVectorMap_' + Math.random().toString(36).substring(2, 7),
-    afterDraw(chart) {
-      const { ctx, chartArea } = chart;
-      if (!chartArea) return;
+  const hasBubbleMap = typeof Chart !== 'undefined' && (
+    (Chart.registry && Chart.registry.controllers && Chart.registry.controllers.get('bubbleMap')) ||
+    (Chart.controllers && Chart.controllers.bubbleMap) ||
+    typeof ChartGeo !== 'undefined'
+  );
 
-      const { left, top, right, bottom, width, height } = chartArea;
-      ctx.save();
+  let config;
 
-      const lonMin = -11, lonMax = 28;
-      const latMin = 35, latMax = 71;
-      const cosLat = Math.cos(50 * Math.PI / 180);
-
-      const geoWidth = (lonMax - lonMin) * cosLat;
-      const geoHeight = (latMax - latMin);
-
-      const padding = 12;
-      const scale = Math.min((width - padding * 2) / geoWidth, (height - padding * 2) / geoHeight);
-
-      const mapPixelWidth = geoWidth * scale;
-      const mapPixelHeight = geoHeight * scale;
-      const offsetX = left + (width - mapPixelWidth) / 2;
-      const offsetY = top + (height - mapPixelHeight) / 2;
-
-      const project = (lon, lat) => {
-        const x = offsetX + (lon - lonMin) * cosLat * scale;
-        const y = offsetY + (latMax - lat) * scale;
-        return [x, y];
-      };
-
-      // 1. Draw Basemap Polygons
-      features.forEach((feature) => {
-        const coords = feature.geometry.coordinates[0];
-        if (!coords || coords.length < 3) return;
-
-        ctx.beginPath();
-        const [startX, startY] = project(coords[0][0], coords[0][1]);
-        ctx.moveTo(startX, startY);
-
-        for (let i = 1; i < coords.length; i++) {
-          const [px, py] = project(coords[i][0], coords[i][1]);
-          ctx.lineTo(px, py);
-        }
-        ctx.closePath();
-
-        ctx.fillStyle = tokens.isDark ? '#3B4252' : '#F1F5F9';
-        ctx.fill();
-
-        ctx.strokeStyle = tokens.isDark ? '#4C566A' : '#CBD5E1';
-        ctx.lineWidth = 1.0;
-        ctx.stroke();
-      });
-
-      // 2. Draw Proportional Bubbles (r ∝ √V for perceptual accuracy)
-      const maxVal = Math.max(...bubbles.map(b => b.val));
-      const maxRadius = Math.max(12, Math.min(22, width * 0.045));
-
-      bubbles.forEach((b) => {
-        const [bx, by] = project(b.lon, b.lat);
-        const radius = Math.sqrt(b.val / maxVal) * maxRadius;
-
-        let bColor = defaultBubbleColor;
-        let bAlpha = tokens.isDark ? 0.75 : 0.65;
-        let bBorderColor = tokens.bg || '#FFFFFF';
-        let bBorderWidth = 1.5;
-
-        if (b.role) {
-          const emp = getEmphasisStyle(tokens, b.role);
-          bColor = emp.backgroundColor || bColor;
-          bBorderColor = emp.borderColor || bBorderColor;
-          if (b.role === 'focal') {
-            bAlpha = 0.90;
-            bBorderWidth = 2.5;
-          } else if (b.role === 'anomaly') {
-            bAlpha = 0.85;
-            bBorderColor = (tokens.status && tokens.status.danger) || '#C62828';
-            bBorderWidth = 2.0;
-          } else if (b.role === 'context') {
-            bAlpha = 0.50;
-          }
-        } else if (typeof b.growth === 'number' || typeof b.valence === 'number') {
-          bColor = getValenceColor(tokens, typeof b.growth === 'number' ? b.growth : b.valence, b.metricType || 'gain');
-        }
-
-        // Outer fill
-        ctx.beginPath();
-        ctx.fillStyle = bColor;
-        ctx.globalAlpha = bAlpha;
-        ctx.arc(bx, by, radius, 0, 2 * Math.PI);
-        ctx.fill();
-        ctx.globalAlpha = 1.0;
-
-        // Stroke
-        ctx.strokeStyle = bBorderColor;
-        ctx.lineWidth = bBorderWidth;
-        ctx.stroke();
-
-        // City & Data Label
-        if (showDataLabels) {
-          ctx.fillStyle = tokens.isDark ? '#ECEFF4' : '#0F172A';
-          ctx.font = `600 9px ${tokens.fontFamily || 'sans-serif'}`;
-          ctx.textAlign = 'center';
-          const labelText = `${b.city} (${formatLabelValue(b.val)})`;
-          ctx.fillText(labelText, bx, by - radius - 3);
-        }
-      });
-
-      ctx.restore();
-    }
-  };
-
-  const config = {
-    type: 'scatter',
-    data: { datasets: [{ data: [] }] },
-    plugins: [bubbleMapPlugin],
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 400,
-        easing: 'easeOutQuart'
-      }),
-      interaction: {
-        mode: 'nearest',
-        intersect: false,
-        axis: 'xy'
-      },
-      hover: {
-        mode: 'nearest',
-        intersect: false,
-        animationDuration: (isTufte || reduceMotion) ? 0 : 100
-      },
-      scales: {
-        x: { display: false, grid: { display: false } },
-        y: { display: false, grid: { display: false } }
-      },
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          backgroundColor: tokens.tooltipBg || '#0F172A',
-          titleColor: tokens.tooltipText || '#F8FAFC',
-          bodyColor: tokens.tooltipText || '#F8FAFC',
-          borderColor: tokens.borderStrong || tokens.border || '#334155',
-          borderWidth: 1,
-          padding: { top: 10, bottom: 10, left: 14, right: 14 },
-          cornerRadius: isTufte ? 0 : 6,
-          boxPadding: 6,
-          titleFont: {
-            family: tokens.fontFamily,
-            size: 12,
-            weight: '600'
+  if (hasBubbleMap) {
+    config = {
+      type: 'bubbleMap',
+      data: {
+        labels: bubbles.map(b => b.city || b.name || ''),
+        datasets: [{
+          label: rawData.title || 'Investissements',
+          outline: features,
+          showOutline: true,
+          outlineBackgroundColor: tokens.isDark ? '#1E293B' : '#F1F5F9',
+          outlineBorderColor: tokens.isDark ? '#475569' : '#CBD5E1',
+          outlineBorderWidth: 1.2,
+          backgroundColor(context) {
+            if (context.dataIndex == null) return defaultBubbleColor;
+            const b = context.dataset.data[context.dataIndex];
+            if (!b) return defaultBubbleColor;
+            if (b.role === 'focal') return tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB');
+            if (b.role === 'anomaly') return (tokens.status && tokens.status.danger) || '#DC2626';
+            return hexToRgba(defaultBubbleColor, tokens.isDark ? 0.8 : 0.65);
           },
-          bodyFont: {
-            family: tokens.fontMono,
-            size: 12,
-            weight: '400'
+          borderColor: tokens.isDark ? '#ECEFF4' : '#0F172A',
+          borderWidth: 1.5,
+          data: bubbles.map(b => ({
+            feature: b,
+            latitude: b.lat !== undefined ? b.lat : b.latitude,
+            longitude: b.lon !== undefined ? b.lon : (b.lng !== undefined ? b.lng : b.longitude),
+            value: b.val !== undefined ? b.val : (b.value !== undefined ? b.value : 0),
+            role: b.role,
+            growth: b.growth,
+            city: b.city || b.name
+          }))
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: {
+          legend: {
+            display: false
           },
-          callbacks: {
-            label: (ctx) => {
-              const item = ctx.raw;
-              if (!item) return '';
-              const formatted = typeof item.val === 'number' ? item.val.toLocaleString('fr-FR') : item.val;
-              return ` ${item.city || ''} : ${formatted} M€`;
+          tooltip: {
+            enabled: true,
+            animation: false,
+            backgroundColor: tokens.tooltipBg || '#0F172A',
+            titleColor: tokens.tooltipText || '#F8FAFC',
+            bodyColor: tokens.tooltipText || '#F8FAFC',
+            borderColor: tokens.borderStrong || tokens.border || '#334155',
+            borderWidth: 1,
+            padding: { top: 8, bottom: 8, left: 12, right: 12 },
+            cornerRadius: isTufte ? 0 : 6,
+            callbacks: {
+              label(ctx) {
+                const item = ctx.raw;
+                const city = item?.city || item?.feature?.city || item?.feature?.name || ctx.label || '';
+                const val = item?.value;
+                const formatted = typeof val === 'number' ? val.toLocaleString('fr-FR') : (val ?? '');
+                const growth = item?.growth !== undefined ? ` (${item.growth > 0 ? '+' : ''}${item.growth}%)` : '';
+                return ` ${city} : ${formatted} ${unit}${growth}`;
+              }
             }
+          }
+        },
+        scales: {
+          projection: {
+            axis: 'x',
+            projection: projectionType
+          },
+          size: {
+            axis: 'x',
+            range: [5, 26]
           }
         }
       }
-    }
+    };
+  } else {
+    // Fallback vector map plugin for offline/mock environments without ChartGeo
+    const bubbleMapPlugin = {
+      id: 'bubbleVectorMap_' + Math.random().toString(36).substring(2, 7),
+      afterDraw(chart) {
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return;
+
+        const { left, top, right, bottom, width, height } = chartArea;
+        ctx.save();
+
+        const lonMin = -11, lonMax = 28;
+        const latMin = 35, latMax = 71;
+        const cosLat = Math.cos(50 * Math.PI / 180);
+
+        const geoWidth = (lonMax - lonMin) * cosLat;
+        const geoHeight = (latMax - latMin);
+
+        const padding = 12;
+        const scale = Math.min((width - padding * 2) / geoWidth, (height - padding * 2) / geoHeight);
+
+        const mapPixelWidth = geoWidth * scale;
+        const mapPixelHeight = geoHeight * scale;
+        const offsetX = left + (width - mapPixelWidth) / 2;
+        const offsetY = top + (height - mapPixelHeight) / 2;
+
+        const project = (lon, lat) => {
+          const x = offsetX + (lon - lonMin) * cosLat * scale;
+          const y = offsetY + (latMax - lat) * scale;
+          return [x, y];
+        };
+
+        features.forEach((feature) => {
+          const coords = feature.geometry && feature.geometry.coordinates && feature.geometry.coordinates[0];
+          if (!coords || coords.length < 3) return;
+
+          ctx.beginPath();
+          const [startX, startY] = project(coords[0][0], coords[0][1]);
+          ctx.moveTo(startX, startY);
+
+          for (let i = 1; i < coords.length; i++) {
+            const [px, py] = project(coords[i][0], coords[i][1]);
+            ctx.lineTo(px, py);
+          }
+          ctx.closePath();
+
+          ctx.fillStyle = tokens.isDark ? '#3B4252' : '#F1F5F9';
+          ctx.fill();
+
+          ctx.strokeStyle = tokens.isDark ? '#4C566A' : '#CBD5E1';
+          ctx.lineWidth = 1.0;
+          ctx.stroke();
+        });
+
+        const maxVal = Math.max(...bubbles.map(b => b.val || b.value || 1));
+        const maxRadius = Math.max(12, Math.min(22, width * 0.045));
+
+        bubbles.forEach((b) => {
+          const lon = b.lon !== undefined ? b.lon : (b.lng !== undefined ? b.lng : b.longitude);
+          const lat = b.lat !== undefined ? b.lat : b.latitude;
+          const val = b.val !== undefined ? b.val : (b.value !== undefined ? b.value : 0);
+          const [bx, by] = project(lon, lat);
+          const radius = Math.sqrt(val / (maxVal || 1)) * maxRadius;
+
+          let bColor = defaultBubbleColor;
+          let bAlpha = tokens.isDark ? 0.75 : 0.65;
+          let bBorderColor = tokens.bg || '#FFFFFF';
+          let bBorderWidth = 1.5;
+
+          if (b.role === 'focal') {
+            bColor = tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB');
+            bAlpha = 0.90;
+            bBorderWidth = 2.5;
+          } else if (b.role === 'anomaly') {
+            bColor = (tokens.status && tokens.status.danger) || '#DC2626';
+            bAlpha = 0.85;
+            bBorderWidth = 2.0;
+          }
+
+          ctx.beginPath();
+          ctx.fillStyle = bColor;
+          ctx.globalAlpha = bAlpha;
+          ctx.arc(bx, by, Math.max(3, radius), 0, 2 * Math.PI);
+          ctx.fill();
+          ctx.globalAlpha = 1.0;
+
+          ctx.strokeStyle = bBorderColor;
+          ctx.lineWidth = bBorderWidth;
+          ctx.stroke();
+
+          if (showDataLabels) {
+            ctx.fillStyle = tokens.isDark ? '#ECEFF4' : '#0F172A';
+            ctx.font = `600 9px ${tokens.fontFamily || 'sans-serif'}`;
+            ctx.textAlign = 'center';
+            const city = b.city || b.name || '';
+            const labelText = `${city} (${val})`;
+            ctx.fillText(labelText, bx, by - radius - 3);
+          }
+        });
+
+        ctx.restore();
+      }
+    };
+
+    config = {
+      type: 'scatter',
+      data: { datasets: [{ data: [] }] },
+      plugins: [bubbleMapPlugin],
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        scales: {
+          x: { display: false, grid: { display: false } },
+          y: { display: false, grid: { display: false } }
+        },
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false }
+        }
+      }
+    };
+  }
+
+  if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
+    return new Chart(canvas, config);
+  }
+  return {
+    canvas,
+    config,
+    data: config.data,
+    options: config.options,
+    ctx: canvas?.getContext ? canvas.getContext('2d') : {},
+    destroy: () => {},
+    update: () => {},
+    resize: () => {}
   };
+}
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
     return new Chart(canvas, config);

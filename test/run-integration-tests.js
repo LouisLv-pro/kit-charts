@@ -333,11 +333,54 @@ const horizRes = compileChart(horizSpec, { output: 'output/e2e-bar-horiz/index.h
 assert(horizRes.success === true, 'Compilation de bar-chart-horizontal réussie');
 assert(fs.existsSync(horizRes.outputPath), 'Fichier HTML de bar-chart-horizontal généré');
 
+// 5.6 Compilation et validation de choropleth-map (chartjs-chart-geo)
+const choroSpec = {
+  targetTemplateId: 'choropleth-map',
+  layout: {
+    title: 'PIB par Pays Européen (Mds €)',
+    height: 420
+  },
+  colorStrategy: {
+    themeName: 'colorbrewer-accessible',
+    mode: 'sequential'
+  },
+  formattedData: {
+    projection: 'equalEarth',
+    unit: 'Mds €'
+  }
+};
+const choroRes = compileChart(choroSpec, { output: 'output/e2e-choropleth/index.html' });
+assert(choroRes.success === true, 'Compilation de choropleth-map avec chartjs-chart-geo réussie');
+assert(fs.existsSync(choroRes.outputPath), 'Fichier HTML de choropleth-map généré');
+assert(choroRes.html.includes('chartjs-chart-geo'), 'HTML de choropleth-map inclut le plugin chartjs-chart-geo');
+
+// 5.7 Compilation et validation de bubble-map (chartjs-chart-geo)
+const bubbleMapSpec = {
+  targetTemplateId: 'bubble-map',
+  layout: {
+    title: 'Investissements Métropoles Européennes (M€)',
+    height: 420
+  },
+  colorStrategy: {
+    themeName: 'nord-cognitive-dark',
+    mode: 'categorical'
+  },
+  formattedData: {
+    projection: 'equalEarth',
+    unit: 'M€'
+  }
+};
+const bubbleMapRes = compileChart(bubbleMapSpec, { output: 'output/e2e-bubble-map/index.html' });
+assert(bubbleMapRes.success === true, 'Compilation de bubble-map avec chartjs-chart-geo réussie');
+assert(fs.existsSync(bubbleMapRes.outputPath), 'Fichier HTML de bubble-map généré');
+assert(bubbleMapRes.html.includes('chartjs-chart-geo'), 'HTML de bubble-map inclut le plugin chartjs-chart-geo');
+
 // Nettoyage automatique des artefacts de test dans output/
 try {
   const testSubdirs = [
     'e2e-kpi-standard', 'e2e-bar-vertical', 'e2e-box-plot',
-    'e2e-bullet', 'e2e-multi-line', 'e2e-bar-horiz'
+    'e2e-bullet', 'e2e-multi-line', 'e2e-bar-horiz',
+    'e2e-choropleth', 'e2e-bubble-map'
   ];
   testSubdirs.forEach(sub => {
     const subPath = path.join(OUTPUT_DIR, sub);

@@ -89,7 +89,7 @@
     },
     "formattedData": {
       "type": "object",
-      "description": "Données spécialisées du template"
+      "description": "Données requises pour le rendu"
     }
   },
   "required": [
