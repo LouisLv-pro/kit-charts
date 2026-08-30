@@ -3,7 +3,7 @@
  * @description All kit-charts template generators pre-bundled for instant zero-CORS execution.
  * Allows index.html and npm consumers to render all 95 charts immediately on file://, http://, and Node.js.
  * @version 1.0.0
- * @generated 2026-08-30T21:54:49.396Z
+ * @generated 2026-08-30T22:05:24.667Z
  */
 
 (function(global) {
@@ -11,13 +11,15 @@
 
   global.KitCharts = global.KitCharts || {};
   var ThemeModule = global.KitChartsTheme || (global.KitCharts && global.KitCharts.Theme) || (typeof window !== "undefined" && (window.KitChartsTheme || window.KitChartsTokens)) || {};
+  var WorldAtlasModule = global.KitChartsWorldAtlas || (typeof window !== "undefined" && window.KitChartsWorldAtlas) || null;
 
   // --------------------------------------------------------------------------
   // Chart: template/00-kpi-card/kpi-bullet
   // --------------------------------------------------------------------------
   global.KitCharts["kpi-bullet"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -320,7 +322,7 @@
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -328,7 +330,8 @@
   // --------------------------------------------------------------------------
   global.KitCharts["kpi-comparative"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -628,7 +631,7 @@
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -636,7 +639,8 @@
   // --------------------------------------------------------------------------
   global.KitCharts["kpi-composite"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -870,7 +874,7 @@
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -878,7 +882,8 @@
   // --------------------------------------------------------------------------
   global.KitCharts["kpi-distribution"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -1118,7 +1123,7 @@
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -1126,7 +1131,8 @@
   // --------------------------------------------------------------------------
   global.KitCharts["kpi-sparkline"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -1370,7 +1376,7 @@
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -1378,7 +1384,8 @@
   // --------------------------------------------------------------------------
   global.KitCharts["kpi-standard"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -1587,7 +1594,7 @@
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -1595,7 +1602,8 @@
   // --------------------------------------------------------------------------
   global.KitCharts["kpi-status-alert"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -1903,7 +1911,7 @@
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -1911,7 +1919,8 @@
   // --------------------------------------------------------------------------
   global.KitCharts["bar-chart-horizontal"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -2223,7 +2232,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -2231,7 +2240,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["bar-chart-vertical"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -2577,7 +2587,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -2585,7 +2595,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["bar-target-overlay"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -2825,7 +2836,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -2833,7 +2844,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["bullet-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -3192,7 +3204,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -3200,7 +3212,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["dumbbell-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -3551,7 +3564,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -3559,7 +3572,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["grouped-bar-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -3877,7 +3891,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -3885,7 +3899,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["lollipop-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -4228,7 +4243,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -4236,7 +4251,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["polar-area-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -4470,7 +4486,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -4478,7 +4494,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["radar-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -4769,7 +4786,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -4777,7 +4794,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["slope-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -5059,7 +5077,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -5067,7 +5085,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["stacked-bar-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -5353,7 +5372,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -5361,7 +5380,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["doughnut-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -5584,7 +5604,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -5592,7 +5612,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["pareto-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -5906,7 +5927,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -5914,7 +5935,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["pie-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -6104,7 +6126,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -6112,7 +6134,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["stacked-bar-100"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -6373,7 +6396,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -6381,7 +6404,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["stacked-total-line"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -6580,7 +6604,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -6588,7 +6612,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["sunburst"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -6803,7 +6828,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -6811,7 +6836,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["treemap"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -7041,7 +7067,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -7049,7 +7075,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["waffle-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -7305,7 +7332,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -7313,7 +7340,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["beeswarm-plot"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -7684,7 +7712,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -7692,7 +7720,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["box-plot"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -8051,7 +8080,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -8059,7 +8088,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["box-strip-plot"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -8339,7 +8369,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -8347,7 +8377,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["density-plot"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -8692,7 +8723,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -8700,7 +8731,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["distribution-heatmap"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -9014,7 +9046,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -9022,7 +9054,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["histogramme"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -9376,7 +9409,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -9384,7 +9417,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["histogramme-kde"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -9686,7 +9720,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -9694,7 +9728,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["raincloud-plot"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -9994,7 +10029,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -10002,7 +10037,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["strip-plot"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -10343,7 +10379,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -10351,7 +10387,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["violin-plot"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 var factory = function(KitChartsTheme) {
       'use strict';
@@ -10712,7 +10749,7 @@ var factory = function(KitChartsTheme) {
     return factory(KitChartsTheme);
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -10720,7 +10757,8 @@ var factory = function(KitChartsTheme) {
   // --------------------------------------------------------------------------
   global.KitCharts["bubble-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -11040,7 +11078,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -11048,7 +11086,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["connected-scatter-plot"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -11351,7 +11390,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -11359,7 +11398,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["density-2d-hexbin"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -11771,7 +11811,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -11779,7 +11819,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["joint-scatter-marginals"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -12299,7 +12340,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -12307,7 +12348,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["matrix-heatmap"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -12616,7 +12658,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -12624,7 +12666,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["scatter-plot"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -13026,7 +13069,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -13034,7 +13077,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["scatter-regression"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -13321,7 +13365,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -13329,7 +13373,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["area-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -13578,7 +13623,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -13586,7 +13631,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["candlestick-ohlc"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -13821,7 +13867,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -13829,7 +13875,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["candlestick-volume"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -14127,7 +14174,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -14135,7 +14182,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["dual-axis-controlled"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -14401,7 +14449,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -14409,7 +14457,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["line-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -14671,7 +14720,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -14679,7 +14728,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["multi-line-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -14968,7 +15018,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -14976,7 +15026,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["price-indicator-overlays"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -15185,7 +15236,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -15193,7 +15244,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["sparkline"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -15392,7 +15444,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -15400,7 +15452,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["stacked-area-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -15673,7 +15726,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -15681,7 +15734,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["streamgraph"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -15940,7 +15994,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -15948,7 +16002,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["alluvial-diagram"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -16161,7 +16216,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -16169,7 +16224,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["chord-diagram"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -16420,7 +16476,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -16428,7 +16484,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["funnel-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -16704,7 +16761,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -16712,7 +16769,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["gantt-progress"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -16970,7 +17028,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -16978,7 +17036,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["sankey-diagram"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -17189,7 +17248,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -17197,7 +17256,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["waterfall-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -17492,7 +17552,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -17500,7 +17560,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["waterfall-cumulative-line"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -17739,7 +17800,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -17747,7 +17808,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["arc-diagram"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -18151,7 +18213,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -18159,7 +18221,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["dendrogram"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -18506,7 +18569,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -18514,7 +18577,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["marimekko-chart"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -18865,7 +18929,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -18873,7 +18937,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["node-link-network"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -19243,7 +19308,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -19251,7 +19316,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["bubble-map"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -19275,22 +19341,28 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
-const EUROPE_DATA = {"type":"FeatureCollection","features":[{"type":"Feature","id":"FRA","properties":{"name":"France","value":2800,"capital":"Paris","lat":48.8566,"lon":2.3522,"code":"FR"},"geometry":{"type":"Polygon","coordinates":[[[-4.8,48.4],[-1.9,49.7],[0.1,49.4],[1.6,50.1],[2.5,51.1],[4.2,49.9],[6.2,49.5],[7.7,49],[7.5,47.6],[6.8,45.9],[7.2,43.7],[5.3,43.3],[3.1,42.4],[1.8,42.5],[-1.8,43.4],[-1.2,46],[-3,47.6],[-4.8,48.4]]]}},{"type":"Feature","id":"DEU","properties":{"name":"Allemagne","value":4100,"capital":"Berlin","lat":52.52,"lon":13.405,"code":"DE"},"geometry":{"type":"Polygon","coordinates":[[[6,50.8],[6.9,53.6],[8.6,54.9],[10,54.4],[13.7,54.3],[14.2,53.9],[14.8,51.8],[15,51.1],[12.1,50.3],[13,47.7],[10,47.5],[7.6,49],[6.2,49.5],[6,50.8]]]}},{"type":"Feature","id":"GBR","properties":{"name":"Royaume-Uni","value":3100,"capital":"Londres","lat":51.5074,"lon":-0.1278,"code":"UK"},"geometry":{"type":"Polygon","coordinates":[[[-5.7,50],[-3,50.6],[1.4,51.2],[1.7,52.5],[0.1,53.8],[-1.8,55.8],[-2,57.5],[-3,58.6],[-5,58.6],[-5.6,55.4],[-3,53.4],[-5,51.5],[-5.7,50]]]}},{"type":"Feature","id":"ITA","properties":{"name":"Italie","value":2100,"capital":"Rome","lat":41.9028,"lon":12.4964,"code":"IT"},"geometry":{"type":"Polygon","coordinates":[[[6.8,45.9],[10.5,46.5],[13.8,46.5],[13,45.6],[12.3,44],[15,41.9],[18.5,40.2],[16.8,38.9],[15.8,38],[15.6,38.2],[14.8,40.8],[11.5,42.5],[9.5,44],[7.5,44.2],[6.8,45.9]]]}},{"type":"Feature","id":"ESP","properties":{"name":"Espagne","value":1500,"capital":"Madrid","lat":40.4168,"lon":-3.7038,"code":"ES"},"geometry":{"type":"Polygon","coordinates":[[[-9.3,43],[-1.8,43.4],[3.1,42.4],[3.3,41.9],[0.2,38.8],[-0.8,37.8],[-2.2,36.7],[-5.6,36],[-7.4,37.2],[-6.9,38],[-6.5,42],[-8.9,41.8],[-9.3,43]]]}},{"type":"Feature","id":"PRT","properties":{"name":"Portugal","value":260,"capital":"Lisbonne","lat":38.7223,"lon":-9.1393,"code":"PT"},"geometry":{"type":"Polygon","coordinates":[[[-8.9,41.8],[-6.5,42],[-6.9,38],[-7.4,37.2],[-9,37],[-9.5,38.7],[-8.9,41.8]]]}},{"type":"Feature","id":"NLD","properties":{"name":"Pays-Bas","value":1050,"capital":"Amsterdam","lat":52.3676,"lon":4.9041,"code":"NL"},"geometry":{"type":"Polygon","coordinates":[[[3.4,51.4],[4.7,52.9],[6.9,53.6],[7.1,53.2],[6,51.8],[5,51.4],[3.4,51.4]]]}},{"type":"Feature","id":"BEL","properties":{"name":"Belgique","value":580,"capital":"Bruxelles","lat":50.8503,"lon":4.3517,"code":"BE"},"geometry":{"type":"Polygon","coordinates":[[[2.5,51.1],[3.4,51.4],[5.9,50.8],[6.4,50.3],[5.8,49.5],[4.2,49.9],[2.5,51.1]]]}},{"type":"Feature","id":"CHE","properties":{"name":"Suisse","value":870,"capital":"Berne","lat":46.948,"lon":7.4474,"code":"CH"},"geometry":{"type":"Polygon","coordinates":[[[6,46.2],[6,47.5],[8.6,47.8],[10.5,46.9],[9,45.8],[6.8,45.9],[6,46.2]]]}},{"type":"Feature","id":"POL","properties":{"name":"Pologne","value":750,"capital":"Varsovie","lat":52.2297,"lon":21.0122,"code":"PL"},"geometry":{"type":"Polygon","coordinates":[[[14.2,53.9],[18.6,54.8],[22.8,54.3],[24.1,52.7],[23.5,50],[22.7,49],[18.9,49.5],[15,51.1],[14.2,53.9]]]}},{"type":"Feature","id":"AUT","properties":{"name":"Autriche","value":480,"capital":"Vienne","lat":48.2082,"lon":16.3738,"code":"AT"},"geometry":{"type":"Polygon","coordinates":[[[9.5,47.5],[13,47.7],[15,48.8],[17,48],[16,46.8],[13.8,46.5],[10.5,46.9],[9.5,47.5]]]}},{"type":"Feature","id":"SWE","properties":{"name":"Suède","value":590,"capital":"Stockholm","lat":59.3293,"lon":18.0686,"code":"SE"},"geometry":{"type":"Polygon","coordinates":[[[11.2,58.9],[12.8,56.3],[14.5,55.4],[16,56.5],[19,60],[24.1,65.8],[20.6,68.5],[14,64],[12,63.5],[11.2,58.9]]]}},{"type":"Feature","id":"NOR","properties":{"name":"Norvège","value":520,"capital":"Oslo","lat":59.9139,"lon":10.7522,"code":"NO"},"geometry":{"type":"Polygon","coordinates":[[[5,62],[6,58.5],[10,58],[11.2,58.9],[12,63.5],[14,64],[20.6,68.5],[28,71],[14,68],[5,62]]]}},{"type":"Feature","id":"IRL","properties":{"name":"Irlande","value":500,"capital":"Dublin","lat":53.3498,"lon":-6.2603,"code":"IE"},"geometry":{"type":"Polygon","coordinates":[[[-10.5,51.5],[-6,52.2],[-6,54],[-7.5,55.3],[-10,54.2],[-10.5,51.5]]]}}]};
+  const WORLD_ATLAS = (typeof KitChartsWorldAtlas !== 'undefined' && KitChartsWorldAtlas) || (typeof window !== 'undefined' && window.KitChartsWorldAtlas) || null;
+
+  const DEFAULT_GLOBAL_BUBBLES = [
+    { city: 'New York', lon: -74.006, lat: 40.7128, val: 4200, role: 'focal' },
+    { city: 'Londres', lon: -0.1278, lat: 51.5074, val: 3800, role: 'focal' },
+    { city: 'Tokyo', lon: 139.6917, lat: 35.6895, val: 3900, role: 'focal' },
+    { city: 'Paris', lon: 2.3522, lat: 48.8566, val: 3400, role: 'focal' },
+    { city: 'Singapour', lon: 103.8198, lat: 1.3521, val: 2900, role: 'focal' },
+    { city: 'Shanghai', lon: 121.4737, lat: 31.2304, val: 3100, role: 'context' },
+    { city: 'São Paulo', lon: -46.6333, lat: -23.5505, val: 2100, role: 'context' },
+    { city: 'Sydney', lon: 151.2093, lat: -33.8688, val: 1900, role: 'context' },
+    { city: 'Dubai', lon: 55.2708, lat: 25.2048, val: 2400, role: 'context' },
+    { city: 'Mumbai', lon: 72.8777, lat: 19.0760, val: 1800, role: 'context' },
+    { city: 'Le Cap', lon: 18.4241, lat: -33.9249, val: 1200, role: 'context' },
+    { city: 'San Francisco', lon: -122.4194, lat: 37.7749, val: 3600, role: 'focal' }
+  ];
+
+const EUROPE_DATA = {"type":"FeatureCollection","features":[{"type":"Feature","id":"FRA","properties":{"name":"France","value":2800,"capital":"Paris","lat":48.8566,"lon":2.3522,"code":"FR"},"geometry":{"type":"Polygon","coordinates":[[[-4.8,48.4],[-1.9,49.7],[0.1,49.4],[1.6,50.1],[2.5,51.1],[4.2,49.9],[6.2,49.5],[7.7,49],[7.5,47.6],[6.8,45.9],[7.2,43.7],[5.3,43.3],[3.1,42.4],[1.8,42.5],[-1.8,43.4],[-1.2,46],[-3,47.6],[-4.8,48.4]]]}},{"type":"Feature","id":"DEU","properties":{"name":"Allemagne","value":4100,"capital":"Berlin","lat":52.52,"lon":13.405,"code":"DE"},"geometry":{"type":"Polygon","coordinates":[[[6,50.8],[6.9,53.6],[8.6,54.9],[10,54.4],[13.7,54.3],[14.2,53.9],[14.8,51.8],[15,51.1],[12.1,50.3],[13,47.7],[10,47.5],[7.6,49],[6.2,49.5],[6,50.8]]]}},{"type":"Feature","id":"GBR","properties":{"name":"Royaume-Uni","value":3100,"capital":"Londres","lat":51.5074,"lon":-0.1278,"code":"UK"},"geometry":{"type":"Polygon","coordinates":[[[-5.7,50],[-3,50.6],[1.4,51.2],[1.7,52.5],[0.1,53.8],[-1.8,55.8],[-2,57.5],[-3,58.6],[-5,58.6],[-5.6,55.4],[-3,53.4],[-5,51.5],[-5.7,50]]]}},{"type":"Feature","id":"ITA","properties":{"name":"Italie","value":2100,"capital":"Rome","lat":41.9028,"lon":12.4964,"code":"IT"},"geometry":{"type":"Polygon","coordinates":[[[6.8,45.9],[10.5,46.5],[13.8,46.5],[13,45.6],[12.3,44],[15,41.9],[18.5,40.2],[16.8,38.9],[15.8,38],[15.6,38.2],[14.8,40.8],[11.5,42.5],[9.5,44],[7.5,44.2],[6.8,45.9]]]}},{"type":"Feature","id":"ESP","properties":{"name":"Espagne","value":1500,"capital":"Madrid","lat":40.4168,"lon":-3.7038,"code":"ES"},"geometry":{"type":"Polygon","coordinates":[[[-9.3,43],[-1.8,43.4],[3.1,42.4],[3.3,41.9],[0.2,38.8],[-0.8,37.8],[-2.2,36.7],[-5.6,36],[-7.4,37.2],[-6.9,38],[-6.5,42],[-8.9,41.8],[-9.3,43]]]}},{"type":"Feature","id":"PRT","properties":{"name":"Portugal","value":260,"capital":"Lisbonne","lat":38.7223,"lon":-9.1393,"code":"PT"},"geometry":{"type":"Polygon","coordinates":[[[-8.9,41.8],[-6.5,42],[-6.9,38],[-7.4,37.2],[-9,37],[-9.5,38.7],[-8.9,41.8]]]}},{"type":"Feature","id":"NLD","properties":{"name":"Pays-Bas","value":1050,"capital":"Amsterdam","lat":52.3676,"lon":4.9041,"code":"NL"},"geometry":{"type":"Polygon","coordinates":[[[3.4,51.4],[4.7,52.9],[6.9,53.6],[7.1,53.2],[6,51.8],[5,51.4],[3.4,51.4]]]}},{"type":"Feature","id":"BEL","properties":{"name":"Belgique","value":580,"capital":"Bruxelles","lat":50.8503,"lon":4.3517,"code":"BE"},"geometry":{"type":"Polygon","coordinates":[[[2.5,51.1],[3.4,51.4],[5.9,50.8],[6.4,50.3],[5.8,49.5],[4.2,49.9],[2.5,51.1]]]}},{"type":"Feature","id":"CHE","properties":{"name":"Suisse","value":870,"capital":"Berne","lat":46.948,"lon":7.4474,"code":"CH"},"geometry":{"type":"Polygon","coordinates":[[[6,46.2],[6,47.5],[8.6,47.8],[10.5,46.9],[9,45.8],[6.8,45.9],[6,46.2]]]}},{"type":"Feature","id":"POL","properties":{"name":"Pologne","value":750,"capital":"Varsovie","lat":52.2297,"lon":21.0122,"code":"PL"},"geometry":{"type":"Polygon","coordinates":[[[14.2,53.9],[18.6,54.8],[22.8,54.3],[24.1,52.7],[23.5,50],[22.7,49],[18.9,49.5],[15,51.1],[14.2,53.9]]]}},{"type":"Feature","id":"AUT","properties":{"name":"Autriche","value":480,"capital":"Vienne","lat":48.2082,"lon":16.3738,"code":"AT"},"geometry":{"type":"Polygon","coordinates":[[[9.5,47.5],[13,47.7],[15,48.8],[17,48],[16,46.8],[13.8,46.5],[10.5,46.9],[9.5,47.5]]]}},{"type":"Feature","id":"SWE","properties":{"name":"Suède","value":590,"capital":"Stockholm","lat":59.3293,"lon":18.0686,"code":"SE"},"geometry":{"type":"Polygon","coordinates":[[[11.2,58.9],[12.8,56.3],[14.5,55.4],[16,56.5],[19,60],[24.1,65.8],[20.6,68.5],[14,64],[12,63.5],[11.2,58.9]]]}},{"type":"NOR","properties":{"name":"Norvège","value":520,"capital":"Oslo","lat":59.9139,"lon":10.7522,"code":"NO"},"geometry":{"type":"Polygon","coordinates":[[[5,62],[6,58.5],[10,58],[11.2,58.9],[12,63.5],[14,64],[20.6,68.5],[28,71],[14,68],[5,62]]]}},{"type":"Feature","id":"IRL","properties":{"name":"Irlande","value":500,"capital":"Dublin","lat":53.3498,"lon":-6.2603,"code":"IE"},"geometry":{"type":"Polygon","coordinates":[[[-10.5,51.5],[-6,52.2],[-6,54],[-7.5,55.3],[-10,54.2],[-10.5,51.5]]]}}]};
 
 const DEFAULT_DATA = {
-  title: 'Investissements Métropoles Européennes (M€)',
-  features: EUROPE_DATA.features,
-  bubbles: [
-    { city: 'Paris', lon: 2.3522, lat: 48.8566, val: 3400, role: 'focal', growth: 14.5 },
-    { city: 'Londres', lon: -0.1278, lat: 51.5074, val: 3800, role: 'focal', growth: 18.2 },
-    { city: 'Berlin', lon: 13.4050, lat: 52.5200, val: 2600, role: 'context', growth: 6.1 },
-    { city: 'Madrid', lon: -3.7038, lat: 40.4168, val: 1900, role: 'context', growth: 3.4 },
-    { city: 'Rome', lon: 12.4964, lat: 41.9028, val: 1400, role: 'anomaly', growth: -8.5 },
-    { city: 'Amsterdam', lon: 4.9041, lat: 52.3676, val: 2100, role: 'context', growth: 9.0 },
-    { city: 'Bruxelles', lon: 4.3517, lat: 50.8503, val: 1100, role: 'context', growth: 2.1 },
-    { city: 'Stockholm', lon: 18.0686, lat: 59.3293, val: 1300, role: 'context', growth: 5.5 },
-    { city: 'Dublin', lon: -6.2603, lat: 53.3498, val: 1600, role: 'focal', growth: 22.0 }
-  ]
+  title: 'Investissements Métropoles Mondiales (Mds $)',
+  bubbles: DEFAULT_GLOBAL_BUBBLES
 };
 
 function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
@@ -19322,13 +19394,30 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
   const tokens = getThemeTokens(themeName, container);
   const isTufte = tokens.name === 'tufte-minimalist-executive';
-  const showDataLabels = (customData && customData.showDataLabels !== undefined) ? customData.showDataLabels : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
   const rawData = customData || DEFAULT_DATA;
-  const features = rawData.features || EUROPE_DATA.features;
-  const bubbles = rawData.bubbles || DEFAULT_DATA.bubbles;
-  const unit = rawData.unit || 'M€';
+  const bubbles = (rawData && rawData.bubbles) ? rawData.bubbles : DEFAULT_GLOBAL_BUBBLES;
+  const unit = rawData.unit || 'Mds $';
   const projectionType = rawData.projection || 'equalEarth';
+
+  let features;
+  if (rawData && Array.isArray(rawData.features)) {
+    features = rawData.features;
+  } else if (typeof ChartGeo !== 'undefined' && ChartGeo.topojson && WORLD_ATLAS) {
+    try {
+      features = ChartGeo.topojson.feature(WORLD_ATLAS, WORLD_ATLAS.objects.countries).features;
+    } catch (e) {
+      features = EUROPE_DATA.features;
+    }
+  } else if (typeof topojson !== 'undefined' && topojson.feature && WORLD_ATLAS) {
+    try {
+      features = topojson.feature(WORLD_ATLAS, WORLD_ATLAS.objects.countries).features;
+    } catch (e) {
+      features = EUROPE_DATA.features;
+    }
+  } else {
+    features = EUROPE_DATA.features;
+  }
 
   const defaultBubbleColor = getColor(tokens, 0);
 
@@ -19349,9 +19438,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           label: rawData.title || 'Investissements',
           outline: features,
           showOutline: true,
-          outlineBackgroundColor: tokens.isDark ? '#1E293B' : '#F1F5F9',
+          outlineBackgroundColor: tokens.isDark ? '#1E293B' : '#F8FAFC',
           outlineBorderColor: tokens.isDark ? '#475569' : '#CBD5E1',
-          outlineBorderWidth: 1.2,
+          outlineBorderWidth: 0.5,
           backgroundColor(context) {
             if (context.dataIndex == null) return defaultBubbleColor;
             const b = context.dataset.data[context.dataIndex];
@@ -19361,7 +19450,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             return hexToRgba(defaultBubbleColor, tokens.isDark ? 0.8 : 0.65);
           },
           borderColor: tokens.isDark ? '#ECEFF4' : '#0F172A',
-          borderWidth: 1.5,
+          borderWidth: 1.2,
           data: bubbles.map(b => ({
             feature: b,
             latitude: b.lat !== undefined ? b.lat : b.latitude,
@@ -19581,7 +19670,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -19589,7 +19678,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["cartogram-tilegram"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -19931,7 +20021,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -19939,7 +20029,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   // --------------------------------------------------------------------------
   global.KitCharts["choropleth-map"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -19960,6 +20051,21 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const getExecutiveModeOptions = (KitChartsTheme && KitChartsTheme.getExecutiveModeOptions) || (typeof window !== 'undefined' && window.getExecutiveModeOptions) || function() { return {}; };
   const computeAntiOcclusionTooltipPosition = (KitChartsTheme && KitChartsTheme.computeAntiOcclusionTooltipPosition) || (typeof window !== 'undefined' && window.computeAntiOcclusionTooltipPosition) || function() { return {}; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
+
+  const WORLD_ATLAS = (typeof KitChartsWorldAtlas !== 'undefined' && KitChartsWorldAtlas) || (typeof window !== 'undefined' && window.KitChartsWorldAtlas) || null;
+
+  const DEFAULT_WORLD_VALUES = {
+    'United States of America': 25400, 'China': 17900, 'Japan': 4200, 'Germany': 4100,
+    'India': 3400, 'United Kingdom': 3100, 'France': 2800, 'Italy': 2100, 'Canada': 2100,
+    'Brazil': 1900, 'Australia': 1700, 'Spain': 1500, 'Mexico': 1400, 'South Korea': 1700,
+    'Netherlands': 1050, 'Saudi Arabia': 1100, 'Switzerland': 870, 'Turkey': 900, 'Poland': 750,
+    'Sweden': 590, 'Belgium': 580, 'Norway': 520, 'Ireland': 500, 'Austria': 480,
+    'South Africa': 400, 'Egypt': 470, 'Argentina': 630, 'Chile': 300, 'Nigeria': 475,
+    'Indonesia': 1300, 'Russia': 2200, 'Colombia': 340, 'Portugal': 260, 'Denmark': 390,
+    'Finland': 280, 'Greece': 220, 'New Zealand': 250, 'Morocco': 130, 'Algeria': 190,
+    'Vietnam': 410, 'Thailand': 500, 'Malaysia': 400, 'Philippines': 400, 'Singapore': 470,
+    'Israel': 520, 'United Arab Emirates': 500
+  };
 
 const EUROPE_DATA = {"type":"FeatureCollection","features":[{"type":"Feature","id":"FRA","properties":{"name":"France","value":2800,"capital":"Paris","lat":48.8566,"lon":2.3522,"code":"FR","role":"focal","growth":1.2},"geometry":{"type":"Polygon","coordinates":[[[-4.8,48.4],[-1.9,49.7],[0.1,49.4],[1.6,50.1],[2.5,51.1],[4.2,49.9],[6.2,49.5],[7.7,49],[7.5,47.6],[6.8,45.9],[7.2,43.7],[5.3,43.3],[3.1,42.4],[1.8,42.5],[-1.8,43.4],[-1.2,46],[-3,47.6],[-4.8,48.4]]]}},{"type":"Feature","id":"DEU","properties":{"name":"Allemagne","value":4100,"capital":"Berlin","lat":52.52,"lon":13.405,"code":"DE","role":"focal","growth":0.8},"geometry":{"type":"Polygon","coordinates":[[[6,50.8],[6.9,53.6],[8.6,54.9],[10,54.4],[13.7,54.3],[14.2,53.9],[14.8,51.8],[15,51.1],[12.1,50.3],[13,47.7],[10,47.5],[7.6,49],[6.2,49.5],[6,50.8]]]}},{"type":"Feature","id":"GBR","properties":{"name":"Royaume-Uni","value":3100,"capital":"Londres","lat":51.5074,"lon":-0.1278,"code":"UK","role":"context","growth":1.1},"geometry":{"type":"Polygon","coordinates":[[[-5.7,50],[-3,50.6],[1.4,51.2],[1.7,52.5],[0.1,53.8],[-1.8,55.8],[-2,57.5],[-3,58.6],[-5,58.6],[-5.6,55.4],[-3,53.4],[-5,51.5],[-5.7,50]]]}},{"type":"Feature","id":"ITA","properties":{"name":"Italie","value":2100,"capital":"Rome","lat":41.9028,"lon":12.4964,"code":"IT","role":"context","growth":0.7},"geometry":{"type":"Polygon","coordinates":[[[6.8,45.9],[10.5,46.5],[13.8,46.5],[13,45.6],[12.3,44],[15,41.9],[18.5,40.2],[16.8,38.9],[15.8,38],[15.6,38.2],[14.8,40.8],[11.5,42.5],[9.5,44],[7.5,44.2],[6.8,45.9]]]}},{"type":"Feature","id":"ESP","properties":{"name":"Espagne","value":1500,"capital":"Madrid","lat":40.4168,"lon":-3.7038,"code":"ES","role":"context","growth":2.3},"geometry":{"type":"Polygon","coordinates":[[[-9.3,43],[-1.8,43.4],[3.1,42.4],[3.3,41.9],[0.2,38.8],[-0.8,37.8],[-2.2,36.7],[-5.6,36],[-7.4,37.2],[-6.9,38],[-6.5,42],[-8.9,41.8],[-9.3,43]]]}},{"type":"Feature","id":"PRT","properties":{"name":"Portugal","value":260,"capital":"Lisbonne","lat":38.7223,"lon":-9.1393,"code":"PT","role":"context","growth":2.1},"geometry":{"type":"Polygon","coordinates":[[[-8.9,41.8],[-6.5,42],[-6.9,38],[-7.4,37.2],[-9,37],[-9.5,38.7],[-8.9,41.8]]]}},{"type":"Feature","id":"NLD","properties":{"name":"Pays-Bas","value":1050,"capital":"Amsterdam","lat":52.3676,"lon":4.9041,"code":"NL","role":"context","growth":1.4},"geometry":{"type":"Polygon","coordinates":[[[3.4,51.4],[4.7,52.9],[6.9,53.6],[7.1,53.2],[6,51.8],[5,51.4],[3.4,51.4]]]}},{"type":"Feature","id":"BEL","properties":{"name":"Belgique","value":580,"capital":"Bruxelles","lat":50.8503,"lon":4.3517,"code":"BE","role":"context","growth":1.0},"geometry":{"type":"Polygon","coordinates":[[[2.5,51.1],[3.4,51.4],[5.9,50.8],[6.4,50.3],[5.8,49.5],[4.2,49.9],[2.5,51.1]]]}},{"type":"Feature","id":"CHE","properties":{"name":"Suisse","value":870,"capital":"Berne","lat":46.948,"lon":7.4474,"code":"CH","role":"context","growth":1.5},"geometry":{"type":"Polygon","coordinates":[[[6,46.2],[6,47.5],[8.6,47.8],[10.5,46.9],[9,45.8],[6.8,45.9],[6,46.2]]]}},{"type":"Feature","id":"POL","properties":{"name":"Pologne","value":750,"capital":"Varsovie","lat":52.2297,"lon":21.0122,"code":"PL","role":"context","growth":3.1},"geometry":{"type":"Polygon","coordinates":[[[14.2,53.9],[18.6,54.8],[22.8,54.3],[24.1,52.7],[23.5,50],[22.7,49],[18.9,49.5],[15,51.1],[14.2,53.9]]]}},{"type":"Feature","id":"AUT","properties":{"name":"Autriche","value":480,"capital":"Vienne","lat":48.2082,"lon":16.3738,"code":"AT","role":"context","growth":1.3},"geometry":{"type":"Polygon","coordinates":[[[9.5,47.5],[13,47.7],[15,48.8],[17,48],[16,46.8],[13.8,46.5],[10.5,46.9],[9.5,47.5]]]}},{"type":"Feature","id":"SWE","properties":{"name":"Suède","value":590,"capital":"Stockholm","lat":59.3293,"lon":18.0686,"code":"SE","role":"context","growth":1.7},"geometry":{"type":"Polygon","coordinates":[[[11.2,58.9],[12.8,56.3],[14.5,55.4],[16,56.5],[19,60],[24.1,65.8],[20.6,68.5],[14,64],[12,63.5],[11.2,58.9]]]}},{"type":"Feature","id":"NOR","properties":{"name":"Norvège","value":520,"capital":"Oslo","lat":59.9139,"lon":10.7522,"code":"NO","role":"context","growth":1.9},"geometry":{"type":"Polygon","coordinates":[[[5,62],[6,58.5],[10,58],[11.2,58.9],[12,63.5],[14,64],[20.6,68.5],[28,71],[14,68],[5,62]]]}},{"type":"Feature","id":"IRL","properties":{"name":"Irlande","value":500,"capital":"Dublin","lat":53.3498,"lon":-6.2603,"code":"IE","role":"anomaly","growth":5.8},"geometry":{"type":"Polygon","coordinates":[[[-10.5,51.5],[-6,52.2],[-6,54],[-7.5,55.3],[-10,54.2],[-10.5,51.5]]]}}]};
 
@@ -19999,11 +20105,41 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const isTufte = tokens.name === 'tufte-minimalist-executive';
 
   const rawData = customData || DEFAULT_DATA;
-  const features = rawData.features || EUROPE_DATA.features;
-  const unit = rawData.unit || 'Mds €';
+  const unit = rawData.unit || 'Mds $';
   const projectionType = rawData.projection || 'equalEarth';
 
-  const values = features.map(f => (f.properties && f.properties.value !== undefined) ? f.properties.value : (f.value || 0));
+  let features;
+  if (rawData && Array.isArray(rawData.features)) {
+    features = rawData.features;
+  } else if (typeof ChartGeo !== 'undefined' && ChartGeo.topojson && WORLD_ATLAS) {
+    try {
+      features = ChartGeo.topojson.feature(WORLD_ATLAS, WORLD_ATLAS.objects.countries).features;
+    } catch (e) {
+      features = EUROPE_DATA.features;
+    }
+  } else if (typeof topojson !== 'undefined' && topojson.feature && WORLD_ATLAS) {
+    try {
+      features = topojson.feature(WORLD_ATLAS, WORLD_ATLAS.objects.countries).features;
+    } catch (e) {
+      features = EUROPE_DATA.features;
+    }
+  } else {
+    features = EUROPE_DATA.features;
+  }
+
+  const dataPoints = features.map(f => {
+    const name = (f.properties && f.properties.name) || f.id || '';
+    let val = (f.properties && f.properties.value !== undefined) ? f.properties.value : (f.value !== undefined ? f.value : DEFAULT_WORLD_VALUES[name]);
+    if (val === undefined) {
+      val = Math.floor(Math.abs(Math.sin(name.length * 13.37)) * 250 + 20);
+    }
+    return {
+      feature: f,
+      value: val
+    };
+  });
+
+  const values = dataPoints.map(d => d.value);
   const minVal = Math.min(...values);
   const maxVal = Math.max(...values);
 
@@ -20021,13 +20157,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       data: {
         labels: features.map(f => (f.properties && f.properties.name) || f.id || ''),
         datasets: [{
-          label: rawData.title || 'PIB Régional',
+          label: rawData.title || 'PIB Mondial (Mds $)',
           outline: features,
           showOutline: true,
-          data: features.map(f => ({
-            feature: f,
-            value: (f.properties && f.properties.value !== undefined) ? f.properties.value : (f.value || 0)
-          })),
+          data: dataPoints,
           backgroundColor(context) {
             if (context.dataIndex == null) return null;
             const item = context.dataset.data[context.dataIndex];
@@ -20037,10 +20170,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             return getSequentialColor(tokens, ratio);
           },
           borderColor: tokens.isDark ? '#4C566A' : '#CBD5E1',
-          borderWidth: 1.2,
+          borderWidth: 0.6,
           hoverBackgroundColor: tokens.palette[0] || '#2B8CBE',
           hoverBorderColor: tokens.isDark ? '#ECEFF4' : '#0F172A',
-          hoverBorderWidth: 2
+          hoverBorderWidth: 1.5
         }]
       },
       options: {
@@ -20211,7 +20344,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -20219,7 +20352,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["table-bar-in-cell"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -20594,7 +20728,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -20602,7 +20736,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["table-financial-variance"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -20925,7 +21060,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -20933,7 +21068,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["table-heatmap-matrix"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -21418,7 +21554,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -21426,7 +21562,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["table-hierarchical-tree"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -21912,7 +22049,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -21920,7 +22057,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["table-kpi-scorecard"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -22442,7 +22580,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -22450,7 +22588,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["table-ranking-leaderboard"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
 'use strict';
 
@@ -22844,7 +22983,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   return moduleExports;
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
   // --------------------------------------------------------------------------
@@ -22852,7 +22991,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // --------------------------------------------------------------------------
   global.KitCharts["tooltip"] = (function() {
     var KitChartsTheme = ThemeModule;
-    var factory = function(KitChartsTheme) {
+    var KitChartsWorldAtlas = WorldAtlasModule;
+    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {
 
   'use strict';
 
@@ -23175,7 +23315,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 
     };
-    return factory(KitChartsTheme);
+    return factory(KitChartsTheme, KitChartsWorldAtlas);
   })();
 
 })(typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof self !== "undefined" ? self : this);

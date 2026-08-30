@@ -16,6 +16,12 @@ const ROOT_DIR = path.resolve(__dirname, '../../../..');
 const REGISTRY_PATH = path.join(ROOT_DIR, '.agents/skills/kit-charts/registry.json');
 const THEMES_PATH = path.join(ROOT_DIR, 'themes/theme-tokens.js');
 const STATS_PATH = path.join(ROOT_DIR, 'themes/stat-helpers.js');
+const WORLD_ATLAS_PATH = path.join(ROOT_DIR, 'themes/world-atlas.js');
+
+let WORLD_ATLAS_CODE = '';
+if (fs.existsSync(WORLD_ATLAS_PATH)) {
+  WORLD_ATLAS_CODE = fs.readFileSync(WORLD_ATLAS_PATH, 'utf8');
+}
 
 // ============================================================================
 // PLUGINS CHART.JS REQUIS PAR TEMPLATE (contrôleurs non-core)
@@ -337,6 +343,11 @@ ${themeTokensContent}
   <script>
 ${statHelpersContent}
   </script>
+${(templateId === 'choropleth-map' || templateId === 'bubble-map') && WORLD_ATLAS_CODE ? `
+  <!-- Données Cartographiques World Atlas 110m -->
+  <script>
+${WORLD_ATLAS_CODE}
+  </script>` : ''}
 
   <!-- Logique Spécifique du Template : ${templateId} -->
   <script>

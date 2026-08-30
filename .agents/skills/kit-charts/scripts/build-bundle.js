@@ -36,6 +36,7 @@ function buildBundle() {
 
   global.KitCharts = global.KitCharts || {};
   var ThemeModule = global.KitChartsTheme || (global.KitCharts && global.KitCharts.Theme) || (typeof window !== "undefined" && (window.KitChartsTheme || window.KitChartsTokens)) || {};
+  var WorldAtlasModule = global.KitChartsWorldAtlas || (typeof window !== "undefined" && window.KitChartsWorldAtlas) || null;
 
 `;
 
@@ -49,8 +50,8 @@ function buildBundle() {
 
     const fileContent = fs.readFileSync(jsPath, 'utf8');
 
-    // Extraction du corps de la fonction factory(KitChartsTheme) { ... }
-    const factoryMatch = fileContent.match(/function\s*\(\s*KitChartsTheme\s*\)\s*\{([\s\S]*)\}\s*\)\s*;\s*$/);
+    // Extraction du corps de la fonction factory(KitChartsTheme, KitChartsWorldAtlas) { ... }
+    const factoryMatch = fileContent.match(/function\s*\(\s*KitChartsTheme[\s\w,]*\)\s*\{([\s\S]*)\}\s*\)\s*;\s*$/);
 
     if (factoryMatch && factoryMatch[1]) {
       const factoryBody = factoryMatch[1];
@@ -59,10 +60,11 @@ function buildBundle() {
       bundleContent += `  // --------------------------------------------------------------------------\n`;
       bundleContent += `  global.KitCharts["${t.id}"] = (function() {\n`;
       bundleContent += `    var KitChartsTheme = ThemeModule;\n`;
-      bundleContent += `    var factory = function(KitChartsTheme) {\n`;
+      bundleContent += `    var KitChartsWorldAtlas = WorldAtlasModule;\n`;
+      bundleContent += `    var factory = function(KitChartsTheme, KitChartsWorldAtlas) {\n`;
       bundleContent += factoryBody;
       bundleContent += `\n    };\n`;
-      bundleContent += `    return factory(KitChartsTheme);\n`;
+      bundleContent += `    return factory(KitChartsTheme, KitChartsWorldAtlas);\n`;
       bundleContent += `  })();\n\n`;
     } else {
       // Si la structure UMD standard diffère, encapsulation sûre
