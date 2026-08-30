@@ -127,7 +127,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const chartData = { labels, datasets };
   const baseOptions = getChartDefaultOptions(tokens);
   const temporalOpts = getTemporalInteractionOptions(tokens, { mode: 'index', axis: 'x', hitRadius: 12, hoverRadius: 6 });
-  const animOpts = getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuad' });
+  const animOpts = getAccessibleAnimationOptions(tokens, { duration: 700, easing: 'easeOutCubic' });
 
   const config = {
     type: 'line',

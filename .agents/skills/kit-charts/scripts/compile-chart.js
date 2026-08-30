@@ -17,6 +17,43 @@ const REGISTRY_PATH = path.join(ROOT_DIR, '.agents/skills/kit-charts/registry.js
 const THEMES_PATH = path.join(ROOT_DIR, 'themes/theme-tokens.js');
 const STATS_PATH = path.join(ROOT_DIR, 'themes/stat-helpers.js');
 
+// ============================================================================
+// PLUGINS CHART.JS REQUIS PAR TEMPLATE (contrôleurs non-core)
+// Injectés après chart.umd.min.js pour éviter les canvas vides (erreur 'type not registered').
+// Carte : templateId -> liste d'URLs CDN des plugins à charger.
+// ============================================================================
+const CHART_PLUGINS = {
+  'treemap': [
+    'https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.0/dist/chartjs-chart-treemap.min.js'
+  ],
+  'matrix-heatmap': [
+    'https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js'
+  ],
+  'distribution-heatmap': [
+    'https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js'
+  ],
+  'waffle-chart': [
+    'https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js'
+  ],
+  'cartogram-tilegram': [
+    'https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js'
+  ],
+  'sankey-diagram': [
+    'https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.0/dist/chartjs-chart-sankey.min.js'
+  ],
+  'alluvial-diagram': [
+    'https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.0/dist/chartjs-chart-sankey.min.js'
+  ],
+  'candlestick-ohlc': [
+    'https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js',
+    'https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js'
+  ],
+  'candlestick-volume': [
+    'https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js',
+    'https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js'
+  ]
+};
+
 /**
  * Charge le registre des templates
  */
@@ -230,6 +267,11 @@ ${initScriptContent}
     ? `<link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="${tokens.googleFontsUrl}" rel="stylesheet">`
     : '';
 
+  // Injecte les plugins Chart.js non-core requis par le template (ex: treemap, sankey, candlestick)
+  const chartPluginTags = (CHART_PLUGINS[templateId] || [])
+    .map(u => `  <script src="${u}"></script>`)
+    .join('\n');
+
   const fullHtml = `<!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -274,6 +316,8 @@ ${initScriptContent}
 
   <!-- Dépendances Chart.js UMD Officielles -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <!-- Plugins Chart.js non-core requis par ce template (contrôleurs treemap / matrix / sankey / candlestick) -->
+${chartPluginTags}
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 
   <!-- Moteur de Thèmes kit-charts -->

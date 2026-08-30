@@ -6,7 +6,7 @@
 
 Un kit pour vos agents d'IA (Antigravity, Claude Code, Cursor, etc.) pour générer des graphiques fiables, clairs et sans erreurs avec Chart.js.
 
-L'agent n'a **plus besoin de recréer les graphiques de zéro** : il pioche dans **95 modèles prêts à l'emploi**, applique de bonnes règles de lisibilité et livre une page HTML que vous pouvez ouvrir directement dans votre navigateur.
+L'agent n'a **plus besoin de recréer les graphiques de zéro** : il pioche dans **74 modèles prêts à l'emploi**, applique de bonnes règles de lisibilité et livre une page HTML que vous pouvez ouvrir directement dans votre navigateur.
 
 ---
 
@@ -16,9 +16,10 @@ Quand une IA essaie de coder un graphique à partir d'une feuille blanche, elle 
 - **Des axes coupés** qui trompent l'œil et font paraître de petits écarts énormes.
 - **Trop d'informations entassées** (15 barres verticales illisibles ou 10 courbes emmêlées).
 - **Des couleurs mal choisies**, impossibles à lire pour les personnes daltoniennes.
+- **Des animations lentes, instables ou clignotantes** qui nuisent à la lecture immédiate.
 - **Du code bricolé**, difficile à relire ou à réutiliser.
 
-**kit-charts** règle ce problème en donnant à l'agent une méthode simple et des modèles déjà testés :
+**kit-charts** règle ce problème en garantissant un **rendu instantané déterministe (0 ms de latence)**, des infobulles/étiquettes impeccables et des modèles déjà testés :
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
@@ -56,7 +57,7 @@ cd kit-charts
 ### 2. Explorer la Galerie dans votre Navigateur
 Ouvrez simplement [**`index.html`**](index.html) dans votre navigateur (double-clic ou `open index.html`).
 - **100% Hors-Ligne** : Tous les graphiques s'affichent immédiatement, sans avoir besoin d'un serveur web.
-- **Interactif** : Testez les 8 thèmes de couleurs en un clic et parcourez les 95 modèles.
+- **Interactif** : Testez les 8 thèmes de couleurs en un clic et parcourez les 74 modèles.
 
 ### 3. Demander à votre IA de Créer un Graphique
 Donnez simplement votre besoin en langage naturel à votre agent IA :
@@ -79,7 +80,7 @@ L'agent choisit le bon modèle (`bullet-chart`), applique les bonnes couleurs et
 
 ---
 
-## Les 10 Familles de Graphiques (95 Modèles Prêts à l'Emploi)
+## Les 10 Familles de Graphiques (74 Modèles Prêts à l'Emploi)
 
 Chaque modèle est rangé dans son dossier avec sa structure standard (`template.html`, `schema.json`, `template.js`) :
 
@@ -92,10 +93,10 @@ Chaque modèle est rangé dans son dossier avec sa structure standard (`template
 | **04. Corrélation & Liens** | `scatter-plot`, `bubble-chart`, `matrix-heatmap` | Pour les bulles, la taille représente la surface réelle et non le rayon. |
 | **05. Évolution dans le temps** | `line-chart`, `multi-line-chart`, `area-chart` | Le temps se lit toujours de gauche à droite, avec un maximum de 5 courbes. |
 | **06. Étapes & Flux** | `funnel-chart`, `waterfall-chart` | Étapes en cascade et taux de passage d'une étape à l'autre bien visibles. |
-| **07. Hiérarchies & Arbres** | `sunburst`, `network-graph`, `radial-tree` | 3 niveaux maximum pour éviter la surcharge visuelle. |
-| **08. Cartes géographiques** | `choropleth-map`, `bubble-map` | Valeurs ramenées par habitant ou par surface pour éviter les fausses impressions. |
-| **09. Bourse & Finance** | `candlestick-chart`, `ohlc` | Vert pour la hausse, rouge pour la baisse. |
-| **10. Tableaux avec graphiques** | `table-sparklines`, `table-bar-in-cell` | Chiffres alignés à droite avec mini-barres de comparaison intégrées. |
+| **07. Hiérarchies & Arbres** | `sunburst`, `dendrogram`, `marimekko-chart` | 3 niveaux maximum pour éviter la surcharge visuelle. |
+| **08. Cartes géographiques** | `choropleth-map`, `bubble-map`, `cartogram-tilegram` | Valeurs ramenées par habitant ou par surface pour éviter les fausses impressions. |
+| **09. Tableaux avec graphiques** | `table-kpi-scorecard`, `table-bar-in-cell` | Chiffres alignés à droite avec mini-barres de comparaison intégrées. |
+| **10. Infobulles & Détails** | `tooltip` | Infobulles anti-occlusion respectant Mayer et Fitts. |
 
 ---
 
@@ -143,28 +144,26 @@ npm test
 ```
 kit-charts/
 ├── index.html                        # Galerie interactive pour voir tous les modèles
-├── catalog-bundle.js                 # Fichier complet qui regroupe les 95 modèles
+├── catalog-bundle.js                 # Fichier complet qui regroupe les 74 modèles
 ├── package.json                      # Commandes du projet
 ├── README.md                         # Ce guide
 ├── LICENSE                           # Licence libre MIT
 │
-├── template/                         # Les 95 modèles rangés par dossiers
-│   ├── 00-kpi-card/                  # Cartes et indicateurs clés
-│   ├── 01-comparaison/               # Barres, colonnes, bullet charts
-│   ├── 02-composition/               # Parts de marché, camemberts, treemaps
-│   ├── 03-distribution/              # Histogrammes, boîtes à moustaches
-│   ├── 04-correlation/               # Nuages de points, bulles, heatmaps
-│   ├── 05-evolution-temporelle/      # Courbes et aires dans le temps
-│   ├── 06-flux-processus/            # Entonnoirs de vente, cascades
-│   ├── 07-hierarchie-reseau/         # Réseaux et arbres
-│   ├── 08-geospatial-cartes/         # Cartes et pays
-│   ├── 09-financiere-bourse/         # Graphiques boursiers et chandeliers
-│   ├── 10-tableaux-matrices/         # Tableaux avec mini-graphiques
-│   ├── tooltip/                      # Infobulles intelligentes
-│   └── animation/                    # 20 animations fluides
+├── template/                         # Les 74 modèles rangés par dossiers
+│   ├── 00-kpi-card/                  # Cartes et indicateurs clés (7 modèles)
+│   ├── 01-comparaison/               # Barres, colonnes, bullet charts (11 modèles)
+│   ├── 02-composition-part-to-whole/ # Parts de marché, camemberts, treemaps (8 modèles)
+│   ├── 03-distribution/              # Histogrammes, boîtes à moustaches (10 modèles)
+│   ├── 04-correlation-relation/      # Nuages de points, bulles, heatmaps (7 modèles)
+│   ├── 05-evolution-temporelle/      # Courbes et aires dans le temps (10 modèles)
+│   ├── 06-flux-processus/            # Entonnoirs de vente, cascades (7 modèles)
+│   ├── 07-hierarchie-reseau/         # Réseaux et arbres (4 modèles)
+│   ├── 08-geospatial-cartes/         # Cartes et pays (3 modèles)
+│   ├── 09-tableaux-dataviz/          # Tableaux avec mini-graphiques (6 modèles)
+│   └── tooltip/                      # Infobulles intelligentes (1 modèle)
 │
 ├── themes/                           # Les 8 thèmes de couleurs
-│   └── theme-tokens.js               # Gestion des couleurs et contrastes
+│   └── theme-tokens.js               # Gestion des couleurs, contrastes et options Chart.js
 │
 ├── output/                           # Dossier où sont enregistrés vos graphiques
 │

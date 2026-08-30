@@ -288,37 +288,8 @@ function validateChartSpec(spec, options = {}) {
   }
 
   // --------------------------------------------------------------------------
-  // RÈGLE 3 : Accessibilité & WCAG 2.2
+  // RÈGLE 3 : Accessibilité & WCAG 2.2 (Contrastes & Lisibilité)
   // --------------------------------------------------------------------------
-
-  // 3.1 Durée d'animation <= 800 ms
-  const animationDuration = cognitiveFeatures.animation?.durationMs ??
-                            chartOptions.animation?.duration ??
-                            spec.animationDuration;
-
-  if (typeof animationDuration === 'number' && animationDuration > 800) {
-    errors.push({
-      ruleId: 'ANIMATION_MAX_DURATION',
-      category: 'WCAG 2.2 / Cognition',
-      severity: 'ERROR',
-      message: `Durée d'animation trop longue (${animationDuration} ms > seuil maximal de 800 ms).`,
-      suggestion: `Réduire la durée d'animation à <= 800 ms (durée recommandée : 400-600 ms) pour respecter le tempo cognitif et la norme WCAG.`
-    });
-  }
-
-  // 3.2 Interdiction des rebonds décoratifs (bounce, elastic)
-  const animationEasing = (cognitiveFeatures.animation?.easing || chartOptions.animation?.easing || '').toLowerCase();
-  if (FORBIDDEN_EASINGS.some(e => animationEasing.includes(e))) {
-    errors.push({
-      ruleId: 'NO_DECORATIVE_BOUNCE',
-      category: 'WCAG 2.2 / Ergonomie',
-      severity: 'ERROR',
-      message: `Easing décoratif non conforme détecté ('${animationEasing}').`,
-      suggestion: `Remplacer par un easing amorti professionnel : 'easeOutQuart', 'easeOutQuad', 'easeOutCubic' ou 'linear'.`
-    });
-  }
-
-  // 3.3 Vérification des contrastes du thème WCAG 2.2
   const themeName = colorStrategy.themeName || spec.theme || 'colorbrewer-accessible';
   const themeTokensMod = getThemeTokensModule();
   if (themeTokensMod && typeof themeTokensMod.getThemeTokens === 'function') {
@@ -585,19 +556,6 @@ function extractSpecFromCode(content, ext, absPath) {
       spec.logScale = true;
       spec.options.scales.y = { type: 'logarithmic' };
     }
-  }
-
-  // Détection de la durée d'animation
-  const durationMatch = userScript.match(/duration(?:Ms)?\s*:\s*(\d+)/);
-  if (durationMatch) {
-    spec.cognitiveFeatures.animation = { durationMs: parseInt(durationMatch[1], 10) };
-  }
-
-  // Détection du easing
-  const easingMatch = userScript.match(/easing\s*:\s*['"]([^'"]+)['"]/);
-  if (easingMatch) {
-    if (!spec.cognitiveFeatures.animation) spec.cognitiveFeatures.animation = {};
-    spec.cognitiveFeatures.animation.easing = easingMatch[1];
   }
 
   // Détection du showDataLabels

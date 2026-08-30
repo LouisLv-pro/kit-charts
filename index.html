@@ -1322,7 +1322,6 @@
       <a href="#section-charts" class="nav-link"><span>📊</span> Graphiques</a>
       <a href="#section-tableaux" class="nav-link"><span>📋</span> Tableaux</a>
       <a href="#section-tooltips" class="nav-link"><span>🔍</span> Tooltips</a>
-      <a href="#section-animations" class="nav-link"><span>⚡</span> Animations</a>
     </nav>
 
     <div class="nav-actions">
@@ -1415,10 +1414,10 @@
         </div>
       </div>
 
-      <!-- Dessin 3 : Animation (Onde sinusoïdale cinématique & particule en mouvement) -->
-      <div class="floating-card float-anim-3" title="Micro-Animations Cognitives">
+      <!-- Dessin 3 : Composition (Anneau Doughnut Part-to-Whole & KPI) -->
+      <div class="floating-card float-anim-3" title="Composition & Part-to-Whole">
         <div class="hero-drawing-wrap">
-          <canvas id="heroCanvasAnim"></canvas>
+          <canvas id="heroCanvasDonut"></canvas>
         </div>
       </div>
     </div>
@@ -1609,25 +1608,6 @@
       </div>
     </section>
 
-    <!-- ========================================================================
-         SECTION 5 : MICRO-ANIMATIONS COGNITIVES (ANIMATION)
-         ======================================================================== -->
-    <section class="portal-section" id="section-animations">
-      <div class="section-header-wrap">
-        <div class="section-badge"><span>⚡</span> 11. Micro-Animations Cognitives</div>
-        <h2 class="section-title">
-          Animations & Dynamique de Transition
-        </h2>
-        <p class="section-desc">
-          Patterns d'animations cognitives basés sur les recherches de Heer & Robertson, Simons & Levin et Bartram : transitions par étapes, anti-change blindness, pulsations préattentionnelles et banc d'essai cinématique.
-        </p>
-      </div>
-
-      <div class="gallery-grid" id="grid-animations">
-        <!-- Rendu JS dynamique -->
-      </div>
-    </section>
-
   </div>
 
   <!-- ==========================================================================
@@ -1663,7 +1643,6 @@
             <li><a href="#section-charts">📊 Graphiques (60)</a></li>
             <li><a href="#section-tableaux">📋 Tableaux Dataviz (6)</a></li>
             <li><a href="#section-tooltips">🔍 Tooltips Lab (1)</a></li>
-            <li><a href="#section-animations">⚡ Micro-Animations (9)</a></li>
           </ul>
         </div>
 
@@ -2543,239 +2522,6 @@
         cognitiveRank: 'Loi de Fitts, Mayer & Sweller',
         cognitiveSummary: 'Pointage Fitts étendu (hitRadius 12px), positionnement anti-occlusion dynamique, typographie tabulaire monospacée et contrastes WCAG AAA.',
         tags: ['tooltip', 'infobulle', 'fitts', 'mayer', 'anti-occlusion', 'details-on-demand', 'interaction', 'survol']
-      },
-
-      // 11. Micro-Animations Cognitives (8 Patterns Dédiés + Laboratoire)
-      {
-        id: 'anim-staged-transitions',
-        title: '1. Transitions par Étapes',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Heer & Robertson (2007)',
-        cognitiveRank: 'Séquençage Temporel en 3 Phases',
-        cognitiveSummary: 'Découpe la transition (Fade Out → Move → Fade In) pour séparer l\'encodage graphique du déplacement des marques.',
-        tags: ['animation', 'staged', 'heer', 'robertson', 'transition', 'morphing', 'etapes', 'cognitive']
-      },
-      {
-        id: 'anim-anti-change-blindness',
-        title: '2. Anti-Change Blindness',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Simons & Levin (1997)',
-        cognitiveRank: 'Continuité Spatio-Temporelle In-Place',
-        cognitiveSummary: 'Mutation directe des données sur place sans détruire le canvas pour éliminer les clignotements et la cécité au changement.',
-        tags: ['animation', 'blindness', 'simons', 'rensink', 'interpolation', 'constance', 'in-place']
-      },
-      {
-        id: 'anim-preattentive-pulse',
-        title: '3. Alerte Préattentive Pulse',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Bartram (2003) & Healey (2012)',
-        cognitiveRank: 'Signalement d\'Alerte Auto-Extinguible',
-        cognitiveSummary: 'Onde d\'alerte limitée à 3 pulsations amorties pour capturer l\'attention sur les seuils critiques sans saturer l\'utilisateur.',
-        tags: ['animation', 'pulse', 'alerte', 'bartram', 'healey', 'sinusoid', 'seuil', 'preattentive']
-      },
-      {
-        id: 'anim-continuous-zoom',
-        title: '4. Zoom & Drill-down Continu',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Bederson & Hollan (Pad++)',
-        cognitiveRank: 'Expansion d\'Échelle Continue',
-        cognitiveSummary: 'Transition fluide préservant le repère spatial global lors du drill-down analytique.',
-        tags: ['animation', 'zoom', 'drilldown', 'bederson', 'pad++', 'logarithmic', 'echelle', 'continu']
-      },
-      {
-        id: 'anim-mot-stagger',
-        title: '5. Stagger Plafonné MOT (k=4)',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Cavanagh & Alvarez (2005)',
-        cognitiveRank: 'Cascade Visuelle Ordonnée',
-        cognitiveSummary: 'Décalage temporel progressif respectant la capacité de suivi visuel simultané de l\'utilisateur.',
-        tags: ['animation', 'stagger', 'mot', 'cavanagh', 'cascade', 'tracking', 'capacite']
-      },
-      {
-        id: 'anim-apprehension-replay',
-        title: '6. Appréhension & Replay',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Tversky, Morrison & Bétrancourt',
-        cognitiveRank: 'Contrôle Utilisateur & Replay',
-        cognitiveSummary: 'Durée bornée adaptée à l\'œil humain avec possibilité de rejouer et contrôler le mouvement.',
-        tags: ['animation', 'tversky', 'replay', 'apprehension', 'duree', 'controle', 'congruence']
-      },
-      {
-        id: 'anim-event-segmentation',
-        title: '7. Segmentation Narrative',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Zacks (2001) & Hullman (2011)',
-        cognitiveRank: 'Narration de Données par Étapes',
-        cognitiveSummary: 'Découpage séquentiel du flux de données en étapes chronologiques claires pour le storytelling.',
-        tags: ['animation', 'narration', 'storytelling', 'zacks', 'hullman', 'segmentation', 'scene']
-      },
-      {
-        id: 'anim-lasseter-anticipation',
-        title: '8. Anticipation Traditionnelle',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Lasseter (SIGGRAPH 1987)',
-        cognitiveRank: 'Micro-Recul Préparatoire (60ms)',
-        cognitiveSummary: 'Micro-mouvement inverse préparant le regard à une réorganisation globale sans rebond cartoon.',
-        tags: ['animation', 'anticipation', 'lasseter', 'recul', 'tri', 'disney', 'siggraph']
-      },
-      {
-        id: 'anim-path-drawing',
-        title: '9. Révélation de Tracé',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Tversky & Heer (2007)',
-        cognitiveRank: 'Révélation par Longueur d\'Arc',
-        cognitiveSummary: 'Révélation chronologique point-par-point d\'une courbe pour une narration temporelle captivante.',
-        tags: ['animation', 'path', 'line', 'reveal', 'tversky', 'storytelling', 'chronologique']
-      },
-      {
-        id: 'anim-count-up',
-        title: '10. Compteur Animé',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Dehaene & Tversky (2002)',
-        cognitiveRank: 'Magnitude Analogique Tabulaire',
-        cognitiveSummary: 'Montée progressive fluide d\'un chiffre-clé héros sans tremblement de largeur.',
-        tags: ['animation', 'odometer', 'countup', 'kpi', 'hero', 'dehaene', 'tabular']
-      },
-      {
-        id: 'anim-focus-context',
-        title: '11. Focus + Context',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Pirolli, Card & Furnas',
-        cognitiveRank: 'Atténuation Préattentive (Dimming)',
-        cognitiveSummary: 'Mise en valeur d\'une série cible par estompage sélectif de la périphérie sans déplacement.',
-        tags: ['animation', 'focus', 'context', 'dimming', 'survol', 'selection', 'treisman']
-      },
-      {
-        id: 'anim-bar-chart-race',
-        title: '12. Course de Barres Classée',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Robertson et al. (CHI 2008)',
-        cognitiveRank: 'Morphing de Rangs (k≤4)',
-        cognitiveSummary: 'Évolution animée de classements avec couleurs stables et transitions pas-à-pas contrôlées.',
-        tags: ['animation', 'race', 'ranking', 'classement', 'robertson', 'morphing', 'mot']
-      },
-      {
-        id: 'anim-pan-camera',
-        title: '13. Panoramique Caméra',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Shneiderman (1996)',
-        cognitiveRank: 'Balayage Horizontal Continu',
-        cognitiveSummary: 'Déplacement de caméra fluide sur un domaine étendu préservant la continuité de l\'axe.',
-        tags: ['animation', 'pan', 'camera', 'overview', 'detail', 'shneiderman', 'echelle']
-      },
-      {
-        id: 'anim-cross-type-morph',
-        title: '14. Morphing Barres ↔ Secteurs',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Cleveland & McGill (1984)',
-        cognitiveRank: 'Transition Géométrique Continue',
-        cognitiveSummary: 'Morphing 2D fluide entre encodages cartésiens et polaires sur 32 points de contour.',
-        tags: ['animation', 'morphing', 'bar', 'pie', 'cross-type', 'cleveland', 'contour']
-      },
-      {
-        id: 'anim-axis-rescale',
-        title: '15. Rescaling Linéaire ↔ Log',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Cleveland (1984) & Tufte',
-        cognitiveRank: 'Changement d\'Échelle Synchrone',
-        cognitiveSummary: 'Transition animée entre échelle linéaire et logarithmique avec fondu croisé des graduations.',
-        tags: ['animation', 'log', 'linear', 'rescale', 'echelle', 'tufte', 'cleveland']
-      },
-      {
-        id: 'anim-motion-trails',
-        title: '16. Traînée Cométaire',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Heer & Robertson (2007)',
-        cognitiveRank: 'Trajectoire Cométaire X-Y',
-        cognitiveSummary: 'Visualisation de trajectoires 2D avec traînée à extinction exponentielle.',
-        tags: ['animation', 'comet', 'trails', 'scatter', 'trajectoire', 'gapminder', 'heer']
-      },
-      {
-        id: 'anim-series-buildup',
-        title: '17. Construction Sérielle',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Hullman et al. (2013)',
-        cognitiveRank: 'Échafaudage Cognitif Séquentiel',
-        cognitiveSummary: 'Introduction progressive des séries temporelles une à une pour faciliter la rétention.',
-        tags: ['animation', 'buildup', 'series', 'scaffolding', 'hullman', 'miller', 'sequence']
-      },
-      {
-        id: 'anim-scrollytelling',
-        title: '18. Scrollytelling à Hystérésis',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Conlen & Heer (2019)',
-        cognitiveRank: 'Navigation Narrative par Défilement',
-        cognitiveSummary: 'Contrôle du récit par fraction de scroll avec bande morte hystérésis anti-saccades.',
-        tags: ['animation', 'scroll', 'scrollytelling', 'hysteresis', 'conlen', 'narration', 'recit']
-      },
-      {
-        id: 'anim-critical-damping',
-        title: '19. Amorti Critique Physique',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Card & Dragicevic (2011)',
-        cognitiveRank: 'Ressort Analytique sans Rebond',
-        cognitiveSummary: 'Mouvement physique amorti critique (ζ=1) en temps réel garantissant zéro dépassement.',
-        tags: ['animation', 'spring', 'damping', 'ressort', 'critique', 'dragicevic', 'physique']
-      },
-      {
-        id: 'anim-delta-flash',
-        title: '20. Flash d\'Onset Delta',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Jonides & Healey (2012)',
-        cognitiveRank: 'Surbrillance de Modification Temps Réel',
-        cognitiveSummary: 'Signalement immédiat des valeurs modifiées par pulsation d\'onset auto-extinguible.',
-        tags: ['animation', 'flash', 'onset', 'delta', 'temps-reel', 'jonides', 'healey', 'wcag']
-      },
-      {
-        id: 'animation',
-        title: '🔬 Laboratoire Complet d\'Animations',
-        category: 'animation',
-        categoryLabel: '11. Animation',
-        plugin: null,
-        pluginLabel: 'Suite 20 Principes',
-        cognitiveRank: 'Banc d\'Essai & Télémétrie Cinématique',
-        cognitiveSummary: 'Démonstrateur des principes d\'animation cognitive respectant l\'accessibilité et la fluidité perceptuelle.',
-        tags: ['animation', 'lab', 'laboratoire', 'telemetrie', 'easing', 'tous']
       }
     ];
 
@@ -3118,24 +2864,17 @@
           gridTooltips.appendChild(createCardElement(chart));
         });
       }
-
-      // 5. Animations
-      const gridAnimations = document.getElementById('grid-animations');
-      if (gridAnimations) {
-        gridAnimations.innerHTML = '';
-        CATALOG.filter(c => c.category === 'animation').forEach(chart => {
-          gridAnimations.appendChild(createCardElement(chart));
-        });
-      }
     }
 
     // ========================================================================
     // 3. INITIALISATION DES 3 DESSINS DU HERO (100% VISUELS SANS TEXTE)
     // ========================================================================
+    let heroChartDonut = null;
     function initHeroDrawings() {
       const tokens = getThemeTokens(currentTheme);
       const primaryColor = tokens.palette[0] || '#225BFF';
       const secondaryColor = tokens.palette[1] || '#6366F1';
+      const tertiaryColor = tokens.palette[2] || '#F59E0B';
 
       // --- DESSIN 1 : GRAPHS (Combinaison Barres & Courbe Spline Stylisée) ---
       const c1 = document.getElementById('heroCanvasGraphs');
@@ -3194,10 +2933,7 @@
                 grid: { display: false }
               }
             },
-            animation: {
-              duration: 800,
-              easing: 'easeOutQuart'
-            }
+            animation: false
           }
         });
       }
@@ -3211,139 +2947,33 @@
         if (sparkSvg[1]) sparkSvg[1].setAttribute('stroke', primaryColor);
       }
 
-            // --- DESSIN 3 : ANIMATION (Décor statique représentant la dynamique et les transitions) ---
-      const c3 = document.getElementById('heroCanvasAnim');
-      if (c3) {
-        if (heroAnimFrameId) {
-          cancelAnimationFrame(heroAnimFrameId);
-          heroAnimFrameId = null;
+      // --- DESSIN 3 : COMPOSITION (Anneau Doughnut Part-to-Whole) ---
+      const c3 = document.getElementById('heroCanvasDonut');
+      if (c3 && typeof Chart !== 'undefined') {
+        if (heroChartDonut) {
+          try { heroChartDonut.destroy(); } catch(e) {}
         }
-
-        const dpr = window.devicePixelRatio || 1;
-        const rect = c3.parentElement.getBoundingClientRect();
-        const width = (c3.width = (rect.width || 320) * dpr);
-        const height = (c3.height = (rect.height || 180) * dpr);
-        const ctx = c3.getContext('2d');
-
-        ctx.clearRect(0, 0, width, height);
-
-        const centerY = height / 2;
-        const amplitude = height * 0.28;
-
-        // 1. Lignes de repères et guides de transition (Statiques)
-        ctx.save();
-        ctx.strokeStyle = tokens.border || 'rgba(0,0,0,0.08)';
-        ctx.lineWidth = 1 * dpr;
-        ctx.setLineDash([4 * dpr, 6 * dpr]);
-        [centerY - amplitude, centerY, centerY + amplitude].forEach(y => {
-          ctx.beginPath();
-          ctx.moveTo(10 * dpr, y);
-          ctx.lineTo(width - 10 * dpr, y);
-          ctx.stroke();
-        });
-        ctx.restore();
-
-        // 2. Phase 1 : Trajectoire initiale fantôme / pointillés (État t0)
-        ctx.save();
-        ctx.beginPath();
-        ctx.strokeStyle = secondaryColor + '45';
-        ctx.lineWidth = 2 * dpr;
-        ctx.setLineDash([3 * dpr, 4 * dpr]);
-        for (let x = 10 * dpr; x <= width - 10 * dpr; x += 3 * dpr) {
-          const normX = (x - 10 * dpr) / (width - 20 * dpr);
-          const y = centerY + Math.sin(normX * Math.PI * 3.5 + 0.8) * (amplitude * 0.7);
-          if (x === 10 * dpr) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.restore();
-
-        // 3. Phase 2 : Courbe de morphing intermédiaire (État t1)
-        ctx.save();
-        ctx.beginPath();
-        ctx.strokeStyle = secondaryColor + '90';
-        ctx.lineWidth = 2.5 * dpr;
-        for (let x = 10 * dpr; x <= width - 10 * dpr; x += 3 * dpr) {
-          const normX = (x - 10 * dpr) / (width - 20 * dpr);
-          const y = centerY + Math.sin(normX * Math.PI * 3.2 - 0.4) * (amplitude * 0.85);
-          if (x === 10 * dpr) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-        ctx.restore();
-
-        // 4. Phase 3 : Trajectoire principale focale (État t2)
-        ctx.save();
-        ctx.beginPath();
-        ctx.strokeStyle = primaryColor;
-        ctx.lineWidth = 3.5 * dpr;
-        const points = [];
-        for (let x = 10 * dpr; x <= width - 10 * dpr; x += 2 * dpr) {
-          const normX = (x - 10 * dpr) / (width - 20 * dpr);
-          const y = centerY + Math.sin(normX * Math.PI * 2.8) * amplitude;
-          points.push({ x, y });
-          if (x === 10 * dpr) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
-        ctx.stroke();
-
-        // Aire subtile sous la trajectoire principale
-        ctx.lineTo(width - 10 * dpr, centerY + amplitude * 1.1);
-        ctx.lineTo(10 * dpr, centerY + amplitude * 1.1);
-        ctx.closePath();
-        ctx.fillStyle = primaryColor + '12';
-        ctx.fill();
-        ctx.restore();
-
-        // 5. Nœuds cinématiques stroboscopiques (Points clés de la trajectoire)
-        const keyIndices = [
-          Math.floor(points.length * 0.15),
-          Math.floor(points.length * 0.42),
-          Math.floor(points.length * 0.72),
-          Math.floor(points.length * 0.92)
-        ];
-
-        keyIndices.forEach((idx, stepNum) => {
-          const pt = points[idx];
-          if (!pt) return;
-
-          if (stepNum === 2) {
-            // Nœud focal culminant (Point d'inflexion majeur)
-            // Halo externe
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 16 * dpr, 0, Math.PI * 2);
-            ctx.fillStyle = primaryColor + '20';
-            ctx.fill();
-
-            // Anneau intermédiaire
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 10 * dpr, 0, Math.PI * 2);
-            ctx.strokeStyle = primaryColor;
-            ctx.lineWidth = 2 * dpr;
-            ctx.stroke();
-
-            // Noyau solide
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 5 * dpr, 0, Math.PI * 2);
-            ctx.fillStyle = primaryColor;
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 2 * dpr, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fill();
-          } else {
-            // Nœuds secondaires
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 6 * dpr, 0, Math.PI * 2);
-            ctx.fillStyle = '#FFFFFF';
-            ctx.fill();
-
-            ctx.beginPath();
-            ctx.arc(pt.x, pt.y, 5 * dpr, 0, Math.PI * 2);
-            ctx.strokeStyle = primaryColor;
-            ctx.lineWidth = 2 * dpr;
-            ctx.stroke();
+        heroChartDonut = new Chart(c3, {
+          type: 'doughnut',
+          data: {
+            labels: ['', '', ''],
+            datasets: [{
+              data: [55, 30, 15],
+              backgroundColor: [primaryColor, secondaryColor, tertiaryColor],
+              borderWidth: 2,
+              borderColor: tokens.bgCard || '#FFFFFF',
+              hoverOffset: 4
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '68%',
+            plugins: {
+              legend: { display: false },
+              tooltip: { enabled: false }
+            },
+            animation: false
           }
         });
       }
@@ -3360,7 +2990,7 @@
       const skeleton = document.getElementById(`skeleton-${chartId}`);
       if (!canvas) return;
 
-      const chartModule = (window.KitCharts && window.KitCharts[chartId]) || (chartId.startsWith('anim-') && window.KitCharts && window.KitCharts['animation']);
+      const chartModule = window.KitCharts && window.KitCharts[chartId];
 
       if (chartModule && typeof chartModule.createChart === 'function') {
         try {

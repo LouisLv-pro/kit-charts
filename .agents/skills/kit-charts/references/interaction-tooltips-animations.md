@@ -1,7 +1,7 @@
-# 🧭 Guide Décisionnel : Infobulles, Étiquettes & Animations
+# 🧭 Guide Décisionnel : Infobulles, Étiquettes & Légendes
 
 Ce document est le **guide opérationnel de décision** pour l'Architecte Dataviz (`dataviz-architect`). Il répond de manière directe et structurée à la question fondamentale :
-> **Pour la situation métier et le graphique analysés, faut-il inclure des infobulles, des étiquettes directes et/ou une animation ? Et lesquelles choisir précisément ?**
+> **Pour la situation métier et le graphique analysés, comment calibrer précisément les infobulles, les étiquettes directes et les légendes pour une lisibilité cognitive maximale à latence zéro ?**
 
 ---
 
@@ -48,63 +48,67 @@ Appliquer le principe de Shneiderman (*"Overview first, zoom and filter, then de
 | **Flux & Entonnoirs (`funnel-chart`, `waterfall-chart`)** | `mode: 'index'` | `axis: 'y'`, `intersect: false` | Étape actuelle, volume entrant, taux de conversion vs étape précédente et vs départ. |
 
 ### Règle d'Or Anti-Occlusion (Mayer)
-L'infobulle **ne doit JAMAIS masquer le point ou la barre inspectée**. kit-charts calcule automatiquement l'inversion de quadrant (`top` / `bottom`) et le déport de sécurité de $12\text{px}$.
+L'infobulle **ne doit JAMAIS masquer le point ou la barre inspectée**. kit-charts configure automatiquement un déport de sécurité et le respect de la continuité spatiale.
 
 ---
 
-## 3. 🎬 Micro-Animations Déterministes (Catalogue des 20 Patterns)
+## 3. 🧭 Légendes Ergonomiques (*Legends & Keys*)
 
 ### Problème Métier Résolu
-Guider l'attention visuelle sans cécité au changement (*change blindness*, Simons & Rensink), expliciter la structure des données (ordre temporel, relations part-to-whole) et matérialiser les alertes critiques.
+La légende permet d'associer immédiatement une série à sa signification sémantique tout en limitant la charge cognitive.
 
-### Matrice Décisionnelle des 20 Patterns de `template/animation/`
+### Matrice Décisionnelle : Quand Afficher la Légende ?
 
-| Pattern ID | Nom du Pattern | Problème Analytique & Situation Métier | Graphiques Cibles Idéaux | Comportement Cinématique |
-| :--- | :--- | :--- | :--- | :--- |
-| **`01`** | **`01-staged-transitions`** | Décomposition étape par étape, cascade de coûts, impact séquentiel. | `waterfall-chart`, `stacked-bar-chart`, `funnel-chart` | Transition séquentielle ordonnée sans télescopage. |
-| **`02`** | **`02-progressive-drilldown`** | Navigation du global vers le détail, zoom hiérarchique. | `treemap`, `sunburst`, `drilldown-bar` | Zoom fluide avec conservation de l'ancre visuelle parente. |
-| **`03`** | **`03-preattentive-pulse`** | **Alerte industrielle, dépassement de seuil, anomalie critique**. | `bullet-chart`, `kpi-standard`, `gauge-chart` | Pulsation lumineuse discrète (1-2 cycles) sur l'élément hors-norme. |
-| **`04`** | **`04-time-scrubber`** | Replay d'une séquence historique, simulation chronologique. | `connected-scatter`, `bubble-chart`, `line-chart` | Défilement temporel fluide piloté par curseur. |
-| **`05`** | **`05-morphing-scales`** | Changement de repère (linéaire $\leftrightarrow$ log, absolu $\leftrightarrow$ $100\%$). | `stacked-bar-100`, `area-chart` | Interpolation continue des axes sans saut brutal. |
-| **`06`** | **`06-focus-context-lens`** | Exploration d'une série chronologique ultra-longue. | `multi-line-chart`, `candlestick-financial` | Zoom loupe localisé préservant la courbe globale de contexte. |
-| **`07`** | **`07-streaming-realtime`** | Télémétrie en direct, IoT, flux d'activité réseau 24/7. | `realtime-line`, `sparkline-dense` | Translation glissante continue vers la gauche ($60\text{ fps}$). |
-| **`08`** | **`08-difference-reveal`** | Comparaison A/B, écart Budget vs Réel, scénario Before/After. | `dumbbell-plot`, `slope-chart`, `bullet-chart` | Apparition de l'état A puis traînée révélant l'écart vers l'état B. |
-| **`09`** | **`09-path-drawing`** | Mise en évidence d'une trajectoire ou tendance historique. | `line-chart`, `step-line-chart`, `area-chart` | Tracé progressif de gauche à droite matérialisant le temps irréversible. |
-| **`10`** | **`10-count-up`** | Chiffre clé marquant, totalisation financière, KPI exécutif. | `kpi-standard`, `kpi-comparison`, `kpi-sparkline` | Incrémentation chiffrée rapide avec décélération `easeOutQuart`. |
-| **`11`** | **`11-ranked-reordering`** | **Classements compétitifs, ligues, parts de marché évolutives**. | `bar-chart-horizontal`, `bump-chart` | Glissement vertical des barres échangeant leur rang (Heer 2007). |
-| **`12`** | **`12-cluster-settle`** | Détection de segments clients, nuages de points multivariés. | `scatter-plot`, `bubble-chart` | Déploiement des points depuis le centre vers leurs attracteurs. |
-| **`13`** | **`13-confidence-sweep`** | Prévisions statistiques, incertitude météo/financière, cône d'erreur. | `fan-chart`, `band-line-chart` | Déploiement de la médiane puis balayage du ruban de confiance. |
-| **`14`** | **`14-distribution-wave`** | Analyse de dispersion, pyramide des âges, distribution salariale. | `histogramme`, `ridgeline-plot`, `violin-plot` | Vague d'émergence des densités de gauche à droite. |
-| **`15`** | **`15-flow-pulse`** | Circulation de capitaux, chaîne logistique, parcours utilisateurs. | `sankey-diagram`, `chord-diagram` | Impulsion d'opacité voyageant le long des rubans de flux. |
-| **`16`** | **`16-tree-expansion`** | Organigrammes d'entreprise, taxonomies, catalogues de produits. | `radial-tree`, `dendrogramme` | Dépliage progressif des branches nœud par nœud. |
-| **`17`** | **`17-divergent-split`** | Sondages d'opinion (Pour/Contre), pyramides, bilans comptables. | `diverging-bar-chart`, `likert-scale` | Séparation symétrique bilatérale depuis l'axe zéro central. |
-| **`18`** | **`18-radial-sweep`** | Évaluation de compétences (360°), jauges de conformité. | `radar-chart`, `gauge-radial-progress` | Balayage angulaire horaire de $0^\circ$ à $360^\circ$. |
-| **`19`** | **`19-geo-choropleth-flow`** | Déploiement géographique, diffusion épidémique ou commerciale. | `choropleth-map`, `bubble-map` | Révélation cartographique par proximité spatiale ou intensité. |
-| **`20`** | **`20-delta-flash`** | Événement boursier soudain, pic de charge serveur imprévu. | `candlestick-chart`, `kpi-standard` | Flash d'accentuation ponctuel sur la cellule ou barre modifiée. |
-
-### Quand Désactiver les Animations (`duration: 0`) ?
-1. **Accessibilité WCAG 2.2** : Lorsque `prefers-reduced-motion: reduce` est actif.
-2. **Thème Tufte Minimalist** : `tufte-minimalist-executive` privilégie le zéro-latence absolu.
-3. **Tableaux denses & Grilles financières** : Pas de mouvement dans les tableaux multi-lignes pour éviter la fatigue oculaire.
+| Situation | Affichage | Position & Style Recommandés |
+| :--- | :---: | :--- |
+| **Série unique ($K = 1$)** | 🚫 **Masquée (`display: false`)** | Élimination du bruit non informatif (*non-data ink* de Tufte). Le titre ou le sous-titre porte déjà le sens de la métrique. |
+| **Multi-séries ($2 \le K \le 5$)** | ✅ **Affichée (`display: true`)** | Position en haut (`position: 'top'`), alignée au début (`align: 'start'`) ou à droite, puces rondes (`usePointStyle: true`). |
+| **Séries chronologiques ($K \le 3$)** | 🎯 **Direct Labeling privilégié** | Étiqueter directement l'extrémité droite des courbes plutôt que d'utiliser une boîte de légende déportée (principe de contiguïté de Mayer). |
+| **Tableaux & Cartes thématiques** | 📊 **Barre de gradient intégrée** | Échelle continue avec repères numériques (Min, Médian, Max). |
 
 ---
 
-## 📋 Synthèse Rapide pour l'Architecte (`dataviz-spec.json`)
+## 4. ⚡ Rendu Instantané & Déterministe
+
+Toutes les visualisations de kit-charts sont configurées avec **`animation: false`**.
+- **Latence zéro (0 ms)** : Le graphique apparaît instantanément dès le chargement DOM ou le changement de filtre.
+- **Zéro glitch** : Aucun saut de rendu, aucun problème de timing de plugins, compatibilité parfaite avec les captures automatisées et les environnements headless / SSR.
+- **Survol fluide** : Les infobulles s'affichent instantanément sans délai d'attente.
+
+---
+
+## 📋 Synthèse Contractuelle pour l'Architecte (`dataviz-spec.json`)
 
 ```json
 {
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "targetTemplateId": "bullet-chart",
+  "layout": {
+    "title": "Consommation Électrique Industrielle vs Cibles",
+    "subtitle": "En Mégawatts (MW) — Supervision par atelier",
+    "height": 420
+  },
+  "colorStrategy": {
+    "themeName": "nord-cognitive-dark",
+    "mode": "semantic-valence",
+    "metricPolarity": "LOWER_IS_BETTER"
+  },
   "cognitiveFeatures": {
     "showDataLabels": true,
     "tooltip": {
       "enabled": true,
       "mode": "index",
+      "axis": "y",
       "antiOcclusion": true
-    },
-    "animation": {
-      "patternId": "03-preattentive-pulse",
-      "durationMs": 500,
-      "easing": "easeOutQuart"
     }
+  },
+  "formattedData": {
+    "labels": ["Fonderie A", "Laminage B", "Usinage C"],
+    "datasets": [
+      { "label": "Consommation Réalisée", "data": [48.2, 32.1, 14.5] },
+      { "label": "Seuil Cible", "data": [45.0, 35.0, 16.0] },
+      { "label": "Seuil Alerte Maximale", "data": [50.0, 40.0, 20.0] }
+    ]
   }
 }
 ```

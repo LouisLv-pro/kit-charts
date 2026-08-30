@@ -113,9 +113,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     });
 
     const border = ds.borderColor || emphasisStyle.borderColor || baseColor;
-    const bg = ds.backgroundColor || (typeof emphasisStyle.backgroundColor === 'string'
-      ? emphasisStyle.backgroundColor
-      : hexToRgba(border, alpha));
+    const bg = ds.backgroundColor || hexToRgba(border, alpha);
 
     return {
       label: ds.label || `Série ${idx + 1}`,
@@ -129,7 +127,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : 0,
       pointHoverRadius: 5,
       pointStyle: ds.pointStyle || emphasisStyle.pointStyle || (isForecast ? 'crossRot' : 'circle'),
-      pointBackgroundColor: ds.pointBackgroundColor || emphasisStyle.pointBackgroundColor || border,
+      pointBackgroundColor: ds.pointBackgroundColor || border,
       pointBorderColor: ds.pointBorderColor || emphasisStyle.pointBorderColor || tokens.bg
     };
   });
@@ -137,7 +135,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const chartData = { labels, datasets };
   const baseOptions = getChartDefaultOptions(tokens);
   const temporalOpts = getTemporalInteractionOptions(tokens, { mode: 'index', axis: 'x', hitRadius: 12, hoverRadius: 6 });
-  const animOpts = getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuad' });
+  const animOpts = getAccessibleAnimationOptions(tokens, { duration: 700, easing: 'easeOutCubic' });
 
   const config = {
     type: 'line',
@@ -205,7 +203,21 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             usePointStyle: true,
             boxWidth: 8,
             boxHeight: 8,
-            padding: 14
+            padding: 14,
+            generateLabels: (chart) => (chart.data.datasets || []).map((ds, i) => {
+              const c = (typeof ds.borderColor === 'string')
+                ? ds.borderColor
+                : (Array.isArray(ds.borderColor) ? ds.borderColor[0] : (ds.backgroundColor || '#9CA3AF'));
+              return {
+                text: ds.label || ('Série ' + (i + 1)),
+                fillStyle: c,
+                strokeStyle: c,
+                lineWidth: 2,
+                pointStyle: 'line',
+                hidden: !chart.isDatasetVisible(i),
+                index: i
+              };
+            })
           }
         },
         tooltip: {

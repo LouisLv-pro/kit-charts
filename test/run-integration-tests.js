@@ -7,6 +7,7 @@ const fs = require('fs');
 const path = require('path');
 const { compileChart } = require('../.agents/skills/kit-charts/scripts/compile-chart.js');
 const { validateChartSpec, validateChartFile } = require('../.agents/skills/kit-charts/scripts/validate-chart.js');
+const themeTokens = require('../themes/theme-tokens.js');
 
 const OUTPUT_DIR = path.resolve(__dirname, '../output');
 if (!fs.existsSync(OUTPUT_DIR)) {
@@ -28,7 +29,7 @@ function assert(condition, message) {
 }
 
 console.log('======================================================================');
-console.log(' 🧪 TESTS D\'INTÉGRATION E2E — KIT-CHARTS LOT 2 & LOT 3');
+console.log(' 🧪 TESTS D\'INTÉGRATION E2E — KIT-CHARTS (74 TEMPLATES & LATENCE ZÉRO)');
 console.log('======================================================================\n');
 
 // ----------------------------------------------------------------------------
@@ -83,11 +84,7 @@ const barSpec = {
     metricPolarity: 'HIGHER_IS_BETTER'
   },
   cognitiveFeatures: {
-    showDataLabels: true,
-    animation: {
-      durationMs: 500,
-      easing: 'easeOutQuart'
-    }
+    showDataLabels: true
   },
   formattedData: {
     labels: ['Île-de-France', 'Auvergne-RA', 'Nouvelle-Aquitaine', 'Occitanie'],
@@ -126,11 +123,7 @@ const boxplotSpec = {
     metricPolarity: 'LOWER_IS_BETTER'
   },
   cognitiveFeatures: {
-    showDataLabels: false,
-    animation: {
-      durationMs: 400,
-      easing: 'easeOutQuad'
-    }
+    showDataLabels: false
   },
   formattedData: {
     labels: ['Auth', 'Catalog', 'Payment', 'Notification'],
@@ -191,35 +184,39 @@ const overloadReport = validateChartSpec(overloadSpec);
 assert(overloadReport.valid === false, 'Interception : Surcharge N > 7 sur bar vertical bloquée');
 assert(overloadReport.errors.some(e => e.ruleId === 'VERTICAL_BAR_MAX_CATEGORIES'), 'Règle VERTICAL_BAR_MAX_CATEGORIES déclenchée');
 
-// 4.3 Durée d'animation excessive (> 800 ms)
-const slowAnimSpec = {
-  targetTemplateId: 'bar-chart-vertical',
-  cognitiveFeatures: {
-    animation: { durationMs: 1500 }
-  },
+// 4.3 Surcharge multi-courbes (> 5 séries)
+const multiLineOverloadSpec = {
+  targetTemplateId: 'multi-line-chart',
   formattedData: {
-    labels: ['A', 'B'],
-    datasets: [{ data: [10, 20] }]
+    labels: ['T1', 'T2', 'T3'],
+    datasets: [
+      { label: 'S1', data: [10, 20, 30] },
+      { label: 'S2', data: [15, 25, 35] },
+      { label: 'S3', data: [12, 22, 32] },
+      { label: 'S4', data: [18, 28, 38] },
+      { label: 'S5', data: [14, 24, 34] },
+      { label: 'S6', data: [16, 26, 36] } // 6 séries > max 5
+    ]
   }
 };
-const slowAnimReport = validateChartSpec(slowAnimSpec);
-assert(slowAnimReport.valid === false, 'Interception : Animation > 800 ms bloquée');
-assert(slowAnimReport.errors.some(e => e.ruleId === 'ANIMATION_MAX_DURATION'), 'Règle ANIMATION_MAX_DURATION déclenchée');
+const multiLineReport = validateChartSpec(multiLineOverloadSpec);
+assert(multiLineReport.valid === false, 'Interception : Multi-lignes avec > 5 séries bloqué (Spaghetti chart)');
+assert(multiLineReport.errors.some(e => e.ruleId === 'MULTI_LINE_MAX_SERIES'), 'Règle MULTI_LINE_MAX_SERIES déclenchée');
 
-// 4.4 Easing décoratif interdit (bounce)
-const bounceSpec = {
-  targetTemplateId: 'bar-chart-vertical',
-  cognitiveFeatures: {
-    animation: { durationMs: 500, easing: 'easeOutBounce' }
+// 4.4 Incohérence de polarité de valence
+const valenceMismatchSpec = {
+  targetTemplateId: 'kpi-standard',
+  colorStrategy: {
+    themeName: 'colorbrewer-accessible',
+    metricPolarity: 'HIGHER_IS_BETTER'
   },
-  formattedData: {
-    labels: ['A', 'B'],
-    datasets: [{ data: [10, 20] }]
-  }
+  delta: 15.4, // hausse positive
+  deltaColor: '#C62828', // mais couleur rouge (incohérence)
+  formattedData: { value: 100 }
 };
-const bounceReport = validateChartSpec(bounceSpec);
-assert(bounceReport.valid === false, 'Interception : Easing décoratif bounce bloqué');
-assert(bounceReport.errors.some(e => e.ruleId === 'NO_DECORATIVE_BOUNCE'), 'Règle NO_DECORATIVE_BOUNCE déclenchée');
+const valenceReport = validateChartSpec(valenceMismatchSpec);
+assert(valenceReport.valid === false, 'Interception : Incohérence hausse positive + couleur rouge sur HIGHER_IS_BETTER');
+assert(valenceReport.errors.some(e => e.ruleId === 'VALENCE_POLARITY_MISMATCH'), 'Règle VALENCE_POLARITY_MISMATCH déclenchée');
 
 // 4.5 Échelle Logarithmique sur Bar Chart (Interdite)
 const logBarSpec = {
@@ -234,9 +231,114 @@ const logBarReport = validateChartSpec(logBarSpec);
 assert(logBarReport.valid === false, 'Interception : Échelle log sur bar chart bloquée');
 assert(logBarReport.errors.some(e => e.ruleId === 'NO_LOG_ON_LENGTH'), 'Règle NO_LOG_ON_LENGTH déclenchée');
 
+// ----------------------------------------------------------------------------
+// TEST 5 : Registre Officiel, Rendu Instantané & Standards Ergonomiques
+// ----------------------------------------------------------------------------
+console.log('\n🔹 Test 5 : Registre Officiel (74 Templates) & Rendu Déterministe Instantané');
+
+// 5.1 Vérification de l'intégrité du registre officiel
+const registry = require('../.agents/skills/kit-charts/registry.json');
+assert(registry.totalTemplates === 74, `Registre officiel contient exactement 74 templates (actuel: ${registry.totalTemplates})`);
+assert(registry.templates.length === 74, '74 templates indexés avec succès dans registry.json');
+
+// 5.2 Rendu instantané déterministe (animation === false garanti par défaut)
+const defaultOpts = themeTokens.getChartDefaultOptions('colorbrewer-accessible');
+assert(defaultOpts.animation === false, 'Garantie de latence zéro : animation === false par défaut');
+assert(defaultOpts.hover && defaultOpts.hover.animationDuration === 0, 'Survol instantané : hover.animationDuration === 0');
+assert(defaultOpts.plugins && defaultOpts.plugins.tooltip && defaultOpts.plugins.tooltip.animation === false, 'Infobulles réactives : tooltip.animation === false');
+assert(themeTokens.getAnimationDuration('colorbrewer-accessible') === 0, 'themeTokens.getAnimationDuration() renvoie 0');
+assert(themeTokens.getAccessibleAnimationOptions() === false, 'themeTokens.getAccessibleAnimationOptions() renvoie false');
+
+// 5.3 Compilation et validation de bullet-chart (Comparaison Cible Stephen Few)
+const bulletSpec = {
+  targetTemplateId: 'bullet-chart',
+  layout: {
+    title: 'Ventes Réalisées vs Cible Annuelle',
+    height: 360
+  },
+  colorStrategy: {
+    themeName: 'tufte-minimalist-executive',
+    metricPolarity: 'HIGHER_IS_BETTER'
+  },
+  cognitiveFeatures: {
+    showDataLabels: true,
+    tooltip: { enabled: true, mode: 'index', axis: 'y', antiOcclusion: true }
+  },
+  formattedData: {
+    labels: ['France', 'Benelux', 'Iberia'],
+    datasets: [
+      { label: 'Réalisé', data: [85, 62, 48] },
+      { label: 'Cible', data: [80, 65, 45] },
+      { label: 'Max', data: [100, 100, 100] }
+    ]
+  }
+};
+const bulletRes = compileChart(bulletSpec, { output: 'output/e2e-bullet/index.html' });
+assert(bulletRes.success === true, 'Compilation de bullet-chart réussie');
+assert(fs.existsSync(bulletRes.outputPath), 'Fichier HTML de bullet-chart généré');
+const bulletAudit = validateChartFile(bulletRes.outputPath);
+assert(bulletAudit.valid === true, 'Validation cognitive de bullet-chart conforme');
+
+// 5.4 Compilation et validation de multi-line-chart (Évolution Temporelle)
+const multiLineSpec = {
+  targetTemplateId: 'multi-line-chart',
+  layout: {
+    title: 'Évolution du Trafic Web (T1-T4)',
+    height: 400
+  },
+  colorStrategy: {
+    themeName: 'okabe-ito-cud',
+    mode: 'categorical'
+  },
+  cognitiveFeatures: {
+    showDataLabels: false,
+    tooltip: { enabled: true, mode: 'index', axis: 'x', antiOcclusion: true }
+  },
+  formattedData: {
+    labels: ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin'],
+    datasets: [
+      { label: 'Organique', data: [1200, 1350, 1420, 1580, 1690, 1850] },
+      { label: 'Direct', data: [800, 820, 860, 890, 910, 950] },
+      { label: 'Campagnes', data: [400, 650, 520, 710, 680, 790] }
+    ]
+  }
+};
+const multiLineRes = compileChart(multiLineSpec, { output: 'output/e2e-multi-line/index.html' });
+assert(multiLineRes.success === true, 'Compilation de multi-line-chart réussie');
+assert(fs.existsSync(multiLineRes.outputPath), 'Fichier HTML de multi-line-chart généré');
+
+// 5.5 Compilation et validation de bar-chart-horizontal avec DataLabels
+const horizSpec = {
+  targetTemplateId: 'bar-chart-horizontal',
+  layout: {
+    title: 'Top 10 des Produits les plus Rentables',
+    height: 450
+  },
+  colorStrategy: {
+    themeName: 'tableau-stone-categorical',
+    mode: 'categorical'
+  },
+  cognitiveFeatures: {
+    showDataLabels: true
+  },
+  formattedData: {
+    labels: ['Produit Alpha', 'Produit Beta', 'Produit Gamma', 'Produit Delta', 'Produit Epsilon'],
+    datasets: [{
+      label: 'Marge (€)',
+      data: [45200, 38100, 29400, 21800, 17500]
+    }]
+  }
+};
+const horizRes = compileChart(horizSpec, { output: 'output/e2e-bar-horiz/index.html' });
+assert(horizRes.success === true, 'Compilation de bar-chart-horizontal réussie');
+assert(fs.existsSync(horizRes.outputPath), 'Fichier HTML de bar-chart-horizontal généré');
+
 // Nettoyage automatique des artefacts de test dans output/
 try {
-  const testSubdirs = ['e2e-kpi-standard', 'e2e-bar-vertical', 'e2e-box-plot'];
+  const testSubdirs = [
+    'e2e-kpi-standard', 'e2e-bar-vertical', 'e2e-box-plot',
+    'e2e-bullet', 'e2e-multi-line', 'e2e-bar-horiz'
+  ];
   testSubdirs.forEach(sub => {
     const subPath = path.join(OUTPUT_DIR, sub);
     if (fs.existsSync(subPath)) {
@@ -248,4 +350,6 @@ try {
 console.log('\n======================================================================');
 console.log(` 🏁 RÉSULTAT GLOBAL : ${passedTests}/${totalTests} tests réussis (100%)`);
 console.log('======================================================================\n');
+
+
 

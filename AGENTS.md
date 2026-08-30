@@ -12,9 +12,9 @@ Pour garantir zéro hallucination et un respect absolu des sciences cognitives, 
 ┌─────────────────────────────────────────────────────────────┐
 │ 1. DATAVIZ-ARCHITECT (L'Architecte Décideur)                │
 │    Analyse l'intention, choisit le template dans le         │
-│    registre, qualifie le thème et la polarité métier,       │
-│    justifie explicitement les infobulles/étiquettes/        │
-│    animations, et produit le contrat dataviz-spec.json.     │
+│    registre (74 templates), qualifie le thème et la         │
+│    polarité métier, calibre infobulles/étiquettes/légendes, │
+│    et produit le contrat dataviz-spec.json.                 │
 └──────────────────────────────┬──────────────────────────────┘
                                │ Contrat dataviz-spec.json
                                ▼
@@ -59,9 +59,9 @@ Ne jamais supposer qu'une hausse est toujours verte ou qu'une baisse est toujour
 - **`TARGET_BASED`** (SLA, Température) : Dans la cible = Vert, Tolérance = Orange/Jaune, Dépassement = Rouge.
 - **`NEUTRAL_CATEGORICAL`** (Pays, Départements) : Palette catégorielle neutre sans jugement de valeur.
 
-### 4. Accessibilité WCAG 2.2 & Cinématique
+### 4. Accessibilité WCAG 2.2, Infobulles & Rendu Instantané
 - **Contraste minimal texte / fond** : $\ge 4.5:1$ (WCAG AA) et $\ge 7:1$ (WCAG AAA).
-- **Cinématique & Animations** : Durée maximale $\le 800\text{ ms}$. Aucun rebond cartoon (`bounce`, `elastic`). Support obligatoire de `prefers-reduced-motion: reduce` ($\Delta T = 0\text{ ms}$).
+- **Rendu Instantané Déterministe** : `animation: false` par défaut pour une latence zéro (0 ms), une robustesse absolue et zéro glitch d'affichage.
 - **Infobulles** : Positionnement anti-occlusion (Mayer) obligatoire pour ne jamais masquer les points ou barres adjacentes.
 
 ---
@@ -85,9 +85,10 @@ npm test
 
 ## 📁 Ressources & Références pour Agents
 
-- [`.agents/skills/kit-charts/registry.json`](.agents/skills/kit-charts/registry.json) : Registre machine-readable exhaustif des 95 templates.
+- [`.agents/skills/kit-charts/registry.json`](.agents/skills/kit-charts/registry.json) : Registre machine-readable exhaustif des 74 templates.
 - [`.agents/skills/kit-charts/SKILL.md`](.agents/skills/kit-charts/SKILL.md) : Guide d'utilisation du skill.
 - [`.agents/skills/kit-charts/references/decision-matrix.md`](.agents/skills/kit-charts/references/decision-matrix.md) : Arbre de décision analytique.
 - [`.agents/skills/kit-charts/references/color-semantics.md`](.agents/skills/kit-charts/references/color-semantics.md) : Guide des 8 thèmes et polarités.
-- [`.agents/skills/kit-charts/references/interaction-tooltips-animations.md`](.agents/skills/kit-charts/references/interaction-tooltips-animations.md) : Guide décisionnel infobulles, étiquettes et catalogue des 20 animations.
+- [`.agents/skills/kit-charts/references/interaction-tooltips-animations.md`](.agents/skills/kit-charts/references/interaction-tooltips-animations.md) : Guide décisionnel infobulles, étiquettes directes et légendes.
 - [`.agents/rules/dataviz-rules.md`](.agents/rules/dataviz-rules.md) : Fiche de synthèse des règles de garde.
+

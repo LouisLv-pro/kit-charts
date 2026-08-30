@@ -218,7 +218,7 @@
       },
       options: {
         ...defaultOpts,
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+        animation: getAccessibleAnimationOptions(tokens, { duration: 700, easing: 'easeOutCubic' }),
         interaction: {
           mode: 'index',
           intersect: false

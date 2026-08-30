@@ -1,6 +1,6 @@
 # 🧭 Matrice Déterministe de Sélection Dataviz (Kit-Charts)
 
-Ce document fournit aux agents IA et aux architectes de données l'algorithme déterministe pour associer un **objectif analytique métier** et une **structure de données** au **template optimal** parmi les 89 composants de `kit-charts`.
+Ce document fournit aux agents IA et aux architectes de données l'algorithme déterministe pour associer un **objectif analytique métier** et une **structure de données** au **template optimal** parmi les 74 composants de `kit-charts`.
 
 ---
 

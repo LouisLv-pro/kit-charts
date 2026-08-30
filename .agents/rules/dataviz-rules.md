@@ -17,16 +17,14 @@
    - `LOWER_IS_BETTER` (Churn, Latence, Coûts) : Hausse = Rouge (`tokens.semantic.negative`), Baisse = Vert (`tokens.semantic.positive`).
    - `TARGET_BASED` (SLA, Consommation) : Conforme = Vert, Tolérance = Orange, Dépassement = Rouge.
    - `NEUTRAL_CATEGORICAL` (Régions, Départements) : Palette catégorielle neutre sans jugement de valeur.
-4. **Cinématique & Mouvement** :
-   - Durée maximale $\le 800\text{ ms}$ (nominale : 400 à 600 ms).
-   - Aucun rebond cartoon (`bounce`, `elastic`). Utiliser `easeOutQuart` ou `easeOutQuad`.
-   - Support strict de `@media (prefers-reduced-motion: reduce)` ($\Delta T = 0\text{ ms}$).
-5. **Infobulles Anti-Occlusion (Mayer)** :
+4. **Rendu Instantané Déterministe (Zéro-Latence)** :
+   - `animation: false` par défaut pour une réactivité immédiate ($0\text{ ms}$), élimination des race conditions et parfaite compatibilité SSR/Headless.
+5. **Infobulles Anti-Occlusion (Mayer) & Légendes Contiguës** :
    - L'infobulle ne doit jamais recouvrir le point inspecté ni masquer la tendance locale contiguë.
 
 ---
 
-## 📊 2. Règles Spécifiques par Famille Analytique (95 Templates)
+## 📊 2. Règles Spécifiques par Famille Analytique (74 Templates)
 
 ### 🔹 Famille 01 — Comparaison Discrète
 - **Ligne de base $Y=0$ absolue (`beginAtZero: true`)** : Obligatoire sur tous les graphiques de longueur (`bar-chart-vertical`, `bar-chart-horizontal`, `grouped-bar-chart`, `stacked-bar-chart`, `lollipop-chart`, `bullet-chart`, `kpi-bullet`). Il est formellement interdit de tronquer l'axe pour exagérer artificiellement des variations.
@@ -78,10 +76,7 @@
 - **Cartes Choroplèthes** : **Normalisation obligatoire par habitant, densité ou ratio**. Interdiction formelle de représenter des totaux bruts sur des polygones de surface (le biais de surface géographique fausse l'analyse, ex: un grand département peu peuplé dominerait visuellement).
 - **Cartes à Bulles** : Réservées aux totaux bruts, centrées sur les centroïdes géographiques avec disques proportionnels à l'aire.
 
-### 🔹 Famille 09 — Finance & Bourse
-- **Chandeliers Japonais & OHLC** : Vert si $Close \ge Open$ (hausse), Rouge si $Close < Open$ (baisse) ; mèches hautes ($Max$) et basses ($Min$) visibles.
-
-### 🔹 Famille 10 — Tableaux & Synthèses KPI
+### 🔹 Famille 09 — Tableaux & Synthèses KPI
 - **Cartes KPI (`kpi-standard`, `kpi-sparkline`)** :
   - Valeur principale monumentale ($\ge 24\text{px}$) en typographie forte.
   - Badge de variation avec polarité métier et libellé de référence obligatoire (ex: `"vs M-1"` ou `"vs Budget"`).
@@ -95,4 +90,4 @@
 2. ❌ **Ne JAMAIS utiliser de codes couleur hexadécimaux arbitraires sans passer par `themes/theme-tokens.js`.**
 3. ❌ **Ne JAMAIS tronquer l'axe $Y=0$ sur un graphique en barres ou colonnes.**
 4. ❌ **Ne JAMAIS placer plus de 7 catégories sur un bar chart vertical ou plus de 5 courbes sur un multi-line.**
-5. ❌ **Ne JAMAIS insérer d'animations avec rebonds cartoons (`bounce`, `elastic`) ou durée $> 800\text{ ms}$.**
+

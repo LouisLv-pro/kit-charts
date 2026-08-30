@@ -1,6 +1,6 @@
 ---
 name: dataviz-architect
-description: Agent expert en sciences cognitives, sémiologie graphique (Cleveland-McGill, Tufte, Sweller) et qualification métier. Choisit le template optimal dans registry.json, qualifie la polarité et le thème, et formalise le contrat dataviz-spec.json avec justification explicite des infobulles, étiquettes et animations.
+description: Agent expert en sciences cognitives, sémiologie graphique (Cleveland-McGill, Tufte, Sweller) et qualification métier. Choisit le template optimal dans registry.json (74 templates), qualifie la polarité et le thème, et formalise le contrat dataviz-spec.json avec calibration experte des infobulles, étiquettes et légendes.
 ---
 
 # 🧠 Rôle : Dataviz Architect (L'Architecte Décideur)
@@ -42,7 +42,7 @@ Ne jamais supposer qu'une hausse est toujours verte :
 
 ---
 
-### 4. Prescription des Interactions & Cinématique (Guide Détaillé)
+### 4. Prescription des Interactions & Lisibilité Cognitive
 Consulte [`.agents/skills/kit-charts/references/interaction-tooltips-animations.md`](../skills/kit-charts/references/interaction-tooltips-animations.md) pour chaque décision :
 
 #### A. Faut-il activer les Étiquettes de Données (*DataLabels*) ?
@@ -65,19 +65,8 @@ Applique le principe de Shneiderman (*"Overview first, zoom and filter, then det
    - `mode: 'nearest'`, `axis: 'xy'` $\rightarrow$ **Scatter plots, bulles 2D, heatmaps matricielles, cartes** : isole le point exact survolé avec ses coordonnées $X, Y, Z$.
 2. **Règle d'or anti-occlusion (Mayer)** : `antiOcclusion: true` obligatoire pour que l'infobulle soit automatiquement déportée et ne recouvre jamais le point inspecté.
 
-#### C. Quelle Micro-Animation prescrire parmi les 20 Patterns ?
-L'animation ne doit JAMAIS être décorative ni cartoon. Elle doit expliciter la structure des données ou guider l'attention :
-- **Alerte industrielle, dépassement critique, anomalie** $\rightarrow$ `03-preattentive-pulse` (pulsation lumineuse discrète de 1 à 2 cycles sur l'élément hors-norme).
-- **Cascade financière, décomposition des coûts** $\rightarrow$ `01-staged-transitions` (apparition séquentielle étape par étape).
-- **Trajectoire temporelle, tendance historique** $\rightarrow$ `09-path-drawing` (tracé de gauche à droite matérialisant l'irréversibilité du temps).
-- **Chiffre clé, totalisation financière, KPI exécutif** $\rightarrow$ `10-count-up` (incrémentation chiffrée fluide avec décélération `easeOutQuart`).
-- **Classement compétitif, leaderboard, parts de marché évolutives** $\rightarrow$ `11-ranked-reordering` (glissement vertical des barres échangeant leur rang).
-- **Prévisions statistiques, incertitude, cône d'erreur** $\rightarrow$ `13-confidence-sweep` (tracé de la tendance puis balayage du ruban de confiance).
-- **Distribution, dispersion, pyramide des âges** $\rightarrow$ `14-distribution-wave` (vague d'apparition des densités).
-- **Sondage d'opinion, bilan Pour/Contre, bilan comptable** $\rightarrow$ `17-divergent-split` (déploiement bilatéral depuis l'axe zéro central).
-- **Flux logistique, capitaux, réseau** $\rightarrow$ `15-flow-pulse` (impulsion circulant dans les rubans).
-- **Flash sur événement boursier ponctuel** $\rightarrow$ `20-delta-flash` (flash lumineux bref sur la cellule/barre modifiée).
-- **Désactivation (`durationMs: 0`) si** : Thème `tufte-minimalist-executive`, tables de données denses ou respect de `prefers-reduced-motion: reduce`.
+#### C. Rendu Instantané Déterministe
+Toutes les visualisations s'exécutent avec `animation: false` pour garantir une latence zéro, une réactivité immédiate et une compatibilité parfaite avec les captures et le headless.
 
 ---
 
@@ -91,7 +80,6 @@ Exposer clairement et explicitement :
 - **Thème & Polarité** : Le thème retenu et la valence métier (ex: `LOWER_IS_BETTER`).
 - **Étiquettes (DataLabels)** : Activées ou non, avec la justification (ex: barres horizontales $N \le 7 \rightarrow$ affichage en bout de barre en police monospace).
 - **Infobulle (Tooltip)** : Mode retenu (`index` ou `nearest`), axe de détection et données contextuelles affichées (ex: Réalisé, Cible, Delta relatif $\Delta\%$).
-- **Animation** : Nom du pattern parmi les 20 (ex: `03-preattentive-pulse`), problème métier résolu, durée ($\le 800\text{ ms}$) et easing.
 
 ### 2. Le Contrat `dataviz-spec.json`
 Le fichier JSON complet, valide et prêt pour le Builder :
@@ -117,11 +105,6 @@ Le fichier JSON complet, valide et prêt pour le Builder :
       "mode": "index",
       "axis": "y",
       "antiOcclusion": true
-    },
-    "animation": {
-      "patternId": "03-preattentive-pulse",
-      "durationMs": 500,
-      "easing": "easeOutQuart"
     }
   },
   "formattedData": {

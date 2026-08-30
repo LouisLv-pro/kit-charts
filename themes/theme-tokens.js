@@ -886,37 +886,19 @@ function isReducedMotionPreferred() {
  * @param {number} [baseDuration=350] Base transition duration in ms
  * @returns {number} Calibrated duration in milliseconds
  */
-function getAnimationDuration(elementCount = 1, baseDuration = 350) {
-  const count = Number(elementCount);
-  if (isNaN(count) || count <= 0) return 200;
-  const base = Math.max(0, Number(baseDuration) || 350);
-  const scaled = base * (1 + 0.25 * Math.log10(count));
-  return Math.min(600, Math.max(200, Math.round(scaled)));
+function getAnimationDuration(elementCount = 1, baseDuration = 0) {
+  return 0;
 }
 
 /**
- * Resolves animation configuration with automatic reduced-motion & Tufte compliance.
+ * Resolves animation configuration — permanently disabled for instant deterministic rendering.
  *
  * @param {Object|string} [themeTokens] Theme tokens object or slug
  * @param {Object} [options={}] Additional animation options
- * @returns {Object|boolean} Chart.js animation configuration or false
+ * @returns {boolean} Always false (animations disabled)
  */
 function getAccessibleAnimationOptions(themeTokens, options = {}) {
-  const t = (typeof themeTokens === 'string' ? getThemeTokens(themeTokens) : themeTokens) || getThemeTokens(DEFAULT_THEME);
-  const isTufte = t.name === 'tufte-minimalist-executive';
-  const reduceMotion = isReducedMotionPreferred();
-
-  if (isTufte || reduceMotion || options.duration === 0 || options.animate === false || options.animation === false) {
-    return false;
-  }
-
-  return {
-    duration: options.duration !== undefined ? options.duration : 400,
-    easing: options.easing || 'easeOutQuart',
-    delay: options.delay || 0,
-    loop: false,
-    ...options
-  };
+  return false;
 }
 
 /**
@@ -1605,61 +1587,33 @@ function createAnimationTicker(options = {}) {
  * @returns {Object} Control handle { stop: Function }
  */
 function animatePathDrawing(chart, options = {}) {
-  if (!chart || !chart.data) {
+  if (!chart) {
     if (options.onComplete) options.onComplete();
     return { stop: () => {} };
   }
 
-  const duration = options.duration !== undefined ? options.duration : 2200;
-  const originalDatasets = (chart.data.datasets || []).map(ds => ({
-    data: [...(ds.data || [])],
-    borderColor: ds.borderColor,
-    backgroundColor: ds.backgroundColor
-  }));
+  const duration = options.duration !== undefined ? Math.min(800, Math.max(0, options.duration)) : 750;
 
   if (isReducedMotionPreferred() || options.reducedMotion || duration === 0) {
+    chart._kcPathDrawingProgress = 1;
     chart.update('none');
     if (options.onComplete) options.onComplete();
     return { stop: () => {} };
   }
 
-  const fullData = originalDatasets[0]?.data || [];
-  const N = fullData.length;
-  if (N < 2) {
-    chart.update('none');
-    if (options.onComplete) options.onComplete();
-    return { stop: () => {} };
-  }
+  chart._kcPathDrawingProgress = 0;
+  chart.update('none');
 
   return createAnimationTicker({
     duration: duration,
-    easing: 'easeInOutCubic',
+    easing: options.easing || 'easeOutCubic',
     reducedMotion: options.reducedMotion,
-    onFrame: (easedU, elapsedMs) => {
-      const fractionalIndex = easedU * (N - 1);
-      const baseIdx = Math.floor(fractionalIndex);
-      const frac = fractionalIndex - baseIdx;
-
-      chart.data.datasets.forEach((ds, dsIdx) => {
-        const full = originalDatasets[dsIdx]?.data || [];
-        const currentData = [];
-        for (let i = 0; i <= baseIdx; i++) {
-          currentData.push(full[i]);
-        }
-        if (frac > 0 && baseIdx + 1 < full.length) {
-          const interpolatedVal = full[baseIdx] + (full[baseIdx + 1] - full[baseIdx]) * frac;
-          currentData.push(interpolatedVal);
-        }
-        ds.data = currentData;
-      });
+    onFrame: (easedU) => {
+      chart._kcPathDrawingProgress = easedU;
       chart.update('none');
     },
     onComplete: () => {
-      chart.data.datasets.forEach((ds, dsIdx) => {
-        if (originalDatasets[dsIdx]) {
-          ds.data = [...originalDatasets[dsIdx].data];
-        }
-      });
+      chart._kcPathDrawingProgress = 1;
       chart.update('none');
       if (typeof options.onComplete === 'function') options.onComplete();
     }
@@ -2440,7 +2394,6 @@ function attachDeltaFlash(chart, modifiedIndices = [], options = {}) {
 function getChartDefaultOptions(themeTokens) {
   const t = themeTokens || getThemeTokens(DEFAULT_THEME);
   const isTufte = t.name === 'tufte-minimalist-executive';
-  const reduceMotion = isReducedMotionPreferred();
 
   return {
     responsive: true,
@@ -2452,9 +2405,7 @@ function getChartDefaultOptions(themeTokens) {
         ? { top: 16, right: 16, bottom: 12, left: 12 }
         : { top: 20, right: 20, bottom: 16, left: 16 }
     },
-    animation: (isTufte || reduceMotion)
-      ? false
-      : { duration: 400, easing: 'easeOutQuart' },
+    animation: false,
     interaction: {
       mode: 'nearest',
       intersect: false,
@@ -2463,7 +2414,7 @@ function getChartDefaultOptions(themeTokens) {
     hover: {
       mode: 'nearest',
       intersect: false,
-      animationDuration: (isTufte || reduceMotion) ? 0 : 120
+      animationDuration: 0
     },
     elements: {
       bar: {
@@ -2519,7 +2470,7 @@ function getChartDefaultOptions(themeTokens) {
           size: 12,
           weight: '400'
         },
-        animation: (isTufte || reduceMotion) ? false : { duration: 150, easing: 'easeOutQuad' }
+        animation: false
       }
     },
     scales: {

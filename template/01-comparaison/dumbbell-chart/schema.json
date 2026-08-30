@@ -84,19 +84,6 @@
               "default": true
             }
           }
-        },
-        "animation": {
-          "type": "object",
-          "properties": {
-            "patternId": {
-              "type": "string"
-            },
-            "durationMs": {
-              "type": "integer",
-              "maximum": 800,
-              "default": 600
-            }
-          }
         }
       }
     },

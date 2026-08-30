@@ -1,6 +1,6 @@
 ---
 name: kit-charts
-description: Bibliothèque de datavisualisation agent-native fondée sur les sciences cognitives (Cleveland-McGill, Tufte, Sweller) et WCAG 2.2. Fournit 89 templates Chart.js standardisés, un registre machine-readable, 8 thèmes accessibles avec gestion déterministe de la polarité et un moteur de compilation/validation zéro-dépendance.
+description: Bibliothèque de datavisualisation agent-native fondée sur les sciences cognitives (Cleveland-McGill, Tufte, Sweller) et WCAG 2.2. Fournit 74 templates Chart.js standardisés, un registre machine-readable, 8 thèmes accessibles avec gestion déterministe de la polarité et un moteur de compilation/validation zéro-dépendance.
 ---
 
 # 📊 Skill Datavisualisation : kit-charts
@@ -11,7 +11,7 @@ Le skill **`kit-charts`** permet aux agents IA de concevoir, valider et assemble
 
 ## 🎯 Capacités Clés & Principes Fondamentaux
 
-1. **89 Modèles Standardisés (Triplets)** : Chaque graphique est encapsulé dans un triplet (`template.html`, `schema.json`, `template.js`) garantissant une structure DOM propre, un schéma JSON strict et une isolation sans fuite.
+1. **74 Modèles Standardisés (Triplets)** : Chaque graphique est encapsulé dans un triplet (`template.html`, `schema.json`, `template.js`) garantissant une structure DOM propre, un schéma JSON strict et une isolation sans fuite.
 2. **Conformité Psychophysique Déterministe** :
    - Respect strict de la hiérarchie de Cleveland & McGill (Position > Longueur > Pente > Aire > Teinte).
    - Ligne de base $Y = 0$ obligatoire sur tous les diagrammes en barres/colonnes/lollipops.
@@ -19,8 +19,8 @@ Le skill **`kit-charts`** permet aux agents IA de concevoir, valider et assemble
 3. **8 Thèmes Cognitifs & Sémantique de Valence** :
    - Prise en compte de la polarité métier (`HIGHER_IS_BETTER`, `LOWER_IS_BETTER`, `TARGET_BASED`).
    - Accessibilité certifiée WCAG 2.2 AA ($Contrast \ge 4.5:1$) et palettes optimisées daltonisme (CVD).
-4. **Outillage Déterministe Zéro-Dépendance** :
-   - `compile-chart.js` : Compilateur instantané de pages HTML autonomes et snippets.
+4. **Outillage Déterministe Zéro-Dépendance & Rendu Instantané** :
+   - `compile-chart.js` : Compilateur instantané de pages HTML autonomes et snippets (rendu déterministe `animation: false`).
    - `validate-chart.js` : Linter cognitif et d'accessibilité (< 50 ms).
    - `validate-hook.js` : Contrôle qualité continu via les hooks Antigravity.
 
@@ -65,7 +65,7 @@ node .agents/skills/kit-charts/scripts/compile-chart.js \
 
 ### 2. Audit & Validation Cognitive (`validate-chart.js`)
 
-Le linter analyse un fichier spec JSON, HTML ou JS et vérifie les 10 règles cognitives et WCAG :
+Le linter analyse un fichier spec JSON, HTML ou JS et vérifie les règles cognitives et WCAG :
 
 ```bash
 # Validation standard
@@ -100,8 +100,11 @@ Voici la structure standard que tout agent doit générer pour décrire une visu
   },
   "cognitiveFeatures": {
     "showDataLabels": true,
-    "tooltip": { "enabled": true, "antiOcclusion": true },
-    "animation": { "durationMs": 600, "easing": "easeOutQuart" }
+    "tooltip": {
+      "enabled": true,
+      "mode": "index",
+      "antiOcclusion": true
+    }
   },
   "formattedData": {
     "labels": ["France", "Allemagne", "Italie", "Espagne"],
@@ -118,6 +121,8 @@ Voici la structure standard que tout agent doit générer pour décrire une visu
 ## 📚 Base de Connaissances & Références (Progressive Disclosure)
 
 - [Règles Cognitives & Psychophysique](file:///.agents/skills/kit-charts/references/cognitive-rules.md) : Fondements de Cleveland-McGill, Gestalt, Sweller et Tufte.
-- [Matrice de Décision Complète](file:///.agents/skills/kit-charts/references/decision-matrix.md) : Arbre de choix exhaustif pour les 89 motifs graphiques.
+- [Matrice de Décision Complète](file:///.agents/skills/kit-charts/references/decision-matrix.md) : Arbre de choix exhaustif pour les 74 motifs graphiques.
+- [Guide Infobulles, Étiquettes & Légendes](file:///.agents/skills/kit-charts/references/interaction-tooltips-animations.md) : Calibrage précis des infobulles anti-occlusion, étiquettes directes et légendes.
 - [Sémantique des Couleurs & Thèmes](file:///.agents/skills/kit-charts/references/color-semantics.md) : Modèle de valence, polarités et 8 thèmes certifiés.
-- [Registre Machine-Readable](file:///.agents/skills/kit-charts/registry.json) : Catalogue JSON officiel des 89 templates et métadonnées.
+- [Registre Machine-Readable](file:///.agents/skills/kit-charts/registry.json) : Catalogue JSON officiel des 74 templates et métadonnées.
+

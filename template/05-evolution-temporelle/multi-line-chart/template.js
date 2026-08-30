@@ -150,7 +150,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const chartData = { labels, datasets };
   const baseOptions = getChartDefaultOptions(tokens);
   const temporalOpts = getTemporalInteractionOptions(tokens, { mode: 'index', axis: 'x', hitRadius: 12, hoverRadius: 6 });
-  const animOpts = getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuad' });
+  const animOpts = getAccessibleAnimationOptions(tokens, { duration: 700, easing: 'easeOutCubic' });
 
   const config = {
     type: 'line',
@@ -215,7 +215,21 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             usePointStyle: true,
             boxWidth: 8,
             boxHeight: 8,
-            padding: 14
+            padding: 14,
+            generateLabels: (chart) => (chart.data.datasets || []).map((ds, i) => {
+              const c = (typeof ds.borderColor === 'string')
+                ? ds.borderColor
+                : (Array.isArray(ds.borderColor) ? ds.borderColor[0] : (ds.backgroundColor || '#9CA3AF'));
+              return {
+                text: ds.label || ('Série ' + (i + 1)),
+                fillStyle: c,
+                strokeStyle: c,
+                lineWidth: 2,
+                pointStyle: 'line',
+                hidden: !chart.isDatasetVisible(i),
+                index: i
+              };
+            })
           }
         },
         tooltip: {
