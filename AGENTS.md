@@ -13,7 +13,8 @@ Pour garantir zéro hallucination et un respect absolu des sciences cognitives, 
 │ 1. DATAVIZ-ARCHITECT (L'Architecte Décideur)                │
 │    Analyse l'intention, choisit le template dans le         │
 │    registre, qualifie le thème et la polarité métier,       │
-│    et produit le contrat dataviz-spec.json.                 │
+│    justifie explicitement les infobulles/étiquettes/        │
+│    animations, et produit le contrat dataviz-spec.json.     │
 └──────────────────────────────┬──────────────────────────────┘
                                │ Contrat dataviz-spec.json
                                ▼
@@ -88,4 +89,5 @@ npm test
 - [`.agents/skills/kit-charts/SKILL.md`](.agents/skills/kit-charts/SKILL.md) : Guide d'utilisation du skill.
 - [`.agents/skills/kit-charts/references/decision-matrix.md`](.agents/skills/kit-charts/references/decision-matrix.md) : Arbre de décision analytique.
 - [`.agents/skills/kit-charts/references/color-semantics.md`](.agents/skills/kit-charts/references/color-semantics.md) : Guide des 8 thèmes et polarités.
+- [`.agents/skills/kit-charts/references/interaction-tooltips-animations.md`](.agents/skills/kit-charts/references/interaction-tooltips-animations.md) : Guide décisionnel infobulles, étiquettes et catalogue des 20 animations.
 - [`.agents/rules/dataviz-rules.md`](.agents/rules/dataviz-rules.md) : Fiche de synthèse des règles de garde.
