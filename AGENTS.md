@@ -27,8 +27,9 @@ Pour garantir zéro hallucination et un respect absolu des sciences cognitives, 
                                ▼
 ┌─────────────────────────────────────────────────────────────┐
 │ 3. DATAVIZ-REVIEWER (L'Auditeur Qualité & Linter)           │
-│    Exécute validate-chart.js, audite les règles de garde    │
-│    (Cleveland Axe 0, Sweller N<=7, WCAG >= 4.5:1) et valide.│
+│    Audite en 4 niveaux (validate-chart.js, sciences         │
+│    cognitives, valence, WCAG 2.2) et émet un rapport formel │
+│    avec grille d'audit et correctif actionnable.            │
 └─────────────────────────────────────────────────────────────┘
 ```
 
