@@ -1,0 +1,262 @@
+{
+  "_meta": {
+    "family": "01-comparaison",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "bar-target-overlay",
+    "themeName": "atkinson-hyperlegible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "rgba(0, 158, 115, 0.85)",
+              "rgba(254, 97, 0, 0.85)",
+              "rgba(0, 158, 115, 0.85)",
+              "rgba(254, 97, 0, 0.85)",
+              "rgba(0, 158, 115, 0.85)",
+              "rgba(0, 158, 115, 0.85)"
+            ],
+            "borderColor": [
+              "#009E73",
+              "#FE6100",
+              "#009E73",
+              "#FE6100",
+              "#009E73",
+              "#009E73"
+            ],
+            "borderRadius": 4,
+            "borderWidth": 1.5,
+            "data": [
+              540,
+              620,
+              480,
+              390,
+              410,
+              320
+            ],
+            "datalabels": false,
+            "displayDataLabels": false,
+            "label": "Réalisé"
+          }
+        ],
+        "labels": [
+          "France",
+          "Allemagne",
+          "Royaume-Uni",
+          "Espagne",
+          "Italie",
+          "Benelux"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#71717A",
+          "bg": "#FFFFFF",
+          "border": "#D4D4D8",
+          "borderStrong": "#71717A",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#DC3220",
+            "pos": "#005AB5"
+          },
+          "emphasis": {
+            "anomaly": "#DC3220",
+            "benchmark": "#27272A",
+            "context": "#A1A1AA",
+            "focal": "#005AB5",
+            "forecastAlpha": 0.55
+          },
+          "fontFamily": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;600&display=swap",
+          "gridColor": "rgba(0, 0, 0, 0.12)",
+          "id": "08-atkinson-hyperlegible",
+          "isDark": false,
+          "label": "Atkinson Hyperlegible",
+          "name": "atkinson-hyperlegible",
+          "palette": [
+            "#005AB5",
+            "#DC3220",
+            "#009E73",
+            "#FE6100",
+            "#785EF0",
+            "#FFB000",
+            "#3F3F46",
+            "#64748B"
+          ],
+          "semantic": {
+            "info": "#005AB5",
+            "negative": "#DC3220",
+            "neutral": "#71717A",
+            "positive": "#009E73",
+            "warning": "#FE6100"
+          },
+          "sequential": [
+            "#E6F0FA",
+            "#BDD7F1",
+            "#6BA3DC",
+            "#005AB5",
+            "#003B75"
+          ],
+          "status": {
+            "danger": "#DC3220",
+            "info": "#005AB5",
+            "neutral": "#71717A",
+            "success": "#009E73",
+            "warning": "#FE6100"
+          },
+          "surface": "#F4F4F5",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#3F3F46",
+          "textPrimary": "#000000",
+          "textSecondary": "#18181B",
+          "tooltipBg": "rgba(0, 0, 0, 0.95)",
+          "tooltipText": "#FFFFFF",
+          "zeroLine": "#18181B"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "indexAxis": "y",
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "right": 32
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#000000",
+            "display": true,
+            "font": {
+              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:anonymous]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(0, 0, 0, 0.95)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#71717A",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "beginAtZero": true,
+            "border": {
+              "color": "#18181B",
+              "width": 1
+            },
+            "grace": "25%",
+            "grid": {
+              "color": "rgba(0, 0, 0, 0.12)"
+            },
+            "ticks": {
+              "color": "#18181B",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            },
+            "title": {
+              "color": "#18181B",
+              "display": true,
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Montant (k€)"
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false
+            },
+            "ticks": {
+              "color": "#18181B",
+              "font": {
+                "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        },
+        "showDataLabels": true
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsTargetOverlayPainter"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

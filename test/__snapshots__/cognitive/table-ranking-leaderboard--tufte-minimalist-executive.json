@@ -1,0 +1,246 @@
+{
+  "_meta": {
+    "family": "09-tableaux-dataviz",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "table-ranking-leaderboard",
+    "themeName": "tufte-minimalist-executive"
+  },
+  "payload": {
+    "kind": "control-object",
+    "result": {
+      "container": {
+        "addEventListener": "[Function:addEventListener]",
+        "clientHeight": 0,
+        "clientWidth": 0,
+        "dataset": {},
+        "getAttribute": "[Function:getAttribute]",
+        "getBoundingClientRect": "[Function:getBoundingClientRect]",
+        "getContext": "[Function:getContext]",
+        "height": 600,
+        "innerHTML": "\n        <div class=\"kc-dataviz-leaderboard-container\" style=\"\n          width: 100%;\n          overflow-x: auto;\n          background: #FFFFFF;\n          border: 1px solid #E8E5DF;\n          border-radius: 0;\n          box-shadow: none;\n          font-family: 'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif;\n          color: #111111;\n          box-sizing: border-box;\n        \">\n          <table style=\"\n            width: 100%;\n            border-collapse: collapse;\n            border-spacing: 0;\n            font-size: 0.8125rem;\n            line-height: 1.45;\n            font-variant-numeric: tabular-nums lining-nums;\n            font-feature-settings: 'tnum' 1, 'lnum' 1;\n          \">\n            <thead>\n              <tr style=\"\n                background: #FFFFFF;\n                border-bottom: 1.5px solid #D5D1C8;\n              \">\n      \n          <th data-key=\"rank\" style=\"\n            padding: 10px 14px;\n            text-align: center;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #1D4ED8;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Rang ▲\n          </th>\n        \n          <th data-key=\"trendRank\" style=\"\n            padding: 10px 14px;\n            text-align: center;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #333333;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Progression\n          </th>\n        \n          <th data-key=\"team\" style=\"\n            padding: 10px 14px;\n            text-align: left;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #333333;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Équipe Commerciale\n          </th>\n        \n          <th data-key=\"region\" style=\"\n            padding: 10px 14px;\n            text-align: center;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #333333;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Région\n          </th>\n        \n          <th data-key=\"score\" style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #333333;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Score Global (Base 100)\n          </th>\n        \n          <th data-key=\"deals\" style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #333333;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Contrats Signés\n          </th>\n        \n          <th data-key=\"conversion\" style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #333333;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Taux Conv.\n          </th>\n        \n          <th data-key=\"monthlyActivity\" style=\"\n            padding: 10px 14px;\n            text-align: center;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #333333;\n            border: none;\n            white-space: nowrap;\n            \n          \" title=\"\">\n            Activité 6M\n          </th>\n        \n              </tr>\n            </thead>\n            <tbody>\n      \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E8E5DF;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n            display: inline-flex; align-items: center; justify-content: center;\n            width: 24px; height: 24px; border-radius: 50%;\n            background: #FEF3C7; color: #92400E; font-weight: 700; font-size: 0.75rem;\n            box-shadow: 0 1px 3px rgba(180, 83, 9, 0.2);\n          \">1</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"color: #15803D; font-weight: 700; font-size: 0.75rem;\">▲ +1</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #111111;\">Équipe Alpha Grands Comptes</div>\n              <div style=\"font-size: 0.7rem; color: #777777;\">Lead: Sophie Martin</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #333333;\n              \">EMEA</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"display: flex; align-items: center; justify-content: flex-end;\">\n                \n      <svg width=\"75\" height=\"12\" viewBox=\"0 0 75 12\" style=\"display:inline-block; vertical-align:middle; margin-right:6px;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"1\" width=\"75\" height=\"10\" rx=\"0\" fill=\"rgba(15,23,42,0.05)\" />\n        <rect x=\"0\" y=\"1\" width=\"73.8\" height=\"10\" rx=\"0\" fill=\"#1D4ED8\" />\n      </svg>\n    \n                <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 700; color: #111111; width: 38px; text-align: right;\">\n                  98.4\n                </span>\n              </div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #111111; vertical-align: middle;\">\n              42\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #333333; vertical-align: middle;\">\n              34.2%\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"62\" height=\"22\" viewBox=\"0 0 62 22\" style=\"display:block; margin:0 auto;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"14.3\" width=\"7\" height=\"7.7\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 1: 18</title></rect><rect x=\"11\" y=\"12.6\" width=\"7\" height=\"9.4\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 2: 22</title></rect><rect x=\"22\" y=\"11.3\" width=\"7\" height=\"10.7\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 3: 25</title></rect><rect x=\"33\" y=\"10.0\" width=\"7\" height=\"12.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 4: 28</title></rect><rect x=\"44\" y=\"7.0\" width=\"7\" height=\"15.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 5: 35</title></rect><rect x=\"55\" y=\"4.0\" width=\"7\" height=\"18.0\" rx=\"0\" fill=\"#1D4ED8\" opacity=\"1\"><title>Mois 6: 42</title></rect>\n      </svg>\n    \n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E8E5DF;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n            display: inline-flex; align-items: center; justify-content: center;\n            width: 24px; height: 24px; border-radius: 50%;\n            background: #E2E8F0; color: #334155; font-weight: 700; font-size: 0.75rem;\n          \">2</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"color: #B91C1C; font-weight: 700; font-size: 0.75rem;\">▼ -1</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #111111;\">Division Fintech &amp; Banking</div>\n              <div style=\"font-size: 0.7rem; color: #777777;\">Lead: Marc Dupont</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #333333;\n              \">US East</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"display: flex; align-items: center; justify-content: flex-end;\">\n                \n      <svg width=\"75\" height=\"12\" viewBox=\"0 0 75 12\" style=\"display:inline-block; vertical-align:middle; margin-right:6px;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"1\" width=\"75\" height=\"10\" rx=\"0\" fill=\"rgba(15,23,42,0.05)\" />\n        <rect x=\"0\" y=\"1\" width=\"71.3\" height=\"10\" rx=\"0\" fill=\"#1D4ED8\" />\n      </svg>\n    \n                <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 700; color: #111111; width: 38px; text-align: right;\">\n                  95.1\n                </span>\n              </div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #111111; vertical-align: middle;\">\n              39\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #333333; vertical-align: middle;\">\n              31.8%\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"62\" height=\"22\" viewBox=\"0 0 62 22\" style=\"display:block; margin:0 auto;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"10.9\" width=\"7\" height=\"11.1\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 1: 24</title></rect><rect x=\"11\" y=\"9.1\" width=\"7\" height=\"12.9\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 2: 28</title></rect><rect x=\"22\" y=\"7.2\" width=\"7\" height=\"14.8\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 3: 32</title></rect><rect x=\"33\" y=\"5.4\" width=\"7\" height=\"16.6\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 4: 36</title></rect><rect x=\"44\" y=\"4.5\" width=\"7\" height=\"17.5\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 5: 38</title></rect><rect x=\"55\" y=\"4.0\" width=\"7\" height=\"18.0\" rx=\"0\" fill=\"#1D4ED8\" opacity=\"1\"><title>Mois 6: 39</title></rect>\n      </svg>\n    \n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E8E5DF;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n            display: inline-flex; align-items: center; justify-content: center;\n            width: 24px; height: 24px; border-radius: 50%;\n            background: #FFEDD5; color: #9A3412; font-weight: 700; font-size: 0.75rem;\n          \">3</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"color: #15803D; font-weight: 700; font-size: 0.75rem;\">▲ +1</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #111111;\">Pôle Retail &amp; E-Commerce</div>\n              <div style=\"font-size: 0.7rem; color: #777777;\">Lead: Camille Leroy</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #333333;\n              \">Europe Ouest</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"display: flex; align-items: center; justify-content: flex-end;\">\n                \n      <svg width=\"75\" height=\"12\" viewBox=\"0 0 75 12\" style=\"display:inline-block; vertical-align:middle; margin-right:6px;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"1\" width=\"75\" height=\"10\" rx=\"0\" fill=\"rgba(15,23,42,0.05)\" />\n        <rect x=\"0\" y=\"1\" width=\"68.8\" height=\"10\" rx=\"0\" fill=\"#1D4ED8\" />\n      </svg>\n    \n                <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 700; color: #111111; width: 38px; text-align: right;\">\n                  91.8\n                </span>\n              </div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #111111; vertical-align: middle;\">\n              36\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #333333; vertical-align: middle;\">\n              29.5%\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"62\" height=\"22\" viewBox=\"0 0 62 22\" style=\"display:block; margin:0 auto;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"14.5\" width=\"7\" height=\"7.5\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 1: 15</title></rect><rect x=\"11\" y=\"12.5\" width=\"7\" height=\"9.5\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 2: 19</title></rect><rect x=\"22\" y=\"10.0\" width=\"7\" height=\"12.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 3: 24</title></rect><rect x=\"33\" y=\"8.0\" width=\"7\" height=\"14.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 4: 28</title></rect><rect x=\"44\" y=\"7.0\" width=\"7\" height=\"15.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 5: 30</title></rect><rect x=\"55\" y=\"4.0\" width=\"7\" height=\"18.0\" rx=\"0\" fill=\"#1D4ED8\" opacity=\"1\"><title>Mois 6: 36</title></rect>\n      </svg>\n    \n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E8E5DF;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #777777;\">4</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"color: #B91C1C; font-weight: 700; font-size: 0.75rem;\">▼ -1</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #111111;\">Équipe Santé &amp; Pharma</div>\n              <div style=\"font-size: 0.7rem; color: #777777;\">Lead: Alexandre Roux</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #333333;\n              \">France</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"display: flex; align-items: center; justify-content: flex-end;\">\n                \n      <svg width=\"75\" height=\"12\" viewBox=\"0 0 75 12\" style=\"display:inline-block; vertical-align:middle; margin-right:6px;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"1\" width=\"75\" height=\"10\" rx=\"0\" fill=\"rgba(15,23,42,0.05)\" />\n        <rect x=\"0\" y=\"1\" width=\"64.7\" height=\"10\" rx=\"0\" fill=\"#1D4ED8\" />\n      </svg>\n    \n                <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 700; color: #111111; width: 38px; text-align: right;\">\n                  86.2\n                </span>\n              </div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #111111; vertical-align: middle;\">\n              29\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #333333; vertical-align: middle;\">\n              27.0%\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"62\" height=\"22\" viewBox=\"0 0 62 22\" style=\"display:block; margin:0 auto;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"8.3\" width=\"7\" height=\"13.7\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 1: 22</title></rect><rect x=\"11\" y=\"6.5\" width=\"7\" height=\"15.5\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 2: 25</title></rect><rect x=\"22\" y=\"5.2\" width=\"7\" height=\"16.8\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 3: 27</title></rect><rect x=\"33\" y=\"4.6\" width=\"7\" height=\"17.4\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 4: 28</title></rect><rect x=\"44\" y=\"4.0\" width=\"7\" height=\"18.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 5: 29</title></rect><rect x=\"55\" y=\"4.0\" width=\"7\" height=\"18.0\" rx=\"0\" fill=\"#1D4ED8\" opacity=\"1\"><title>Mois 6: 29</title></rect>\n      </svg>\n    \n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E8E5DF;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #777777;\">5</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"color: #15803D; font-weight: 700; font-size: 0.75rem;\">▲ +2</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #111111;\">SaaS &amp; Scale-ups</div>\n              <div style=\"font-size: 0.7rem; color: #777777;\">Lead: Elena Rossi</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #333333;\n              \">DACH</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"display: flex; align-items: center; justify-content: flex-end;\">\n                \n      <svg width=\"75\" height=\"12\" viewBox=\"0 0 75 12\" style=\"display:inline-block; vertical-align:middle; margin-right:6px;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"1\" width=\"75\" height=\"10\" rx=\"0\" fill=\"rgba(15,23,42,0.05)\" />\n        <rect x=\"0\" y=\"1\" width=\"61.9\" height=\"10\" rx=\"0\" fill=\"#1D4ED8\" />\n      </svg>\n    \n                <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 700; color: #111111; width: 38px; text-align: right;\">\n                  82.5\n                </span>\n              </div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #111111; vertical-align: middle;\">\n              31\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #333333; vertical-align: middle;\">\n              25.4%\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"62\" height=\"22\" viewBox=\"0 0 62 22\" style=\"display:block; margin:0 auto;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"15.0\" width=\"7\" height=\"7.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 1: 12</title></rect><rect x=\"11\" y=\"12.7\" width=\"7\" height=\"9.3\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 2: 16</title></rect><rect x=\"22\" y=\"10.4\" width=\"7\" height=\"11.6\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 3: 20</title></rect><rect x=\"33\" y=\"8.1\" width=\"7\" height=\"13.9\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 4: 24</title></rect><rect x=\"44\" y=\"5.7\" width=\"7\" height=\"16.3\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 5: 28</title></rect><rect x=\"55\" y=\"4.0\" width=\"7\" height=\"18.0\" rx=\"0\" fill=\"#1D4ED8\" opacity=\"1\"><title>Mois 6: 31</title></rect>\n      </svg>\n    \n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E8E5DF;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #777777;\">6</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"color: #B91C1C; font-weight: 700; font-size: 0.75rem;\">▼ -1</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #111111;\">Secteur Public &amp; Éducation</div>\n              <div style=\"font-size: 0.7rem; color: #777777;\">Lead: Thomas Bernard</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #333333;\n              \">France</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"display: flex; align-items: center; justify-content: flex-end;\">\n                \n      <svg width=\"75\" height=\"12\" viewBox=\"0 0 75 12\" style=\"display:inline-block; vertical-align:middle; margin-right:6px;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"1\" width=\"75\" height=\"10\" rx=\"0\" fill=\"rgba(15,23,42,0.05)\" />\n        <rect x=\"0\" y=\"1\" width=\"59.5\" height=\"10\" rx=\"0\" fill=\"#1D4ED8\" />\n      </svg>\n    \n                <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 700; color: #111111; width: 38px; text-align: right;\">\n                  79.3\n                </span>\n              </div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #111111; vertical-align: middle;\">\n              24\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #333333; vertical-align: middle;\">\n              22.8%\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"62\" height=\"22\" viewBox=\"0 0 62 22\" style=\"display:block; margin:0 auto;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"9.0\" width=\"7\" height=\"13.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 1: 18</title></rect><rect x=\"11\" y=\"7.6\" width=\"7\" height=\"14.4\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 2: 20</title></rect><rect x=\"22\" y=\"6.2\" width=\"7\" height=\"15.8\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 3: 22</title></rect><rect x=\"33\" y=\"5.4\" width=\"7\" height=\"16.6\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 4: 23</title></rect><rect x=\"44\" y=\"4.0\" width=\"7\" height=\"18.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 5: 25</title></rect><rect x=\"55\" y=\"4.7\" width=\"7\" height=\"17.3\" rx=\"0\" fill=\"#1D4ED8\" opacity=\"1\"><title>Mois 6: 24</title></rect>\n      </svg>\n    \n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E8E5DF;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #777777;\">7</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"color: #B91C1C; font-weight: 700; font-size: 0.75rem;\">▼ -1</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #111111;\">Industrie &amp; Manufacturing</div>\n              <div style=\"font-size: 0.7rem; color: #777777;\">Lead: David Chen</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #333333;\n              \">APAC</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"display: flex; align-items: center; justify-content: flex-end;\">\n                \n      <svg width=\"75\" height=\"12\" viewBox=\"0 0 75 12\" style=\"display:inline-block; vertical-align:middle; margin-right:6px;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"1\" width=\"75\" height=\"10\" rx=\"0\" fill=\"rgba(15,23,42,0.05)\" />\n        <rect x=\"0\" y=\"1\" width=\"56.0\" height=\"10\" rx=\"0\" fill=\"#1D4ED8\" />\n      </svg>\n    \n                <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 700; color: #111111; width: 38px; text-align: right;\">\n                  74.6\n                </span>\n              </div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #111111; vertical-align: middle;\">\n              21\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #333333; vertical-align: middle;\">\n              21.0%\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"62\" height=\"22\" viewBox=\"0 0 62 22\" style=\"display:block; margin:0 auto;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"8.9\" width=\"7\" height=\"13.1\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 1: 16</title></rect><rect x=\"11\" y=\"8.1\" width=\"7\" height=\"13.9\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 2: 17</title></rect><rect x=\"22\" y=\"6.5\" width=\"7\" height=\"15.5\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 3: 19</title></rect><rect x=\"33\" y=\"5.6\" width=\"7\" height=\"16.4\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 4: 20</title></rect><rect x=\"44\" y=\"4.0\" width=\"7\" height=\"18.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 5: 22</title></rect><rect x=\"55\" y=\"4.8\" width=\"7\" height=\"17.2\" rx=\"0\" fill=\"#1D4ED8\" opacity=\"1\"><title>Mois 6: 21</title></rect>\n      </svg>\n    \n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: none;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #777777;\">8</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"color: #777777; font-size: 0.75rem;\">=</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #111111;\">Mid-Market Emerging</div>\n              <div style=\"font-size: 0.7rem; color: #777777;\">Lead: Inès Dubois</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #333333;\n              \">Nordics</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"display: flex; align-items: center; justify-content: flex-end;\">\n                \n      <svg width=\"75\" height=\"12\" viewBox=\"0 0 75 12\" style=\"display:inline-block; vertical-align:middle; margin-right:6px;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"1\" width=\"75\" height=\"10\" rx=\"0\" fill=\"rgba(15,23,42,0.05)\" />\n        <rect x=\"0\" y=\"1\" width=\"51.0\" height=\"10\" rx=\"0\" fill=\"#1D4ED8\" />\n      </svg>\n    \n                <span style=\"font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; font-weight: 700; color: #111111; width: 38px; text-align: right;\">\n                  68.0\n                </span>\n              </div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #111111; vertical-align: middle;\">\n              18\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace; color: #333333; vertical-align: middle;\">\n              18.5%\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"62\" height=\"22\" viewBox=\"0 0 62 22\" style=\"display:block; margin:0 auto;\" aria-hidden=\"true\">\n        <rect x=\"0\" y=\"12.0\" width=\"7\" height=\"10.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 1: 10</title></rect><rect x=\"11\" y=\"10.0\" width=\"7\" height=\"12.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 2: 12</title></rect><rect x=\"22\" y=\"8.0\" width=\"7\" height=\"14.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 3: 14</title></rect><rect x=\"33\" y=\"7.0\" width=\"7\" height=\"15.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 4: 15</title></rect><rect x=\"44\" y=\"6.0\" width=\"7\" height=\"16.0\" rx=\"0\" fill=\"#777777\" opacity=\"0.65\"><title>Mois 5: 16</title></rect><rect x=\"55\" y=\"4.0\" width=\"7\" height=\"18.0\" rx=\"0\" fill=\"#1D4ED8\" opacity=\"1\"><title>Mois 6: 18</title></rect>\n      </svg>\n    \n            </td>\n          </tr>\n        \n            </tbody>\n          </table>\n        </div>\n      ",
+        "parentElement": {
+          "appendChild": "[Function:appendChild]",
+          "querySelector": "[Function:querySelector]"
+        },
+        "querySelector": "[Function:querySelector]",
+        "querySelectorAll": "[Function:querySelectorAll]",
+        "removeEventListener": "[Function:removeEventListener]",
+        "setAttribute": "[Function:setAttribute]",
+        "style": {},
+        "tagName": "DIV",
+        "width": 800
+      },
+      "data": {
+        "columns": [
+          {
+            "align": "center",
+            "key": "rank",
+            "label": "Rang",
+            "sortable": true
+          },
+          {
+            "align": "center",
+            "key": "trendRank",
+            "label": "Progression",
+            "sortable": true
+          },
+          {
+            "align": "left",
+            "key": "team",
+            "label": "Équipe Commerciale",
+            "sortable": true
+          },
+          {
+            "align": "center",
+            "key": "region",
+            "label": "Région",
+            "sortable": true
+          },
+          {
+            "align": "right",
+            "format": "score_bar",
+            "key": "score",
+            "label": "Score Global (Base 100)",
+            "sortable": true
+          },
+          {
+            "align": "right",
+            "format": "number",
+            "key": "deals",
+            "label": "Contrats Signés",
+            "sortable": true
+          },
+          {
+            "align": "right",
+            "format": "percent",
+            "key": "conversion",
+            "label": "Taux Conv.",
+            "sortable": true
+          },
+          {
+            "align": "center",
+            "format": "sparkbar",
+            "key": "monthlyActivity",
+            "label": "Activité 6M",
+            "sortable": false
+          }
+        ],
+        "rows": [
+          {
+            "activity": [
+              18,
+              22,
+              25,
+              28,
+              35,
+              42
+            ],
+            "conversion": 34.2,
+            "deals": 42,
+            "leader": "Sophie Martin",
+            "prevRank": 2,
+            "rank": 1,
+            "region": "EMEA",
+            "score": 98.4,
+            "team": "Équipe Alpha Grands Comptes"
+          },
+          {
+            "activity": [
+              24,
+              28,
+              32,
+              36,
+              38,
+              39
+            ],
+            "conversion": 31.8,
+            "deals": 39,
+            "leader": "Marc Dupont",
+            "prevRank": 1,
+            "rank": 2,
+            "region": "US East",
+            "score": 95.1,
+            "team": "Division Fintech & Banking"
+          },
+          {
+            "activity": [
+              15,
+              19,
+              24,
+              28,
+              30,
+              36
+            ],
+            "conversion": 29.5,
+            "deals": 36,
+            "leader": "Camille Leroy",
+            "prevRank": 4,
+            "rank": 3,
+            "region": "Europe Ouest",
+            "score": 91.8,
+            "team": "Pôle Retail & E-Commerce"
+          },
+          {
+            "activity": [
+              22,
+              25,
+              27,
+              28,
+              29,
+              29
+            ],
+            "conversion": 27,
+            "deals": 29,
+            "leader": "Alexandre Roux",
+            "prevRank": 3,
+            "rank": 4,
+            "region": "France",
+            "score": 86.2,
+            "team": "Équipe Santé & Pharma"
+          },
+          {
+            "activity": [
+              12,
+              16,
+              20,
+              24,
+              28,
+              31
+            ],
+            "conversion": 25.4,
+            "deals": 31,
+            "leader": "Elena Rossi",
+            "prevRank": 7,
+            "rank": 5,
+            "region": "DACH",
+            "score": 82.5,
+            "team": "SaaS & Scale-ups"
+          },
+          {
+            "activity": [
+              18,
+              20,
+              22,
+              23,
+              25,
+              24
+            ],
+            "conversion": 22.8,
+            "deals": 24,
+            "leader": "Thomas Bernard",
+            "prevRank": 5,
+            "rank": 6,
+            "region": "France",
+            "score": 79.3,
+            "team": "Secteur Public & Éducation"
+          },
+          {
+            "activity": [
+              16,
+              17,
+              19,
+              20,
+              22,
+              21
+            ],
+            "conversion": 21,
+            "deals": 21,
+            "leader": "David Chen",
+            "prevRank": 6,
+            "rank": 7,
+            "region": "APAC",
+            "score": 74.6,
+            "team": "Industrie & Manufacturing"
+          },
+          {
+            "activity": [
+              10,
+              12,
+              14,
+              15,
+              16,
+              18
+            ],
+            "conversion": 18.5,
+            "deals": 18,
+            "leader": "Inès Dubois",
+            "prevRank": 8,
+            "rank": 8,
+            "region": "Nordics",
+            "score": 68,
+            "team": "Mid-Market Emerging"
+          }
+        ],
+        "subtitle": "Classement ordonné par score global, progression de rang et dynamique sur 6 mois",
+        "title": "Classement de la Performance Commerciale — Leaderboard Trimestriel"
+      },
+      "destroy": "[Function:destroy]",
+      "exportCSV": "[Function:exportCSV]",
+      "options": {},
+      "setTheme": "[Function:setTheme]",
+      "sort": "[Function:sort]",
+      "theme": "tufte-minimalist-executive",
+      "update": "[Function:update]"
+    }
+  }
+}

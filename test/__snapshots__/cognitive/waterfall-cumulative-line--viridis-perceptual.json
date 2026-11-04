@@ -1,0 +1,320 @@
+{
+  "_meta": {
+    "family": "06-flux-processus",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "waterfall-cumulative-line",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "rgba(38, 130, 142, 0.75)",
+              "rgba(34, 168, 132, 0.75)",
+              "rgba(34, 168, 132, 0.75)",
+              "rgba(68, 1, 84, 0.75)",
+              "rgba(68, 1, 84, 0.75)",
+              "rgba(68, 1, 84, 0.75)",
+              "rgba(38, 130, 142, 0.75)"
+            ],
+            "borderColor": [
+              "#26828E",
+              "#22A884",
+              "#22A884",
+              "#440154",
+              "#440154",
+              "#440154",
+              "#26828E"
+            ],
+            "borderRadius": 4,
+            "borderWidth": 1.5,
+            "data": [
+              [
+                0,
+                500
+              ],
+              [
+                500,
+                680
+              ],
+              [
+                680,
+                755
+              ],
+              [
+                710,
+                755
+              ],
+              [
+                650,
+                710
+              ],
+              [
+                540,
+                650
+              ],
+              [
+                0,
+                540
+              ]
+            ],
+            "datalabels": {
+              "display": true,
+              "formatter": "[Function:formatter]"
+            },
+            "label": "Variation Étape",
+            "order": 2,
+            "type": "bar"
+          },
+          {
+            "backgroundColor": "#3E4A89",
+            "borderColor": "#3E4A89",
+            "borderWidth": 2.5,
+            "data": [
+              500,
+              680,
+              755,
+              710,
+              650,
+              540,
+              540
+            ],
+            "datalabels": {
+              "display": false
+            },
+            "label": "Trajectoire Cumulée",
+            "order": 1,
+            "pointHoverRadius": 6,
+            "pointRadius": 4,
+            "tension": 0.15,
+            "type": "line"
+          }
+        ],
+        "labels": [
+          "CA Brut Initial",
+          "Nouveaux Contrats",
+          "Expansion Comptes",
+          "Remises Commerciales",
+          "Désabonnements (Churn)",
+          "Frais d'Infrastructure",
+          "EBITDA Net"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#94A3B8",
+          "bg": "#FFFFFF",
+          "border": "#E2E8F0",
+          "borderStrong": "#CBD5E1",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#440154",
+            "pos": "#22A884"
+          },
+          "emphasis": {
+            "anomaly": "#FDE725",
+            "benchmark": "#3E4A89",
+            "context": "#CBD5E1",
+            "focal": "#26828E",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
+          "gridColor": "rgba(15, 23, 42, 0.06)",
+          "id": "02-viridis-perceptual",
+          "isDark": false,
+          "label": "Viridis Perceptual",
+          "name": "viridis-perceptual",
+          "palette": [
+            "#3E4A89",
+            "#26828E",
+            "#35B779",
+            "#B4DE2C",
+            "#440154",
+            "#FDE725",
+            "#31688E",
+            "#1F9E89"
+          ],
+          "semantic": {
+            "info": "#2A788E",
+            "negative": "#440154",
+            "neutral": "#414487",
+            "positive": "#22A884",
+            "warning": "#FDE725"
+          },
+          "sequential": [
+            "#440154",
+            "#482777",
+            "#3E4A89",
+            "#31688E",
+            "#26828E",
+            "#1F9E89",
+            "#35B779",
+            "#6DCD59",
+            "#B4DE2C",
+            "#FDE725"
+          ],
+          "status": {
+            "danger": "#440154",
+            "info": "#2A788E",
+            "neutral": "#8E9AAF",
+            "success": "#22A884",
+            "warning": "#D8B400"
+          },
+          "surface": "#F8FAFC",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#64748B",
+          "textPrimary": "#0F172A",
+          "textSecondary": "#334155",
+          "tooltipBg": "rgba(15, 23, 42, 0.92)",
+          "tooltipText": "#F8FAFC",
+          "zeroLine": "#475569"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#0F172A",
+            "display": true,
+            "font": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "color": "#0F172A",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12
+              }
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#475569",
+              "width": 1
+            },
+            "grid": {
+              "display": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "maxRotation": 25
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grace": "12%",
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)"
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            },
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Solde Net (k€)"
+            }
+          }
+        },
+        "showDataLabels": true
+      },
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

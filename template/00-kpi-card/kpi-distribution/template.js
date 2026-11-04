@@ -22,6 +22,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
@@ -43,6 +46,31 @@
     footnote: 'Canaux d\'acquisition qualifiés • GA4 Analytics'
   };
 
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    const arrayReason = checkRequiredArrays(d, ['segments']);
+    if (arrayReason) return arrayReason;
+    if (d.segments.length === 0) return 'formattedData.segments attendu non vide';
+    for (let i = 0; i < d.segments.length; i++) {
+      const seg = d.segments[i];
+      if (!seg || typeof seg !== 'object') return `formattedData.segments[${i}] attendu en objet { label, pct, value? }`;
+      if (typeof seg.label !== 'string' || !seg.label) return `formattedData.segments[${i}].label attendu en texte non vide, reçu ${kindOf(seg.label)}`;
+      if (!isNum(seg.pct) || seg.pct < 0) return `formattedData.segments[${i}].pct attendu en nombre positif, reçu ${kindOf(seg.pct)}`;
+    }
+    return null;
+  }
+
   /**
    * Crée et initialise un micro-stacked bar Chart.js dans le canvas.
    */
@@ -60,8 +88,10 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const segments = data.segments || DEFAULT_DATA.segments;
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const segments = data.segments;
 
     const datasets = segments.map((seg, idx) => ({
       label: seg.label,
@@ -89,7 +119,10 @@
           tooltip: {
             enabled: true,
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label} : ${ctx.parsed.x}% (${(segments[ctx.datasetIndex]?.value || 0).toLocaleString('fr-FR')})`
+              label: (ctx) => {
+                const segValue = segments[ctx.datasetIndex] && segments[ctx.datasetIndex].value;
+                return `${ctx.dataset.label} : ${ctx.parsed.x}%${isNum(segValue) ? ` (${segValue.toLocaleString('fr-FR')})` : ''}`;
+              }
             }
           }
         },
@@ -121,10 +154,13 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const segments = data.segments || DEFAULT_DATA.segments;
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const segments = data.segments;
     const isDark = Boolean(tokens.isDark);
 
+    const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -134,11 +170,10 @@
     // Construction de la barre segmentée HTML pure (ultra-rapide, zéro-latence)
     const barSegmentsHtml = segments.map((seg, idx) => {
       const color = getColor(tokens, idx);
-      return `<div style="
+      return `<div title="${escapeHtml(seg.label)} (${seg.pct}%)" style="
         width: ${seg.pct}%;
         height: 100%;
         background-color: ${color};
-        title: ${seg.label} (${seg.pct}%);
       "></div>`;
     }).join('');
 
@@ -148,7 +183,7 @@
       return `
         <div style="display: flex; align-items: center; gap: 6px;">
           <span style="width: 8px; height: 8px; border-radius: 2px; background-color: ${color}; flex-shrink: 0;"></span>
-          <span style="font-size: 0.725rem; color: ${tokens.textSecondary}; font-weight: 500;">${seg.label}:</span>
+          <span style="font-size: 0.725rem; color: ${tokens.textSecondary}; font-weight: 500;">${escapeHtml(seg.label)}:</span>
           <span style="font-size: 0.725rem; font-weight: 700; color: ${tokens.textPrimary}; font-variant-numeric: tabular-nums;">${seg.pct}%</span>
         </div>
       `;
@@ -177,8 +212,8 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
-          <span style="
+          ">${escapeHtml(data.title)}</span>
+          ${hasDelta ? `<span style="
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -193,7 +228,7 @@
           ">
             <span>${isPositive ? '▲' : '▼'}</span>
             <span>${isPositive ? '+' : ''}${data.delta}%</span>
-          </span>
+          </span>` : ''}
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
@@ -205,11 +240,11 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="font-size: 0.75rem; color: ${tokens.textMuted};">
-            ${data.deltaLabel}
-          </div>
+          ${data.deltaLabel ? `<div style="font-size: 0.75rem; color: ${tokens.textMuted};">
+            ${escapeHtml(data.deltaLabel)}
+          </div>` : ''}
         </div>
 
         <!-- Barre Segmentée 100% -->
@@ -242,7 +277,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;

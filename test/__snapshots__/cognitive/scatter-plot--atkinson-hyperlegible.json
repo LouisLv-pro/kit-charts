@@ -1,0 +1,267 @@
+{
+  "_meta": {
+    "family": "04-correlation-relation",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "scatter-plot",
+    "themeName": "atkinson-hyperlegible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#005AB5",
+            "borderColor": "#005AB5",
+            "borderWidth": 1,
+            "data": [
+              {
+                "x": 4.2,
+                "y": 5.1
+              },
+              {
+                "x": 5,
+                "y": 7.4
+              },
+              {
+                "x": 6.1,
+                "y": 8.8
+              },
+              {
+                "x": 7.3,
+                "y": 11.2
+              },
+              {
+                "x": 8,
+                "y": 10.5
+              },
+              {
+                "x": 9.2,
+                "y": 14.8
+              },
+              {
+                "x": 10.5,
+                "y": 16
+              },
+              {
+                "x": 11.8,
+                "y": 17.5
+              },
+              {
+                "x": 12.4,
+                "y": 21
+              },
+              {
+                "x": 13.5,
+                "y": 22.4
+              },
+              {
+                "x": 14.8,
+                "y": 25.1
+              },
+              {
+                "x": 16,
+                "y": 28.5
+              },
+              {
+                "x": 17.2,
+                "y": 29
+              },
+              {
+                "x": 18.5,
+                "y": 33.2
+              },
+              {
+                "x": 19.8,
+                "y": 35.8
+              },
+              {
+                "x": 21,
+                "y": 39
+              }
+            ],
+            "errorBarsData": [
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null
+            ],
+            "label": "Entreprises Tech (N=16)",
+            "pointHitRadius": 14,
+            "pointHoverRadius": 7,
+            "pointRadius": 5,
+            "pointStyle": "circle",
+            "type": "scatter"
+          },
+          {
+            "borderColor": "#27272A",
+            "borderDash": [
+              6,
+              6
+            ],
+            "borderWidth": 2,
+            "data": [
+              {
+                "x": 4.2,
+                "y": 4.508704647532175
+              },
+              {
+                "x": 21,
+                "y": 37.71011128877613
+              }
+            ],
+            "fill": false,
+            "label": "Tendance (R² = 0.99)",
+            "pointHoverRadius": 0,
+            "pointRadius": 0,
+            "tension": 0,
+            "type": "line"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "xy",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "point": {
+            "hitRadius": 14,
+            "hoverBorderWidth": 2,
+            "hoverRadius": 7,
+            "radius": 4
+          }
+        },
+        "hitRadius": 14,
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "hoverRadius": 7,
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "nearest",
+        "plugins": {
+          "legend": {
+            "align": "start",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#000000",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(0, 0, 0, 0.95)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#71717A",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(0, 0, 0, 0.12)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "color": "#18181B",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            },
+            "type": "linear"
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(0, 0, 0, 0.12)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "color": "#18181B",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            },
+            "type": "linear"
+          }
+        }
+      },
+      "plugins": [],
+      "type": "scatter"
+    },
+    "kind": "chart-config"
+  }
+}

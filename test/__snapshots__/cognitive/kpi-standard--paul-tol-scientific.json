@@ -1,0 +1,55 @@
+{
+  "_meta": {
+    "family": "00-kpi-card",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "kpi-standard",
+    "themeName": "paul-tol-scientific"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "#228833",
+              "rgba(15, 23, 42, 0.06)"
+            ],
+            "borderWidth": 0,
+            "circumference": 260,
+            "cutout": "80%",
+            "data": [
+              100,
+              0
+            ],
+            "rotation": 230
+          }
+        ],
+        "labels": [
+          "Réalisé",
+          "Reste"
+        ]
+      },
+      "options": {
+        "animation": {
+          "duration": 400,
+          "easing": "easeOutQuart"
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "enabled": true
+          }
+        },
+        "responsive": true
+      },
+      "type": "doughnut"
+    },
+    "kind": "chart-config"
+  }
+}

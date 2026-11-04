@@ -1,0 +1,94 @@
+{
+  "_meta": {
+    "family": "00-kpi-card",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "kpi-distribution",
+    "themeName": "tufte-minimalist-executive"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#1D4ED8",
+            "barThickness": 16,
+            "borderRadius": {
+              "bottomLeft": 4,
+              "topLeft": 4
+            },
+            "data": [
+              45
+            ],
+            "label": "Organique"
+          },
+          {
+            "backgroundColor": "#525252",
+            "barThickness": 16,
+            "borderRadius": 0,
+            "data": [
+              25
+            ],
+            "label": "Direct"
+          },
+          {
+            "backgroundColor": "#737373",
+            "barThickness": 16,
+            "borderRadius": 0,
+            "data": [
+              20
+            ],
+            "label": "Payant (Ads)"
+          },
+          {
+            "backgroundColor": "#A3A3A3",
+            "barThickness": 16,
+            "borderRadius": {
+              "bottomRight": 4,
+              "topRight": 4
+            },
+            "data": [
+              10
+            ],
+            "label": "Referral"
+          }
+        ],
+        "labels": [
+          "Répartition"
+        ]
+      },
+      "options": {
+        "animation": {
+          "duration": 400,
+          "easing": "easeOutQuart"
+        },
+        "indexAxis": "y",
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "enabled": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "display": false,
+            "max": 100,
+            "stacked": true
+          },
+          "y": {
+            "display": false,
+            "stacked": true
+          }
+        }
+      },
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

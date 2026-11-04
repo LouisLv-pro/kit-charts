@@ -1,0 +1,223 @@
+{
+  "_meta": {
+    "family": "02-composition-part-to-whole",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "stacked-bar-100",
+    "themeName": "paul-tol-scientific"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#4477AA",
+            "barPercentage": 0.9,
+            "borderColor": "#4477AA",
+            "borderRadius": 0,
+            "borderSkipped": false,
+            "borderWidth": 0,
+            "categoryPercentage": 0.8,
+            "data": [
+              75,
+              60,
+              82,
+              90
+            ],
+            "label": "Succès"
+          },
+          {
+            "backgroundColor": "#EE6677",
+            "barPercentage": 0.9,
+            "borderColor": "#EE6677",
+            "borderRadius": 0,
+            "borderSkipped": false,
+            "borderWidth": 0,
+            "categoryPercentage": 0.8,
+            "data": [
+              15,
+              25,
+              10,
+              5
+            ],
+            "label": "En cours"
+          },
+          {
+            "backgroundColor": "#228833",
+            "barPercentage": 0.9,
+            "borderColor": "#228833",
+            "borderRadius": 4,
+            "borderSkipped": false,
+            "borderWidth": 0,
+            "categoryPercentage": 0.8,
+            "data": [
+              10,
+              15,
+              8,
+              5
+            ],
+            "label": "Échec"
+          }
+        ],
+        "labels": [
+          "Équipe A",
+          "Équipe B",
+          "Équipe C",
+          "Équipe D"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#1E293B",
+            "display": true,
+            "font": {
+              "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#1E293B",
+              "font": {
+                "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top",
+            "reverse": true
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "intersect": false,
+            "mode": "index",
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "stacked": true,
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "max": 100,
+            "stacked": true,
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#334155",
+              "font": {
+                "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

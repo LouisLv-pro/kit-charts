@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
@@ -86,7 +87,7 @@
       const x = idx * (barWidth + gap);
       const y = height - h;
       const color = isLast ? focalColor : baseColor;
-      return `<rect x="${x}" y="${y.toFixed(1)}" width="${barWidth}" height="${h.toFixed(1)}" rx="${isTufte ? 0 : 1.5}" fill="${color}" opacity="${isLast ? '1' : '0.65'}"><title>Mois ${idx + 1}: ${val}</title></rect>`;
+      return `<rect x="${x}" y="${y.toFixed(1)}" width="${barWidth}" height="${h.toFixed(1)}" rx="${isTufte ? 0 : 1.5}" fill="${color}" opacity="${isLast ? '1' : '0.65'}"><title>Mois ${idx + 1}: ${escapeHtml(val)}</title></rect>`;
     });
 
     return `
@@ -215,9 +216,9 @@
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
-          <th data-key="${col.key}" style="
+          <th data-key="${escapeHtml(col.key)}" style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -227,7 +228,7 @@
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${col.label}${sortIcon}
+            ${escapeHtml(col.label)}${sortIcon}
           </th>
         `;
       });
@@ -266,7 +267,7 @@
             background: #FFEDD5; color: #9A3412; font-weight: 700; font-size: 0.75rem;
           ">3</span>`;
         } else {
-          rankBadge = `<span style="font-family: ${fontMono}; font-weight: 600; color: ${textMuted};">${row.rank}</span>`;
+          rankBadge = `<span style="font-family: ${fontMono}; font-weight: 600; color: ${textMuted};">${escapeHtml(row.rank)}</span>`;
         }
 
         // Évolution de position
@@ -291,8 +292,8 @@
               ${trendHtml}
             </td>
             <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
-              <div style="font-weight: 600; color: ${textPrimary};">${row.team}</div>
-              ${row.leader ? `<div style="font-size: 0.7rem; color: ${textMuted};">Lead: ${row.leader}</div>` : ''}
+              <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.team)}</div>
+              ${row.leader ? `<div style="font-size: 0.7rem; color: ${textMuted};">Lead: ${escapeHtml(row.leader)}</div>` : ''}
             </td>
             <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
               <span style="
@@ -303,7 +304,7 @@
                 font-weight: 500;
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
-              ">${row.region}</span>
+              ">${escapeHtml(row.region)}</span>
             </td>
             <td style="padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;">
               <div style="display: flex; align-items: center; justify-content: flex-end;">
@@ -314,7 +315,7 @@
               </div>
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary}; vertical-align: middle;">
-              ${row.deals}
+              ${escapeHtml(row.deals)}
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${row.conversion.toFixed(1)}%

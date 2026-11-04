@@ -1,0 +1,317 @@
+{
+  "_meta": {
+    "family": "01-comparaison",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "slope-chart",
+    "themeName": "paul-tol-scientific"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#4477AA",
+            "borderColor": "#4477AA",
+            "borderDash": [],
+            "borderWidth": 2.5,
+            "data": [
+              21.5,
+              38.2
+            ],
+            "fill": false,
+            "label": "Énergie Renouvelable",
+            "pointBackgroundColor": "#4477AA",
+            "pointBorderColor": "#FFFFFF",
+            "pointBorderWidth": 2,
+            "pointHitRadius": 12,
+            "pointHoverRadius": 7,
+            "pointRadius": 5,
+            "pointStyle": "circle",
+            "tension": 0
+          },
+          {
+            "backgroundColor": "#EE6677",
+            "borderColor": "#EE6677",
+            "borderDash": [],
+            "borderWidth": 2.5,
+            "data": [
+              40.1,
+              35.8
+            ],
+            "fill": false,
+            "label": "Nucléaire",
+            "pointBackgroundColor": "#EE6677",
+            "pointBorderColor": "#FFFFFF",
+            "pointBorderWidth": 2,
+            "pointHitRadius": 12,
+            "pointHoverRadius": 7,
+            "pointRadius": 5,
+            "pointStyle": "circle",
+            "tension": 0
+          },
+          {
+            "backgroundColor": "#228833",
+            "borderColor": "#228833",
+            "borderDash": [],
+            "borderWidth": 2.5,
+            "data": [
+              25.4,
+              18.2
+            ],
+            "fill": false,
+            "label": "Gaz Naturel",
+            "pointBackgroundColor": "#228833",
+            "pointBorderColor": "#FFFFFF",
+            "pointBorderWidth": 2,
+            "pointHitRadius": 12,
+            "pointHoverRadius": 7,
+            "pointRadius": 5,
+            "pointStyle": "circle",
+            "tension": 0
+          },
+          {
+            "backgroundColor": "#CCBB44",
+            "borderColor": "#CCBB44",
+            "borderDash": [],
+            "borderWidth": 2.5,
+            "data": [
+              13,
+              7.8
+            ],
+            "fill": false,
+            "label": "Charbon",
+            "pointBackgroundColor": "#CCBB44",
+            "pointBorderColor": "#FFFFFF",
+            "pointBorderWidth": 2,
+            "pointHitRadius": 12,
+            "pointHoverRadius": 7,
+            "pointRadius": 5,
+            "pointStyle": "circle",
+            "tension": 0
+          }
+        ],
+        "labels": [
+          "2020",
+          "2025"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#94A3B8",
+          "bg": "#FFFFFF",
+          "border": "#E2E8F0",
+          "borderStrong": "#CBD5E1",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#EE6677",
+            "pos": "#4477AA"
+          },
+          "emphasis": {
+            "anomaly": "#EE6677",
+            "benchmark": "#475569",
+            "context": "#BBBBBB",
+            "focal": "#4477AA",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap",
+          "gridColor": "rgba(30, 41, 59, 0.06)",
+          "id": "03-paul-tol-scientific",
+          "isDark": false,
+          "label": "Paul Tol Scientific",
+          "name": "paul-tol-scientific",
+          "palette": [
+            "#4477AA",
+            "#EE6677",
+            "#228833",
+            "#CCBB44",
+            "#66CCEE",
+            "#AA3377",
+            "#BBBBBB",
+            "#555555"
+          ],
+          "semantic": {
+            "info": "#4477AA",
+            "negative": "#EE6677",
+            "neutral": "#BBBBBB",
+            "positive": "#228833",
+            "warning": "#CCBB44"
+          },
+          "sequential": [
+            "#FEFBE9",
+            "#FCF7D5",
+            "#F5EE9E",
+            "#E5D965",
+            "#C9B934",
+            "#A8941C",
+            "#846F11",
+            "#5C4A08",
+            "#332402"
+          ],
+          "status": {
+            "danger": "#EE6677",
+            "info": "#66CCEE",
+            "neutral": "#BBBBBB",
+            "success": "#228833",
+            "warning": "#CCBB44"
+          },
+          "surface": "#F8FAFC",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#64748B",
+          "textPrimary": "#1E293B",
+          "textSecondary": "#334155",
+          "tooltipBg": "rgba(30, 41, 59, 0.92)",
+          "tooltipText": "#FFFFFF",
+          "zeroLine": "#475569"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 48,
+            "right": 54,
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#1E293B",
+            "display": true,
+            "font": {
+              "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#1E293B",
+              "font": {
+                "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#1E293B",
+              "font": {
+                "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 13,
+                "weight": "600"
+              },
+              "padding": 8
+            }
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#334155",
+              "font": {
+                "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        },
+        "showDataLabels": true
+      },
+      "type": "line"
+    },
+    "kind": "chart-config"
+  }
+}

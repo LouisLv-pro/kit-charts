@@ -38,6 +38,104 @@ function getThemeTokensModule() {
   return themeTokensModule;
 }
 
+const schemaCache = new Map();
+/**
+ * Charge le schema.json d'un template du registre (null si absent ou illisible).
+ */
+function getTemplateSchema(templateMeta) {
+  const rel = templateMeta && templateMeta.paths && templateMeta.paths.schema;
+  if (!rel) return null;
+  if (!schemaCache.has(rel)) {
+    let schema = null;
+    try {
+      schema = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, rel), 'utf8'));
+    } catch (e) {
+      schema = null;
+    }
+    schemaCache.set(rel, schema);
+  }
+  return schemaCache.get(rel);
+}
+
+// ============================================================================
+// 0. VALIDATION DE CONTRAT (sous-ensemble JSON Schema, zéro dépendance)
+// ============================================================================
+
+function jsonTypeOf(value) {
+  if (value === null) return 'null';
+  if (Array.isArray(value)) return 'array';
+  if (typeof value === 'number') return Number.isInteger(value) ? 'integer' : 'number';
+  return typeof value;
+}
+
+/**
+ * Valide une valeur contre un schéma JSON réduit aux mots-clés utilisés par les schema.json du kit :
+ * type, required, properties, enum, items, minimum, maximum, minItems, maxItems.
+ * Les mots-clés d'un type (items, minItems...) ne s'appliquent qu'aux valeurs de ce type,
+ * comme en JSON Schema, ce qui permet des unions du genre ["array", "number"].
+ * @param {Object} schema - Fragment de schéma
+ * @param {*} value - Valeur à valider
+ * @param {string} [at='formattedData'] - Chemin courant, pour le message
+ * @returns {Array<{path: string, message: string}>} Violations (vide si conforme)
+ */
+function validateAgainstSchema(schema, value, at = 'formattedData') {
+  const violations = [];
+  const walk = (s, v, p) => {
+    if (!s || typeof s !== 'object') return;
+
+    if (s.type !== undefined) {
+      const allowed = Array.isArray(s.type) ? s.type : [s.type];
+      const actual = jsonTypeOf(v);
+      const ok = allowed.some(t => t === actual || (t === 'number' && actual === 'integer'));
+      if (!ok) {
+        violations.push({ path: p, message: `type ${actual} reçu, attendu ${allowed.join(' | ')}` });
+        return;
+      }
+    }
+
+    if (Array.isArray(s.enum) && !s.enum.some(e => e === v)) {
+      violations.push({ path: p, message: `valeur ${JSON.stringify(v)} hors de [${s.enum.map(e => JSON.stringify(e)).join(', ')}]` });
+    }
+
+    if (typeof v === 'number') {
+      if (typeof s.minimum === 'number' && v < s.minimum) violations.push({ path: p, message: `${v} < minimum ${s.minimum}` });
+      if (typeof s.maximum === 'number' && v > s.maximum) violations.push({ path: p, message: `${v} > maximum ${s.maximum}` });
+    }
+
+    if (Array.isArray(v)) {
+      if (typeof s.minItems === 'number' && v.length < s.minItems) violations.push({ path: p, message: `${v.length} élément(s) < minItems ${s.minItems}` });
+      if (typeof s.maxItems === 'number' && v.length > s.maxItems) violations.push({ path: p, message: `${v.length} élément(s) > maxItems ${s.maxItems}` });
+      if (s.items && typeof s.items === 'object') {
+        v.forEach((item, i) => walk(s.items, item, `${p}[${i}]`));
+      }
+    }
+
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      (Array.isArray(s.required) ? s.required : []).forEach(key => {
+        if (v[key] === undefined) violations.push({ path: `${p}.${key}`, message: 'champ requis absent' });
+      });
+      if (s.properties && typeof s.properties === 'object') {
+        Object.keys(s.properties).forEach(key => {
+          if (v[key] !== undefined) walk(s.properties[key], v[key], `${p}.${key}`);
+        });
+      }
+    }
+  };
+  walk(schema, value, at);
+  return violations;
+}
+
+// Champs lus par compile-chart.js et validate-chart.js à la racine de la spec et dans layout.
+const KNOWN_SPEC_FIELDS = new Set([
+  'targetTemplateId', 'templateId', 'template', 'layout', 'colorStrategy', 'cognitiveFeatures',
+  'formattedData', 'data', 'options', 'scales', 'theme', 'title', 'subtitle', 'height', 'footnote',
+  'metricPolarity', 'beginAtZero', 'logScale', 'delta', 'deltaColor', '$schema', 'description'
+]);
+const KNOWN_LAYOUT_FIELDS = new Set(['title', 'subtitle', 'height', 'footnote', 'containerId', 'canvasId']);
+
+// Au-delà, les violations restantes sont résumées en une seule entrée.
+const MAX_SCHEMA_VIOLATIONS_REPORTED = 10;
+
 // ============================================================================
 // 1. UTILITAIRES DE CALCUL PERCEPTIF & WCAG 2.2
 // ============================================================================
@@ -178,10 +276,107 @@ function validateChartSpec(spec, options = {}) {
         ruleId: 'UNKNOWN_TEMPLATE_ID',
         category: 'Registry',
         severity: 'WARNING',
-        message: `Template ID "${templateId}" non trouvé dans le registre officiel des 89 templates.`,
+        message: `Template ID "${templateId}" non trouvé dans le registre officiel des ${registry.templates.length} templates.`,
         suggestion: `Vérifier l'identifiant exact dans .agents/skills/kit-charts/registry.json.`
       });
     }
+  }
+
+  // --------------------------------------------------------------------------
+  // RÈGLE 0.1 : Contrat de données (formattedData contre le schema.json du template)
+  // Sans formattedData, le template rend son DEFAULT_DATA : rien à valider.
+  // --------------------------------------------------------------------------
+  const providedData = spec.formattedData !== undefined ? spec.formattedData : spec.data;
+  if (templateMeta && options.checkSchema !== false && providedData !== undefined && providedData !== null) {
+    const schema = getTemplateSchema(templateMeta);
+    const dataSchema = schema && schema.properties && schema.properties.formattedData;
+    if (dataSchema) {
+      const violations = validateAgainstSchema(dataSchema, providedData);
+      violations.slice(0, MAX_SCHEMA_VIOLATIONS_REPORTED).forEach(v => {
+        errors.push({
+          ruleId: 'SCHEMA_FORMATTED_DATA',
+          category: 'Contrat de données',
+          severity: 'ERROR',
+          message: `${v.path} : ${v.message} (template '${templateId}').`,
+          suggestion: `Aligner formattedData sur la forme exigée : kit-charts describe ${templateId} (ou ${templateMeta.paths.schema}). Un template ne rend correctement que cette forme.`
+        });
+      });
+      if (violations.length > MAX_SCHEMA_VIOLATIONS_REPORTED) {
+        errors.push({
+          ruleId: 'SCHEMA_FORMATTED_DATA',
+          category: 'Contrat de données',
+          severity: 'ERROR',
+          message: `${violations.length - MAX_SCHEMA_VIOLATIONS_REPORTED} autre(s) violation(s) du schéma non détaillée(s).`,
+          suggestion: `Corriger les premières violations puis relancer la validation.`
+        });
+      }
+    }
+  }
+
+  // --------------------------------------------------------------------------
+  // RÈGLE 0.2 : Champs inconnus (fautes de frappe, champ au mauvais niveau)
+  // Racine de la spec, layout, et racine de formattedData quand le schéma en liste les champs.
+  // --------------------------------------------------------------------------
+  const unknownFields = [];
+  if (options.checkSchema !== false) {
+    Object.keys(spec).filter(k => !KNOWN_SPEC_FIELDS.has(k)).forEach(k => unknownFields.push(k));
+    if (spec.layout && typeof spec.layout === 'object') {
+      Object.keys(spec.layout).filter(k => !KNOWN_LAYOUT_FIELDS.has(k)).forEach(k => unknownFields.push(`layout.${k}`));
+    }
+    const rootSchema = templateMeta ? getTemplateSchema(templateMeta) : null;
+    const fdProps = rootSchema && rootSchema.properties && rootSchema.properties.formattedData && rootSchema.properties.formattedData.properties;
+    if (fdProps && providedData && typeof providedData === 'object' && !Array.isArray(providedData)) {
+      Object.keys(providedData).filter(k => !(k in fdProps)).forEach(k => unknownFields.push(`formattedData.${k}`));
+    }
+  }
+  unknownFields.forEach(field => {
+    warnings.push({
+      ruleId: 'UNKNOWN_FIELD',
+      category: 'Contrat de données',
+      severity: 'WARNING',
+      message: `Champ inconnu '${field}' : ni le compilateur ni le template '${templateId || '?'}' ne le lisent.`,
+      suggestion: field === 'formattedData.subtitle'
+        ? `Déplacer vers layout.subtitle.`
+        : `Vérifier l'orthographe et le niveau du champ (spec-contract.md, schema.json du template).`
+    });
+  });
+
+  // --------------------------------------------------------------------------
+  // RÈGLE 0.3 : Une valeur par label (sauf templates à données non indexées par label)
+  // --------------------------------------------------------------------------
+  const perLabel = !(templateMeta && templateMeta.dataRequirements && templateMeta.dataRequirements.dataPerLabel === false);
+  if (perLabel && providedData && Array.isArray(providedData.labels) && Array.isArray(providedData.datasets)) {
+    providedData.datasets.forEach((ds, i) => {
+      if (ds && Array.isArray(ds.data) && ds.data.length !== providedData.labels.length) {
+        warnings.push({
+          ruleId: 'DATA_LENGTH_MISMATCH',
+          category: 'Contrat de données',
+          severity: 'WARNING',
+          message: `datasets[${i}].data compte ${ds.data.length} valeur(s) pour ${providedData.labels.length} label(s).`,
+          suggestion: `Fournir exactement une valeur par label (null pour une valeur manquante) : sinon des barres ou des points sont décalés ou perdus.`
+        });
+      }
+    });
+  }
+
+  // --------------------------------------------------------------------------
+  // RÈGLE 0.4 : waterfall-chart, une étape intermédiaire en nombre seul est dessinée comme un total
+  // (barre depuis 0) : presque toujours un delta signé qui aurait dû être une paire [début, fin].
+  // --------------------------------------------------------------------------
+  if (templateId === 'waterfall-chart' && providedData && Array.isArray(providedData.datasets)) {
+    providedData.datasets.forEach((ds, i) => {
+      const pts = ds && Array.isArray(ds.data) ? ds.data : [];
+      const plain = pts.map((v, idx) => ({ v, idx })).filter(p => p.idx > 0 && p.idx < pts.length - 1 && typeof p.v === 'number');
+      if (plain.length) {
+        warnings.push({
+          ruleId: 'WATERFALL_STEP_AS_TOTAL',
+          category: 'Contrat de données',
+          severity: 'WARNING',
+          message: `datasets[${i}].data : ${plain.length} étape(s) intermédiaire(s) en nombre seul (index ${plain.map(p => p.idx).join(', ')}), dessinées comme des totaux depuis 0.`,
+          suggestion: `Écrire chaque variation en paire chaînée [cumul avant, cumul après] ; garder le nombre seul pour un sous-total voulu.`
+        });
+      }
+    });
   }
 
   // Extraction des dimensions de données
@@ -260,7 +455,7 @@ function validateChartSpec(spec, options = {}) {
       category: 'Cognitive Load',
       severity: 'ERROR',
       message: `Spaghetti chart détecté : ${seriesCount} séries superposées (seuil limite : 5).`,
-      suggestion: `Utiliser le mode Focus + Contexte (1 série active saturée + séries secondaires atténuées) ou basculer sur 'faceted-line-chart' (Small Multiples).`
+      suggestion: `Utiliser le mode Focus + Contexte (1 série active saturée + séries secondaires atténuées) ou réduire à 5 séries au plus (top 4 + 'Autres', ou plusieurs line-chart en petits multiples).`
     });
   }
 
@@ -443,8 +638,10 @@ function validateChartFile(filePath, options = {}) {
   }
 
   // Cas 2 : Fichier HTML ou JS
-  const extractedSpec = extractSpecFromCode(content, ext, absPath);
-  const report = validateChartSpec(extractedSpec, options);
+  // Le contrat de données n'est vérifié que si le JSON customData a été retrouvé tel quel :
+  // une extraction partielle (preview.html, code brut) produirait de fausses violations.
+  const { spec: extractedSpec, dataExtracted } = extractSpecFromCode(content, ext, absPath);
+  const report = validateChartSpec(extractedSpec, Object.assign({}, options, { checkSchema: dataExtracted }));
   report.targetFile = absPath;
 
   // Vérification de la présence de prefers-reduced-motion dans le code HTML/JS
@@ -500,16 +697,17 @@ function extractSpecFromCode(content, ext, absPath) {
     userScript = content.substring(templateLogicIdx);
   }
 
-  // Détection de JSON customData
+  // Détection de JSON customData (sérialisé par compile-chart.js) : repris en entier comme formattedData
+  let dataExtracted = false;
   const customDataMatch = userScript.match(/const\s+customData\s*=\s*(\{[\s\S]*?\});/);
   if (customDataMatch) {
     try {
       const parsedData = JSON.parse(customDataMatch[1]);
-      if (parsedData.labels) spec.formattedData.labels = parsedData.labels;
-      if (parsedData.datasets) spec.formattedData.datasets = parsedData.datasets;
-      if (parsedData.value !== undefined) spec.formattedData.value = parsedData.value;
-      if (parsedData.delta !== undefined) spec.formattedData.delta = parsedData.delta;
-      if (parsedData.deltaColor) spec.deltaColor = parsedData.deltaColor;
+      if (parsedData && typeof parsedData === 'object' && !Array.isArray(parsedData)) {
+        spec.formattedData = parsedData;
+        dataExtracted = true;
+        if (parsedData.deltaColor) spec.deltaColor = parsedData.deltaColor;
+      }
     } catch (e) {}
   }
 
@@ -533,7 +731,7 @@ function extractSpecFromCode(content, ext, absPath) {
   }
 
   // Fallback si pas de JSON sérialisé (code brut preview.html ou JS)
-  if (spec.formattedData.labels.length === 0) {
+  if (!dataExtracted) {
     const labelsMatch = userScript.match(/labels\s*:\s*\[([^\]]+)\]/);
     if (labelsMatch) {
       const rawLabels = labelsMatch[1].split(',').map(s => s.trim().replace(/['"]/g, ''));
@@ -563,7 +761,7 @@ function extractSpecFromCode(content, ext, absPath) {
     spec.cognitiveFeatures.showDataLabels = true;
   }
 
-  return spec;
+  return { spec, dataExtracted };
 }
 
 // ============================================================================
@@ -667,6 +865,7 @@ Exemples:
 module.exports = {
   validateChartSpec,
   validateChartFile,
+  validateAgainstSchema,
   getContrastRatio,
   getRelativeLuminance,
   parseColor,

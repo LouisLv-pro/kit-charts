@@ -1,0 +1,94 @@
+{
+  "_meta": {
+    "family": "00-kpi-card",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "kpi-distribution",
+    "themeName": "paul-tol-scientific"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#4477AA",
+            "barThickness": 16,
+            "borderRadius": {
+              "bottomLeft": 4,
+              "topLeft": 4
+            },
+            "data": [
+              45
+            ],
+            "label": "Organique"
+          },
+          {
+            "backgroundColor": "#EE6677",
+            "barThickness": 16,
+            "borderRadius": 0,
+            "data": [
+              25
+            ],
+            "label": "Direct"
+          },
+          {
+            "backgroundColor": "#228833",
+            "barThickness": 16,
+            "borderRadius": 0,
+            "data": [
+              20
+            ],
+            "label": "Payant (Ads)"
+          },
+          {
+            "backgroundColor": "#CCBB44",
+            "barThickness": 16,
+            "borderRadius": {
+              "bottomRight": 4,
+              "topRight": 4
+            },
+            "data": [
+              10
+            ],
+            "label": "Referral"
+          }
+        ],
+        "labels": [
+          "Répartition"
+        ]
+      },
+      "options": {
+        "animation": {
+          "duration": 400,
+          "easing": "easeOutQuart"
+        },
+        "indexAxis": "y",
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "enabled": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "display": false,
+            "max": 100,
+            "stacked": true
+          },
+          "y": {
+            "display": false,
+            "stacked": true
+          }
+        }
+      },
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "_meta": {
+    "family": "00-kpi-card",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "kpi-status-alert",
+    "themeName": "tufte-minimalist-executive"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "rgba(21, 128, 61, 0.25)",
+            "barThickness": 16,
+            "borderRadius": {
+              "bottomLeft": 4,
+              "topLeft": 4
+            },
+            "data": [
+              100
+            ],
+            "label": "Normal (<100ms)"
+          },
+          {
+            "backgroundColor": "rgba(184, 134, 11, 0.25)",
+            "barThickness": 16,
+            "data": [
+              50
+            ],
+            "label": "Attention (100-150ms)"
+          },
+          {
+            "backgroundColor": "rgba(185, 28, 28, 0.25)",
+            "barThickness": 16,
+            "borderRadius": {
+              "bottomRight": 4,
+              "topRight": 4
+            },
+            "data": [
+              50
+            ],
+            "label": "Critique (>150ms)"
+          }
+        ],
+        "labels": [
+          "Seuils"
+        ]
+      },
+      "options": {
+        "animation": {
+          "duration": 400,
+          "easing": "easeOutQuart"
+        },
+        "indexAxis": "y",
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "enabled": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "display": false,
+            "max": 200,
+            "stacked": true
+          },
+          "y": {
+            "display": false,
+            "stacked": true
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "thresholdCursorMarker"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

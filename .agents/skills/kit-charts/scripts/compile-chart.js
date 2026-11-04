@@ -23,50 +23,10 @@ if (fs.existsSync(WORLD_ATLAS_PATH)) {
   WORLD_ATLAS_CODE = fs.readFileSync(WORLD_ATLAS_PATH, 'utf8');
 }
 
-// ============================================================================
-// PLUGINS CHART.JS REQUIS PAR TEMPLATE (contrôleurs non-core)
-// Injectés après chart.umd.min.js pour éviter les canvas vides (erreur 'type not registered').
-// Carte : templateId -> liste d'URLs CDN des plugins à charger.
-// ============================================================================
-const CHART_PLUGINS = {
-  'treemap': [
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.0/dist/chartjs-chart-treemap.min.js'
-  ],
-  'matrix-heatmap': [
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js'
-  ],
-  'distribution-heatmap': [
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js'
-  ],
-  'waffle-chart': [
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js'
-  ],
-  'cartogram-tilegram': [
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@1.2.0/dist/chartjs-chart-matrix.min.js'
-  ],
-  'choropleth-map': [
-    'https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js',
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.4/build/index.umd.min.js'
-  ],
-  'bubble-map': [
-    'https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js',
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.4/build/index.umd.min.js'
-  ],
-  'sankey-diagram': [
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.0/dist/chartjs-chart-sankey.min.js'
-  ],
-  'alluvial-diagram': [
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.0/dist/chartjs-chart-sankey.min.js'
-  ],
-  'candlestick-ohlc': [
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js',
-    'https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js'
-  ],
-  'candlestick-volume': [
-    'https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.1/dist/chartjs-chart-financial.min.js',
-    'https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@3.0.0/dist/chartjs-adapter-date-fns.bundle.min.js'
-  ]
-};
+// Plugins Chart.js non-core requis par template, injectés après chart.umd.min.js
+// pour éviter les canvas vides (erreur 'type not registered').
+// Source unique des URL épinglées : vendor-pins.js (alignée sur les previews).
+const { CHART_PLUGINS, VENDOR } = require('./vendor-pins.js');
 
 /**
  * Charge le registre des templates
@@ -135,7 +95,7 @@ function compileChart(rawSpec, options = {}) {
   // Validation de la spec
   const validationReport = validateChartSpec(rawSpec, { strict: options.strict });
   if (options.strict && !validationReport.valid) {
-    throw new Error(`Échec de validation de la spec dataviz :\n${validationReport.errors.map(e => ` - [${e.ruleId}] ${e.message}`).join('\n')}`);
+    throw new Error(`Échec de validation de la spec dataviz :\n${validationReport.errors.map(e => ` - [${e.ruleId}] ${e.message}${e.suggestion ? `\n   Correctif : ${e.suggestion}` : ''}`).join('\n')}`);
   }
 
   // Chargement des fichiers du triplet
@@ -170,8 +130,12 @@ function compileChart(rawSpec, options = {}) {
     layout: layout
   });
 
-  // Remplacement des balises dans template.html
-  let domFragment = htmlTemplateContent
+  // Remplacement des balises dans template.html.
+  // Sans footnote, le pied de carte des graphiques et tableaux est retiré (pas de ligne vide).
+  const htmlSource = footnote
+    ? htmlTemplateContent
+    : htmlTemplateContent.replace(/[ \t]*<p class="kit-charts-footnote"[^>]*>\{\{FOOTNOTE\}\}<\/p>\r?\n?/g, '');
+  let domFragment = htmlSource
     .replace(/\{\{CONTAINER_ID\}\}/g, containerId)
     .replace(/\{\{CANVAS_ID\}\}/g, canvasId)
     .replace(/\{\{TITLE\}\}/g, escapeHtml(title))
@@ -196,60 +160,84 @@ function compileChart(rawSpec, options = {}) {
     --kc-warning: ${tokens.semantic?.warning || '#EF6C00'};
   `;
 
-  // Construction du script d'initialisation
-  const serializedData = chartData ? JSON.stringify(chartData, null, 2) : 'null';
-  const serializedOptions = JSON.stringify(chartOpts, null, 2);
-  const serializedTheme = JSON.stringify(themeName);
+  // Cartes KPI : renderCard() dessine la carte complète ; layout.footnote (et layout.title) y sont
+  // reportés quand formattedData ne les fournit pas. L'échappement HTML est fait par les templates
+  // eux-mêmes, au point d'injection (escapeHtml de theme-tokens.js).
+  const isCardTemplate = /function\s+renderCard\b/.test(jsTemplateContent);
+  let renderData = chartData;
+  if (isCardTemplate && renderData && typeof renderData === 'object') {
+    renderData = Object.assign({}, renderData);
+    if (renderData.title === undefined && layout.title) renderData.title = layout.title;
+    if (renderData.footnote === undefined && footnote) renderData.footnote = footnote;
+  }
+  // Les JSON sérialisés dans <script> ont leurs < en \u003c : aucune donnée ne peut fermer le bloc.
 
+  // Construction du script d'initialisation
+  const serializedData = renderData ? JSON.stringify(renderData, null, 2).replace(/</g, '\\u003c') : 'null';
+  const serializedOptions = JSON.stringify(chartOpts, null, 2).replace(/</g, '\\u003c');
+  const serializedTheme = JSON.stringify(themeName).replace(/</g, '\\u003c');
+
+  // Cible du rendu : les tableaux s'hydratent dans {{TABLE_ID}}, les cartes KPI dessinent
+  // leur propre carte dans le conteneur (renderCard, comme les previews), le reste sur le canvas.
+  const isTable = htmlTemplateContent.includes('{{TABLE_ID}}');
+  const tableId = generateId(`kc-table-${templateId}`);
+  const renderTargetId = isTable ? tableId : canvasId;
+  domFragment = domFragment.replace(/\{\{TABLE_ID\}\}/g, tableId);
+
+  // Statut de rendu posé sur le conteneur, lu par test/render-check.js et `kit-charts check` :
+  // data-kc-render = ok | invalid | error, data-kc-error = raison.
   const initScriptContent = `
 (function() {
+  const container = document.getElementById('${containerId}');
+  function setStatus(status, reason) {
+    if (!container) return;
+    container.setAttribute('data-kc-render', status);
+    if (reason) container.setAttribute('data-kc-error', String(reason).slice(0, 500));
+  }
   try {
     const customData = ${serializedData};
     const themeName = ${serializedTheme};
     const options = ${serializedOptions};
     const canvas = document.getElementById('${canvasId}');
-    const container = document.getElementById('${containerId}');
+    const mod = (typeof KitCharts !== 'undefined' && KitCharts['${templateId}']) || null;
 
     if (container && typeof KitChartsTheme !== 'undefined' && KitChartsTheme.applyThemeToContainer) {
       KitChartsTheme.applyThemeToContainer(container, themeName);
     }
 
-    // Gestion spécifique des KPI cards DOM (valeurs texte, unités, deltas)
-    if (customData && container) {
-      if (customData.value !== undefined) {
-        const valElem = container.querySelector('.kit-charts-kpi-value');
-        if (valElem) {
-          valElem.textContent = typeof customData.value === 'number' 
-            ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(customData.value)
-            : customData.value;
-        }
-      }
-      if (customData.unit) {
-        const unitElem = container.querySelector('.kit-charts-kpi-unit');
-        if (unitElem) unitElem.textContent = customData.unit;
-      }
-      if (customData.delta !== undefined) {
-        const badgeElem = container.querySelector('.kit-charts-kpi-badge');
-        if (badgeElem) {
-          const deltaSign = customData.delta > 0 ? '+' : '';
-          badgeElem.textContent = \`\${deltaSign}\${customData.delta}%\`;
-          if (customData.delta > 0) {
-            badgeElem.style.background = 'rgba(46, 125, 50, 0.12)';
-            badgeElem.style.color = '#2E7D32';
-          } else if (customData.delta < 0) {
-            badgeElem.style.background = 'rgba(198, 40, 40, 0.12)';
-            badgeElem.style.color = '#C62828';
-          }
-        }
-      }
+    let result = null;
+    if (mod && typeof mod.renderCard === 'function') {
+      result = mod.renderCard('${containerId}', customData, themeName);
+    } else if (mod && typeof mod.createChart === 'function') {
+      result = mod.createChart('${renderTargetId}', customData, themeName, options);
+    } else if (typeof createChart === 'function') {
+      result = createChart('${renderTargetId}', customData, themeName, options);
+    } else {
+      throw new Error('module du template ${templateId} introuvable');
     }
+    window['chart_${templateId.replace(/[^a-zA-Z0-9]/g, '_')}'] = result;
 
-    if (typeof createChart === 'function') {
-      window['chart_${templateId.replace(/[^a-zA-Z0-9]/g, '_')}'] = createChart('${canvasId}', customData, themeName, options);
-    } else if (typeof KitCharts !== 'undefined' && KitCharts['${templateId}'] && typeof KitCharts['${templateId}'].createChart === 'function') {
-      window['chart_${templateId.replace(/[^a-zA-Z0-9]/g, '_')}'] = KitCharts['${templateId}'].createChart('${canvasId}', customData, themeName, options);
+    const earlyErrors = window.__kcErrors || [];
+    const invalid = container && container.querySelector('[data-kc-invalid]');
+    if (earlyErrors.length) {
+      setStatus('error', earlyErrors[0]);
+    } else if (invalid) {
+      setStatus('invalid', invalid.getAttribute('data-kc-invalid'));
+    } else {
+      const host = document.getElementById('${renderTargetId}');
+      const chartOk = canvas && typeof Chart !== 'undefined' && Chart.getChart && Chart.getChart(canvas);
+      const domOk = host && host.tagName !== 'CANVAS' && host.children.length > 0;
+      const cardOk = mod && typeof mod.renderCard === 'function' && container && container.children.length > 0;
+      let painted = false;
+      if (!chartOk && !domOk && !cardOk && canvas && canvas.width && canvas.height) {
+        const px = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
+        for (let i = 3; i < px.length; i += 4) { if (px[i] !== 0) { painted = true; break; } }
+      }
+      if (chartOk || domOk || cardOk || painted) setStatus('ok');
+      else setStatus('error', 'rendu vide : aucun graphique, aucun DOM, canvas vierge');
     }
   } catch (err) {
+    setStatus('error', err && err.message ? err.message : err);
     console.error('[kit-charts] Erreur lors de l\\'initialisation du graphique ${templateId}:', err);
   }
 })();
@@ -290,6 +278,13 @@ ${initScriptContent}
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
+  <script>
+    // Erreurs de chargement (CDN, plugin, template) collectées avant tout le reste, pour data-kc-render.
+    window.__kcErrors = [];
+    window.addEventListener('error', function(e) {
+      window.__kcErrors.push(e.message || ('ressource non chargée : ' + ((e.target && (e.target.src || e.target.href)) || 'inconnue')));
+    }, true);
+  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>${escapeHtml(title)} — kit-charts</title>
   ${googleFontsLink}
@@ -329,19 +324,23 @@ ${initScriptContent}
   </style>
 
   <!-- Dépendances Chart.js UMD Officielles -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="${VENDOR['chart.js']}"></script>
   <!-- Plugins Chart.js non-core requis par ce template (contrôleurs treemap / matrix / sankey / candlestick) -->
 ${chartPluginTags}
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+
+  <!-- Fonctions Statistiques kit-charts : chargées AVANT le moteur de thèmes, qui les
+       lit via window.KitChartsStatHelpers. Isolées dans une IIFE : les deux fichiers
+       déclarent des const globales homonymes (errorBarsPlugin), ce qui faisait
+       échouer le second script (SyntaxError) et privait les templates des helpers. -->
+  <script>
+(function () {
+${statHelpersContent}
+})();
+  </script>
 
   <!-- Moteur de Thèmes kit-charts -->
   <script>
 ${themeTokensContent}
-  </script>
-
-  <!-- Fonctions Statistiques kit-charts -->
-  <script>
-${statHelpersContent}
   </script>
 ${(templateId === 'choropleth-map' || templateId === 'bubble-map') && WORLD_ATLAS_CODE ? `
   <!-- Données Cartographiques World Atlas 110m -->
@@ -432,7 +431,9 @@ function escapeHtml(str) {
 function parseCliArgs(args) {
   const parsed = {
     options: {
-      strict: false,
+      // CLI : une erreur bloquante de validation interdit la génération (exit 1).
+      // --force rétablit l'ancien comportement (génère malgré les erreurs).
+      strict: true,
       format: 'html',
       validate: true
     }
@@ -460,6 +461,8 @@ function parseCliArgs(args) {
       parsed.options.format = args[++i];
     } else if (arg === '--strict') {
       parsed.options.strict = true;
+    } else if (arg === '--force') {
+      parsed.options.strict = false;
     } else if (arg === '--json') {
       parsed.options.json = true;
     } else if (arg === '--help' || arg === '-h') {
@@ -494,7 +497,8 @@ Options:
   --subtitle <subtitle>   Sous-titre explicatif
   --output, -o <path>     Chemin du fichier HTML/snippet généré en sortie
   --format <html|snippet> Format de sortie (html complet ou snippet, default: html)
-  --strict                Bloquer la génération en cas d'erreur de validation cognitive
+  --strict                Bloquer la génération en cas d'erreur bloquante (défaut en CLI)
+  --force                 Générer malgré les erreurs bloquantes (debug uniquement, sortie non conforme)
   --json                  Afficher le résultat au format JSON sur stdout
   --help, -h              Afficher cette aide
 
@@ -546,7 +550,7 @@ Exemples:
     // Par défaut si pas d'output spécifié
     if (!cliArgs.options.output) {
       const outName = `${spec.targetTemplateId || 'chart'}-${Date.now()}.html`;
-      cliArgs.options.output = path.join(ROOT_DIR, 'output', outName);
+      cliArgs.options.output = path.join(process.cwd(), 'output', outName);
     }
 
     const result = compileChart(spec, cliArgs.options);
@@ -562,7 +566,9 @@ Exemples:
       }, null, 2));
     } else {
       console.log('======================================================================');
-      console.log(' ✨ COMPILATION DATAVIZ RÉUSSIE — KIT-CHARTS');
+      console.log(result.validationReport.valid
+        ? ' ✨ COMPILATION DATAVIZ RÉUSSIE — KIT-CHARTS'
+        : ' ⚠️ COMPILATION FORCÉE (--force) : SORTIE NON CONFORME');
       console.log('======================================================================');
       console.log(` 🎯 Template      : ${result.templateId}`);
       console.log(` 🎨 Thème         : ${result.themeName}`);
@@ -572,7 +578,7 @@ Exemples:
       console.log('======================================================================');
     }
 
-    process.exit(0);
+    process.exit(result.validationReport.valid ? 0 : 1);
   } catch (err) {
     if (cliArgs.options && cliArgs.options.json) {
       console.error(JSON.stringify({ success: false, error: err.message }, null, 2));

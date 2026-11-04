@@ -1,0 +1,383 @@
+{
+  "_meta": {
+    "family": "08-geospatial-cartes",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "cartogram-tilegram",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "[Function:backgroundColor]",
+            "borderColor": [
+              "#CBD5E1",
+              "#CBD5E1",
+              "#26828E",
+              "#CBD5E1",
+              "#CBD5E1",
+              "#CBD5E1",
+              "#CBD5E1",
+              "#CBD5E1",
+              "#CBD5E1",
+              "#26828E",
+              "#CBD5E1",
+              "#CBD5E1",
+              "#FDE725"
+            ],
+            "borderWidth": [
+              1,
+              1,
+              2,
+              1,
+              1,
+              1,
+              1,
+              1,
+              1,
+              2,
+              1,
+              1,
+              2
+            ],
+            "data": [
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 4.2,
+                "label": "HDF",
+                "name": "Hauts-de-France",
+                "role": "context",
+                "v": 72,
+                "x": 2,
+                "y": 1
+              },
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 2.5,
+                "label": "NOR",
+                "name": "Normandie",
+                "role": "context",
+                "v": 68,
+                "x": 1,
+                "y": 2
+              },
+              {
+                "borderColor": "#26828E",
+                "borderWidth": 2,
+                "growth": 16.8,
+                "label": "IDF",
+                "name": "Île-de-France",
+                "role": "focal",
+                "v": 98,
+                "x": 2,
+                "y": 2
+              },
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 5.1,
+                "label": "GES",
+                "name": "Grand Est",
+                "role": "context",
+                "v": 74,
+                "x": 3,
+                "y": 2
+              },
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 8.9,
+                "label": "BRE",
+                "name": "Bretagne",
+                "role": "context",
+                "v": 82,
+                "x": 0,
+                "y": 3
+              },
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 6.4,
+                "label": "PDL",
+                "name": "Pays de la Loire",
+                "role": "context",
+                "v": 78,
+                "x": 1,
+                "y": 3
+              },
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 1.8,
+                "label": "CVL",
+                "name": "Centre-Val de Loire",
+                "role": "context",
+                "v": 64,
+                "x": 2,
+                "y": 3
+              },
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 2,
+                "label": "BFC",
+                "name": "Bourgogne-Franche-Comté",
+                "role": "context",
+                "v": 66,
+                "x": 3,
+                "y": 3
+              },
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 7.2,
+                "label": "NAQ",
+                "name": "Nouvelle-Aquitaine",
+                "role": "context",
+                "v": 76,
+                "x": 1,
+                "y": 4
+              },
+              {
+                "borderColor": "#26828E",
+                "borderWidth": 2,
+                "growth": 12.4,
+                "label": "ARA",
+                "name": "Auvergne-Rhône-Alpes",
+                "role": "focal",
+                "v": 88,
+                "x": 2,
+                "y": 4
+              },
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 9.1,
+                "label": "OCC",
+                "name": "Occitanie",
+                "role": "context",
+                "v": 80,
+                "x": 1,
+                "y": 5
+              },
+              {
+                "borderColor": "#CBD5E1",
+                "borderWidth": 1,
+                "growth": 10.5,
+                "label": "PAC",
+                "name": "Provence-Alpes-Côte d'Azur",
+                "role": "context",
+                "v": 84,
+                "x": 2,
+                "y": 5
+              },
+              {
+                "borderColor": "#FDE725",
+                "borderWidth": 2,
+                "growth": -4.3,
+                "label": "COR",
+                "name": "Corse",
+                "role": "anomaly",
+                "v": 58,
+                "x": 3,
+                "y": 6
+              }
+            ],
+            "height": "[Function:height]",
+            "label": "Indice d’Innovation Régionale (sur 100)",
+            "width": "[Function:width]"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tileMeta": {
+            "tokens": {
+              "axisColor": "#94A3B8",
+              "bg": "#FFFFFF",
+              "border": "#E2E8F0",
+              "borderStrong": "#CBD5E1",
+              "divergent": {
+                "mid": "#FFFFFF",
+                "neg": "#440154",
+                "pos": "#22A884"
+              },
+              "emphasis": {
+                "anomaly": "#FDE725",
+                "benchmark": "#3E4A89",
+                "context": "#CBD5E1",
+                "focal": "#26828E",
+                "forecastAlpha": 0.5
+              },
+              "fontFamily": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "fontMono": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "googleFontsUrl": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
+              "gridColor": "rgba(15, 23, 42, 0.06)",
+              "id": "02-viridis-perceptual",
+              "isDark": false,
+              "label": "Viridis Perceptual",
+              "name": "viridis-perceptual",
+              "palette": [
+                "#3E4A89",
+                "#26828E",
+                "#35B779",
+                "#B4DE2C",
+                "#440154",
+                "#FDE725",
+                "#31688E",
+                "#1F9E89"
+              ],
+              "semantic": {
+                "info": "#2A788E",
+                "negative": "#440154",
+                "neutral": "#414487",
+                "positive": "#22A884",
+                "warning": "#FDE725"
+              },
+              "sequential": [
+                "#440154",
+                "#482777",
+                "#3E4A89",
+                "#31688E",
+                "#26828E",
+                "#1F9E89",
+                "#35B779",
+                "#6DCD59",
+                "#B4DE2C",
+                "#FDE725"
+              ],
+              "status": {
+                "danger": "#440154",
+                "info": "#2A788E",
+                "neutral": "#8E9AAF",
+                "success": "#22A884",
+                "warning": "#D8B400"
+              },
+              "surface": "#F8FAFC",
+              "surfaceRaised": "#FFFFFF",
+              "textMuted": "#64748B",
+              "textPrimary": "#0F172A",
+              "textSecondary": "#334155",
+              "tooltipBg": "rgba(15, 23, 42, 0.92)",
+              "tooltipText": "#F8FAFC",
+              "zeroLine": "#475569"
+            }
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "max": 3.7,
+            "min": -0.7,
+            "ticks": {
+              "display": false
+            }
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "max": 6.7,
+            "min": 0.30000000000000004,
+            "reverse": false,
+            "ticks": {
+              "display": false
+            }
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "tileLabelsPlugin"
+        }
+      ],
+      "type": "matrix"
+    },
+    "kind": "chart-config"
+  }
+}

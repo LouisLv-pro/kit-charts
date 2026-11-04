@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
@@ -285,7 +286,7 @@
         html += `
           <th style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -294,7 +295,7 @@
             border: none;
             white-space: nowrap;
           ">
-            ${col.label}
+            ${escapeHtml(col.label)}
           </th>
         `;
       });
@@ -340,7 +341,7 @@
         }
 
         const chevron = row.hasChildren
-          ? `<span class="kc-tree-toggle" data-node-id="${row.id}" style="
+          ? `<span class="kc-tree-toggle" data-node-id="${escapeHtml(row.id)}" style="
               display: inline-block;
               width: 16px;
               height: 16px;
@@ -365,11 +366,11 @@
             <td style="padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
               <div style="padding-left: ${indentPx}px; display: flex; align-items: center;">
                 ${chevron}
-                <span style="color: ${textColor};">${row.name}</span>
+                <span style="color: ${textColor};">${escapeHtml(row.name)}</span>
               </div>
             </td>
             <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
-              ${row.headcount} ETP
+              ${escapeHtml(row.headcount)} ETP
             </td>
             <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
               ${(row.budget / 1000000).toFixed(2)} M€
@@ -414,7 +415,7 @@
                   TOTAL ORGANISATION
                 </td>
                 <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
-                  ${totalHeadcount} ETP
+                  ${escapeHtml(totalHeadcount)} ETP
                 </td>
                 <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
                   ${(totalBudget / 1000000).toFixed(2)} M€

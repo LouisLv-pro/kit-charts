@@ -1,0 +1,200 @@
+{
+  "_meta": {
+    "family": "06-flux-processus",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "alluvial-diagram",
+    "themeName": "okabe-ito-cud"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#0072B2",
+            "borderWidth": 0,
+            "colorFrom": "[Function:defaultColorFrom]",
+            "colorMode": "gradient",
+            "colorTo": "[Function:defaultColorTo]",
+            "data": [
+              {
+                "flow": 600,
+                "from": "Acquisition Organique",
+                "to": "Plan Gratuit",
+                "valence": "neutral"
+              },
+              {
+                "flow": 250,
+                "from": "Acquisition Organique",
+                "to": "Plan Pro",
+                "valence": "positive"
+              },
+              {
+                "flow": 400,
+                "from": "Acquisition Payante (Ads)",
+                "to": "Plan Gratuit",
+                "valence": "neutral"
+              },
+              {
+                "flow": 450,
+                "from": "Acquisition Payante (Ads)",
+                "to": "Plan Pro",
+                "valence": "positive"
+              },
+              {
+                "flow": 350,
+                "from": "Plan Gratuit",
+                "to": "Désabonné (Churn)",
+                "valence": "negative"
+              },
+              {
+                "flow": 450,
+                "from": "Plan Gratuit",
+                "to": "Plan Pro (Upgrade)",
+                "valence": "positive"
+              },
+              {
+                "flow": 200,
+                "from": "Plan Gratuit",
+                "to": "Plan Gratuit (Actif)",
+                "valence": "neutral"
+              },
+              {
+                "flow": 280,
+                "from": "Plan Pro",
+                "to": "Plan Entreprise (Expansion)",
+                "valence": "positive"
+              },
+              {
+                "flow": 360,
+                "from": "Plan Pro",
+                "to": "Plan Pro (Renouvelé)",
+                "valence": "positive"
+              },
+              {
+                "flow": 60,
+                "from": "Plan Pro",
+                "to": "Désabonné (Churn)",
+                "valence": "negative"
+              }
+            ],
+            "label": "Parcours & Migration des Cohortes Utilisateurs",
+            "nodePadding": 18,
+            "nodeWidth": 16
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 16,
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            }
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#475569",
+              "width": 1
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)",
+              "display": true,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "sankey"
+    },
+    "kind": "chart-config"
+  }
+}

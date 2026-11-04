@@ -6,7 +6,7 @@
 
 Un kit pour vos agents d'IA (Antigravity, Claude Code, Cursor, etc.) pour générer des graphiques fiables, clairs et sans erreurs avec Chart.js.
 
-L'agent n'a **plus besoin de recréer les graphiques de zéro** : il pioche dans **74 modèles prêts à l'emploi**, applique de bonnes règles de lisibilité et livre une page HTML que vous pouvez ouvrir directement dans votre navigateur.
+L'agent n'a **plus besoin de recréer les graphiques de zéro** : il pioche dans **73 modèles prêts à l'emploi**, applique de bonnes règles de lisibilité et livre une page HTML que vous pouvez ouvrir directement dans votre navigateur.
 
 ---
 
@@ -23,23 +23,14 @@ Quand une IA essaie de coder un graphique à partir d'une feuille blanche, elle 
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
-│ 1. L'ARCHITECTE (dataviz-architect)                         │
-│    Comprend votre besoin, choisit le bon modèle et prépare  │
-│    le fichier de configuration dataviz-spec.json.           │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 2. LE CONSTRUCTEUR (dataviz-builder)                        │
-│    Assemble vos données avec le modèle et crée la page      │
-│    dans output/<nom-du-graphique>/index.html.               │
-└──────────────────────────────┬──────────────────────────────┘
-                               │
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 3. LE VÉRIFICATEUR (dataviz-reviewer)                       │
-│    Contrôle que le graphique est lisible, bien cadré        │
-│    et accessible à tout le monde.                           │
+│ UN SEUL AGENT : dataviz                                     │
+│                                                             │
+│ 1. Qualifie : le message, les données, le sens de la        │
+│    métrique (une hausse est-elle bonne ?)                   │
+│ 2. Construit : choisit le modèle, écrit la spec, compile    │
+│    dans output/<nom-du-graphique>/index.html                │
+│ 3. Audite : vérifie les règles, relit titre et couleurs,    │
+│    corrige jusqu'à zéro erreur                              │
 └─────────────────────────────────────────────────────────────┘
 ```
 
@@ -57,7 +48,7 @@ cd kit-charts
 ### 2. Explorer la Galerie dans votre Navigateur
 Ouvrez simplement [**`index.html`**](index.html) dans votre navigateur (double-clic ou `open index.html`).
 - **100% Hors-Ligne** : Tous les graphiques s'affichent immédiatement, sans avoir besoin d'un serveur web.
-- **Interactif** : Testez les 8 thèmes de couleurs en un clic et parcourez les 74 modèles.
+- **Interactif** : Testez les 8 thèmes de couleurs en un clic et parcourez les 73 modèles.
 
 ### 3. Demander à votre IA de Créer un Graphique
 Donnez simplement votre besoin en langage naturel à votre agent IA :
@@ -68,19 +59,38 @@ Donnez simplement votre besoin en langage naturel à votre agent IA :
 
 L'agent choisit le bon modèle (`bullet-chart`), applique les bonnes couleurs et place le résultat dans `output/ventes-regions/index.html`.
 
+### Utiliser le kit dans n'importe quel projet
+
+Inutile de copier ce dépôt dans chaque dossier : installez la commande `kit-charts` une fois.
+
+```bash
+npm i -g github:LouisLv-pro/kit-charts
+```
+
+Puis, dans le projet où vous voulez des graphiques, installez le skill et l'agent pour votre IA :
+
+```bash
+kit-charts install-skill
+```
+
+Les graphiques et leurs configurations sont créés dans `output/` du projet courant.
+
 ---
 
-## Ce que font les Agents du Kit
+## Ce que fait l'Agent du Kit
 
-| Rôle | Mission | Ce qu'il produit |
+Un seul agent, **`dataviz`** ([`.agents/agents/dataviz.md`](.agents/agents/dataviz.md)), fait tout le cycle en s'appuyant sur le skill [`kit-charts`](.agents/skills/kit-charts/SKILL.md) :
+
+| Étape | Ce qu'il fait | Outil |
 | :--- | :--- | :--- |
-| **`dataviz-architect`** | Analyse votre besoin et choisit le meilleur modèle du catalogue | Le fichier de configuration `dataviz-spec.json` |
-| **`dataviz-builder`** | Assemble vos données dans le modèle choisi | Le dossier prêt à l'emploi `output/<projet>/index.html` |
-| **`dataviz-reviewer`** | Vérifie que le graphique respecte toutes les règles de lisibilité | La confirmation que tout est en ordre |
+| **Qualifier** | Comprend le message à transmettre et note ses hypothèses | Le skill `kit-charts` |
+| **Choisir** | Propose les modèles compatibles avec vos données, écarte ceux qui violent une règle | `recommend-template.js` |
+| **Construire** | Écrit la configuration et génère la page | `compile-chart.js` (refuse une configuration non conforme) |
+| **Auditer** | Vérifie les règles automatiques, puis relit le sens (titre, unité, tri, couleurs) | `validate-chart.js` + revue experte |
 
 ---
 
-## Les 10 Familles de Graphiques (74 Modèles Prêts à l'Emploi)
+## Les 10 Familles de Graphiques (73 Modèles Prêts à l'Emploi)
 
 Chaque modèle est rangé dans son dossier avec sa structure standard (`template.html`, `schema.json`, `template.js`) :
 
@@ -96,7 +106,7 @@ Chaque modèle est rangé dans son dossier avec sa structure standard (`template
 | **07. Hiérarchies & Arbres** | `sunburst`, `dendrogram`, `marimekko-chart` | 3 niveaux maximum pour éviter la surcharge visuelle. |
 | **08. Cartes géographiques** | `choropleth-map`, `bubble-map`, `cartogram-tilegram` | Valeurs ramenées par habitant ou par surface pour éviter les fausses impressions. |
 | **09. Tableaux avec graphiques** | `table-kpi-scorecard`, `table-bar-in-cell` | Chiffres alignés à droite avec mini-barres de comparaison intégrées. |
-| **10. Infobulles & Détails** | `tooltip` | Infobulles anti-occlusion respectant Mayer et Fitts. |
+| **Bonus. Infobulles & Détails** | `tooltip` (démonstrateur de la galerie, hors registre) | Infobulles anti-occlusion respectant Mayer et Fitts. |
 
 ---
 
@@ -124,17 +134,24 @@ Le kit adapte automatiquement le vert et le rouge selon le sujet :
 ## Commandes Utiles
 
 ```bash
-# 1. Créer un graphique à partir d'une configuration
-node .agents/skills/kit-charts/scripts/compile-chart.js dataviz-spec.json -o output/mon-graphique/index.html
+kit-charts list                                   # les 73 modèles
+kit-charts recommend data.json                    # modèles adaptés à vos données
+kit-charts describe bar-chart-horizontal          # forme des données attendue et exemple
+kit-charts init-spec bar-chart-horizontal -o output/mon-graphique/spec.json
+kit-charts compile output/mon-graphique/spec.json -o output/mon-graphique/index.html
+kit-charts validate output/mon-graphique/index.html
+kit-charts check output/mon-graphique/index.html  # rendu réel dans Chrome
+```
 
-# 2. Vérifier la lisibilité d'une page générée
-node .agents/skills/kit-charts/scripts/validate-chart.js output/mon-graphique/index.html
+Dans ce dépôt sans installation, remplacez `kit-charts` par `node bin/kit-charts.js`.
 
-# 3. Mettre à jour le fichier global (catalog-bundle.js)
-npm run build
+Pour les contributeurs :
 
-# 4. Lancer la série de tests
-npm test
+```bash
+npm run build        # régénère catalog-bundle.js
+npm test             # intégration + snapshots
+npm run test:render  # rendu réel des 73 modèles dans Chrome headless (réseau requis)
+npm run test:cli     # paquet installé, parcours complet du CLI
 ```
 
 ---
@@ -144,12 +161,12 @@ npm test
 ```
 kit-charts/
 ├── index.html                        # Galerie interactive pour voir tous les modèles
-├── catalog-bundle.js                 # Fichier complet qui regroupe les 74 modèles
+├── catalog-bundle.js                 # Fichier complet qui regroupe les 73 modèles et la démo d'infobulles
 ├── package.json                      # Commandes du projet
 ├── README.md                         # Ce guide
 ├── LICENSE                           # Licence libre MIT
 │
-├── template/                         # Les 74 modèles rangés par dossiers
+├── template/                         # Les 73 modèles rangés par dossiers
 │   ├── 00-kpi-card/                  # Cartes et indicateurs clés (7 modèles)
 │   ├── 01-comparaison/               # Barres, colonnes, bullet charts (11 modèles)
 │   ├── 02-composition-part-to-whole/ # Parts de marché, camemberts, treemaps (8 modèles)
@@ -160,7 +177,7 @@ kit-charts/
 │   ├── 07-hierarchie-reseau/         # Réseaux et arbres (4 modèles)
 │   ├── 08-geospatial-cartes/         # Cartes et pays (3 modèles)
 │   ├── 09-tableaux-dataviz/          # Tableaux avec mini-graphiques (6 modèles)
-│   └── tooltip/                      # Infobulles intelligentes (1 modèle)
+│   └── tooltip/                      # Démonstrateur d'infobulles (hors registre)
 │
 ├── themes/                           # Les 8 thèmes de couleurs
 │   └── theme-tokens.js               # Gestion des couleurs, contrastes et options Chart.js
@@ -168,7 +185,7 @@ kit-charts/
 ├── output/                           # Dossier où sont enregistrés vos graphiques
 │
 └── .agents/                          # Rôles et instructions pour les agents d'IA
-    ├── agents/                       # Instructions pour l'Architecte, le Constructeur et le Vérificateur
+    ├── agents/                       # L'agent unique dataviz
     ├── rules/                        # Règles de bonne lisibilité
     └── skills/kit-charts/            # Outils de génération et de vérification
 ```

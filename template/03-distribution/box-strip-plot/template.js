@@ -24,6 +24,8 @@
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
@@ -124,8 +126,11 @@
     const isDark = Boolean(tokens.isDark);
 
     const rawData = customData || DEFAULT_DATA;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
     const labels = rawData.labels || ['Groupe 1', 'Groupe 2', 'Groupe 3'];
-    const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
 
     const groupStats = groups.map((g, i) => {
       const rawPoints = Array.isArray(g) ? g : [];

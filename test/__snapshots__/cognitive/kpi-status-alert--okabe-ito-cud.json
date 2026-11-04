@@ -1,0 +1,90 @@
+{
+  "_meta": {
+    "family": "00-kpi-card",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "kpi-status-alert",
+    "themeName": "okabe-ito-cud"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "rgba(0, 158, 115, 0.25)",
+            "barThickness": 16,
+            "borderRadius": {
+              "bottomLeft": 4,
+              "topLeft": 4
+            },
+            "data": [
+              100
+            ],
+            "label": "Normal (<100ms)"
+          },
+          {
+            "backgroundColor": "rgba(230, 159, 0, 0.25)",
+            "barThickness": 16,
+            "data": [
+              50
+            ],
+            "label": "Attention (100-150ms)"
+          },
+          {
+            "backgroundColor": "rgba(213, 94, 0, 0.25)",
+            "barThickness": 16,
+            "borderRadius": {
+              "bottomRight": 4,
+              "topRight": 4
+            },
+            "data": [
+              50
+            ],
+            "label": "Critique (>150ms)"
+          }
+        ],
+        "labels": [
+          "Seuils"
+        ]
+      },
+      "options": {
+        "animation": {
+          "duration": 400,
+          "easing": "easeOutQuart"
+        },
+        "indexAxis": "y",
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "enabled": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "display": false,
+            "max": 200,
+            "stacked": true
+          },
+          "y": {
+            "display": false,
+            "stacked": true
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "thresholdCursorMarker"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

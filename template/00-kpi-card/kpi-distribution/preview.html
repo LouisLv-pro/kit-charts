@@ -354,8 +354,9 @@
           rulesCard.style.borderColor = tokens.border || '#E2E8F0';
         }
 
+        // Démo : les champs propres à la carte (repères, leviers, segments, seuils) viennent de DEFAULT_DATA.
         if (typeof cardModule.renderCard === 'function') {
-          cardModule.renderCard('cardTarget1', {
+          cardModule.renderCard('cardTarget1', Object.assign({}, cardModule.DEFAULT_DATA, {
             title: 'Indicateur Nominal A',
             value: 142850,
             unit: '€',
@@ -367,9 +368,9 @@
             ranges: [100000, 130000, 160000],
             thresholds: { nominal: 100, critical: 150 },
             footnote: 'Clôture opérationnelle certifiée'
-          }, currentTheme);
+          }), currentTheme);
 
-          cardModule.renderCard('cardTarget2', {
+          cardModule.renderCard('cardTarget2', Object.assign({}, cardModule.DEFAULT_DATA, {
             title: 'Indicateur Benchmark B',
             value: 84.5,
             unit: '%',
@@ -381,9 +382,9 @@
             ranges: [60, 80, 100],
             thresholds: { nominal: 80, critical: 95 },
             footnote: 'Objectif trimestriel T3'
-          }, currentTheme);
+          }), currentTheme);
 
-          cardModule.renderCard('cardTarget3', {
+          cardModule.renderCard('cardTarget3', Object.assign({}, cardModule.DEFAULT_DATA, {
             title: 'Indicateur d\'Alerte C',
             value: 18.2,
             unit: 'ms',
@@ -395,7 +396,7 @@
             ranges: [10, 20, 30],
             thresholds: { nominal: 15, critical: 25 },
             footnote: 'Latence nominale optimale'
-          }, currentTheme);
+          }), currentTheme);
         }
       }
 

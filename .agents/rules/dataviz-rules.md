@@ -24,7 +24,7 @@
 
 ---
 
-## 📊 2. Règles Spécifiques par Famille Analytique (74 Templates)
+## 📊 2. Règles Spécifiques par Famille Analytique (73 Templates)
 
 ### 🔹 Famille 01 — Comparaison Discrète
 - **Ligne de base $Y=0$ absolue (`beginAtZero: true`)** : Obligatoire sur tous les graphiques de longueur (`bar-chart-vertical`, `bar-chart-horizontal`, `grouped-bar-chart`, `stacked-bar-chart`, `lollipop-chart`, `bullet-chart`, `kpi-bullet`). Il est formellement interdit de tronquer l'axe pour exagérer artificiellement des variations.
@@ -61,7 +61,7 @@
 
 ### 🔹 Famille 05 — Évolution Temporelle
 - **Axe Chronologique** : Le temps s'écoule strictement de gauche à droite sur l'axe horizontal $X$.
-- **Plafond Multi-Lignes ($K \le 5$)** : Strictement $\le 5$ courbes simultanées pour éviter le *Spaghetti Chart*. Au-delà, basculer sur `faceted-line-chart` (Small Multiples).
+- **Plafond Multi-Lignes ($K \le 5$)** : Strictement $\le 5$ courbes simultanées pour éviter le *Spaghetti Chart*. Au-delà, garder le top 4 + « Autres », ou plusieurs `line-chart` en petits multiples (Small Multiples).
 - **Graphiques en Aires (`area-chart`, `streamgraph`)** : Ligne de base $Y=0$. Opacité modérée ($\alpha \approx 0.25$) en cas de séries superposées pour visualiser les croisements.
 
 ### 🔹 Famille 06 — Flux, Processus & Cascades

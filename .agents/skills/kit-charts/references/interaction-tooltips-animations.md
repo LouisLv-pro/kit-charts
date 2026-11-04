@@ -1,6 +1,6 @@
 # 🧭 Guide Décisionnel : Infobulles, Étiquettes & Légendes
 
-Ce document est le **guide opérationnel de décision** pour l'Architecte Dataviz (`dataviz-architect`). Il répond de manière directe et structurée à la question fondamentale :
+Ce document est le **guide opérationnel de décision** de l'agent `dataviz` (skill `kit-charts`). Il répond de manière directe et structurée à la question fondamentale :
 > **Pour la situation métier et le graphique analysés, comment calibrer précisément les infobulles, les étiquettes directes et les légendes pour une lisibilité cognitive maximale à latence zéro ?**
 
 ---
@@ -77,7 +77,7 @@ Toutes les visualisations de kit-charts sont configurées avec **`animation: fal
 
 ---
 
-## 📋 Synthèse Contractuelle pour l'Architecte (`dataviz-spec.json`)
+## 📋 Synthèse Contractuelle (`dataviz-spec.json`)
 
 ```json
 {

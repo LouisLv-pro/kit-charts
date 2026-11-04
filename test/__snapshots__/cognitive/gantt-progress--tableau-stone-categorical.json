@@ -1,0 +1,278 @@
+{
+  "_meta": {
+    "family": "06-flux-processus",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "gantt-progress",
+    "themeName": "tableau-stone-categorical"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "rgba(78, 121, 167, 0.2)",
+              "rgba(78, 121, 167, 0.2)",
+              "rgba(242, 142, 43, 0.2)",
+              "rgba(242, 142, 43, 0.2)",
+              "rgba(225, 87, 89, 0.2)",
+              "rgba(225, 87, 89, 0.2)"
+            ],
+            "borderColor": [
+              "#4E79A7",
+              "#4E79A7",
+              "#F28E2B",
+              "#F28E2B",
+              "#E15759",
+              "#E15759"
+            ],
+            "borderRadius": 4,
+            "borderWidth": 1.5,
+            "data": [
+              [
+                1,
+                4
+              ],
+              [
+                3,
+                6
+              ],
+              [
+                5,
+                9
+              ],
+              [
+                6,
+                11
+              ],
+              [
+                9,
+                12
+              ],
+              [
+                11,
+                13
+              ]
+            ],
+            "datalabels": false,
+            "displayDataLabels": false,
+            "label": "Durée Prévue"
+          }
+        ],
+        "labels": [
+          "1. Spécifications & Cadrage",
+          "2. Architecture & Schéma DB",
+          "3. Développement API Core",
+          "4. Intégration Frontend UI",
+          "5. Tests E2E & Recette",
+          "6. Déploiement Production"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#94A3B8",
+          "bg": "#FFFFFF",
+          "border": "#E2E8F0",
+          "borderStrong": "#CBD5E1",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#E15759",
+            "pos": "#4E79A7"
+          },
+          "emphasis": {
+            "anomaly": "#E15759",
+            "benchmark": "#57606C",
+            "context": "#BAB0AC",
+            "focal": "#4E79A7",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+          "fontMono": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Roboto+Mono:wght@400;500;700&display=swap",
+          "gridColor": "rgba(30, 41, 59, 0.06)",
+          "id": "04-tableau-stone-categorical",
+          "isDark": false,
+          "label": "Tableau 10 Stone",
+          "name": "tableau-stone-categorical",
+          "palette": [
+            "#4E79A7",
+            "#F28E2B",
+            "#E15759",
+            "#76B7B2",
+            "#59A14F",
+            "#EDC948",
+            "#B07AA1",
+            "#FF9DA7"
+          ],
+          "semantic": {
+            "info": "#4E79A7",
+            "negative": "#E15759",
+            "neutral": "#BAB0AC",
+            "positive": "#59A14F",
+            "warning": "#F28E2B"
+          },
+          "sequential": [
+            "#D3E0EA",
+            "#A1BED4",
+            "#6F9DBE",
+            "#4E79A7",
+            "#2E5B88"
+          ],
+          "status": {
+            "danger": "#E15759",
+            "info": "#4E79A7",
+            "neutral": "#BAB0AC",
+            "success": "#59A14F",
+            "warning": "#F28E2B"
+          },
+          "surface": "#F8FAFC",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#64748B",
+          "textPrimary": "#1E293B",
+          "textSecondary": "#334155",
+          "tooltipBg": "rgba(30, 41, 59, 0.92)",
+          "tooltipText": "#FFFFFF",
+          "zeroLine": "#475569"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "indexAxis": "y",
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "right": 30,
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#1E293B",
+            "display": true,
+            "font": {
+              "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:anonymous]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#475569",
+              "width": 1
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)"
+            },
+            "max": 15,
+            "min": 0,
+            "ticks": {
+              "callback": "[Function:callback]",
+              "stepSize": 1
+            },
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Calendrier (Semaines)"
+            },
+            "type": "linear"
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        },
+        "showDataLabels": true
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsGanttPainter"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

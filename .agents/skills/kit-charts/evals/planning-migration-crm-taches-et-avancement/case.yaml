@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: planning-migration-crm-taches-et-avancement
+expected_outcome: |
+  Le template est gantt-progress. datasets[0] porte un tableau tasks de 6 objets (label, start, end, progress) et todayWeek 7, sans tableau data. progress est exprimé de 0 à 100 (100, 80, 45, 10, 0, 0). validate-chart.js ne rapporte aucune erreur, et la réponse signale que le nettoyage des données et le paramétrage du CRM sont en retard en semaine 7.

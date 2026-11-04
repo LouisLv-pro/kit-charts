@@ -22,6 +22,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
@@ -42,6 +45,32 @@
     footnote: 'Équation : CA = Commandes × Panier Moyen'
   };
 
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    const arrayReason = checkRequiredArrays(d, ['drivers']);
+    if (arrayReason) return arrayReason;
+    if (d.drivers.length === 0) return 'formattedData.drivers attendu non vide';
+    for (let i = 0; i < d.drivers.length; i++) {
+      const drv = d.drivers[i];
+      if (!drv || typeof drv !== 'object') return `formattedData.drivers[${i}] attendu en objet { label, value, delta }`;
+      if (typeof drv.label !== 'string' || !drv.label) return `formattedData.drivers[${i}].label attendu en texte non vide, reçu ${kindOf(drv.label)}`;
+      if (!isNum(drv.value) && !(typeof drv.value === 'string' && drv.value)) return `formattedData.drivers[${i}].value attendu en nombre, reçu ${kindOf(drv.value)}`;
+      if (!isNum(drv.delta)) return `formattedData.drivers[${i}].delta attendu en nombre, reçu ${kindOf(drv.delta)}`;
+    }
+    return null;
+  }
+
   /**
    * Crée et initialise un micro-bar Chart.js pour visualiser les 3 drivers.
    */
@@ -59,8 +88,10 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const drivers = data.drivers || DEFAULT_DATA.drivers;
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const drivers = data.drivers;
 
     const bgColors = drivers.map(d => {
       const isPos = d.delta >= 0;
@@ -121,10 +152,13 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const drivers = data.drivers || DEFAULT_DATA.drivers;
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const drivers = data.drivers;
     const isDark = Boolean(tokens.isDark);
 
+    const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -139,13 +173,13 @@
       return `
         <div style="display: flex; flex-direction: column; gap: 2px;">
           <span style="font-size: 0.6875rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase;">
-            ${drv.label}
+            ${escapeHtml(drv.label)}
           </span>
           <span style="font-size: 1.05rem; font-weight: 700; color: ${tokens.textPrimary}; font-variant-numeric: tabular-nums;">
-            ${valStr} <span style="font-size: 0.75rem; font-weight: 500; color: ${tokens.textMuted};">${drv.unit || ''}</span>
+            ${escapeHtml(valStr)} <span style="font-size: 0.75rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(drv.unit || '')}</span>
           </span>
           <span style="font-size: 0.7rem; font-weight: 700; color: ${drvColor}; font-variant-numeric: tabular-nums;">
-            ${drvPos ? '▲ +' : '▼ '}${drv.delta}${drv.deltaUnit || '%'}
+            ${drvPos ? '▲ +' : '▼ '}${drv.delta}${escapeHtml(drv.deltaUnit || '%')}
           </span>
         </div>
       `;
@@ -175,8 +209,8 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
-          <span style="
+          ">${escapeHtml(data.title)}</span>
+          ${hasDelta ? `<span style="
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -191,7 +225,7 @@
           ">
             <span>${isPositive ? '▲' : '▼'}</span>
             <span>${isPositive ? '+' : ''}${data.delta}%</span>
-          </span>
+          </span>` : ''}
         </div>
 
         <!-- Valeur Hero -->
@@ -204,11 +238,11 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="font-size: 0.75rem; color: ${tokens.textMuted}; margin-top: 2px;">
-            ${data.deltaLabel}
-          </div>
+          ${data.deltaLabel ? `<div style="font-size: 0.75rem; color: ${tokens.textMuted}; margin-top: 2px;">
+            ${escapeHtml(data.deltaLabel)}
+          </div>` : ''}
         </div>
 
         <!-- Séparateur Subtil -->
@@ -236,7 +270,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;

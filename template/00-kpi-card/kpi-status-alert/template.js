@@ -22,6 +22,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function(t, s) { return '#999999'; };
   const getThresholdStatus = (KitChartsTheme && KitChartsTheme.getThresholdStatus) || (typeof window !== 'undefined' && window.getThresholdStatus) || function(v, tr, th, p, t) {
@@ -46,6 +49,32 @@
     footnote: 'Seuil critique : > 150 ms • Action : Vérifier pool DB'
   };
 
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    if (d.polarity !== 'lower-is-better' && d.polarity !== 'higher-is-better') {
+      return `formattedData.polarity attendu 'lower-is-better' ou 'higher-is-better', reçu ${typeof d.polarity === 'string' ? d.polarity : kindOf(d.polarity)}`;
+    }
+    const th = d.thresholds;
+    if (!th || typeof th !== 'object' || Array.isArray(th)) return `formattedData.thresholds attendu en objet { nominal, critical }, reçu ${kindOf(th)}`;
+    if (!isNum(th.nominal)) return `formattedData.thresholds.nominal attendu en nombre, reçu ${kindOf(th.nominal)}`;
+    if (!isNum(th.critical)) return `formattedData.thresholds.critical attendu en nombre, reçu ${kindOf(th.critical)}`;
+    if (d.polarity === 'lower-is-better' && !(th.nominal < th.critical)) return 'formattedData.thresholds : nominal doit être inférieur à critical (lower-is-better)';
+    if (d.polarity === 'higher-is-better' && !(th.critical < th.nominal)) return 'formattedData.thresholds : critical doit être inférieur à nominal (higher-is-better)';
+    if (d.maxScale !== undefined && d.maxScale !== null && !(isNum(d.maxScale) && d.maxScale > 0)) return `formattedData.maxScale attendu en nombre positif, reçu ${kindOf(d.maxScale)}`;
+    return null;
+  }
+
   /**
    * Crée et initialise la jauge de seuil linéaire dans le canvas.
    */
@@ -63,18 +92,23 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
 
     const val = data.value;
-    const maxVal = data.maxScale || 200;
-    let tNominal = (data.thresholds && data.thresholds.nominal !== undefined) ? data.thresholds.nominal : 100;
-    let tCritical = (data.thresholds && data.thresholds.critical !== undefined) ? data.thresholds.critical : 150;
+    let tNominal = data.thresholds.nominal;
+    let tCritical = data.thresholds.critical;
+    // Échelle : fournie, sinon déduite des valeurs fournies (jamais un plafond d'exemple)
+    const maxVal = isNum(data.maxScale) ? Math.max(data.maxScale, tNominal, tCritical) : Math.max(val, tNominal, tCritical) * 1.2;
+    const isHigherBetter = data.polarity === 'higher-is-better';
+    const unitStr = data.unit || '';
 
     let resolvedProvenance = null;
     if (resolveThresholds) {
       const historyData = data.history || (Array.isArray(data.data) ? data.data : null);
-      const explicitThresh = data.thresholds && data.thresholds.optimal !== undefined ? { target: data.target || data.thresholds.optimal, warning: data.thresholds.nominal, danger: data.thresholds.critical, polarity: data.polarity } : null;
+      const explicitThresh = data.thresholds ? { target: data.target || data.thresholds.optimal, warning: data.thresholds.nominal, danger: data.thresholds.critical, polarity: data.polarity } : null;
       if (explicitThresh) {
         try {
           resolvedProvenance = resolveThresholds(historyData, explicitThresh, { polarity: data.polarity });
@@ -130,22 +164,43 @@
       type: 'bar',
       data: {
         labels: ['Seuils'],
-        datasets: [
+        datasets: isHigherBetter ? [
           {
-            label: 'Normal (<100ms)',
+            label: `Critique (<${tCritical}${unitStr})`,
+            data: [tCritical],
+            backgroundColor: hexToRgba(dangerColor, isDark ? 0.35 : 0.25),
+            barThickness: 16,
+            borderRadius: { topLeft: 4, bottomLeft: 4 }
+          },
+          {
+            label: `Attention (${tCritical}-${tNominal}${unitStr})`,
+            data: [tNominal - tCritical],
+            backgroundColor: hexToRgba(warningColor, isDark ? 0.35 : 0.25),
+            barThickness: 16
+          },
+          {
+            label: `Normal (>${tNominal}${unitStr})`,
+            data: [maxVal - tNominal],
+            backgroundColor: hexToRgba(normalColor, isDark ? 0.35 : 0.25),
+            barThickness: 16,
+            borderRadius: { topRight: 4, bottomRight: 4 }
+          }
+        ] : [
+          {
+            label: `Normal (<${tNominal}${unitStr})`,
             data: [tNominal],
             backgroundColor: hexToRgba(normalColor, isDark ? 0.35 : 0.25),
             barThickness: 16,
             borderRadius: { topLeft: 4, bottomLeft: 4 }
           },
           {
-            label: 'Attention (100-150ms)',
+            label: `Attention (${tNominal}-${tCritical}${unitStr})`,
             data: [tCritical - tNominal],
             backgroundColor: hexToRgba(warningColor, isDark ? 0.35 : 0.25),
             barThickness: 16
           },
           {
-            label: 'Critique (>150ms)',
+            label: `Critique (>${tCritical}${unitStr})`,
             data: [maxVal - tCritical],
             backgroundColor: hexToRgba(dangerColor, isDark ? 0.35 : 0.25),
             barThickness: 16,
@@ -163,7 +218,7 @@
           tooltip: {
             enabled: true,
             callbacks: {
-              label: () => `Valeur courante : ${val} ${data.unit} (Seuil Nominal: ${tNominal}${data.unit}, Critique: ${tCritical}${data.unit})${resolvedProvenance ? ' • ' + resolvedProvenance.badge : ''}`
+              label: () => `Valeur courante : ${val}${unitStr ? ' ' + unitStr : ''} (Seuil Nominal: ${tNominal}${unitStr}, Critique: ${tCritical}${unitStr})${resolvedProvenance ? ' • ' + resolvedProvenance.badge : ''}`
             }
           }
         },
@@ -196,13 +251,16 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
     const canvasId = 'kpi-status-canvas-' + Math.random().toString(36).substr(2, 9);
 
     const val = data.value;
-    const tNominal = data.thresholds.nominal || 100;
-    const tCritical = data.thresholds.critical || 150;
+    const tNominal = data.thresholds.nominal;
+    const tCritical = data.thresholds.critical;
+    const isHigherBetter = data.polarity === 'higher-is-better';
 
     let statusKey = 'success';
     let statusLabel = 'Optimal';
@@ -216,6 +274,23 @@
         statusIcon = '⛔';
         statusColor = tokens.status?.danger || tokens.semantic?.negative || '#C62828';
       } else if (val >= tNominal) {
+        statusKey = 'warning';
+        statusLabel = 'Attention';
+        statusIcon = '⚠️';
+        statusColor = tokens.status?.warning || tokens.semantic?.warning || '#EF6C00';
+      } else {
+        statusKey = 'success';
+        statusLabel = 'Nominal';
+        statusIcon = '✓';
+        statusColor = tokens.status?.success || tokens.semantic?.positive || '#2E7D32';
+      }
+    } else if (isHigherBetter) {
+      if (val <= tCritical) {
+        statusKey = 'danger';
+        statusLabel = 'Critique';
+        statusIcon = '⛔';
+        statusColor = tokens.status?.danger || tokens.semantic?.negative || '#C62828';
+      } else if (val <= tNominal) {
         statusKey = 'warning';
         statusLabel = 'Attention';
         statusIcon = '⚠️';
@@ -254,7 +329,7 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
+          ">${escapeHtml(data.title)}</span>
           <span style="
             display: inline-flex;
             align-items: center;
@@ -286,10 +361,10 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${val.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${val.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
           <div style="font-size: 0.75rem; color: ${tokens.textMuted}; font-weight: 500;">
-            Plage nominale : &lt; ${tNominal} ${data.unit}
+            Plage nominale : ${isHigherBetter ? '&gt;' : '&lt;'} ${tNominal} ${escapeHtml(data.unit || '')}
           </div>
         </div>
 
@@ -306,7 +381,7 @@
           color: ${statusKey === 'danger' ? statusColor : tokens.textMuted};
           font-weight: ${statusKey === 'danger' ? '600' : 'normal'};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;

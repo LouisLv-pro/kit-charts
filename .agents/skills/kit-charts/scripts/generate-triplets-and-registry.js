@@ -11,6 +11,14 @@ const ROOT_DIR = path.resolve(__dirname, '../../../..');
 const TEMPLATE_DIR = path.join(ROOT_DIR, 'template');
 const REGISTRY_PATH = path.join(ROOT_DIR, '.agents/skills/kit-charts/registry.json');
 
+// Dossiers de template/ qui ne sont pas des templates de graphique : démonstrateurs du catalogue
+// (index.html), jamais ciblés par une spec. Exclus du registre et donc du recommandeur et du compilateur.
+const NON_TEMPLATE_DIRS = new Set(['tooltip']);
+
+// Templates où datasets[].data n'a pas une valeur par label (niveaux, matrices, segments, tâches) :
+// le linter ne compare pas les longueurs data / labels pour eux.
+const DATA_NOT_PER_LABEL = new Set(['sunburst', 'distribution-heatmap', 'matrix-heatmap', 'gantt-progress', 'dendrogram']);
+
 // Méta-informations détaillées et enrichies pour chaque template
 const TEMPLATE_METADATA = {
   // 00. KPI Cards
@@ -97,7 +105,7 @@ const TEMPLATE_METADATA = {
     name: 'Graphique à Puces (Bullet Chart Stephen Few)',
     desc: 'Comparaison ultra-compacte Réalisé vs Cible et bandes de performance qualitatives en niveaux de gris.',
     type: 'chart',
-    labelsType: 'categorical', minCategories: 1, maxCategories: 10, seriesCount: 3,
+    labelsType: 'categorical', minCategories: 1, maxCategories: 10, seriesCount: 5,
     dataLabels: true, antiOcclusionTooltip: true, semanticValence: true
   },
   'bar-target-overlay': {
@@ -118,7 +126,7 @@ const TEMPLATE_METADATA = {
     name: 'Graphique de Pente (Slope Chart)',
     desc: 'Comparaison d évolution et changement de rang entre exactement deux dates fixes sans encombrement.',
     type: 'chart',
-    labelsType: 'categorical', minCategories: 2, maxCategories: 10, seriesCount: 2,
+    labelsType: 'categorical', minCategories: 2, maxCategories: 2, seriesCount: 10,
     dataLabels: true, antiOcclusionTooltip: true, semanticValence: true
   },
   'dumbbell-chart': {
@@ -169,7 +177,7 @@ const TEMPLATE_METADATA = {
     name: 'Diagramme Rayonnement Solaire (Sunburst)',
     desc: 'Arborescence multiniveaux concentrique radialement ordonnée du centre vers la périphérie.',
     type: 'chart',
-    labelsType: 'hierarchical', minCategories: 4, maxCategories: 30, seriesCount: 1,
+    labelsType: 'hierarchical', minCategories: 4, maxCategories: 30, seriesCount: 3,
     dataLabels: true, antiOcclusionTooltip: true, semanticValence: false
   },
   'waffle-chart': {
@@ -466,7 +474,8 @@ const TEMPLATE_METADATA = {
     name: 'Dendrogramme Hiérarchique de Clustering',
     desc: 'Arbre de classification révélant les distances euclidiennes de regroupement entre sous-groupes.',
     type: 'chart',
-    labelsType: 'categorical', minCategories: 4, maxCategories: 30, seriesCount: 1,
+    labelsType: 'categorical', minCategories: 4, maxCategories: 30, seriesCount: 8,
+    // seriesCount = groupes de segments (clusters, jonctions, seuil) : pas de plafond au rendu, 8 borne la lisibilité.
     dataLabels: true, antiOcclusionTooltip: true, semanticValence: false
   },
   'marimekko-chart': {
@@ -587,25 +596,10 @@ function scanTemplates(dir) {
  */
 function generateHtmlTemplate(id, meta, type) {
   if (type === 'kpi') {
-    return `<div class="kit-charts-card kit-charts-kpi" id="{{CONTAINER_ID}}" data-template-id="${id}" style="position: relative; width: 100%; min-height: {{HEIGHT}}px; background: var(--kc-bg-card, #FFFFFF); border: 1px solid var(--kc-border, #E2E8F0); border-radius: 12px; padding: 1.25rem; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between;">
-  <div class="kit-charts-kpi-header">
-    <div class="kit-charts-kpi-title" style="font-size: 0.875rem; font-weight: 500; color: var(--kc-text-secondary, #64748B);">{{TITLE}}</div>
-    <div class="kit-charts-kpi-subtitle" style="font-size: 0.75rem; color: var(--kc-text-muted, #94A3B8); margin-top: 0.25rem;">{{SUBTITLE}}</div>
-  </div>
-  <div class="kit-charts-kpi-body" style="margin: 0.75rem 0; display: flex; align-items: baseline; justify-content: space-between; gap: 0.5rem;">
-    <div class="kit-charts-kpi-value-group" style="display: flex; align-items: baseline; gap: 0.35rem;">
-      <span class="kit-charts-kpi-value" style="font-size: 2rem; font-weight: 700; color: var(--kc-text-primary, #0F172A); font-variant-numeric: tabular-nums;">--</span>
-      <span class="kit-charts-kpi-unit" style="font-size: 1rem; font-weight: 500; color: var(--kc-text-secondary, #64748B);"></span>
-    </div>
-    <div class="kit-charts-kpi-badge" style="padding: 0.25rem 0.5rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; font-variant-numeric: tabular-nums;">--</div>
-  </div>
-  <div class="kit-charts-kpi-chart-wrapper" style="position: relative; width: 100%; height: 60px;">
-    <canvas id="{{CANVAS_ID}}" role="img" aria-label="{{TITLE}}"></canvas>
-  </div>
-  <div class="kit-charts-kpi-footer" style="font-size: 0.6875rem; color: var(--kc-text-muted, #94A3B8); border-top: 1px solid var(--kc-border-subtle, #F1F5F9); padding-top: 0.5rem; margin-top: 0.5rem;">
-    {{FOOTNOTE}}
-  </div>
-</div>
+    // Hôte nu : renderCard() du template dessine la carte complète (titre, valeur, badge, micro-graphique,
+    // footnote), exactement comme dans preview.html. Le compilateur y reporte layout.footnote quand
+    // formattedData.footnote est absent (layout.title aussi, mais le schéma exige formattedData.title).
+    return `<div class="kit-charts-kpi-host" id="{{CONTAINER_ID}}" data-template-id="${id}" style="position: relative; width: 100%;"></div>
 `;
   }
 
@@ -618,6 +612,7 @@ function generateHtmlTemplate(id, meta, type) {
   <div class="kit-charts-table-wrapper" id="{{TABLE_ID}}" style="width: 100%;">
     <!-- Le tableau sera hydraté dynamiquement ici par template.js -->
   </div>
+  <p class="kit-charts-footnote" style="margin: 0.75rem 0 0 0; font-size: 0.75rem; color: var(--kc-text-secondary, #64748B);">{{FOOTNOTE}}</p>
 </div>
 `;
   }
@@ -631,6 +626,7 @@ function generateHtmlTemplate(id, meta, type) {
   <div class="kit-charts-body" style="position: relative; width: 100%; height: {{HEIGHT}}px;">
     <canvas id="{{CANVAS_ID}}" role="img" aria-label="{{TITLE}}"></canvas>
   </div>
+  <p class="kit-charts-footnote" style="margin: 0.75rem 0 0 0; font-size: 0.75rem; color: var(--kc-text-secondary, #64748B);">{{FOOTNOTE}}</p>
 </div>
 `;
 }
@@ -654,7 +650,8 @@ function generateJsonSchema(id, meta, defaultData) {
         "properties": {
           "title": { "type": "string" },
           "subtitle": { "type": "string" },
-          "height": { "type": "integer", "minimum": 100, "maximum": 2000, "default": 400 }
+          "height": { "type": "integer", "minimum": 100, "maximum": 2000, "default": 400 },
+          "footnote": { "type": "string", "description": "Source ou note de lecture, rendue en pied de carte" }
         }
       },
       "colorStrategy": {
@@ -733,7 +730,8 @@ function generateJsonSchema(id, meta, defaultData) {
             },
             "minItems": 1,
             "maxItems": meta.seriesCount || 5
-          }
+          },
+          "showDataLabels": { "type": "boolean" }
         },
         "required": ["labels", "datasets"]
       };
@@ -781,7 +779,9 @@ function generateJsonSchema(id, meta, defaultData) {
             "type": "array",
             "items": { "type": "number" }
           },
-          "footnote": { "type": "string" }
+          "footnote": { "type": "string" },
+          "format": { "type": "string" },
+          "showDataLabels": { "type": "boolean" }
         },
         "required": ["title", "value"]
       };
@@ -794,13 +794,158 @@ function generateJsonSchema(id, meta, defaultData) {
     }
   }
 
+  const override = FORMATTED_DATA_OVERRIDES[id];
+  if (override && schema.properties.formattedData.properties) {
+    override(schema.properties.formattedData);
+  }
+
   return schema;
 }
+
+/**
+ * Ajustements de formattedData par template, là où le gabarit générique
+ * (labels + datasets[].data de nombres) ne décrit pas ce que template.js lit réellement.
+ * Chaque entrée reflète le code de rendu du template, pas une intention.
+ */
+const NUMBER_ARRAY = { "type": "array", "items": { "type": "number" } };
+
+function datasetProps(fd) {
+  return fd.properties.datasets.items.properties;
+}
+
+// Distributions : seul datasets[0] est lu, chaque entrée de data est l'échantillon brut d'un groupe.
+function rawSamplesPerGroup(fd) {
+  fd.properties.datasets.maxItems = 1;
+  datasetProps(fd).data.items = NUMBER_ARRAY;
+}
+
+const OBJECT_ARRAY = (props, required) => ({
+  "type": "array",
+  "items": { "type": "object", "properties": props, "required": required || [] }
+});
+
+const FORMATTED_DATA_OVERRIDES = {
+  // Champs requis = ceux que la carte affiche toujours (renderCard refuse la carte sinon).
+  'kpi-bullet': (fd) => {
+    fd.required = ["title", "value", "target"];
+    fd.properties.target = { "type": "number", "minimum": 0 };
+    fd.properties.ranges = { "type": "array", "items": { "type": "number" }, "minItems": 3, "maxItems": 3 };
+    fd.properties.thresholds = { "type": "object" };
+    fd.properties.autoThreshold = { "type": "boolean" };
+  },
+  'kpi-comparative': (fd) => {
+    const ref = { "type": "object", "properties": { "label": { "type": "string" }, "value": { "type": "number" }, "deltaAbs": { "type": "number" }, "deltaPct": { "type": "number" } } };
+    ref.required = ["value"];
+    fd.required = ["title", "value", "historical", "budget"];
+    fd.properties.historical = ref;
+    fd.properties.budget = ref;
+    fd.properties.thresholds = { "type": "object" };
+    fd.properties.autoThreshold = { "type": "boolean" };
+  },
+  'kpi-composite': (fd) => {
+    fd.required = ["title", "value", "drivers"];
+    fd.properties.drivers = Object.assign(OBJECT_ARRAY({ "label": { "type": "string" }, "value": { "type": ["number", "string"] }, "unit": { "type": "string" }, "delta": { "type": "number" }, "deltaUnit": { "type": "string" } }, ["label", "value", "delta"]), { "minItems": 1 });
+  },
+  'kpi-distribution': (fd) => {
+    fd.required = ["title", "value", "segments"];
+    fd.properties.segments = Object.assign(OBJECT_ARRAY({ "label": { "type": "string" }, "pct": { "type": "number", "minimum": 0, "maximum": 100 }, "value": { "type": "number" } }, ["label", "pct"]), { "minItems": 1 });
+  },
+  'kpi-sparkline': (fd) => {
+    fd.required = ["title", "value", "history"];
+    fd.properties.history = { "type": "array", "items": { "type": "number" }, "minItems": 1 };
+    fd.properties.labels = { "type": "array", "items": { "type": "string" } };
+  },
+  'kpi-status-alert': (fd) => {
+    fd.required = ["title", "value", "polarity", "thresholds"];
+    fd.properties.thresholds = { "type": "object", "properties": { "optimal": { "type": "number" }, "nominal": { "type": "number" }, "critical": { "type": "number" } }, "required": ["nominal", "critical"] };
+    fd.properties.polarity = { "type": "string", "enum": ["lower-is-better", "higher-is-better"] };
+    fd.properties.maxScale = { "type": "number", "minimum": 0 };
+    fd.properties.autoThreshold = { "type": "boolean" };
+  },
+  'bar-chart-vertical': (fd) => { fd.properties.errorBars = { "type": ["object", "boolean"] }; },
+  'grouped-bar-chart': (fd) => { fd.properties.errorBars = { "type": ["object", "boolean"] }; },
+  'distribution-heatmap': (fd) => {
+    fd.properties.xLabels = { "type": "array", "items": { "type": "string" } };
+    fd.properties.yLabels = { "type": "array", "items": { "type": "string" } };
+  },
+  'bar-chart-horizontal': (fd) => {
+    // Tri décroissant automatique, désactivable par sorted: false (template.js : ds.sorted !== false).
+    datasetProps(fd).sorted = { "type": "boolean", "default": true };
+  },
+  'sunburst': (fd) => {
+    // Un dataset par niveau concentrique ; weight règle l'épaisseur relative de l'anneau.
+    datasetProps(fd).weight = { "type": "number", "minimum": 0 };
+  },
+  'dendrogram': (fd) => {
+    // Un dataset par groupe de segments {x, y} ; role pilote l'emphase (focal, context, benchmark).
+    datasetProps(fd).role = { "type": "string" };
+    datasetProps(fd).data.items = {
+      "type": "object",
+      "properties": { "x": { "type": "number" }, "y": { "type": "number" } },
+      "required": ["x", "y"]
+    };
+  },
+  'box-strip-plot': rawSamplesPerGroup,
+  'raincloud-plot': rawSamplesPerGroup,
+  'violin-plot': rawSamplesPerGroup,
+  'waterfall-chart': (fd) => {
+    // Barre flottante [début, fin] pour les variations, nombre seul pour une barre de total.
+    datasetProps(fd).data.items = {
+      "type": ["array", "number", "null"],
+      "items": { "type": "number" },
+      "minItems": 2,
+      "maxItems": 2
+    };
+  },
+  'gantt-progress': (fd) => {
+    // template.js lit datasets[0].tasks et datasets[0].todayWeek, jamais datasets[0].data.
+    const ds = fd.properties.datasets;
+    ds.maxItems = 1;
+    ds.items = {
+      "type": "object",
+      "properties": {
+        "label": { "type": "string" },
+        "todayWeek": { "type": "number" },
+        "tasks": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "properties": {
+              "label": { "type": "string" },
+              "start": { "type": "number" },
+              "end": { "type": "number" },
+              "progress": { "type": "number", "minimum": 0, "maximum": 100 },
+              "category": { "type": "integer", "minimum": 0 }
+            },
+            "required": ["label", "start", "end"]
+          }
+        }
+      },
+      "required": ["tasks"]
+    };
+  },
+  'table-heatmap-matrix': (fd) => {
+    // Colonnes = libellés simples ; chaque ligne porte un label et une valeur par colonne.
+    fd.properties.unit = { "type": "string" };
+    fd.properties.columns = { "type": "array", "items": { "type": "string" }, "minItems": 1 };
+    fd.properties.rows.items = {
+      "type": "object",
+      "properties": {
+        "id": { "type": "string" },
+        "label": { "type": "string" },
+        "values": NUMBER_ARRAY
+      },
+      "required": ["label", "values"]
+    };
+  }
+};
 
 // Exécution principale
 function main() {
   console.log('🚀 Début de la standardisation des triplets et génération de registry.json...');
-  const templatePaths = scanTemplates(TEMPLATE_DIR);
+  const templatePaths = scanTemplates(TEMPLATE_DIR)
+    .filter(p => !NON_TEMPLATE_DIRS.has(path.relative(TEMPLATE_DIR, p).split(path.sep)[0]));
   console.log(`📦 ${templatePaths.length} répertoires de templates détectés.`);
 
   const registryTemplates = [];
@@ -846,7 +991,8 @@ function main() {
         labelsType: meta.labelsType || 'categorical',
         minCategories: meta.minCategories || 1,
         maxCategories: meta.maxCategories || 20,
-        seriesCount: meta.seriesCount || 1
+        seriesCount: meta.seriesCount || 1,
+        ...(DATA_NOT_PER_LABEL.has(id) ? { dataPerLabel: false } : {})
       },
       supportedFeatures: {
         dataLabels: Boolean(meta.dataLabels),

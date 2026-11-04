@@ -22,6 +22,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
@@ -42,6 +45,22 @@
     benchmark: 125080,
     history: [118000, 121500, 120200, 124000, 122800, 125080, 142850]
   };
+
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    return null;
+  }
 
   /**
    * Formate une valeur numérique avec séparateurs de milliers et chiffres tabulaires.
@@ -70,7 +89,9 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
 
     const valence = data.delta > 0 ? 1 : (data.delta < 0 ? -1 : 0);
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -79,7 +100,8 @@
     // Dessin d'une micro-visualisation en anneau avec Chart.js
     if (typeof Chart === 'undefined') return null;
 
-    const progressRatio = data.benchmark ? Math.min(100, Math.round((data.value / data.benchmark) * 100)) : 100;
+    const hasBenchmark = isNum(data.benchmark) && data.benchmark !== 0;
+    const progressRatio = hasBenchmark ? Math.max(0, Math.min(100, Math.round((data.value / data.benchmark) * 100))) : 0;
     const isDark = Boolean(tokens.isDark);
 
     const chart = new Chart(canvas, {
@@ -107,7 +129,9 @@
           tooltip: {
             enabled: true,
             callbacks: {
-              label: (ctx) => `Atteinte : ${progressRatio}% (${formatValue(data.value, data.format, data.unit)})`
+              label: (ctx) => hasBenchmark
+                ? `Atteinte : ${progressRatio}% (${formatValue(data.value, data.format, data.unit)})`
+                : `Valeur : ${formatValue(data.value, data.format, data.unit)} (aucune référence)`
             }
           }
         }
@@ -128,8 +152,11 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
 
+    const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -161,8 +188,8 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
-          <span style="
+          ">${escapeHtml(data.title)}</span>
+          ${hasDelta ? `<span style="
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -181,7 +208,7 @@
           ">
             <span>${arrowGlyph}</span>
             <span>${deltaSign}${data.delta}%</span>
-          </span>
+          </span>` : ''}
         </div>
 
         <div style="margin-bottom: 0.75rem;">
@@ -193,15 +220,15 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="
+          ${data.deltaLabel ? `<div style="
             font-size: 0.8125rem;
             color: ${tokens.textMuted};
             margin-top: 0.35rem;
           ">
-            ${data.deltaLabel}
-          </div>
+            ${escapeHtml(data.deltaLabel)}
+          </div>` : ''}
         </div>
 
         ${data.footnote ? `
@@ -211,7 +238,7 @@
           font-size: 0.725rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;

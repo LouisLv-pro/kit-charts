@@ -4080,6 +4080,74 @@ const checkCIOverlap = (statHelpers && statHelpers.checkCIOverlap) || function(c
 };
 const errorBarsPlugin = (statHelpers && statHelpers.errorBarsPlugin) || null;
 
+/**
+ * Échappe une valeur pour l'interpoler dans du HTML (texte ou attribut entre guillemets ou apostrophes).
+ * À appliquer à toute donnée fournie (formattedData) avant innerHTML ; jamais aux fragments HTML
+ * construits par le template lui-même.
+ * @param {*} value
+ * @returns {string}
+ */
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+/**
+ * Contrat d'entrée des templates : quand des données sont fournies (customData non nul), un champ
+ * requis absent ne doit jamais être comblé par l'exemple DEFAULT_DATA. Le graphique afficherait
+ * de fausses données plausibles. checkRequiredArrays renvoie la raison du refus, ou null.
+ * @param {Object} data - Données fournies
+ * @param {string[]} paths - Chemins requis, ex. 'labels', 'datasets[0].data'
+ * @returns {string|null}
+ */
+function checkRequiredArrays(data, paths) {
+  if (!data || typeof data !== 'object') return 'formattedData doit être un objet';
+  for (const p of paths) {
+    const value = p.split(/[.[\]]/).filter(Boolean).reduce((acc, key) => (acc == null ? undefined : acc[key]), data);
+    if (!Array.isArray(value)) return `formattedData.${p} attendu en tableau, reçu ${value === undefined ? 'absent' : typeof value}`;
+  }
+  return null;
+}
+
+/**
+ * Affiche un état « données invalides » visible à la place du graphique et le signale
+ * (console.error + attribut data-kc-invalid, lu par le compilateur et render-check.js).
+ * @param {HTMLElement|string} target - Canvas ou conteneur DOM
+ * @param {string} reason - Raison lisible
+ * @returns {null}
+ */
+function renderInvalidData(target, reason) {
+  const message = `Données invalides : ${reason}`;
+  if (typeof console !== 'undefined' && console.error) console.error(`[kit-charts] ${message}`);
+  const el = (typeof target === 'string' && typeof document !== 'undefined') ? document.getElementById(target) : target;
+  if (!el) return null;
+  if (typeof el.setAttribute === 'function') {
+    el.setAttribute('data-kc-invalid', reason);
+    el.setAttribute('aria-label', message);
+  }
+  if (el.tagName === 'CANVAS' && typeof el.getContext === 'function') {
+    const ctx = el.getContext('2d');
+    if (ctx && typeof ctx.fillText === 'function') {
+      const w = el.width || 600;
+      const h = el.height || 300;
+      if (typeof ctx.clearRect === 'function') ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#B91C1C';
+      ctx.font = '600 14px system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(message, w / 2, h / 2);
+    }
+  } else if ('innerHTML' in el) {
+    const safe = String(message).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    el.innerHTML = `<div role="alert" data-kc-invalid="${safe}" style="padding: 1rem; border: 1px solid #B91C1C; border-radius: 8px; color: #B91C1C; font: 600 0.875rem system-ui, sans-serif;">${safe}</div>`;
+  }
+  return null;
+}
+
 const KitChartsTheme = {
   THEMES,
   THEME_NAMES,
@@ -4149,7 +4217,10 @@ const KitChartsTheme = {
   getStoredTheme,
   setStoredTheme,
   getStoredLabels,
-  setStoredLabels
+  setStoredLabels,
+  checkRequiredArrays,
+  renderInvalidData,
+  escapeHtml
 };
 
 // Global browser attachment (Zero CORS on file://)
@@ -4160,6 +4231,9 @@ if (typeof window !== 'undefined') {
   window.KitCharts.Theme = KitChartsTheme;
   window.KitCharts.animation = window.KitCharts.animation || KitChartsTheme;
   window.getThemeTokens = getThemeTokens;
+  window.checkRequiredArrays = checkRequiredArrays;
+  window.renderInvalidData = renderInvalidData;
+  window.escapeHtml = escapeHtml;
   window.applyThemeToContainer = applyThemeToContainer;
   window.loadGoogleFonts = loadGoogleFonts;
   window.getChartDefaultOptions = getChartDefaultOptions;
@@ -4302,6 +4376,9 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.animateCriticalDamping = animateCriticalDamping;
   module.exports.kcDeltaFlashPlugin = kcDeltaFlashPlugin;
   module.exports.attachDeltaFlash = attachDeltaFlash;
+  module.exports.checkRequiredArrays = checkRequiredArrays;
+  module.exports.renderInvalidData = renderInvalidData;
+  module.exports.escapeHtml = escapeHtml;
 }
 
 

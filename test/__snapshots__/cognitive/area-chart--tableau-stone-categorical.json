@@ -1,0 +1,182 @@
+{
+  "_meta": {
+    "family": "05-evolution-temporelle",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "area-chart",
+    "themeName": "tableau-stone-categorical"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "rgba(78, 121, 167, 0.25)",
+            "borderColor": "#4E79A7",
+            "borderDash": [],
+            "borderWidth": 2.5,
+            "data": [
+              120,
+              135,
+              150,
+              165,
+              180,
+              210,
+              240,
+              260,
+              290,
+              310,
+              340,
+              380
+            ],
+            "fill": "origin",
+            "label": "Volume Données Réseau (To)",
+            "pointBackgroundColor": "#4E79A7",
+            "pointBorderColor": "#FFFFFF",
+            "pointBorderWidth": 1.5,
+            "pointHoverRadius": 6,
+            "pointRadius": 4,
+            "pointStyle": "circle",
+            "tension": 0.3
+          }
+        ],
+        "labels": [
+          "Jan",
+          "Fév",
+          "Mar",
+          "Avr",
+          "Mai",
+          "Juin",
+          "Juil",
+          "Août",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Déc"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "x",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 12,
+            "hoverRadius": 6,
+            "radius": 3
+          }
+        },
+        "hitRadius": 12,
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "hoverRadius": 6,
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "index",
+        "plugins": {
+          "legend": {
+            "align": "end",
+            "display": false,
+            "labels": {
+              "boxHeight": 8,
+              "boxWidth": 8,
+              "color": "#1E293B",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 14,
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "500"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 1,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "padding": 10,
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              "size": 12,
+              "weight": "600"
+            }
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#334155",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "line"
+    },
+    "kind": "chart-config"
+  }
+}

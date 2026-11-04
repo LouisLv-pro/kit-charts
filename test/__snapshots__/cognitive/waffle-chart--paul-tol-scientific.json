@@ -1,0 +1,623 @@
+{
+  "_meta": {
+    "family": "02-composition-part-to-whole",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "waffle-chart",
+    "themeName": "paul-tol-scientific"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "[Function:backgroundColor]",
+            "borderColor": "#FFFFFF",
+            "borderRadius": 3,
+            "borderWidth": 2,
+            "data": [
+              {
+                "v": 1,
+                "x": 1,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 2,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 3,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 4,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 5,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 6,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 7,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 8,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 9,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 10,
+                "y": 1
+              },
+              {
+                "v": 1,
+                "x": 1,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 2,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 3,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 4,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 5,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 6,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 7,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 8,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 9,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 10,
+                "y": 2
+              },
+              {
+                "v": 1,
+                "x": 1,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 2,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 3,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 4,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 5,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 6,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 7,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 8,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 9,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 10,
+                "y": 3
+              },
+              {
+                "v": 1,
+                "x": 1,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 2,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 3,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 4,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 5,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 6,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 7,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 8,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 9,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 10,
+                "y": 4
+              },
+              {
+                "v": 1,
+                "x": 1,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 2,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 3,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 4,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 5,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 6,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 7,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 8,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 9,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 10,
+                "y": 5
+              },
+              {
+                "v": 1,
+                "x": 1,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 2,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 3,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 4,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 5,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 6,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 7,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 8,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 9,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 10,
+                "y": 6
+              },
+              {
+                "v": 1,
+                "x": 1,
+                "y": 7
+              },
+              {
+                "v": 1,
+                "x": 2,
+                "y": 7
+              },
+              {
+                "v": 1,
+                "x": 3,
+                "y": 7
+              },
+              {
+                "v": 1,
+                "x": 4,
+                "y": 7
+              },
+              {
+                "v": 1,
+                "x": 5,
+                "y": 7
+              },
+              {
+                "v": 1,
+                "x": 6,
+                "y": 7
+              },
+              {
+                "v": 1,
+                "x": 7,
+                "y": 7
+              },
+              {
+                "v": 1,
+                "x": 8,
+                "y": 7
+              },
+              {
+                "v": 0,
+                "x": 9,
+                "y": 7
+              },
+              {
+                "v": 0,
+                "x": 10,
+                "y": 7
+              },
+              {
+                "v": 0,
+                "x": 1,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 2,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 3,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 4,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 5,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 6,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 7,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 8,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 9,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 10,
+                "y": 8
+              },
+              {
+                "v": 0,
+                "x": 1,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 2,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 3,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 4,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 5,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 6,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 7,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 8,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 9,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 10,
+                "y": 9
+              },
+              {
+                "v": 0,
+                "x": 1,
+                "y": 10
+              },
+              {
+                "v": 0,
+                "x": 2,
+                "y": 10
+              },
+              {
+                "v": 0,
+                "x": 3,
+                "y": 10
+              },
+              {
+                "v": 0,
+                "x": 4,
+                "y": 10
+              },
+              {
+                "v": 0,
+                "x": 5,
+                "y": 10
+              },
+              {
+                "v": 0,
+                "x": 6,
+                "y": 10
+              },
+              {
+                "v": 0,
+                "x": 7,
+                "y": 10
+              },
+              {
+                "v": 0,
+                "x": 8,
+                "y": 10
+              },
+              {
+                "v": 0,
+                "x": 9,
+                "y": 10
+              },
+              {
+                "v": 0,
+                "x": 10,
+                "y": 10
+              }
+            ],
+            "height": "[Function:height]",
+            "label": "Progression des Objectifs (%)",
+            "width": "[Function:width]"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "axis": "xy",
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 25
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "display": false,
+            "max": 10.5,
+            "min": 0.5
+          },
+          "y": {
+            "display": false,
+            "max": 10.5,
+            "min": 0.5
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDraw": "[Function:afterDraw]",
+          "id": "waffleSummaryPlugin_dopf7"
+        }
+      ],
+      "type": "matrix"
+    },
+    "kind": "chart-config"
+  }
+}

@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) {
     const isCost = ['cost', 'churn', 'risk', 'loss', 'latency', 'cac', 'expense', 'debt', 'defect'].includes(String(m || 'revenue').toLowerCase().trim());
@@ -196,12 +197,12 @@
     const titleText = `Tendance: Début ${values[0]} → Fin ${values[lastIdx]} (Min: ${min}, Max: ${max})`;
 
     return `
-      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow:visible; display:block; margin:0 auto;" aria-label="${titleText}">
-        <title>${titleText}</title>
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow:visible; display:block; margin:0 auto;" aria-label="${escapeHtml(titleText)}">
+        <title>${escapeHtml(titleText)}</title>
         <polyline fill="none" stroke="${strokeColor}" stroke-width="${isTufte ? '1.25' : '1.75'}" stroke-linecap="round" stroke-linejoin="round" points="${points.join(' ')}" />
-        ${!isTufte ? `<circle cx="${minX}" cy="${minY}" r="2" fill="#C62828" opacity="0.85"><title>Min: ${min}</title></circle>` : ''}
-        ${!isTufte ? `<circle cx="${maxX}" cy="${maxY}" r="2" fill="#2E7D32" opacity="0.85"><title>Max: ${max}</title></circle>` : ''}
-        <circle cx="${lastX}" cy="${lastY}" r="${isTufte ? '2' : '2.5'}" fill="${strokeColor}"><title>Dernier: ${values[lastIdx]}</title></circle>
+        ${!isTufte ? `<circle cx="${minX}" cy="${minY}" r="2" fill="#C62828" opacity="0.85"><title>Min: ${escapeHtml(min)}</title></circle>` : ''}
+        ${!isTufte ? `<circle cx="${maxX}" cy="${maxY}" r="2" fill="#2E7D32" opacity="0.85"><title>Max: ${escapeHtml(max)}</title></circle>` : ''}
+        <circle cx="${lastX}" cy="${lastY}" r="${isTufte ? '2' : '2.5'}" fill="${strokeColor}"><title>Dernier: ${escapeHtml(values[lastIdx])}</title></circle>
       </svg>
     `;
   }
@@ -327,9 +328,9 @@
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
-          <th data-key="${col.key}" style="
+          <th data-key="${escapeHtml(col.key)}" style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -339,7 +340,7 @@
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${col.label}${sortIcon}
+            ${escapeHtml(col.label)}${sortIcon}
           </th>
         `;
       });
@@ -394,8 +395,8 @@
             transition: background 0.15s ease;
           ">
             <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
-              <div style="font-weight: 600; color: ${textPrimary};">${row.kpi}</div>
-              ${row.desc ? `<div style="font-size: 0.7rem; color: ${textMuted}; margin-top: 1px;">${row.desc}</div>` : ''}
+              <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.kpi)}</div>
+              ${row.desc ? `<div style="font-size: 0.7rem; color: ${textMuted}; margin-top: 1px;">${escapeHtml(row.desc)}</div>` : ''}
             </td>
             <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
               <span style="
@@ -406,13 +407,13 @@
                 font-weight: 500;
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
-              ">${row.category}</span>
+              ">${escapeHtml(row.category)}</span>
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; font-weight: 600; color: ${textPrimary}; vertical-align: middle;">
-              ${formatNumber(row.actual, row.unit || '')}
+              ${escapeHtml(formatNumber(row.actual, row.unit || ''))}
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
-              ${formatNumber(row.target, row.unit || '')}
+              ${escapeHtml(formatNumber(row.target, row.unit || ''))}
             </td>
             <td style="padding: 10px 14px; text-align: right; vertical-align: middle;">
               <span style="
@@ -446,7 +447,7 @@
                 white-space: nowrap;
               ">
                 <span aria-hidden="true" style="font-size: 0.65rem;">${statusSymbol}</span>
-                <span>${row.statusText || row.status}</span>
+                <span>${escapeHtml(row.statusText || row.status)}</span>
               </span>
             </td>
           </tr>

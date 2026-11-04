@@ -1,0 +1,323 @@
+{
+  "_meta": {
+    "family": "01-comparaison",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "dumbbell-chart",
+    "themeName": "nord-cognitive-dark"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#81A1C1",
+            "borderColor": "#2E3440",
+            "borderWidth": 2,
+            "data": [
+              {
+                "x": 45,
+                "y": "Santé"
+              },
+              {
+                "x": 38,
+                "y": "Éducation"
+              },
+              {
+                "x": 32,
+                "y": "Défense"
+              },
+              {
+                "x": 28,
+                "y": "Infrastructures"
+              },
+              {
+                "x": 15,
+                "y": "Recherche"
+              }
+            ],
+            "datalabels": false,
+            "displayDataLabels": false,
+            "label": "Budget Initial",
+            "pointHitRadius": 12,
+            "pointHoverRadius": 9,
+            "pointRadius": 7,
+            "type": "scatter"
+          },
+          {
+            "backgroundColor": "#88C0D0",
+            "borderColor": "#2E3440",
+            "borderWidth": 2,
+            "data": [
+              {
+                "x": 58,
+                "y": "Santé"
+              },
+              {
+                "x": 46,
+                "y": "Éducation"
+              },
+              {
+                "x": 39,
+                "y": "Défense"
+              },
+              {
+                "x": 31,
+                "y": "Infrastructures"
+              },
+              {
+                "x": 24,
+                "y": "Recherche"
+              }
+            ],
+            "datalabels": false,
+            "displayDataLabels": false,
+            "label": "Budget Final",
+            "pointHitRadius": 12,
+            "pointHoverRadius": 9,
+            "pointRadius": 7,
+            "type": "scatter"
+          }
+        ],
+        "labels": [
+          "Santé",
+          "Éducation",
+          "Défense",
+          "Infrastructures",
+          "Recherche"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#4C566A",
+          "bg": "#2E3440",
+          "border": "#4C566A",
+          "borderStrong": "#616E85",
+          "divergent": {
+            "mid": "#4C566A",
+            "neg": "#BF616A",
+            "pos": "#88C0D0"
+          },
+          "emphasis": {
+            "anomaly": "#BF616A",
+            "benchmark": "#ECEFF4",
+            "context": "#4C566A",
+            "focal": "#88C0D0",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'JetBrains Mono', monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+          "gridColor": "rgba(236, 239, 244, 0.06)",
+          "id": "07-nord-cognitive-dark",
+          "isDark": true,
+          "label": "Nord Cognitive Dark",
+          "name": "nord-cognitive-dark",
+          "palette": [
+            "#88C0D0",
+            "#81A1C1",
+            "#5E81AC",
+            "#A3BE8C",
+            "#EBCB8B",
+            "#D08770",
+            "#BF616A",
+            "#B48EAD"
+          ],
+          "semantic": {
+            "info": "#88C0D0",
+            "negative": "#BF616A",
+            "neutral": "#D8DEE9",
+            "positive": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "sequential": [
+            "#3B4252",
+            "#4C566A",
+            "#5E81AC",
+            "#81A1C1",
+            "#88C0D0",
+            "#ECEFF4"
+          ],
+          "status": {
+            "danger": "#BF616A",
+            "info": "#88C0D0",
+            "neutral": "#D8DEE9",
+            "success": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "surface": "#3B4252",
+          "surfaceRaised": "#434C5E",
+          "textMuted": "#9EABC0",
+          "textPrimary": "#ECEFF4",
+          "textSecondary": "#D8DEE9",
+          "tooltipBg": "#434C5E",
+          "tooltipText": "#ECEFF4",
+          "zeroLine": "#88C0D0"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 12,
+            "left": 12,
+            "right": 24,
+            "top": 12
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#ECEFF4",
+            "display": true,
+            "font": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:anonymous]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "#434C5E",
+            "bodyColor": "#ECEFF4",
+            "bodyFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#616E85",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#ECEFF4",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grace": "14%",
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "min": 0,
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'JetBrains Mono', monospace",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "labels": [
+              "Santé",
+              "Éducation",
+              "Défense",
+              "Infrastructures",
+              "Recherche"
+            ],
+            "offset": true,
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 20
+            },
+            "type": "category"
+          }
+        },
+        "showDataLabels": true
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeDatasetsDraw": "[Function:beforeDatasetsDraw]",
+          "id": "dumbbellConnectorPlugin"
+        }
+      ],
+      "type": "scatter"
+    },
+    "kind": "chart-config"
+  }
+}

@@ -1,0 +1,255 @@
+{
+  "_meta": {
+    "family": "05-evolution-temporelle",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "streamgraph",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "rgba(38, 130, 142, 0.65)",
+            "borderColor": "#3E4A89",
+            "borderDash": [],
+            "borderWidth": 2,
+            "data": [
+              20,
+              32,
+              45,
+              68,
+              92,
+              115,
+              130,
+              142,
+              160,
+              175
+            ],
+            "fill": true,
+            "label": "Intelligence Artificielle",
+            "pointBackgroundColor": "#3E4A89",
+            "pointBorderColor": "#FFFFFF",
+            "pointHoverRadius": 5,
+            "pointRadius": 0,
+            "pointStyle": "circle",
+            "tension": 0.4
+          },
+          {
+            "backgroundColor": "rgba(203, 213, 225, 0.65)",
+            "borderColor": "#26828E",
+            "borderDash": [],
+            "borderWidth": 1,
+            "data": [
+              45,
+              50,
+              48,
+              55,
+              62,
+              70,
+              75,
+              80,
+              82,
+              85
+            ],
+            "fill": true,
+            "label": "Cybersécurité & Privacy",
+            "pointBackgroundColor": "#26828E",
+            "pointBorderColor": "#FFFFFF",
+            "pointHoverRadius": 5,
+            "pointRadius": 0,
+            "pointStyle": "circle",
+            "tension": 0.4
+          },
+          {
+            "backgroundColor": "rgba(203, 213, 225, 0.65)",
+            "borderColor": "#35B779",
+            "borderDash": [],
+            "borderWidth": 1,
+            "data": [
+              60,
+              58,
+              55,
+              52,
+              48,
+              45,
+              42,
+              40,
+              38,
+              35
+            ],
+            "fill": true,
+            "label": "Cloud & DevOps",
+            "pointBackgroundColor": "#35B779",
+            "pointBorderColor": "#FFFFFF",
+            "pointHoverRadius": 5,
+            "pointRadius": 0,
+            "pointStyle": "circle",
+            "tension": 0.4
+          },
+          {
+            "backgroundColor": "rgba(203, 213, 225, 0.65)",
+            "borderColor": "#B4DE2C",
+            "borderDash": [],
+            "borderWidth": 1,
+            "data": [
+              35,
+              42,
+              38,
+              25,
+              20,
+              18,
+              15,
+              12,
+              10,
+              8
+            ],
+            "fill": true,
+            "label": "Blockchain & Web3",
+            "pointBackgroundColor": "#B4DE2C",
+            "pointBorderColor": "#FFFFFF",
+            "pointHoverRadius": 5,
+            "pointRadius": 0,
+            "pointStyle": "circle",
+            "tension": 0.4
+          }
+        ],
+        "labels": [
+          "Jan",
+          "Fév",
+          "Mar",
+          "Avr",
+          "Mai",
+          "Juin",
+          "Juil",
+          "Août",
+          "Sep",
+          "Oct"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "x",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 12,
+            "hoverRadius": 6,
+            "radius": 3
+          }
+        },
+        "hitRadius": 12,
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "hoverRadius": 6,
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "index",
+        "plugins": {
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 8,
+              "boxWidth": 8,
+              "color": "#0F172A",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 14,
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "500"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 1,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "padding": 10,
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            }
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "stacked": true,
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "stacked": true,
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "line"
+    },
+    "kind": "chart-config"
+  }
+}

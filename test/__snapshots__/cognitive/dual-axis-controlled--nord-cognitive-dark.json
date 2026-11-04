@@ -1,0 +1,334 @@
+{
+  "_meta": {
+    "family": "05-evolution-temporelle",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "dual-axis-controlled",
+    "themeName": "nord-cognitive-dark"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#88C0D0",
+            "borderColor": "#88C0D0",
+            "borderWidth": 2.5,
+            "data": [
+              5.2,
+              6.8,
+              10.5,
+              14.2,
+              18.6,
+              22.4,
+              25.1,
+              24.8,
+              20.3,
+              15.1,
+              9.8,
+              6
+            ],
+            "datalabels": {
+              "align": "top",
+              "anchor": "center",
+              "color": "#88C0D0",
+              "display": true,
+              "font": {
+                "size": 10,
+                "weight": "600"
+              }
+            },
+            "label": "Température Moyenne (°C)",
+            "pointHoverRadius": 6,
+            "pointRadius": 4,
+            "tension": 0.3,
+            "yAxisID": "y"
+          },
+          {
+            "backgroundColor": "#81A1C1",
+            "borderColor": "#81A1C1",
+            "borderWidth": 2.5,
+            "data": [
+              850,
+              780,
+              620,
+              490,
+              420,
+              380,
+              410,
+              430,
+              470,
+              560,
+              720,
+              890
+            ],
+            "datalabels": {
+              "align": "bottom",
+              "anchor": "center",
+              "color": "#81A1C1",
+              "display": true,
+              "font": {
+                "size": 10,
+                "weight": "600"
+              }
+            },
+            "label": "Consommation Électrique (GWh)",
+            "pointHoverRadius": 6,
+            "pointRadius": 4,
+            "tension": 0.3,
+            "yAxisID": "y1"
+          }
+        ],
+        "labels": [
+          "Jan",
+          "Fév",
+          "Mar",
+          "Avr",
+          "Mai",
+          "Juin",
+          "Juil",
+          "Août",
+          "Sep",
+          "Oct",
+          "Nov",
+          "Déc"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#4C566A",
+          "bg": "#2E3440",
+          "border": "#4C566A",
+          "borderStrong": "#616E85",
+          "divergent": {
+            "mid": "#4C566A",
+            "neg": "#BF616A",
+            "pos": "#88C0D0"
+          },
+          "emphasis": {
+            "anomaly": "#BF616A",
+            "benchmark": "#ECEFF4",
+            "context": "#4C566A",
+            "focal": "#88C0D0",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'JetBrains Mono', monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+          "gridColor": "rgba(236, 239, 244, 0.06)",
+          "id": "07-nord-cognitive-dark",
+          "isDark": true,
+          "label": "Nord Cognitive Dark",
+          "name": "nord-cognitive-dark",
+          "palette": [
+            "#88C0D0",
+            "#81A1C1",
+            "#5E81AC",
+            "#A3BE8C",
+            "#EBCB8B",
+            "#D08770",
+            "#BF616A",
+            "#B48EAD"
+          ],
+          "semantic": {
+            "info": "#88C0D0",
+            "negative": "#BF616A",
+            "neutral": "#D8DEE9",
+            "positive": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "sequential": [
+            "#3B4252",
+            "#4C566A",
+            "#5E81AC",
+            "#81A1C1",
+            "#88C0D0",
+            "#ECEFF4"
+          ],
+          "status": {
+            "danger": "#BF616A",
+            "info": "#88C0D0",
+            "neutral": "#D8DEE9",
+            "success": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "surface": "#3B4252",
+          "surfaceRaised": "#434C5E",
+          "textMuted": "#9EABC0",
+          "textPrimary": "#ECEFF4",
+          "textSecondary": "#D8DEE9",
+          "tooltipBg": "#434C5E",
+          "tooltipText": "#ECEFF4",
+          "zeroLine": "#88C0D0"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#ECEFF4",
+            "display": true,
+            "font": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12
+              }
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "#434C5E",
+            "bodyColor": "#ECEFF4",
+            "bodyFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#616E85",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "afterBody": "[Function:afterBody]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#ECEFF4",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#88C0D0",
+              "width": 1
+            },
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)"
+            },
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)"
+            },
+            "max": 29,
+            "min": 0,
+            "position": "left",
+            "ticks": {
+              "color": "#88C0D0",
+              "font": {
+                "family": "'JetBrains Mono', monospace",
+                "weight": "600"
+              }
+            },
+            "title": {
+              "color": "#88C0D0",
+              "display": true,
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "600"
+              },
+              "text": "Température Moyenne (°C)"
+            },
+            "type": "linear"
+          },
+          "y1": {
+            "grid": {
+              "display": false
+            },
+            "max": 1024,
+            "min": 0,
+            "position": "right",
+            "ticks": {
+              "color": "#81A1C1",
+              "font": {
+                "family": "'JetBrains Mono', monospace",
+                "weight": "600"
+              }
+            },
+            "title": {
+              "color": "#81A1C1",
+              "display": true,
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "600"
+              },
+              "text": "Consommation Électrique (GWh)"
+            },
+            "type": "linear"
+          }
+        },
+        "showDataLabels": true
+      },
+      "type": "line"
+    },
+    "kind": "chart-config"
+  }
+}

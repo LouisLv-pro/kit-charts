@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   /**
@@ -221,11 +222,11 @@
             gap: 8px;
           ">
             <div>
-              <div style="font-weight: 600; font-size: 0.8125rem; color: ${textPrimary};">${data.title || 'Tableau Heatmap'}</div>
-              ${data.subtitle ? `<div style="font-size: 0.7rem; color: ${textMuted};">${data.subtitle}</div>` : ''}
+              <div style="font-weight: 600; font-size: 0.8125rem; color: ${textPrimary};">${escapeHtml(data.title || 'Tableau Heatmap')}</div>
+              ${data.subtitle ? `<div style="font-size: 0.7rem; color: ${textMuted};">${escapeHtml(data.subtitle)}</div>` : ''}
             </div>
             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.725rem; color: ${textSecondary};">
-              <span style="font-family: ${fontMono}; font-weight: 600;">Min (${globalMin}${data.unit || ''})</span>
+              <span style="font-family: ${fontMono}; font-weight: 600;">Min (${escapeHtml(globalMin)}${escapeHtml(data.unit || '')})</span>
               <div style="
                 width: 120px;
                 height: 10px;
@@ -233,7 +234,7 @@
                 background: linear-gradient(to right, ${sequentialPalette[0] || '#EFF3FF'}, ${sequentialPalette[sequentialPalette.length - 1] || '#08519C'});
                 border: 1px solid ${borderCol};
               "></div>
-              <span style="font-family: ${fontMono}; font-weight: 600;">Max (${globalMax}${data.unit || ''})</span>
+              <span style="font-family: ${fontMono}; font-weight: 600;">Max (${escapeHtml(globalMax)}${escapeHtml(data.unit || '')})</span>
             </div>
           </div>
 
@@ -280,7 +281,7 @@
             border-bottom: 1.5px solid ${borderStrong};
             min-width: 44px;
           ">
-            ${col}
+            ${escapeHtml(col)}
           </th>
         `;
       });
@@ -330,7 +331,7 @@
               z-index: 1;
               white-space: nowrap;
             ">
-              ${row.label}
+              ${escapeHtml(row.label)}
             </td>
         `;
 
@@ -354,8 +355,8 @@
               border-radius: 3px;
               transition: transform 0.1s ease, box-shadow 0.1s ease;
               cursor: default;
-            " title="${row.label} - ${val}${data.unit || ''}">
-              ${val}
+            " title="${escapeHtml(row.label)} - ${escapeHtml(val)}${escapeHtml(data.unit || '')}">
+              ${escapeHtml(val)}
             </td>
           `;
         });
@@ -371,7 +372,7 @@
               border-bottom: 1px solid ${borderCol};
               background: ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.02)'};
             ">
-              ${stats.sum.toLocaleString('fr-FR')}
+              ${escapeHtml(stats.sum.toLocaleString('fr-FR'))}
             </td>
             <td style="
               padding: 7px 10px;
@@ -418,7 +419,7 @@
             color: ${textPrimary};
             background: ${bgHeader};
           ">
-            ${cSum.toLocaleString('fr-FR')}
+            ${escapeHtml(cSum.toLocaleString('fr-FR'))}
           </td>
         `;
       });
@@ -432,7 +433,7 @@
                   color: ${textPrimary};
                   background: ${bgHeader};
                 ">
-                  ${grandTotal.toLocaleString('fr-FR')}
+                  ${escapeHtml(grandTotal.toLocaleString('fr-FR'))}
                 </td>
                 <td style="
                   padding: 9px 10px;

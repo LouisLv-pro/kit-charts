@@ -1,0 +1,284 @@
+{
+  "_meta": {
+    "family": "03-distribution",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "histogramme-kde",
+    "themeName": "atkinson-hyperlegible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "rgba(0, 90, 181, 0.3)",
+            "borderColor": "#005AB5",
+            "borderRadius": 3,
+            "borderWidth": 1.5,
+            "data": [
+              22,
+              8,
+              9,
+              7
+            ],
+            "datalabels": {
+              "display": true
+            },
+            "label": "Histogramme (Temps de Réponse API (ms))",
+            "order": 2,
+            "type": "bar"
+          },
+          {
+            "borderColor": "#005AB5",
+            "borderWidth": 2.5,
+            "data": [
+              17.9,
+              10.07,
+              8.14,
+              6.38
+            ],
+            "datalabels": {
+              "display": false
+            },
+            "fill": false,
+            "label": "Densité KDE (Silverman h=15.8)",
+            "order": 1,
+            "pointHoverRadius": 4,
+            "pointRadius": 0,
+            "tension": 0.35,
+            "type": "line"
+          }
+        ],
+        "labels": [
+          "42–75",
+          "75–109",
+          "109–142",
+          "142–175"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#71717A",
+          "bg": "#FFFFFF",
+          "border": "#D4D4D8",
+          "borderStrong": "#71717A",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#DC3220",
+            "pos": "#005AB5"
+          },
+          "emphasis": {
+            "anomaly": "#DC3220",
+            "benchmark": "#27272A",
+            "context": "#A1A1AA",
+            "focal": "#005AB5",
+            "forecastAlpha": 0.55
+          },
+          "fontFamily": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;600&display=swap",
+          "gridColor": "rgba(0, 0, 0, 0.12)",
+          "id": "08-atkinson-hyperlegible",
+          "isDark": false,
+          "label": "Atkinson Hyperlegible",
+          "name": "atkinson-hyperlegible",
+          "palette": [
+            "#005AB5",
+            "#DC3220",
+            "#009E73",
+            "#FE6100",
+            "#785EF0",
+            "#FFB000",
+            "#3F3F46",
+            "#64748B"
+          ],
+          "semantic": {
+            "info": "#005AB5",
+            "negative": "#DC3220",
+            "neutral": "#71717A",
+            "positive": "#009E73",
+            "warning": "#FE6100"
+          },
+          "sequential": [
+            "#E6F0FA",
+            "#BDD7F1",
+            "#6BA3DC",
+            "#005AB5",
+            "#003B75"
+          ],
+          "status": {
+            "danger": "#DC3220",
+            "info": "#005AB5",
+            "neutral": "#71717A",
+            "success": "#009E73",
+            "warning": "#FE6100"
+          },
+          "surface": "#F4F4F5",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#3F3F46",
+          "textPrimary": "#000000",
+          "textSecondary": "#18181B",
+          "tooltipBg": "rgba(0, 0, 0, 0.95)",
+          "tooltipText": "#FFFFFF",
+          "zeroLine": "#18181B"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#000000",
+            "display": true,
+            "font": {
+              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "color": "#000000",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12
+              }
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(0, 0, 0, 0.95)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#71717A",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#18181B",
+              "width": 1
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#18181B",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            },
+            "title": {
+              "color": "#18181B",
+              "display": true,
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Temps de Réponse API (ms)"
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grace": "8%",
+            "grid": {
+              "color": "rgba(0, 0, 0, 0.12)",
+              "display": true,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#18181B",
+              "font": {
+                "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+                "size": 11
+              },
+              "padding": 8
+            },
+            "title": {
+              "color": "#18181B",
+              "display": true,
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Effectif (Fréquence)"
+            }
+          }
+        },
+        "showDataLabels": true
+      },
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

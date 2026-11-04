@@ -1,6 +1,6 @@
 # 🧭 Matrice Déterministe de Sélection Dataviz (Kit-Charts)
 
-Ce document fournit aux agents IA et aux architectes de données l'algorithme déterministe pour associer un **objectif analytique métier** et une **structure de données** au **template optimal** parmi les 74 composants de `kit-charts`.
+Ce document fournit aux agents IA et aux architectes de données l'algorithme déterministe pour associer un **objectif analytique métier** et une **structure de données** au **template optimal** parmi les 73 composants de `kit-charts`.
 
 ---
 
@@ -120,17 +120,17 @@ Objectif Analytique ────────► Structure des Données ───
 | `bar-chart-horizontal` | `01-comparaison` | 1 | 25 | 1 | Tri décroissant recommandé |
 | `grouped-bar-chart` | `01-comparaison` | 2 | 6 | 4 | Max 4 barres par groupe |
 | `stacked-bar-chart` | `01-comparaison` | 2 | 8 | 5 | Base segment 0 critique |
-| `bullet-chart` | `01-comparaison` | 1 | 10 | 3 | Repère cible Stephen Few |
+| `bullet-chart` | `01-comparaison` | 1 | 10 | 5 | Réalisé + cible + 3 bandes (Stephen Few) |
 | `bar-target-overlay` | `01-comparaison` | 1 | 12 | 2 | Barres + marqueur cible |
 | `lollipop-chart` | `01-comparaison` | 5 | 30 | 1 | Haut Data-Ink ratio |
-| `slope-chart` | `01-comparaison` | 2 | 10 | 2 dates | Exactement 2 périodes |
+| `slope-chart` | `01-comparaison` | 2 dates | 2 dates | 10 | Exactement 2 périodes, une série par entité |
 | `dumbbell-chart` | `01-comparaison` | 2 | 15 | 2 points | Paires de valeurs |
 | `radar-chart` | `01-comparaison` | 3 | 8 | 2 | Max 2 entités comparées |
 | `polar-area-chart` | `01-comparaison` | 3 | 7 | 1 | Angles égaux, rayons $\sqrt{V}$ |
 | `pie-chart` | `02-composition-part-to-whole` | 2 | 3 | 1 | 3 parts max, $100\%$ |
 | `doughnut-chart` | `02-composition-part-to-whole` | 2 | 4 | 1 | KPI au centre |
 | `treemap` | `02-composition-part-to-whole` | 4 | 50 | 1 | Aires rectangulaires |
-| `sunburst` | `02-composition-part-to-whole` | 4 | 30 | multi-level | Hiérarchie radiale |
+| `sunburst` | `02-composition-part-to-whole` | 4 | 30 | 3 niveaux | Hiérarchie radiale, un dataset par anneau |
 | `waffle-chart` | `02-composition-part-to-whole` | 2 | 5 | 1 | Grille 100 cellules |
 | `stacked-bar-100` | `02-composition-part-to-whole` | 2 | 10 | 5 | Normalisation 100% |
 | `pareto-chart` | `02-composition-part-to-whole` | 4 | 15 | 2 | Barres triées + Cumul 80% |

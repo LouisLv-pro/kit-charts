@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: delais-livraison-observations-brutes-par-entrepot
+expected_outcome: |
+  Le template est violin-plot avec un seul dataset dont data contient, pour chacun des 4 entrepôts et dans l'ordre des labels, le tableau des 15 délais bruts fournis (pas de moyennes ni de quartiles). validate-chart.js ne rapporte aucune erreur, et la réponse identifie Saint-Priest comme l'entrepôt qui livre à deux vitesses.

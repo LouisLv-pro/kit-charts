@@ -1,0 +1,688 @@
+{
+  "_meta": {
+    "family": "04-correlation-relation",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "density-2d-hexbin",
+    "themeName": "tableau-stone-categorical"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "transparent",
+            "borderColor": "transparent",
+            "data": [
+              {
+                "v": 13,
+                "x": 152,
+                "y": 48
+              },
+              {
+                "v": 19,
+                "x": 155.6,
+                "y": 48
+              },
+              {
+                "v": 20,
+                "x": 159.2,
+                "y": 48
+              },
+              {
+                "v": 16,
+                "x": 162.8,
+                "y": 48
+              },
+              {
+                "v": 11,
+                "x": 166.4,
+                "y": 48
+              },
+              {
+                "v": 6,
+                "x": 170,
+                "y": 48
+              },
+              {
+                "v": 23,
+                "x": 153.8,
+                "y": 52.8
+              },
+              {
+                "v": 34,
+                "x": 157.4,
+                "y": 52.8
+              },
+              {
+                "v": 40,
+                "x": 161,
+                "y": 52.8
+              },
+              {
+                "v": 38,
+                "x": 164.6,
+                "y": 52.8
+              },
+              {
+                "v": 27,
+                "x": 168.2,
+                "y": 52.8
+              },
+              {
+                "v": 13,
+                "x": 171.8,
+                "y": 52.8
+              },
+              {
+                "v": 6,
+                "x": 175.4,
+                "y": 52.8
+              },
+              {
+                "v": 3,
+                "x": 179,
+                "y": 52.8
+              },
+              {
+                "v": 13,
+                "x": 152,
+                "y": 57.6
+              },
+              {
+                "v": 32,
+                "x": 155.6,
+                "y": 57.6
+              },
+              {
+                "v": 54,
+                "x": 159.2,
+                "y": 57.6
+              },
+              {
+                "v": 69,
+                "x": 162.8,
+                "y": 57.6
+              },
+              {
+                "v": 69,
+                "x": 166.4,
+                "y": 57.6
+              },
+              {
+                "v": 55,
+                "x": 170,
+                "y": 57.6
+              },
+              {
+                "v": 33,
+                "x": 173.6,
+                "y": 57.6
+              },
+              {
+                "v": 14,
+                "x": 177.2,
+                "y": 57.6
+              },
+              {
+                "v": 5,
+                "x": 180.8,
+                "y": 57.6
+              },
+              {
+                "v": 16,
+                "x": 153.8,
+                "y": 62.4
+              },
+              {
+                "v": 37,
+                "x": 157.4,
+                "y": 62.4
+              },
+              {
+                "v": 67,
+                "x": 161,
+                "y": 62.4
+              },
+              {
+                "v": 97,
+                "x": 164.6,
+                "y": 62.4
+              },
+              {
+                "v": 108,
+                "x": 168.2,
+                "y": 62.4
+              },
+              {
+                "v": 92,
+                "x": 171.8,
+                "y": 62.4
+              },
+              {
+                "v": 59,
+                "x": 175.4,
+                "y": 62.4
+              },
+              {
+                "v": 30,
+                "x": 179,
+                "y": 62.4
+              },
+              {
+                "v": 13,
+                "x": 182.6,
+                "y": 62.4
+              },
+              {
+                "v": 3,
+                "x": 186.2,
+                "y": 62.4
+              },
+              {
+                "v": 4,
+                "x": 152,
+                "y": 67.2
+              },
+              {
+                "v": 12,
+                "x": 155.6,
+                "y": 67.2
+              },
+              {
+                "v": 35,
+                "x": 159.2,
+                "y": 67.2
+              },
+              {
+                "v": 72,
+                "x": 162.8,
+                "y": 67.2
+              },
+              {
+                "v": 111,
+                "x": 166.4,
+                "y": 67.2
+              },
+              {
+                "v": 135,
+                "x": 170,
+                "y": 67.2
+              },
+              {
+                "v": 127,
+                "x": 173.6,
+                "y": 67.2
+              },
+              {
+                "v": 92,
+                "x": 177.2,
+                "y": 67.2
+              },
+              {
+                "v": 50,
+                "x": 180.8,
+                "y": 67.2
+              },
+              {
+                "v": 21,
+                "x": 184.4,
+                "y": 67.2
+              },
+              {
+                "v": 8,
+                "x": 188,
+                "y": 67.2
+              },
+              {
+                "v": 10,
+                "x": 157.4,
+                "y": 72
+              },
+              {
+                "v": 28,
+                "x": 161,
+                "y": 72
+              },
+              {
+                "v": 60,
+                "x": 164.6,
+                "y": 72
+              },
+              {
+                "v": 105,
+                "x": 168.2,
+                "y": 72
+              },
+              {
+                "v": 142,
+                "x": 171.8,
+                "y": 72
+              },
+              {
+                "v": 145,
+                "x": 175.4,
+                "y": 72
+              },
+              {
+                "v": 114,
+                "x": 179,
+                "y": 72
+              },
+              {
+                "v": 70,
+                "x": 182.6,
+                "y": 72
+              },
+              {
+                "v": 34,
+                "x": 186.2,
+                "y": 72
+              },
+              {
+                "v": 12,
+                "x": 189.8,
+                "y": 72
+              },
+              {
+                "v": 3,
+                "x": 193.4,
+                "y": 72
+              },
+              {
+                "v": 5,
+                "x": 159.2,
+                "y": 76.8
+              },
+              {
+                "v": 18,
+                "x": 162.8,
+                "y": 76.8
+              },
+              {
+                "v": 44,
+                "x": 166.4,
+                "y": 76.8
+              },
+              {
+                "v": 82,
+                "x": 170,
+                "y": 76.8
+              },
+              {
+                "v": 120,
+                "x": 173.6,
+                "y": 76.8
+              },
+              {
+                "v": 137,
+                "x": 177.2,
+                "y": 76.8
+              },
+              {
+                "v": 120,
+                "x": 180.8,
+                "y": 76.8
+              },
+              {
+                "v": 79,
+                "x": 184.4,
+                "y": 76.8
+              },
+              {
+                "v": 41,
+                "x": 188,
+                "y": 76.8
+              },
+              {
+                "v": 17,
+                "x": 191.6,
+                "y": 76.8
+              },
+              {
+                "v": 5,
+                "x": 195.2,
+                "y": 76.8
+              },
+              {
+                "v": 3,
+                "x": 161,
+                "y": 81.6
+              },
+              {
+                "v": 10,
+                "x": 164.6,
+                "y": 81.6
+              },
+              {
+                "v": 25,
+                "x": 168.2,
+                "y": 81.6
+              },
+              {
+                "v": 52,
+                "x": 171.8,
+                "y": 81.6
+              },
+              {
+                "v": 86,
+                "x": 175.4,
+                "y": 81.6
+              },
+              {
+                "v": 106,
+                "x": 179,
+                "y": 81.6
+              },
+              {
+                "v": 101,
+                "x": 182.6,
+                "y": 81.6
+              },
+              {
+                "v": 75,
+                "x": 186.2,
+                "y": 81.6
+              },
+              {
+                "v": 44,
+                "x": 189.8,
+                "y": 81.6
+              },
+              {
+                "v": 19,
+                "x": 193.4,
+                "y": 81.6
+              },
+              {
+                "v": 5,
+                "x": 197,
+                "y": 81.6
+              },
+              {
+                "v": 4,
+                "x": 166.4,
+                "y": 86.4
+              },
+              {
+                "v": 13,
+                "x": 170,
+                "y": 86.4
+              },
+              {
+                "v": 28,
+                "x": 173.6,
+                "y": 86.4
+              },
+              {
+                "v": 49,
+                "x": 177.2,
+                "y": 86.4
+              },
+              {
+                "v": 68,
+                "x": 180.8,
+                "y": 86.4
+              },
+              {
+                "v": 72,
+                "x": 184.4,
+                "y": 86.4
+              },
+              {
+                "v": 57,
+                "x": 188,
+                "y": 86.4
+              },
+              {
+                "v": 36,
+                "x": 191.6,
+                "y": 86.4
+              },
+              {
+                "v": 18,
+                "x": 195.2,
+                "y": 86.4
+              },
+              {
+                "v": 4,
+                "x": 171.8,
+                "y": 91.2
+              },
+              {
+                "v": 12,
+                "x": 175.4,
+                "y": 91.2
+              },
+              {
+                "v": 25,
+                "x": 179,
+                "y": 91.2
+              },
+              {
+                "v": 36,
+                "x": 182.6,
+                "y": 91.2
+              },
+              {
+                "v": 40,
+                "x": 186.2,
+                "y": 91.2
+              },
+              {
+                "v": 37,
+                "x": 189.8,
+                "y": 91.2
+              },
+              {
+                "v": 26,
+                "x": 193.4,
+                "y": 91.2
+              },
+              {
+                "v": 13,
+                "x": 197,
+                "y": 91.2
+              },
+              {
+                "v": 3,
+                "x": 173.6,
+                "y": 96
+              },
+              {
+                "v": 4,
+                "x": 177.2,
+                "y": 96
+              },
+              {
+                "v": 8,
+                "x": 180.8,
+                "y": 96
+              },
+              {
+                "v": 16,
+                "x": 184.4,
+                "y": 96
+              },
+              {
+                "v": 20,
+                "x": 188,
+                "y": 96
+              },
+              {
+                "v": 18,
+                "x": 191.6,
+                "y": 96
+              },
+              {
+                "v": 14,
+                "x": 195.2,
+                "y": 96
+              }
+            ],
+            "label": "Densité Biométrique (Taille cm × Poids kg) (N ≈ 4340 obs)",
+            "pointHoverRadius": 0,
+            "pointRadius": 0
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 12,
+            "left": 12,
+            "right": 24,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "onHover": "[Function:onHover]",
+        "plugins": {
+          "legend": {
+            "display": true,
+            "labels": {
+              "boxWidth": 8,
+              "color": "#1E293B",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "usePointStyle": true
+            },
+            "position": "bottom"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#475569",
+              "width": 1
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)"
+            },
+            "max": 201,
+            "min": 148,
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            },
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 12,
+                "weight": "600"
+              },
+              "text": "Taille corporelle (cm)"
+            },
+            "type": "linear"
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)"
+            },
+            "max": 100,
+            "min": 44,
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            },
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 12,
+                "weight": "600"
+              },
+              "text": "Masse corporelle (kg)"
+            },
+            "type": "linear"
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsHexbinHoneycombPainter"
+        }
+      ],
+      "type": "scatter"
+    },
+    "kind": "chart-config"
+  }
+}

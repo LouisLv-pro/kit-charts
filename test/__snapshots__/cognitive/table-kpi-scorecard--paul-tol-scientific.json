@@ -1,0 +1,279 @@
+{
+  "_meta": {
+    "family": "09-tableaux-dataviz",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "table-kpi-scorecard",
+    "themeName": "paul-tol-scientific"
+  },
+  "payload": {
+    "kind": "control-object",
+    "result": {
+      "container": {
+        "addEventListener": "[Function:addEventListener]",
+        "clientHeight": 0,
+        "clientWidth": 0,
+        "dataset": {},
+        "getAttribute": "[Function:getAttribute]",
+        "getBoundingClientRect": "[Function:getBoundingClientRect]",
+        "getContext": "[Function:getContext]",
+        "height": 600,
+        "innerHTML": "\n        <div class=\"kc-dataviz-table-container\" style=\"\n          width: 100%;\n          overflow-x: auto;\n          background: #F8FAFC;\n          border: 1px solid #E2E8F0;\n          border-radius: 10px;\n          box-shadow: 0 2px 8px rgba(15,23,42,0.04);\n          font-family: 'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n          color: #1E293B;\n          box-sizing: border-box;\n        \">\n          <table style=\"\n            width: 100%;\n            border-collapse: collapse;\n            border-spacing: 0;\n            font-size: 0.8125rem;\n            line-height: 1.45;\n            font-variant-numeric: tabular-nums lining-nums;\n            font-feature-settings: 'tnum' 1, 'lnum' 1;\n          \">\n            <thead>\n              <tr style=\"\n                background: #F8FAFC;\n                border-bottom: 1.5px solid #CBD5E1;\n              \">\n      \n          <th data-key=\"kpi\" style=\"\n            padding: 10px 14px;\n            text-align: left;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #334155;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Indicateur Clé\n          </th>\n        \n          <th data-key=\"category\" style=\"\n            padding: 10px 14px;\n            text-align: center;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #334155;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Domaine\n          </th>\n        \n          <th data-key=\"actual\" style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #334155;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Réalisé\n          </th>\n        \n          <th data-key=\"target\" style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #334155;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Cible\n          </th>\n        \n          <th data-key=\"delta\" style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #334155;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Écart vs Cible\n          </th>\n        \n          <th data-key=\"trend\" style=\"\n            padding: 10px 14px;\n            text-align: center;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #334155;\n            border: none;\n            white-space: nowrap;\n            \n          \" title=\"\">\n            Tendance 12M\n          </th>\n        \n          <th data-key=\"status\" style=\"\n            padding: 10px 14px;\n            text-align: center;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #334155;\n            border: none;\n            white-space: nowrap;\n            cursor: pointer; user-select: none;\n          \" title=\"Cliquer pour trier\">\n            Statut\n          </th>\n        \n              </tr>\n            </thead>\n            <tbody>\n      \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E2E8F0;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #1E293B;\">Chiffre d&#39;Affaires Récurrent (ARR)</div>\n              <div style=\"font-size: 0.7rem; color: #64748B; margin-top: 1px;\">Revenus annuels souscrits normalisés</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #334155;\n              \">Revenu</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #1E293B; vertical-align: middle;\">\n              14,25 M €\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; color: #334155; vertical-align: middle;\">\n              13,80 M €\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 3px;\n                font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace;\n                font-weight: 600;\n                font-size: 0.775rem;\n                color: #228833;\n              \">\n                <span>↑</span>\n                <span>+3.26%</span>\n              </span>\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"105\" height=\"26\" viewBox=\"0 0 105 26\" style=\"overflow:visible; display:block; margin:0 auto;\" aria-label=\"Tendance: Début 11.2 → Fin 14.25 (Min: 11.2, Max: 14.25)\">\n        <title>Tendance: Début 11.2 → Fin 14.25 (Min: 11.2, Max: 14.25)</title>\n        <polyline fill=\"none\" stroke=\"#4477AA\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" points=\"4.0,22.0 12.8,20.2 21.6,17.9 30.5,16.7 39.3,14.9 48.1,12.6 56.9,11.4 65.7,9.6 74.5,7.2 83.4,6.1 92.2,4.9 101.0,4.0\" />\n        <circle cx=\"4.0\" cy=\"22.0\" r=\"2\" fill=\"#C62828\" opacity=\"0.85\"><title>Min: 11.2</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2\" fill=\"#2E7D32\" opacity=\"0.85\"><title>Max: 14.25</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2.5\" fill=\"#4477AA\"><title>Dernier: 14.25</title></circle>\n      </svg>\n    \n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 4px;\n                padding: 3px 8px;\n                border-radius: 4px;\n                font-size: 0.725rem;\n                font-weight: 600;\n                background: rgba(46, 125, 50, 0.12);\n                color: #2E7D32;\n                border: none;\n                white-space: nowrap;\n              \">\n                <span aria-hidden=\"true\" style=\"font-size: 0.65rem;\">✓</span>\n                <span>Dépassé</span>\n              </span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.015);\n            border-bottom: 1px solid #E2E8F0;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #1E293B;\">Taux de Rétention Nette (NDR)</div>\n              <div style=\"font-size: 0.7rem; color: #64748B; margin-top: 1px;\">Expansion nette sur cohorte existante</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #334155;\n              \">Clients</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #1E293B; vertical-align: middle;\">\n              114,2 %\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; color: #334155; vertical-align: middle;\">\n              110 %\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 3px;\n                font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace;\n                font-weight: 600;\n                font-size: 0.775rem;\n                color: #228833;\n              \">\n                <span>↑</span>\n                <span>+3.82%</span>\n              </span>\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"105\" height=\"26\" viewBox=\"0 0 105 26\" style=\"overflow:visible; display:block; margin:0 auto;\" aria-label=\"Tendance: Début 108 → Fin 114.2 (Min: 108, Max: 114.2)\">\n        <title>Tendance: Début 108 → Fin 114.2 (Min: 108, Max: 114.2)</title>\n        <polyline fill=\"none\" stroke=\"#4477AA\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" points=\"4.0,22.0 12.8,20.5 21.6,18.5 30.5,16.2 39.3,16.8 48.1,13.3 56.9,11.0 65.7,8.9 74.5,7.5 83.4,5.2 92.2,4.6 101.0,4.0\" />\n        <circle cx=\"4.0\" cy=\"22.0\" r=\"2\" fill=\"#C62828\" opacity=\"0.85\"><title>Min: 108</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2\" fill=\"#2E7D32\" opacity=\"0.85\"><title>Max: 114.2</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2.5\" fill=\"#4477AA\"><title>Dernier: 114.2</title></circle>\n      </svg>\n    \n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 4px;\n                padding: 3px 8px;\n                border-radius: 4px;\n                font-size: 0.725rem;\n                font-weight: 600;\n                background: rgba(46, 125, 50, 0.12);\n                color: #2E7D32;\n                border: none;\n                white-space: nowrap;\n              \">\n                <span aria-hidden=\"true\" style=\"font-size: 0.65rem;\">✓</span>\n                <span>Conforme</span>\n              </span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E2E8F0;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #1E293B;\">Coût d&#39;Acquisition Client (CAC)</div>\n              <div style=\"font-size: 0.7rem; color: #64748B; margin-top: 1px;\">Dépenses sales &amp; marketing par nouveau client</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #334155;\n              \">Marketing</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #1E293B; vertical-align: middle;\">\n              840 €\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; color: #334155; vertical-align: middle;\">\n              750 €\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 3px;\n                font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace;\n                font-weight: 600;\n                font-size: 0.775rem;\n                color: #EE6677;\n              \">\n                <span>↑</span>\n                <span>+12.00%</span>\n              </span>\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"105\" height=\"26\" viewBox=\"0 0 105 26\" style=\"overflow:visible; display:block; margin:0 auto;\" aria-label=\"Tendance: Début 720 → Fin 840 (Min: 710, Max: 840)\">\n        <title>Tendance: Début 720 → Fin 840 (Min: 710, Max: 840)</title>\n        <polyline fill=\"none\" stroke=\"#4477AA\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" points=\"4.0,20.6 12.8,22.0 21.6,17.8 30.5,16.5 39.3,15.1 48.1,12.3 56.9,8.2 65.7,10.9 74.5,6.8 83.4,5.4 92.2,4.7 101.0,4.0\" />\n        <circle cx=\"12.8\" cy=\"22.0\" r=\"2\" fill=\"#C62828\" opacity=\"0.85\"><title>Min: 710</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2\" fill=\"#2E7D32\" opacity=\"0.85\"><title>Max: 840</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2.5\" fill=\"#4477AA\"><title>Dernier: 840</title></circle>\n      </svg>\n    \n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 4px;\n                padding: 3px 8px;\n                border-radius: 4px;\n                font-size: 0.725rem;\n                font-weight: 600;\n                background: rgba(198, 40, 40, 0.12);\n                color: #C62828;\n                border: none;\n                white-space: nowrap;\n              \">\n                <span aria-hidden=\"true\" style=\"font-size: 0.65rem;\">■</span>\n                <span>Dérive</span>\n              </span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.015);\n            border-bottom: 1px solid #E2E8F0;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #1E293B;\">Marge Brute Opérationnelle</div>\n              <div style=\"font-size: 0.7rem; color: #64748B; margin-top: 1px;\">Marge brute après coûts d&#39;infrastructure &amp; support</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #334155;\n              \">Finance</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #1E293B; vertical-align: middle;\">\n              78,5 %\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; color: #334155; vertical-align: middle;\">\n              80 %\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 3px;\n                font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace;\n                font-weight: 600;\n                font-size: 0.775rem;\n                color: #EE6677;\n              \">\n                <span>↓</span>\n                <span>-1.88%</span>\n              </span>\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"105\" height=\"26\" viewBox=\"0 0 105 26\" style=\"overflow:visible; display:block; margin:0 auto;\" aria-label=\"Tendance: Début 81 → Fin 78.5 (Min: 78.2, Max: 81)\">\n        <title>Tendance: Début 81 → Fin 78.5 (Min: 78.2, Max: 81)</title>\n        <polyline fill=\"none\" stroke=\"#4477AA\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" points=\"4.0,4.0 12.8,7.2 21.6,9.1 30.5,11.7 39.3,13.6 48.1,16.9 56.9,18.1 65.7,20.1 74.5,22.0 83.4,20.7 92.2,19.4 101.0,20.1\" />\n        <circle cx=\"74.5\" cy=\"22.0\" r=\"2\" fill=\"#C62828\" opacity=\"0.85\"><title>Min: 78.2</title></circle>\n        <circle cx=\"4.0\" cy=\"4.0\" r=\"2\" fill=\"#2E7D32\" opacity=\"0.85\"><title>Max: 81</title></circle>\n        <circle cx=\"101.0\" cy=\"20.1\" r=\"2.5\" fill=\"#4477AA\"><title>Dernier: 78.5</title></circle>\n      </svg>\n    \n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 4px;\n                padding: 3px 8px;\n                border-radius: 4px;\n                font-size: 0.725rem;\n                font-weight: 600;\n                background: rgba(239, 108, 0, 0.12);\n                color: #D97706;\n                border: none;\n                white-space: nowrap;\n              \">\n                <span aria-hidden=\"true\" style=\"font-size: 0.65rem;\">▲</span>\n                <span>Sous surveillance</span>\n              </span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #E2E8F0;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #1E293B;\">Net Promoter Score (NPS)</div>\n              <div style=\"font-size: 0.7rem; color: #64748B; margin-top: 1px;\">Score de recommandation client ([-100, +100])</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #334155;\n              \">Qualité</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #1E293B; vertical-align: middle;\">\n              64 pts\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; color: #334155; vertical-align: middle;\">\n              60 pts\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 3px;\n                font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace;\n                font-weight: 600;\n                font-size: 0.775rem;\n                color: #228833;\n              \">\n                <span>↑</span>\n                <span>+6.67%</span>\n              </span>\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"105\" height=\"26\" viewBox=\"0 0 105 26\" style=\"overflow:visible; display:block; margin:0 auto;\" aria-label=\"Tendance: Début 52 → Fin 64 (Min: 52, Max: 64)\">\n        <title>Tendance: Début 52 → Fin 64 (Min: 52, Max: 64)</title>\n        <polyline fill=\"none\" stroke=\"#4477AA\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" points=\"4.0,22.0 12.8,19.0 21.6,17.5 30.5,14.5 39.3,16.0 48.1,13.0 56.9,10.0 65.7,11.5 74.5,8.5 83.4,7.0 92.2,5.5 101.0,4.0\" />\n        <circle cx=\"4.0\" cy=\"22.0\" r=\"2\" fill=\"#C62828\" opacity=\"0.85\"><title>Min: 52</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2\" fill=\"#2E7D32\" opacity=\"0.85\"><title>Max: 64</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2.5\" fill=\"#4477AA\"><title>Dernier: 64</title></circle>\n      </svg>\n    \n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 4px;\n                padding: 3px 8px;\n                border-radius: 4px;\n                font-size: 0.725rem;\n                font-weight: 600;\n                background: rgba(46, 125, 50, 0.12);\n                color: #2E7D32;\n                border: none;\n                white-space: nowrap;\n              \">\n                <span aria-hidden=\"true\" style=\"font-size: 0.65rem;\">✓</span>\n                <span>Excellent</span>\n              </span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.015);\n            border-bottom: 1px solid #E2E8F0;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #1E293B;\">Taux d&#39;Attrition Mensuel (Churn)</div>\n              <div style=\"font-size: 0.7rem; color: #64748B; margin-top: 1px;\">Pourcentage de logos perdus par mois</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #334155;\n              \">Clients</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #1E293B; vertical-align: middle;\">\n              0,85 %\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; color: #334155; vertical-align: middle;\">\n              0,7 %\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 3px;\n                font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace;\n                font-weight: 600;\n                font-size: 0.775rem;\n                color: #EE6677;\n              \">\n                <span>↑</span>\n                <span>+21.43%</span>\n              </span>\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"105\" height=\"26\" viewBox=\"0 0 105 26\" style=\"overflow:visible; display:block; margin:0 auto;\" aria-label=\"Tendance: Début 0.65 → Fin 0.85 (Min: 0.65, Max: 0.85)\">\n        <title>Tendance: Début 0.65 → Fin 0.85 (Min: 0.65, Max: 0.85)</title>\n        <polyline fill=\"none\" stroke=\"#4477AA\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" points=\"4.0,22.0 12.8,19.3 21.6,17.5 30.5,15.7 39.3,16.6 48.1,13.0 56.9,10.3 65.7,8.5 74.5,6.7 83.4,4.9 92.2,5.8 101.0,4.0\" />\n        <circle cx=\"4.0\" cy=\"22.0\" r=\"2\" fill=\"#C62828\" opacity=\"0.85\"><title>Min: 0.65</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2\" fill=\"#2E7D32\" opacity=\"0.85\"><title>Max: 0.85</title></circle>\n        <circle cx=\"101.0\" cy=\"4.0\" r=\"2.5\" fill=\"#4477AA\"><title>Dernier: 0.85</title></circle>\n      </svg>\n    \n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 4px;\n                padding: 3px 8px;\n                border-radius: 4px;\n                font-size: 0.725rem;\n                font-weight: 600;\n                background: rgba(198, 40, 40, 0.12);\n                color: #C62828;\n                border: none;\n                white-space: nowrap;\n              \">\n                <span aria-hidden=\"true\" style=\"font-size: 0.65rem;\">■</span>\n                <span>Alerte</span>\n              </span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: none;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 10px 14px; text-align: left; vertical-align: middle;\">\n              <div style=\"font-weight: 600; color: #1E293B;\">Latence API Médiane (p95)</div>\n              <div style=\"font-size: 0.7rem; color: #64748B; margin-top: 1px;\">Temps de réponse des requêtes de production</div>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 9999px;\n                font-size: 0.7rem;\n                font-weight: 500;\n                background: rgba(15,23,42,0.05);\n                color: #334155;\n              \">Tech</span>\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; font-weight: 600; color: #1E293B; vertical-align: middle;\">\n              118 ms\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace; color: #334155; vertical-align: middle;\">\n              120 ms\n            </td>\n            <td style=\"padding: 10px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 3px;\n                font-family: 'Fira Code', Menlo, Monaco, Consolas, monospace;\n                font-weight: 600;\n                font-size: 0.775rem;\n                color: #228833;\n              \">\n                <span>↓</span>\n                <span>-1.67%</span>\n              </span>\n            </td>\n            <td style=\"padding: 6px 10px; text-align: center; vertical-align: middle;\">\n              \n      <svg width=\"105\" height=\"26\" viewBox=\"0 0 105 26\" style=\"overflow:visible; display:block; margin:0 auto;\" aria-label=\"Tendance: Début 145 → Fin 118 (Min: 118, Max: 145)\">\n        <title>Tendance: Début 145 → Fin 118 (Min: 118, Max: 145)</title>\n        <polyline fill=\"none\" stroke=\"#4477AA\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\" points=\"4.0,4.0 12.8,7.3 21.6,10.7 30.5,14.0 39.3,15.3 48.1,17.3 56.9,19.3 65.7,20.7 74.5,21.3 83.4,22.0 92.2,22.0 101.0,22.0\" />\n        <circle cx=\"83.4\" cy=\"22.0\" r=\"2\" fill=\"#C62828\" opacity=\"0.85\"><title>Min: 118</title></circle>\n        <circle cx=\"4.0\" cy=\"4.0\" r=\"2\" fill=\"#2E7D32\" opacity=\"0.85\"><title>Max: 145</title></circle>\n        <circle cx=\"101.0\" cy=\"22.0\" r=\"2.5\" fill=\"#4477AA\"><title>Dernier: 118</title></circle>\n      </svg>\n    \n            </td>\n            <td style=\"padding: 10px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-flex;\n                align-items: center;\n                gap: 4px;\n                padding: 3px 8px;\n                border-radius: 4px;\n                font-size: 0.725rem;\n                font-weight: 600;\n                background: rgba(46, 125, 50, 0.12);\n                color: #2E7D32;\n                border: none;\n                white-space: nowrap;\n              \">\n                <span aria-hidden=\"true\" style=\"font-size: 0.65rem;\">✓</span>\n                <span>Conforme</span>\n              </span>\n            </td>\n          </tr>\n        \n            </tbody>\n          </table>\n        </div>\n      ",
+        "parentElement": {
+          "appendChild": "[Function:appendChild]",
+          "querySelector": "[Function:querySelector]"
+        },
+        "querySelector": "[Function:querySelector]",
+        "querySelectorAll": "[Function:querySelectorAll]",
+        "removeEventListener": "[Function:removeEventListener]",
+        "setAttribute": "[Function:setAttribute]",
+        "style": {},
+        "tagName": "DIV",
+        "width": 800
+      },
+      "data": {
+        "columns": [
+          {
+            "align": "left",
+            "key": "kpi",
+            "label": "Indicateur Clé",
+            "sortable": true
+          },
+          {
+            "align": "center",
+            "key": "category",
+            "label": "Domaine",
+            "sortable": true
+          },
+          {
+            "align": "right",
+            "format": "number",
+            "key": "actual",
+            "label": "Réalisé",
+            "sortable": true
+          },
+          {
+            "align": "right",
+            "format": "number",
+            "key": "target",
+            "label": "Cible",
+            "sortable": true
+          },
+          {
+            "align": "right",
+            "format": "delta",
+            "key": "delta",
+            "label": "Écart vs Cible",
+            "sortable": true
+          },
+          {
+            "align": "center",
+            "format": "sparkline",
+            "key": "trend",
+            "label": "Tendance 12M",
+            "sortable": false
+          },
+          {
+            "align": "center",
+            "format": "status",
+            "key": "status",
+            "label": "Statut",
+            "sortable": true
+          }
+        ],
+        "rows": [
+          {
+            "actual": 14250000,
+            "category": "Revenu",
+            "delta": 3.26,
+            "desc": "Revenus annuels souscrits normalisés",
+            "kpi": "Chiffre d'Affaires Récurrent (ARR)",
+            "metricType": "revenue",
+            "status": "success",
+            "statusText": "Dépassé",
+            "target": 13800000,
+            "trend": [
+              11.2,
+              11.5,
+              11.9,
+              12.1,
+              12.4,
+              12.8,
+              13,
+              13.3,
+              13.7,
+              13.9,
+              14.1,
+              14.25
+            ],
+            "unit": " €"
+          },
+          {
+            "actual": 114.2,
+            "category": "Clients",
+            "delta": 3.82,
+            "desc": "Expansion nette sur cohorte existante",
+            "kpi": "Taux de Rétention Nette (NDR)",
+            "metricType": "revenue",
+            "status": "success",
+            "statusText": "Conforme",
+            "target": 110,
+            "trend": [
+              108,
+              108.5,
+              109.2,
+              110,
+              109.8,
+              111,
+              111.8,
+              112.5,
+              113,
+              113.8,
+              114,
+              114.2
+            ],
+            "unit": " %"
+          },
+          {
+            "actual": 840,
+            "category": "Marketing",
+            "delta": 12,
+            "desc": "Dépenses sales & marketing par nouveau client",
+            "kpi": "Coût d'Acquisition Client (CAC)",
+            "metricType": "cost",
+            "status": "danger",
+            "statusText": "Dérive",
+            "target": 750,
+            "trend": [
+              720,
+              710,
+              740,
+              750,
+              760,
+              780,
+              810,
+              790,
+              820,
+              830,
+              835,
+              840
+            ],
+            "unit": " €"
+          },
+          {
+            "actual": 78.5,
+            "category": "Finance",
+            "delta": -1.88,
+            "desc": "Marge brute après coûts d'infrastructure & support",
+            "kpi": "Marge Brute Opérationnelle",
+            "metricType": "revenue",
+            "status": "warning",
+            "statusText": "Sous surveillance",
+            "target": 80,
+            "trend": [
+              81,
+              80.5,
+              80.2,
+              79.8,
+              79.5,
+              79,
+              78.8,
+              78.5,
+              78.2,
+              78.4,
+              78.6,
+              78.5
+            ],
+            "unit": " %"
+          },
+          {
+            "actual": 64,
+            "category": "Qualité",
+            "delta": 6.67,
+            "desc": "Score de recommandation client ([-100, +100])",
+            "kpi": "Net Promoter Score (NPS)",
+            "metricType": "revenue",
+            "status": "success",
+            "statusText": "Excellent",
+            "target": 60,
+            "trend": [
+              52,
+              54,
+              55,
+              57,
+              56,
+              58,
+              60,
+              59,
+              61,
+              62,
+              63,
+              64
+            ],
+            "unit": " pts"
+          },
+          {
+            "actual": 0.85,
+            "category": "Clients",
+            "delta": 21.43,
+            "desc": "Pourcentage de logos perdus par mois",
+            "kpi": "Taux d'Attrition Mensuel (Churn)",
+            "metricType": "cost",
+            "status": "danger",
+            "statusText": "Alerte",
+            "target": 0.7,
+            "trend": [
+              0.65,
+              0.68,
+              0.7,
+              0.72,
+              0.71,
+              0.75,
+              0.78,
+              0.8,
+              0.82,
+              0.84,
+              0.83,
+              0.85
+            ],
+            "unit": " %"
+          },
+          {
+            "actual": 118,
+            "category": "Tech",
+            "delta": -1.67,
+            "desc": "Temps de réponse des requêtes de production",
+            "kpi": "Latence API Médiane (p95)",
+            "metricType": "cost",
+            "status": "success",
+            "statusText": "Conforme",
+            "target": 120,
+            "trend": [
+              145,
+              140,
+              135,
+              130,
+              128,
+              125,
+              122,
+              120,
+              119,
+              118,
+              118,
+              118
+            ],
+            "unit": " ms"
+          }
+        ],
+        "subtitle": "Suivi des indicateurs clés vs cibles annuelles avec tendances 12 mois",
+        "title": "Tableau de Bord Stratégique — Performance Trimestrielle"
+      },
+      "destroy": "[Function:destroy]",
+      "exportCSV": "[Function:exportCSV]",
+      "options": {},
+      "setTheme": "[Function:setTheme]",
+      "sort": "[Function:sort]",
+      "theme": "paul-tol-scientific",
+      "update": "[Function:update]"
+    }
+  }
+}

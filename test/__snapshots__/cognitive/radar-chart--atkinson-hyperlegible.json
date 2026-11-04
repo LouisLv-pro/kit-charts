@@ -1,0 +1,218 @@
+{
+  "_meta": {
+    "family": "01-comparaison",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "radar-chart",
+    "themeName": "atkinson-hyperlegible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "rgba(0, 90, 181, 0.2)",
+            "borderColor": "#005AB5",
+            "borderDash": [],
+            "borderWidth": 2,
+            "data": [
+              85,
+              92,
+              90,
+              78,
+              88,
+              95
+            ],
+            "fill": true,
+            "label": "Plateforme A",
+            "pointBackgroundColor": "#005AB5",
+            "pointBorderColor": "#FFFFFF",
+            "pointBorderWidth": 1.5,
+            "pointHitRadius": 10,
+            "pointHoverRadius": 7,
+            "pointRadius": 4,
+            "pointStyle": "circle"
+          },
+          {
+            "backgroundColor": "rgba(220, 50, 32, 0.2)",
+            "borderColor": "#DC3220",
+            "borderDash": [],
+            "borderWidth": 2,
+            "data": [
+              70,
+              80,
+              85,
+              92,
+              75,
+              80
+            ],
+            "fill": true,
+            "label": "Plateforme B",
+            "pointBackgroundColor": "#DC3220",
+            "pointBorderColor": "#FFFFFF",
+            "pointBorderWidth": 1.5,
+            "pointHitRadius": 10,
+            "pointHoverRadius": 7,
+            "pointRadius": 4,
+            "pointStyle": "circle"
+          }
+        ],
+        "labels": [
+          "Vitesse",
+          "Fiabilité",
+          "Sécurité",
+          "Scalabilité",
+          "Ergonomie",
+          "Documentation"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "index"
+        },
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "align": "[Function:align]",
+            "anchor": "[Function:anchor]",
+            "backgroundColor": "[Function:backgroundColor]",
+            "borderColor": "[Function:borderColor]",
+            "borderRadius": 4,
+            "borderWidth": 1,
+            "color": "[Function:color]",
+            "display": "[Function:display]",
+            "font": {
+              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "size": 10,
+              "weight": "700"
+            },
+            "formatter": "[Function:formatter]",
+            "offset": 6,
+            "padding": {
+              "bottom": 2,
+              "left": 4,
+              "right": 4,
+              "top": 2
+            }
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#000000",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "rgba(0, 0, 0, 0.95)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#71717A",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "r": {
+            "angleLines": {
+              "color": "rgba(0, 0, 0, 0.12)",
+              "lineWidth": 1
+            },
+            "grid": {
+              "color": "rgba(0, 0, 0, 0.12)",
+              "lineWidth": 1
+            },
+            "pointLabels": {
+              "color": "#000000",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "500"
+              },
+              "padding": 16
+            },
+            "suggestedMin": 0,
+            "ticks": {
+              "display": false
+            }
+          },
+          "x": {
+            "display": false
+          },
+          "y": {
+            "display": false
+          }
+        }
+      },
+      "type": "radar"
+    },
+    "kind": "chart-config"
+  }
+}

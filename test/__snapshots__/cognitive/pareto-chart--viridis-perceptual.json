@@ -1,0 +1,330 @@
+{
+  "_meta": {
+    "family": "02-composition-part-to-whole",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "pareto-chart",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "rgba(62, 74, 137, 0.8)",
+              "rgba(62, 74, 137, 0.8)",
+              "rgba(203, 213, 225, 0.5)",
+              "rgba(203, 213, 225, 0.5)",
+              "rgba(203, 213, 225, 0.5)",
+              "rgba(203, 213, 225, 0.5)",
+              "rgba(203, 213, 225, 0.5)"
+            ],
+            "borderColor": "#3E4A89",
+            "borderRadius": 4,
+            "borderWidth": 1.5,
+            "data": [
+              142,
+              89,
+              45,
+              23,
+              14,
+              8,
+              4
+            ],
+            "datalabels": {
+              "color": "#0F172A",
+              "display": true
+            },
+            "label": "Occurrences d'Incidents",
+            "order": 2,
+            "type": "bar",
+            "yAxisID": "y"
+          },
+          {
+            "backgroundColor": "rgba(38, 130, 142, 0.1)",
+            "borderColor": "#26828E",
+            "borderWidth": 2.5,
+            "data": [
+              43.7,
+              71.1,
+              84.9,
+              92,
+              96.3,
+              98.8,
+              100
+            ],
+            "datalabels": {
+              "align": "top",
+              "anchor": "center",
+              "color": "#26828E",
+              "display": true,
+              "font": {
+                "size": 10,
+                "weight": "700"
+              },
+              "formatter": "[Function:formatter]"
+            },
+            "label": "Cumul (%)",
+            "order": 1,
+            "pointBackgroundColor": "#26828E",
+            "pointHoverRadius": 6,
+            "pointRadius": 4,
+            "tension": 0.2,
+            "type": "line",
+            "yAxisID": "y1"
+          }
+        ],
+        "labels": [
+          "Erreur d'authentification",
+          "Timeout passerelle SQL",
+          "Fichier payload corrompu",
+          "Certificat SSL expiré",
+          "Quota mémoire dépassé",
+          "Erreur DNS transitoire",
+          "Déconnexion WebSocket"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#94A3B8",
+          "bg": "#FFFFFF",
+          "border": "#E2E8F0",
+          "borderStrong": "#CBD5E1",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#440154",
+            "pos": "#22A884"
+          },
+          "emphasis": {
+            "anomaly": "#FDE725",
+            "benchmark": "#3E4A89",
+            "context": "#CBD5E1",
+            "focal": "#26828E",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap",
+          "gridColor": "rgba(15, 23, 42, 0.06)",
+          "id": "02-viridis-perceptual",
+          "isDark": false,
+          "label": "Viridis Perceptual",
+          "name": "viridis-perceptual",
+          "palette": [
+            "#3E4A89",
+            "#26828E",
+            "#35B779",
+            "#B4DE2C",
+            "#440154",
+            "#FDE725",
+            "#31688E",
+            "#1F9E89"
+          ],
+          "semantic": {
+            "info": "#2A788E",
+            "negative": "#440154",
+            "neutral": "#414487",
+            "positive": "#22A884",
+            "warning": "#FDE725"
+          },
+          "sequential": [
+            "#440154",
+            "#482777",
+            "#3E4A89",
+            "#31688E",
+            "#26828E",
+            "#1F9E89",
+            "#35B779",
+            "#6DCD59",
+            "#B4DE2C",
+            "#FDE725"
+          ],
+          "status": {
+            "danger": "#440154",
+            "info": "#2A788E",
+            "neutral": "#8E9AAF",
+            "success": "#22A884",
+            "warning": "#D8B400"
+          },
+          "surface": "#F8FAFC",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#64748B",
+          "textPrimary": "#0F172A",
+          "textSecondary": "#334155",
+          "tooltipBg": "rgba(15, 23, 42, 0.92)",
+          "tooltipText": "#F8FAFC",
+          "zeroLine": "#475569"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#0F172A",
+            "display": true,
+            "font": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "color": "#0F172A",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12
+              }
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#475569",
+              "width": 1
+            },
+            "grid": {
+              "display": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "maxRotation": 30
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "grace": "8%",
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)"
+            },
+            "position": "left",
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Nombre d'occurrences"
+            },
+            "type": "linear"
+          },
+          "y1": {
+            "beginAtZero": true,
+            "grid": {
+              "display": false
+            },
+            "max": 105,
+            "min": 0,
+            "position": "right",
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#26828E",
+              "font": {
+                "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              }
+            },
+            "title": {
+              "color": "#26828E",
+              "display": true,
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Pourcentage cumulé"
+            },
+            "type": "linear"
+          }
+        },
+        "showDataLabels": true
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsPareto80Line"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

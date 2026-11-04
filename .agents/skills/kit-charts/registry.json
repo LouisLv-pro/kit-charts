@@ -1,7 +1,7 @@
 {
   "version": "1.0.0",
-  "totalTemplates": 74,
-  "generatedAt": "2026-08-30T21:51:09.676Z",
+  "totalTemplates": 73,
+  "generatedAt": "2026-11-04T14:32:17.280Z",
   "templates": [
     {
       "id": "kpi-bullet",
@@ -242,7 +242,7 @@
         "labelsType": "categorical",
         "minCategories": 1,
         "maxCategories": 10,
-        "seriesCount": 3
+        "seriesCount": 5
       },
       "supportedFeatures": {
         "dataLabels": true,
@@ -379,8 +379,8 @@
       "dataRequirements": {
         "labelsType": "categorical",
         "minCategories": 2,
-        "maxCategories": 10,
-        "seriesCount": 2
+        "maxCategories": 2,
+        "seriesCount": 10
       },
       "supportedFeatures": {
         "dataLabels": true,
@@ -541,7 +541,8 @@
         "labelsType": "hierarchical",
         "minCategories": 4,
         "maxCategories": 30,
-        "seriesCount": 1
+        "seriesCount": 3,
+        "dataPerLabel": false
       },
       "supportedFeatures": {
         "dataLabels": true,
@@ -702,7 +703,8 @@
         "labelsType": "categorical",
         "minCategories": 4,
         "maxCategories": 20,
-        "seriesCount": 1
+        "seriesCount": 1,
+        "dataPerLabel": false
       },
       "supportedFeatures": {
         "dataLabels": false,
@@ -932,7 +934,8 @@
         "labelsType": "categorical",
         "minCategories": 3,
         "maxCategories": 20,
-        "seriesCount": 1
+        "seriesCount": 1,
+        "dataPerLabel": false
       },
       "supportedFeatures": {
         "dataLabels": true,
@@ -1300,7 +1303,8 @@
         "labelsType": "categorical",
         "minCategories": 3,
         "maxCategories": 20,
-        "seriesCount": 1
+        "seriesCount": 1,
+        "dataPerLabel": false
       },
       "supportedFeatures": {
         "dataLabels": true,
@@ -1415,7 +1419,8 @@
         "labelsType": "categorical",
         "minCategories": 4,
         "maxCategories": 30,
-        "seriesCount": 1
+        "seriesCount": 8,
+        "dataPerLabel": false
       },
       "supportedFeatures": {
         "dataLabels": true,
@@ -1680,29 +1685,6 @@
         "schema": "template/09-tableaux-dataviz/table-ranking-leaderboard/schema.json",
         "js": "template/09-tableaux-dataviz/table-ranking-leaderboard/template.js",
         "preview": "template/09-tableaux-dataviz/table-ranking-leaderboard/preview.html"
-      }
-    },
-    {
-      "id": "tooltip",
-      "family": "tooltip",
-      "name": "Laboratoire Ergonomique des Infobulles",
-      "description": "Infobulles anti-occlusion (Mayer), zone de frappe élargie (Fitts) et chiffres tabulaires synchronisés.",
-      "dataRequirements": {
-        "labelsType": "temporal",
-        "minCategories": 4,
-        "maxCategories": 12,
-        "seriesCount": 3
-      },
-      "supportedFeatures": {
-        "dataLabels": false,
-        "antiOcclusionTooltip": true,
-        "semanticValence": true
-      },
-      "paths": {
-        "html": "template/tooltip/template.html",
-        "schema": "template/tooltip/schema.json",
-        "js": "template/tooltip/template.js",
-        "preview": "template/tooltip/preview.html"
       }
     }
   ]
