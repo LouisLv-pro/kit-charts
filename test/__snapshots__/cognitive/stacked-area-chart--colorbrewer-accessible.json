@@ -22,7 +22,7 @@
               105,
               130
             ],
-            "fill": true,
+            "fill": "origin",
             "label": "Éolien",
             "pointBackgroundColor": "#2B8CBE",
             "pointBorderColor": "#FFFFFF",
@@ -44,7 +44,7 @@
               100,
               135
             ],
-            "fill": true,
+            "fill": "-1",
             "label": "Solaire",
             "pointBackgroundColor": "#E66101",
             "pointBorderColor": "#FFFFFF",
@@ -66,10 +66,10 @@
               60,
               63
             ],
-            "fill": true,
+            "fill": "-1",
             "label": "Hydroélectrique",
             "pointBackgroundColor": "#5E3C99",
-            "pointBorderColor": "#CBD5E1",
+            "pointBorderColor": "#94A3B8",
             "pointHoverRadius": 5,
             "pointRadius": 0,
             "pointStyle": "circle",
@@ -141,7 +141,8 @@
               "padding": 14,
               "usePointStyle": true
             },
-            "position": "top"
+            "position": "top",
+            "reverse": true
           },
           "tooltip": {
             "backgroundColor": "rgba(15, 23, 42, 0.92)",
@@ -207,7 +208,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "colorbrewer-accessible"
       },
       "type": "line"
     },

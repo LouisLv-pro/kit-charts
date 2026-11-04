@@ -107,7 +107,7 @@
           "emphasis": {
             "anomaly": "#D01C8B",
             "benchmark": "#475569",
-            "context": "#CBD5E1",
+            "context": "#94A3B8",
             "focal": "#2B8CBE",
             "forecastAlpha": 0.5
           },
@@ -222,7 +222,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -314,7 +313,8 @@
             "type": "category"
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "colorbrewer-accessible"
       },
       "plugins": [
         {

@@ -11,7 +11,17 @@
         "datasets": [
           {
             "backgroundColor": "#88C0D0",
+            "backgroundColors": {
+              "down": "#BF616A",
+              "unchanged": "#D8DEE9",
+              "up": "rgba(163, 190, 140, 0.18)"
+            },
             "borderColor": {
+              "down": "#BF616A",
+              "unchanged": "#D8DEE9",
+              "up": "#A3BE8C"
+            },
+            "borderColors": {
               "down": "#BF616A",
               "unchanged": "#D8DEE9",
               "up": "#A3BE8C"
@@ -138,21 +148,24 @@
         "mode": "index",
         "plugins": {
           "legend": {
-            "align": "end",
-            "display": false,
+            "align": "center",
+            "display": true,
             "labels": {
-              "boxHeight": 8,
-              "boxWidth": 8,
+              "boxHeight": 12,
+              "boxWidth": 12,
               "color": "#ECEFF4",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
+                "size": 11,
                 "weight": "500"
               },
-              "padding": 14,
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 12,
+              "pointStyle": "rect",
               "usePointStyle": true
             },
-            "position": "top"
+            "onClick": "[Function:onClick]",
+            "position": "bottom"
           },
           "tooltip": {
             "backgroundColor": "#434C5E",
@@ -215,7 +228,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "nord-cognitive-dark"
       },
       "type": "candlestick"
     },

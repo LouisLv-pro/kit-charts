@@ -163,6 +163,9 @@
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : mois en initiales, régions en code, totaux et moyennes masqués
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
       const bgHeader = isDark ? '#1F232B' : (isTufte ? '#FFFFFF' : '#F8FAFC');
@@ -173,7 +176,11 @@
       const textMuted = tokens.textMuted || (isDark ? '#9EABC0' : '#64748B');
       const fontSans = tokens.fontFamily || "'Inter', sans-serif";
       const fontMono = tokens.fontMono || "'JetBrains Mono', monospace";
-      const sequentialPalette = tokens.sequential || ['#EFF3FF', '#C6DBEF', '#9ECAE1', '#6BAED6', '#3182BD', '#08519C'];
+      let sequentialPalette = tokens.sequential || ['#EFF3FF', '#C6DBEF', '#9ECAE1', '#6BAED6', '#3182BD', '#08519C'];
+      // Le premier cran ne doit pas se confondre avec le fond de la carte (thèmes sombres)
+      if (isDark && sequentialPalette.length > 2 && String(sequentialPalette[0]).toLowerCase() === String(tokens.surface || '').toLowerCase()) {
+        sequentialPalette = sequentialPalette.slice(1);
+      }
 
       // Calcul des min et max globaux pour l'échelle d'intensité
       let allValues = [];
@@ -208,41 +215,41 @@
           font-family: ${fontSans};
           color: ${textPrimary};
           box-sizing: border-box;
-          padding: 12px 14px;
+          padding: ${compact ? '8px 8px' : '12px 14px'};
         ">
           <!-- Légende de l'échelle de gradient continue -->
           <div style="
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
+            margin-bottom: ${compact ? 6 : 12}px;
+            padding-bottom: ${compact ? 6 : 10}px;
             border-bottom: 1px solid ${borderCol};
             flex-wrap: wrap;
             gap: 8px;
           ">
             <div>
-              <div style="font-weight: 600; font-size: 0.8125rem; color: ${textPrimary};">${escapeHtml(data.title || 'Tableau Heatmap')}</div>
-              ${data.subtitle ? `<div style="font-size: 0.7rem; color: ${textMuted};">${escapeHtml(data.subtitle)}</div>` : ''}
+              <div style="font-weight: 600; font-size: ${compact ? '0.75rem' : '0.8125rem'}; color: ${textPrimary};">${escapeHtml(data.title || 'Tableau Heatmap')}</div>
+              ${data.subtitle && !compact ? `<div style="font-size: 0.7rem; color: ${textMuted};">${escapeHtml(data.subtitle)}</div>` : ''}
             </div>
             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.725rem; color: ${textSecondary};">
-              <span style="font-family: ${fontMono}; font-weight: 600;">Min (${escapeHtml(globalMin)}${escapeHtml(data.unit || '')})</span>
+              <span style="font-family: ${fontMono}; font-weight: 600;">${compact ? '' : 'Min ('}${escapeHtml(globalMin)}${compact ? '' : escapeHtml(data.unit || '') + ')'}</span>
               <div style="
-                width: 120px;
+                width: ${compact ? 90 : 120}px;
                 height: 10px;
                 border-radius: 4px;
                 background: linear-gradient(to right, ${sequentialPalette[0] || '#EFF3FF'}, ${sequentialPalette[sequentialPalette.length - 1] || '#08519C'});
                 border: 1px solid ${borderCol};
               "></div>
-              <span style="font-family: ${fontMono}; font-weight: 600;">Max (${escapeHtml(globalMax)}${escapeHtml(data.unit || '')})</span>
+              <span style="font-family: ${fontMono}; font-weight: 600;">${compact ? '' : 'Max ('}${escapeHtml(globalMax)}${escapeHtml(data.unit || '')}${compact ? '' : ')'}</span>
             </div>
           </div>
 
           <table style="
             width: 100%;
             border-collapse: separate;
-            border-spacing: 2px;
-            font-size: 0.775rem;
+            border-spacing: ${compact ? 1 : 2}px;
+            font-size: ${compact ? '0.7rem' : '0.775rem'};
             line-height: 1.35;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
@@ -250,7 +257,7 @@
             <thead>
               <tr>
                 <th style="
-                  padding: 8px 12px;
+                  padding: ${compact ? '5px 4px' : '8px 12px'};
                   text-align: left;
                   font-weight: 600;
                   font-size: 0.7rem;
@@ -269,8 +276,8 @@
 
       data.columns.forEach(col => {
         html += `
-          <th style="
-            padding: 8px 6px;
+          <th title="${escapeHtml(col)}" style="
+            padding: ${compact ? '5px 0' : '8px 6px'};
             text-align: center;
             font-weight: 600;
             font-size: 0.7rem;
@@ -279,15 +286,15 @@
             color: ${textSecondary};
             background: ${bgHeader};
             border-bottom: 1.5px solid ${borderStrong};
-            min-width: 44px;
+            min-width: ${compact ? 0 : 44}px;
           ">
-            ${escapeHtml(col)}
+            ${escapeHtml(compact ? String(col).charAt(0) : col)}
           </th>
         `;
       });
 
       html += `
-                <th style="
+                ${compact ? '' : `<th style="
                   padding: 8px 10px;
                   text-align: right;
                   font-weight: 700;
@@ -310,7 +317,7 @@
                   border-bottom: 1.5px solid ${borderStrong};
                 ">
                   Moy.
-                </th>
+                </th>`}
               </tr>
             </thead>
             <tbody>
@@ -319,8 +326,8 @@
       data.rows.forEach((row, rIdx) => {
         html += `
           <tr>
-            <td style="
-              padding: 7px 12px;
+            <td title="${escapeHtml(row.label)}" style="
+              padding: ${compact ? '4px 4px' : '7px 12px'};
               text-align: left;
               font-weight: 600;
               color: ${textPrimary};
@@ -331,7 +338,7 @@
               z-index: 1;
               white-space: nowrap;
             ">
-              ${escapeHtml(row.label)}
+              ${escapeHtml(compact && row.id ? String(row.id).toUpperCase() : row.label)}
             </td>
         `;
 
@@ -339,17 +346,19 @@
           const ratio = (val - globalMin) / globalRange;
           const rgb = getSequentialColorForRatio(ratio, sequentialPalette, isDark);
           const lum = getRelativeLuminance(rgb.r, rgb.g, rgb.b);
-          // Règle d'inversion WCAG AAA : Si fond sombre (lum < 0.38), texte clair
-          const cellTextColor = lum < 0.38 ? '#FFFFFF' : (isDark && lum < 0.5 ? '#F8FAFC' : '#0F172A');
+                    // Texte noir ou blanc : celui qui offre le meilleur contraste réel (pivot WCAG, lum ~ 0.18)
+          const contrastWhite = 1.05 / (lum + 0.05);
+          const contrastDark = (lum + 0.05) / (getRelativeLuminance(15, 23, 42) + 0.05);
+          const cellTextColor = contrastWhite >= contrastDark ? '#FFFFFF' : '#0F172A';
           const cellBg = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
 
           html += `
             <td style="
-              padding: 7px 4px;
+              padding: ${compact ? '4px 0' : '7px 4px'};
               text-align: center;
               font-family: ${fontMono};
               font-weight: 500;
-              font-size: 0.75rem;
+              font-size: ${compact ? '0.65rem' : '0.75rem'};
               background-color: ${cellBg};
               color: ${cellTextColor};
               border-radius: 3px;
@@ -362,7 +371,7 @@
         });
 
         const stats = rowStats[rIdx];
-        html += `
+        html += compact ? '</tr>' : `
             <td style="
               padding: 7px 10px;
               text-align: right;
@@ -393,7 +402,7 @@
       const grandTotal = colSums.reduce((acc, v) => acc + v, 0);
       const grandAvg = grandTotal / (data.rows.length * data.columns.length);
 
-      html += `
+      if (!compact) html += `
               <tr style="border-top: 1.5px solid ${borderStrong}; font-weight: 700;">
                 <td style="
                   padding: 9px 12px;
@@ -409,7 +418,7 @@
                 </td>
       `;
 
-      colSums.forEach(cSum => {
+      if (!compact) colSums.forEach(cSum => {
         html += `
           <td style="
             padding: 9px 4px;
@@ -424,7 +433,11 @@
         `;
       });
 
-      html += `
+      if (compact) html += `
+            </tbody>
+          </table>
+        </div>
+      `; else html += `
                 <td style="
                   padding: 9px 10px;
                   text-align: right;

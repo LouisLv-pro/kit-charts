@@ -172,7 +172,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "paul-tol-scientific"
       },
       "type": "line"
     },

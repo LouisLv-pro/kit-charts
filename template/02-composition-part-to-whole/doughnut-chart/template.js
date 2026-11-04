@@ -50,6 +50,7 @@ const DEFAULT_DATA = {
   labels: ['Abonnements SaaS', 'Licences Enterprise', 'Services Pro', 'Usage API'],
   datasets: [{
     label: 'Revenus (M€)',
+    unit: ' M€',
     data: [42, 28, 18, 12]
   }]
 };
@@ -104,6 +105,19 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     pairs.sort((a, b) => b.val - a.val);
   }
 
+  // Consolidation des tranches < 3% en "Autres" (règle famille 02)
+  if (ds0.groupSmall !== false && pairs.length > 2) {
+    const sum0 = pairs.reduce((a, p) => a + p.val, 0);
+    const small = pairs.filter(p => sum0 > 0 && p.val / sum0 < 0.03);
+    if (small.length > 0 && pairs.length - small.length >= 2) {
+      const keep = pairs.filter(p => !small.includes(p));
+      keep.push({ label: 'Autres', val: small.reduce((a, p) => a + p.val, 0), color: tokens.emphasis?.context || tokens.textMuted || '#94A3B8', isOther: true });
+      pairs.length = 0;
+      keep.forEach(p => pairs.push(p));
+      if (ds0.sorted !== false) pairs.sort((a, b) => (a.isOther ? 1 : b.isOther ? -1 : b.val - a.val));
+    }
+  }
+
   labels = pairs.map(p => p.label);
   const data = pairs.map(p => p.val);
   const total = data.reduce((a, b) => a + b, 0);
@@ -125,7 +139,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       // KPI
       ctx.fillStyle = tokens.textPrimary || '#0F172A';
       ctx.font = `700 18px ${tokens.fontMono || 'monospace'}`;
-      ctx.fillText(total + (ds0.unit || ' M€'), centerX, centerY - 6);
+      ctx.fillText(formatLabelValue(total) + (ds0.unit !== undefined ? ds0.unit : ''), centerX, centerY - 6);
 
       // Label
       ctx.fillStyle = tokens.textMuted || '#64748B';
@@ -172,6 +186,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ...defaultOpts.plugins,
         datalabels: getDataLabelOptions(tokens, {
           display: showDataLabels,
+          fontSize: 12,
           formatter: (val, ctx) => {
             if (ctx && ctx.percentText) return ctx.percentText;
             const num = typeof val === 'object' && val !== null ? (val.value ?? val.v ?? 0) : (Number(val) || 0);

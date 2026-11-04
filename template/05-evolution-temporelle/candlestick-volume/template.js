@@ -127,6 +127,7 @@
     const pricePad = priceSpan * 0.05;
 
     let volMax = Math.max(...volumeList, 100);
+    const volTop = Math.ceil(volMax / 10000) * 10000;
 
     const bullColor = tokens.semantic?.positive || tokens.status?.success || '#2E7D32';
     const bearColor = tokens.semantic?.negative || tokens.status?.danger || '#C62828';
@@ -171,7 +172,7 @@
           const yTop = Math.min(yOpen, yClose);
           const yHeight = Math.max(2, Math.abs(yClose - yOpen));
 
-          ctx.fillStyle = isBull ? hexToRgba(color, 0.85) : color;
+          ctx.fillStyle = isBull ? hexToRgba(color, 0.18) : color; // haussier creux, baissier plein (second encodage hors couleur)
           ctx.fillRect(xCenter - bodyWidth / 2, yTop, bodyWidth, yHeight);
           ctx.strokeStyle = color;
           ctx.lineWidth = 1.5;
@@ -232,12 +233,22 @@
           ...defaultOpts.plugins,
           legend: {
             display: true,
-            position: 'top',
-            align: 'end',
+            position: 'bottom',
+            align: 'center',
+            // Légende statique : bougies (hausse creuse, baisse pleine) et moyenne mobile du volume (trait).
+            onClick: () => {},
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 },
-              filter: (item) => item.text !== 'Prix Clôture'
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              boxWidth: 12,
+              boxHeight: 12,
+              padding: 12,
+              generateLabels: () => [
+                { text: 'Hausse (creux)', fillStyle: hexToRgba(bullColor, 0.18), strokeStyle: bullColor, lineWidth: 2, fontColor: tokens.textPrimary, pointStyle: 'rect', hidden: false, datasetIndex: 0 },
+                { text: 'Baisse (plein)', fillStyle: bearColor, strokeStyle: bearColor, lineWidth: 2, fontColor: tokens.textPrimary, pointStyle: 'rect', hidden: false, datasetIndex: 0 },
+                { text: 'Volume MA (5j)', fillStyle: vmaColor, strokeStyle: vmaColor, lineWidth: 2, fontColor: tokens.textPrimary, pointStyle: 'line', hidden: false, datasetIndex: 1 }
+              ]
             }
           },
           tooltip: {
@@ -271,13 +282,16 @@
           yPrice: {
             type: 'linear',
             position: 'left',
+            stack: 'ohlcv',
+            stackWeight: 7,
             weight: 2,
-            min: Math.floor(priceMin - pricePad),
-            max: Math.ceil(priceMax + pricePad),
+            min: Math.floor((priceMin - pricePad) / 10) * 10,
+            max: Math.ceil((priceMax + pricePad) / 10) * 10,
             grid: { color: tokens.gridColor },
             ticks: {
               color: tokens.textSecondary,
-              font: { family: tokens.fontMono }
+              font: { family: tokens.fontMono },
+              stepSize: 10
             },
             title: {
               display: true,
@@ -288,21 +302,28 @@
           },
           yVolume: {
             type: 'linear',
-            position: 'right',
+            position: 'left',
+            stack: 'ohlcv',
+            stackWeight: 3,
             weight: 1,
+            offset: false,
             beginAtZero: true,
-            max: Math.ceil(volMax * 3.5),
-            grid: { display: false },
+            min: 0,
+            max: volTop,
+            grid: { color: tokens.gridColor },
             ticks: {
-              color: tokens.textMuted,
-              font: { family: tokens.fontMono, size: 10 },
-              callback: (val) => val > 0 && val <= volMax ? `${(val / 1000).toFixed(0)}k` : ''
+              color: tokens.textSecondary,
+              font: { family: tokens.fontMono, size: 11 },
+              stepSize: volTop / 4,
+              autoSkip: false,
+              maxTicksLimit: 6,
+              callback: (val) => (val === 0 ? '0' : (val >= volTop ? '' : `${(val / 1000).toFixed(0)}k`))
             },
             title: {
               display: true,
               text: 'Volume',
-              color: tokens.textMuted,
-              font: { family: tokens.fontFamily, size: 11 }
+              color: tokens.textSecondary,
+              font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }
           }
         }

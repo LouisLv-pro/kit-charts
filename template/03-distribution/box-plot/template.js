@@ -93,13 +93,27 @@ const DEFAULT_DATA = {
   datasets: [{
     label: 'Biomarqueur (mg/dL)',
     data: [
-      { min: 12, q1: 18, median: 24, q3: 31, max: 42, outliers: [48] },
+      { min: 12, q1: 18, median: 24, q3: 31, max: 42, outliers: [58] },
       { min: 19, q1: 28, median: 36, q3: 44, max: 55, outliers: [] },
-      { min: 22, q1: 34, median: 42, q3: 50, max: 62, outliers: [14, 68] },
+      { min: 22, q1: 34, median: 42, q3: 50, max: 62, outliers: [4, 80] },
       { min: 10, q1: 16, median: 22, q3: 29, max: 38, outliers: [] }
     ]
   }]
 };
+
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
 
 function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
   const canvas = typeof canvasTarget === 'string'
@@ -120,9 +134,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const rawData = customData || DEFAULT_DATA;
   const labels = rawData.labels || ['Groupe 1', 'Groupe 2', 'Groupe 3', 'Groupe 4'];
   const rawBoxData = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || [
-    { min: 12, q1: 18, median: 24, q3: 31, max: 42, outliers: [48] },
+    { min: 12, q1: 18, median: 24, q3: 31, max: 42, outliers: [58] },
     { min: 19, q1: 28, median: 36, q3: 44, max: 55, outliers: [] },
-    { min: 22, q1: 34, median: 42, q3: 50, max: 62, outliers: [14, 68] },
+    { min: 22, q1: 34, median: 42, q3: 50, max: 62, outliers: [4, 80] },
     { min: 10, q1: 16, median: 22, q3: 29, max: 38, outliers: [] }
   ];
   const boxStats = rawBoxData.map(d => Array.isArray(d) ? computeTukeyBoxplotStats(d) : d);
@@ -195,7 +209,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ctx.beginPath();
         ctx.strokeStyle = tokens.isDark ? '#D8DEE9' : '#334155';
         ctx.lineWidth = 1.5;
-        ctx.setLineDash([3, 3]);
+        ctx.setLineDash([]);
         ctx.moveTo(xPos, yMin);
         ctx.lineTo(xPos, yQ1);
         ctx.stroke();
@@ -209,7 +223,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
         // 2. Upper Whisker (q3 to max)
         ctx.beginPath();
-        ctx.setLineDash([3, 3]);
+        ctx.setLineDash([]);
         ctx.moveTo(xPos, yQ3);
         ctx.lineTo(xPos, yMax);
         ctx.stroke();
@@ -239,7 +253,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ctx.lineTo(xPos + halfBox, yMed);
         ctx.stroke();
 
-        // 5. Outliers (Double encoding: Distinctive Anomaly Token + Triangle Glyphs)
+        // 5. Outliers (cercles isolés, couleur d'anomalie)
         if (Array.isArray(stat.outliers)) {
           const anomalyColor = tokens.emphasis?.anomaly || tokens.semantic?.negative || '#D01C8B';
           stat.outliers.forEach(outVal => {
@@ -247,10 +261,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             const size = 5;
             ctx.beginPath();
             ctx.fillStyle = anomalyColor;
-            ctx.moveTo(xPos, yOut - size);
-            ctx.lineTo(xPos + size, yOut + size);
-            ctx.lineTo(xPos - size, yOut + size);
-            ctx.closePath();
+            ctx.arc(xPos, yOut, 4, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = tokens.surfaceRaised || tokens.bg || '#FFFFFF';
             ctx.lineWidth = 1.5;
@@ -302,11 +313,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           grid: { display: false },
           ticks: {
             color: tokens.textPrimary,
-            font: { family: tokens.fontFamily, size: 12, weight: '600' }
+            font: { family: tokens.fontFamily, size: 11, weight: '600' },
+            maxRotation: 0,
+            minRotation: 0,
+            autoSkip: false,
+            callback: function(value) {
+              return wrapCategoryLabel(this.getLabelForValue(value), (this.chart.width - 70) / Math.max(1, labels.length) - 6, 11);
+            }
           }
         },
         y: {
           beginAtZero: false,
+          title: {
+            display: !!(rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label),
+            text: (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || '',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           suggestedMin,
           suggestedMax,
           grid: { color: tokens.gridColor },

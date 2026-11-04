@@ -82,6 +82,22 @@ const DEFAULT_DATA = {
 };
 
 /**
+ * Couleur de texte lisible (WCAG) selon la luminance du fond.
+ */
+function readableTextOn(bg) {
+  const fn = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) || (typeof window !== 'undefined' && window.getContrastingTextColor);
+  if (typeof fn === 'function') {
+    try { return fn(bg); } catch (e) { /* repli ci-dessous */ }
+  }
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(bg || '').trim());
+  if (!m) return '#0F172A';
+  const n = parseInt(m[1], 16);
+  const lin = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  return L > 0.4 ? '#0F172A' : '#FFFFFF';
+}
+
+/**
  * Plugin Canvas Chart.js pour afficher les sigles régionaux centrés en gras dans chaque tuile.
  */
 const tileLabelsPlugin = {
@@ -110,17 +126,68 @@ const tileLabelsPlugin = {
       const { x, y } = element.getCenterPoint ? element.getCenterPoint() : { x: element.x, y: element.y };
       if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
 
-      // Calcul de contraste pour lisibilité du texte
-      ctx.fillStyle = '#FFFFFF';
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-      ctx.shadowBlur = 3;
-      ctx.fillText(code, x, y);
-      ctx.shadowBlur = 0;
+      // Texte noir ou blanc selon la luminance réelle de la tuile (WCAG >= 4.5:1)
+      const bg = raw.color || '#FFFFFF';
+      ctx.fillStyle = readableTextOn(bg);
+      const tileH = Number.isFinite(element.height) ? element.height : 40;
+      const tileW = Number.isFinite(element.width) ? element.width : 50;
+      const valTxt = typeof raw.v === 'number' ? String(Math.round(raw.v * 10) / 10) : '';
+      ctx.font = `700 11px ${fontMono}`;
+      if (valTxt && tileH < 34) {
+        // Tuile basse (carte étroite) : sigle et valeur sur une seule ligne, centrés
+        const wCode = ctx.measureText(code).width;
+        ctx.font = `400 11px ${fontMono}`;
+        const wVal = ctx.measureText(valTxt).width;
+        const gap = 5;
+        if (wCode + gap + wVal <= tileW - 4) {
+          const x0 = x - (wCode + gap + wVal) / 2;
+          ctx.textAlign = 'left';
+          ctx.font = `700 11px ${fontMono}`;
+          ctx.fillText(code, x0, y);
+          ctx.font = `400 11px ${fontMono}`;
+          ctx.fillText(valTxt, x0 + wCode + gap, y);
+          ctx.textAlign = 'center';
+          continue;
+        }
+      }
+      ctx.fillText(code, x, y - (valTxt ? 7 : 0));
+      if (valTxt) {
+        ctx.font = `400 11px ${fontMono}`;
+        ctx.fillText(valTxt, x, y + 8);
+      }
     }
-
     ctx.restore();
   }
 };
+
+/**
+ * Légende : dégradé séquentiel de l'indice (min à max) sous la grille.
+ */
+const makeTileLegendPlugin = (meta) => ({
+  id: 'tileLegendPlugin',
+  afterDraw(chart) {
+    const area = chart.chartArea;
+    if (!meta || !area || !meta.getColor) return;
+    const { tokens } = meta;
+    const ctx = chart.ctx;
+    const w = 180, h = 10;
+    const x0 = area.left + (area.right - area.left - w) / 2;
+    const y0 = chart.height - 22;
+    ctx.save();
+    for (let i = 0; i < w; i++) {
+      ctx.fillStyle = meta.getColor(i / (w - 1));
+      ctx.fillRect(x0 + i, y0, 1.5, h);
+    }
+    ctx.fillStyle = tokens.textSecondary || '#475569';
+    ctx.font = `11px ${tokens.fontFamily || 'sans-serif'}`;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'right';
+    ctx.fillText(String(Math.round(meta.min)), x0 - 6, y0 + h / 2);
+    ctx.textAlign = 'left';
+    ctx.fillText(`${Math.round(meta.max)}  (indice /100)`, x0 + w + 6, y0 + h / 2);
+    ctx.restore();
+  }
+});
 
 /**
  * Crée et initialise un Cartogramme / Tilegramme dans le canvas cible.
@@ -175,10 +242,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       borderWidth = emp.borderWidth !== undefined ? emp.borderWidth : (item.role === 'focal' ? 3 : borderWidth);
     }
 
+    const ratio = (v - minVal) / valRange;
+    const color = getSequentialColor(tokens, ratio);
+
     return {
       x,
       y,
       v,
+      color,
       label: code,
       name,
       role: item.role || null,
@@ -196,23 +267,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       data: processedData,
       borderColor: processedData.map(d => d.borderColor),
       borderWidth: processedData.map(d => d.borderWidth),
-      backgroundColor: (ctx) => {
-        const raw = ctx.raw;
-        if (raw && raw.role === 'focal') {
-          const emp = getEmphasisStyle(tokens, 'focal');
-          if (emp.backgroundColor) return emp.backgroundColor;
-        }
-        if (raw && raw.role === 'anomaly') {
-          const emp = getEmphasisStyle(tokens, 'anomaly');
-          if (emp.backgroundColor) return emp.backgroundColor;
-        }
-        if (raw && typeof raw.growth === 'number' && raw.role !== 'context') {
-          return getValenceColor(tokens, raw.growth, 'gain');
-        }
-        const v = raw && typeof raw.v === 'number' ? raw.v : 50;
-        const ratio = (v - minVal) / valRange;
-        return getSequentialColor(tokens, ratio);
-      },
+      // La luminance encode toujours la valeur ; le rôle ne modifie que la bordure.
+      backgroundColor: (ctx) => (ctx.raw && ctx.raw.color) || getSequentialColor(tokens, 0.5),
       width: ({ chart }) => {
         const area = chart.chartArea;
         const w = area ? area.width / 5.2 : 55;
@@ -238,6 +294,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     data: chartData,
     options: {
       ...defaultOpts,
+      layout: { padding: { bottom: 28 } },
       animation: getAccessibleAnimationOptions(tokens, {
         duration: (isTufte || reduceMotion) ? 0 : 400,
         easing: 'easeOutQuart'
@@ -257,7 +314,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           display: false
         },
         tileMeta: {
-          tokens
+          tokens,
         },
         tooltip: {
           ...defaultOpts.plugins.tooltip,
@@ -314,14 +371,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         y: {
           min: minY,
           max: maxY,
-          reverse: false,
+          reverse: true,
           grid: { display: false, drawBorder: false },
           border: { display: false },
           ticks: { display: false }
         }
       }
     },
-    plugins: [tileLabelsPlugin]
+    plugins: [tileLabelsPlugin, makeTileLegendPlugin({ tokens, min: minVal, max: maxVal, getColor: (r) => getSequentialColor(tokens, r) })]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {

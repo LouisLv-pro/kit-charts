@@ -31,6 +31,7 @@
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const getContrastingTextColor = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) || (typeof window !== 'undefined' && window.getContrastingTextColor) || function() { return '#0F172A'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
 
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -131,6 +132,10 @@
     const inputValues = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Incidents';
 
+    // Carte étroite (< 420 px) : libellés abrégés, titres d'axes retirés, polices réduites.
+    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+    const narrow = cw > 0 && cw < 420;
+    const shortLabel = (l) => { const t = String(l); return t.length > 13 ? t.slice(0, 12).trimEnd() + '…' : t; };
     const pareto = computeParetoCumsum(inputLabels, inputValues);
     const gini = computeGini(pareto.values);
 
@@ -155,10 +160,54 @@
         ctx.stroke();
 
         ctx.setLineDash([]);
-        ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
+        ctx.font = `600 ${narrow ? 10 : 11}px ${tokens.fontMono || 'monospace'}`;
         ctx.fillStyle = thresholdColor;
         ctx.textAlign = 'right';
-        ctx.fillText('Seuil 80% (Vital Few)', chartArea.right - 8, y80 - 6);
+        ctx.textBaseline = 'top';
+        // Sous le trait : au-dessus, la courbe cumulée passe sur l'étiquette
+        ctx.fillText(narrow ? 'Seuil 80 %' : 'Seuil 80% (Vital Few)', chartArea.right - 6, y80 + 4);
+        ctx.restore();
+      }
+    };
+
+    // Étiquettes de barres locales : à l'intérieur du sommet quand la barre est assez haute
+    // (la première barre coïncide toujours avec le premier point du cumul), sinon au-dessus.
+    const paretoBarLabelsPlugin = {
+      id: 'kitChartsParetoBarLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || meta.hidden) return;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = `700 ${narrow ? 10 : 11}px ${tokens.fontMono || 'monospace'}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const fillBase = barColor;
+        meta.data.forEach((el, i) => {
+          const v = pareto.values[i];
+          if (typeof v !== 'number' || !el) return;
+          const top = Math.min(el.y, el.base), h = Math.abs(el.base - el.y);
+          const text = formatLabelValue(v);
+          const inside = h >= 26;
+          if (inside) {
+            const a = pareto.cumulativePcts[i] <= 80 ? (isDark ? 0.90 : 0.80) : (isDark ? 0.80 : 0.50);
+            const src = pareto.cumulativePcts[i] <= 80 ? fillBase : (tokens.emphasis?.context || '#CBD5E1');
+            const m = /^#?([0-9a-f]{6})$/i.exec(String(src).trim());
+            const bgm = /^#?([0-9a-f]{6})$/i.exec(String(tokens.bg || '').trim());
+            let solid = src;
+            if (m && bgm) {
+              const f = [0, 2, 4].map(k => parseInt(m[1].slice(k, k + 2), 16));
+              const b = [0, 2, 4].map(k => parseInt(bgm[1].slice(k, k + 2), 16));
+              solid = '#' + f.map((c, k) => Math.round(c * a + b[k] * (1 - a)).toString(16).padStart(2, '0')).join('');
+            }
+            ctx.fillStyle = getContrastingTextColor(solid);
+            ctx.fillText(text, el.x, top + 11);
+          } else {
+            ctx.fillStyle = tokens.textPrimary;
+            ctx.fillText(text, el.x, top - 8);
+          }
+        });
         ctx.restore();
       }
     };
@@ -175,15 +224,13 @@
             yAxisID: 'y',
             data: pareto.values,
             backgroundColor: pareto.cumulativePcts.map(pct =>
-              pct <= 80 ? hexToRgba(barColor, isDark ? 0.90 : 0.80) : hexToRgba(tokens.emphasis?.context || '#CBD5E1', 0.50)
+              pct <= 80 ? hexToRgba(barColor, isDark ? 0.90 : 0.80) : hexToRgba(tokens.emphasis?.context || '#CBD5E1', isDark ? 0.80 : 0.50)
             ),
             borderColor: barColor,
             borderWidth: 1.5,
             borderRadius: 4,
-            datalabels: {
-              display: showDataLabels,
-              color: tokens.textPrimary
-            },
+            pointStyle: 'rectRounded',
+            datalabels: { display: false }, // étiquettes dessinées par kitChartsParetoBarLabels
             order: 2
           },
           {
@@ -199,7 +246,8 @@
             pointBackgroundColor: lineColor,
             tension: 0.2,
             datalabels: {
-              display: showDataLabels,
+              // Carte étroite : les valeurs du cumul se lisent sur l'axe droit et à l'infobulle
+              display: showDataLabels && !narrow,
               align: 'top',
               anchor: 'center',
               color: lineColor,
@@ -233,10 +281,13 @@
           legend: {
             display: true,
             position: 'top',
-            align: 'end',
+            align: narrow ? 'start' : 'end',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+              usePointStyle: true,
+              boxWidth: narrow ? 8 : 10,
+              padding: narrow ? 8 : 10
             }
           },
           tooltip: {
@@ -260,18 +311,28 @@
             grid: { display: false },
             ticks: {
               color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 11 },
-              maxRotation: 30
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 11 },
+              maxRotation: narrow ? 90 : 30,
+              minRotation: narrow ? 90 : 0,
+              autoSkip: false,
+              callback: function(value) { const l = this.getLabelForValue(value); return narrow ? shortLabel(l) : l; }
             }
           },
           y: {
             type: 'linear',
             position: 'left',
             beginAtZero: true,
-            grace: '8%',
+            min: 0,
+            max: pareto.total, // le sommet de l'axe gauche = total : 100% du cumul y est aligné
             grid: { color: tokens.gridColor },
+            ticks: {
+              color: tokens.textSecondary,
+              font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
+              includeBounds: false,
+              maxTicksLimit: narrow ? 4 : undefined
+            },
             title: {
-              display: true,
+              display: !narrow,
               text: "Nombre d'occurrences",
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
@@ -282,23 +343,24 @@
             position: 'right',
             beginAtZero: true,
             min: 0,
-            max: 105,
+            max: 100,
             grid: { display: false },
             ticks: {
+              stepSize: narrow ? 25 : 20,
               color: lineColor,
-              font: { family: tokens.fontMono, size: 11 },
+              font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
               callback: (val) => `${val}%`
             },
             title: {
-              display: true,
-              text: 'Pourcentage cumulé',
+              display: !narrow,
+              text: `Pourcentage cumulé (Gini = ${gini})`,
               color: lineColor,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }
           }
         }
       },
-      plugins: [pareto80LinePlugin]
+      plugins: [pareto80LinePlugin, paretoBarLabelsPlugin]
     };
 
     if (typeof Chart === 'undefined') return Object.assign(config, { pareto, gini, computeParetoCumsum, computeGini });

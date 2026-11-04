@@ -63,7 +63,7 @@
             "tension": 0.25
           },
           {
-            "backgroundColor": "rgba(161, 161, 170, 0.4)",
+            "backgroundColor": "rgba(142, 142, 150, 0.4)",
             "borderColor": "#009E73",
             "borderDash": [],
             "borderWidth": 1.5,
@@ -79,8 +79,8 @@
             ],
             "fill": false,
             "label": "Produit Legacy Desktop (Context)",
-            "pointBackgroundColor": "#A1A1AA",
-            "pointBorderColor": "#A1A1AA",
+            "pointBackgroundColor": "#8E8E96",
+            "pointBorderColor": "#8E8E96",
             "pointBorderWidth": 1.5,
             "pointHoverRadius": 6,
             "pointRadius": 2,
@@ -141,7 +141,7 @@
         "plugins": {
           "legend": {
             "align": "end",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 8,
               "boxWidth": 8,
@@ -218,8 +218,16 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "atkinson-hyperlegible"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "kitChartsDirectLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

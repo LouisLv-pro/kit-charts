@@ -110,6 +110,14 @@
               "label": {
                 "type": "string"
               },
+              "valence": {
+                "type": [
+                  "number",
+                  "string",
+                  "boolean"
+                ],
+                "description": "Sens métier du segment (1 positif, 0 neutre, -1 négatif) pour la couleur sémantique"
+              },
               "data": {
                 "type": "array",
                 "items": {

@@ -63,7 +63,7 @@
             "tension": 0.25
           },
           {
-            "backgroundColor": "rgba(187, 187, 187, 0.4)",
+            "backgroundColor": "rgba(153, 153, 153, 0.4)",
             "borderColor": "#228833",
             "borderDash": [],
             "borderWidth": 1.5,
@@ -79,8 +79,8 @@
             ],
             "fill": false,
             "label": "Produit Legacy Desktop (Context)",
-            "pointBackgroundColor": "#BBBBBB",
-            "pointBorderColor": "#BBBBBB",
+            "pointBackgroundColor": "#999999",
+            "pointBorderColor": "#999999",
             "pointBorderWidth": 1.5,
             "pointHoverRadius": 6,
             "pointRadius": 2,
@@ -141,7 +141,7 @@
         "plugins": {
           "legend": {
             "align": "end",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 8,
               "boxWidth": 8,
@@ -218,8 +218,16 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "paul-tol-scientific"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "kitChartsDirectLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

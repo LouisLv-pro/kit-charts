@@ -11,32 +11,14 @@
         "datasets": [
           {
             "backgroundColor": [
-              "#0072B2",
-              "#D55E00",
-              "#009E73",
-              "#E69F00"
-            ],
-            "borderColor": "#FFFFFF",
-            "borderWidth": 2,
-            "data": [
-              40,
-              30,
-              20,
-              10
-            ],
-            "label": "Régions",
-            "weight": 1
-          },
-          {
-            "backgroundColor": [
-              "#56B4E9",
-              "#F0E442",
-              "#CC79A7",
-              "#595959",
-              "#0072B2",
-              "#D55E00",
-              "#009E73",
-              "#E69F00"
+              "#2e8bc0",
+              "#80b9d9",
+              "#dd7b2e",
+              "#eaaf80",
+              "#2eaf8c",
+              "#80cfb9",
+              "#ebb02e",
+              "#f3cf80"
             ],
             "borderColor": "#FFFFFF",
             "borderWidth": 2,
@@ -50,22 +32,60 @@
               6,
               4
             ],
+            "kcLabels": [
+              "Europe de l'Ouest",
+              "Europe du Nord",
+              "Amérique du Nord",
+              "Amérique latine",
+              "Asie de l'Est",
+              "Asie du Sud-Est",
+              "Moyen-Orient",
+              "Afrique"
+            ],
             "label": "Sous-Régions",
-            "weight": 1.8
+            "weight": 1.4
+          },
+          {
+            "backgroundColor": [
+              "#0072B2",
+              "#D55E00",
+              "#009E73",
+              "#E69F00"
+            ],
+            "borderColor": "#FFFFFF",
+            "borderWidth": 2,
+            "data": [
+              40,
+              30,
+              20,
+              10
+            ],
+            "kcLabels": [
+              "Europe",
+              "Amériques",
+              "Asie-Pacifique",
+              "Afrique & ME"
+            ],
+            "label": "Régions",
+            "weight": 1
           }
         ],
         "labels": [
-          "Europe",
-          "Amériques",
-          "Asie-Pacifique",
-          "Afrique & ME"
+          "Europe de l'Ouest",
+          "Europe du Nord",
+          "Amérique du Nord",
+          "Amérique latine",
+          "Asie de l'Est",
+          "Asie du Sud-Est",
+          "Moyen-Orient",
+          "Afrique"
         ]
       },
       "options": {
         "animation": false,
         "barPercentage": 0.9,
         "categoryPercentage": 0.8,
-        "cutout": "35%",
+        "cutout": 0,
         "elements": {
           "bar": {
             "borderRadius": 4
@@ -102,13 +122,13 @@
         "plugins": {
           "datalabels": {
             "color": "#1E293B",
-            "display": true,
+            "display": "[Function:display]",
             "font": {
               "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
               "size": 10,
               "weight": "600"
             },
-            "formatter": "[Function:formatter]",
+            "formatter": "[Function:anonymous]",
             "padding": 4,
             "thresholdRatio": 0.05
           },
@@ -116,7 +136,6 @@
             "align": "center",
             "display": true,
             "labels": {
-              "boxHeight": 12,
               "boxWidth": 12,
               "color": "#1E293B",
               "font": {
@@ -124,10 +143,12 @@
                 "size": 12,
                 "weight": "500"
               },
-              "padding": 16,
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 12,
               "pointStyle": "circle",
               "usePointStyle": true
             },
+            "onClick": "[Function:onClick]",
             "position": "right"
           },
           "tooltip": {
@@ -146,7 +167,8 @@
             "borderWidth": 0,
             "boxPadding": 6,
             "callbacks": {
-              "label": "[Function:label]"
+              "label": "[Function:label]",
+              "title": "[Function:title]"
             },
             "cornerRadius": 6,
             "enabled": true,
@@ -167,46 +189,15 @@
         },
         "responsive": true,
         "rotation": -90,
-        "scales": {
-          "x": {
-            "border": {
-              "color": "#475569",
-              "width": 1
-            },
-            "grid": {
-              "display": false,
-              "drawBorder": false
-            },
-            "ticks": {
-              "color": "#334155",
-              "font": {
-                "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 11
-              },
-              "padding": 6
-            }
-          },
-          "y": {
-            "beginAtZero": true,
-            "border": {
-              "display": false
-            },
-            "grid": {
-              "color": "rgba(30, 41, 59, 0.06)",
-              "display": true,
-              "drawBorder": false
-            },
-            "ticks": {
-              "color": "#334155",
-              "font": {
-                "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
-                "size": 11
-              },
-              "padding": 8
-            }
-          }
-        }
+        "scales": {},
+        "themeName": "okabe-ito-cud"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsSunburstLabels"
+        }
+      ],
       "type": "doughnut"
     },
     "kind": "chart-config"

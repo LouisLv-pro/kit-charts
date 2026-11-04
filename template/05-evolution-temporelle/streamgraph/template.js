@@ -39,7 +39,7 @@
  * @file 05-evolution-temporelle/streamgraph/template.js
  * @description Standardized Streamgraph template for kit-charts.
  * Visualizes qualitative shifts in thematic volume over continuous time using organic, fluid splines.
- * Employs smooth Bézier tension (0.4), stacked area layers, and semantic emphasis tokens.
+ * Employs smooth Bézier tension (0.4), layered areas around a computed wiggle baseline (Byron & Wattenberg), and semantic emphasis tokens.
  */
 
 /**
@@ -50,26 +50,74 @@ const DEFAULT_DATA = {
   datasets: [
     {
       label: 'Intelligence Artificielle',
-      data: [20, 32, 45, 68, 92, 115, 130, 142, 160, 175],
+      data: [30, 45, 70, 110, 140, 120, 90, 75, 85, 105],
       role: 'focal'
     },
     {
       label: 'Cybersécurité & Privacy',
-      data: [45, 50, 48, 55, 62, 70, 75, 80, 82, 85],
+      data: [60, 75, 100, 90, 70, 60, 80, 115, 130, 110],
       role: 'context'
     },
     {
       label: 'Cloud & DevOps',
-      data: [60, 58, 55, 52, 48, 45, 42, 40, 38, 35],
+      data: [80, 70, 55, 50, 65, 90, 110, 95, 70, 55],
       role: 'context'
     },
     {
       label: 'Blockchain & Web3',
-      data: [35, 42, 38, 25, 20, 18, 15, 12, 10, 8],
+      data: [40, 55, 65, 50, 30, 25, 35, 50, 45, 30],
       role: 'context'
     }
   ]
 };
+
+/**
+ * Calcule la baseline (bord inférieur) d'un streamgraph.
+ * 'wiggle' : algorithme de Byron & Wattenberg (minimise la variation de pente, équivalent d3.stackOffsetWiggle).
+ * 'silhouette' : couches centrées autour de 0.
+ * Dans les deux cas le résultat est recentré pour que la silhouette soit symétrique autour de 0.
+ *
+ * @param {number[][]} series - valeurs par couche (couche x temps)
+ * @param {string} [offset='wiggle']
+ * @returns {number[]} baseline par pas de temps
+ */
+function computeStreamBaseline(series, offset = 'wiggle') {
+  const m = series.length ? series[0].length : 0;
+  const n = series.length;
+  const num = (v) => (typeof v === 'number' && isFinite(v) ? v : 0);
+  const totals = [];
+  for (let j = 0; j < m; j++) {
+    let t = 0;
+    for (let i = 0; i < n; i++) t += num(series[i][j]);
+    totals.push(t);
+  }
+  const base = new Array(m).fill(0);
+  if (offset === 'silhouette') {
+    for (let j = 0; j < m; j++) base[j] = -totals[j] / 2;
+    return base;
+  }
+  let y = 0;
+  for (let j = 1; j < m; j++) {
+    let s1 = 0;
+    let s2 = 0;
+    for (let i = 0; i < n; i++) {
+      const cur = num(series[i][j]);
+      const prev = num(series[i][j - 1]);
+      let s3 = (cur - prev) / 2;
+      for (let k = 0; k < i; k++) s3 += num(series[k][j]) - num(series[k][j - 1]);
+      s1 += cur;
+      s2 += s3 * cur;
+    }
+    base[j - 1] = y;
+    if (s1) y -= s2 / s1;
+  }
+  if (m) base[m - 1] = y;
+  // Recentrage : la ligne médiane moyenne de la silhouette est ramenée à 0.
+  let meanMid = 0;
+  for (let j = 0; j < m; j++) meanMid += base[j] + totals[j] / 2;
+  meanMid = m ? meanMid / m : 0;
+  return base.map((v) => v - meanMid);
+}
 
 /**
  * Creates and renders a Streamgraph in the specified canvas target.
@@ -79,7 +127,7 @@ const DEFAULT_DATA = {
  * @param {string} [themeName='colorbrewer-accessible'] - Theme identifier
  * @returns {Object} Initialized Chart.js instance or mock instance
  */
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string' && typeof document !== 'undefined'
     ? document.getElementById(canvasTarget)
     : canvasTarget;
@@ -117,10 +165,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       borderWidth: ds.borderWidth ?? (isTufte ? 1.0 : (role === 'focal' ? 2.0 : 1.0))
     });
 
-    const border = ds.borderColor || emphasisStyle.borderColor || baseColor;
-    const bg = ds.backgroundColor || (typeof emphasisStyle.backgroundColor === 'string'
-      ? emphasisStyle.backgroundColor
-      : hexToRgba(border, alpha));
+    // Streamgraph : teinte catégorielle par couche (pas de grisage 'contexte'), chaque couche reste identifiable.
+    const border = ds.borderColor || baseColor;
+    const bg = ds.backgroundColor || hexToRgba(baseColor, isTufte ? 0.55 : 0.85);
 
     return {
       label: ds.label || `Série ${idx + 1}`,
@@ -139,7 +186,37 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     };
   });
 
-  const chartData = { labels, datasets };
+  // Streamgraph : bords calculés ici (pas d'empilement Chart.js ancré à 0).
+  // Dataset 0 = baseline invisible (bord inférieur), puis une courbe par couche = bord supérieur cumulé.
+  const rawSeries = datasets.map((ds) => ds.data);
+  const offsetMode = (options && options.offset) || rawData.offset || 'silhouette';
+  const baseline = computeStreamBaseline(rawSeries, offsetMode);
+  const round2 = (v) => Math.round(v * 100) / 100;
+  const cumulative = baseline.slice();
+  const layerDatasets = datasets.map((ds, idx) => {
+    const upper = ds.data.map((v, j) => {
+      cumulative[j] += (typeof v === 'number' && isFinite(v) ? v : 0);
+      return round2(cumulative[j]);
+    });
+    return Object.assign({}, ds, {
+      data: upper,
+      rawValues: ds.data,
+      fill: '-1'
+    });
+  });
+  const baseDataset = {
+    label: '__baseline',
+    data: baseline.map(round2),
+    borderWidth: 0,
+    borderColor: 'transparent',
+    backgroundColor: 'transparent',
+    pointRadius: 0,
+    pointHoverRadius: 0,
+    fill: false,
+    tension: 0.4,
+    isStreamBaseline: true
+  };
+  const chartData = { labels, datasets: [baseDataset, ...layerDatasets] };
   const baseOptions = getChartDefaultOptions(tokens);
   const temporalOpts = getTemporalInteractionOptions(tokens, { mode: 'index', axis: 'x', hitRadius: 12, hoverRadius: 6 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 700, easing: 'easeOutCubic' });
@@ -155,7 +232,6 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       maintainAspectRatio: false,
       scales: {
         x: {
-          stacked: true,
           grid: {
             display: false,
             drawBorder: false
@@ -171,21 +247,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         },
         y: {
-          stacked: true,
-          grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
-            drawBorder: false
-          },
+          display: false,
+          grid: { display: false, drawBorder: false },
           border: { display: false },
-          ticks: {
-            color: tokens.textSecondary,
-            font: {
-              family: tokens.fontFamily,
-              size: 11
-            },
-            padding: 8
-          }
+          ticks: { display: false }
         }
       },
       plugins: {
@@ -195,6 +260,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           align: 'end',
           labels: {
             color: tokens.textPrimary,
+            filter: (item, chartData) => !(chartData.datasets[item.datasetIndex] || {}).isStreamBaseline,
             font: {
               family: tokens.fontFamily,
               size: 12,
@@ -214,6 +280,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           borderWidth: 1,
           padding: 10,
           cornerRadius: 6,
+          filter: (item) => !item.dataset.isStreamBaseline,
           titleFont: {
             family: tokens.fontFamily,
             size: 12,
@@ -226,9 +293,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           },
           callbacks: {
             label: (context) => {
-              const val = context.parsed.y !== null && context.parsed.y !== undefined
+              const rv = context.dataset.rawValues;
+              const val = rv ? rv[context.dataIndex] : (context.parsed.y !== null && context.parsed.y !== undefined
                 ? context.parsed.y
-                : context.raw;
+                : context.raw);
               const formatted = typeof val === 'number'
                 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val)
                 : val;
@@ -261,6 +329,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
   const moduleExports = {
     DEFAULT_DATA: typeof DEFAULT_DATA !== 'undefined' ? DEFAULT_DATA : (typeof defaultData !== 'undefined' ? defaultData : {}),
+    computeStreamBaseline: computeStreamBaseline,
     createChart: typeof createChart === 'function' ? createChart : null,
     getEmphasisStyle: typeof getEmphasisStyle === 'function' ? getEmphasisStyle : null,
     getValenceColor: typeof getValenceColor === 'function' ? getValenceColor : null,

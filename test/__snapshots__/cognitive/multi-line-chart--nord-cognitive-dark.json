@@ -36,7 +36,7 @@
           },
           {
             "backgroundColor": "#ECEFF4",
-            "borderColor": "#81A1C1",
+            "borderColor": "#EBCB8B",
             "borderDash": [
               4,
               4
@@ -63,8 +63,8 @@
             "tension": 0.25
           },
           {
-            "backgroundColor": "rgba(76, 86, 106, 0.4)",
-            "borderColor": "#5E81AC",
+            "backgroundColor": "rgba(123, 136, 161, 0.4)",
+            "borderColor": "#B48EAD",
             "borderDash": [],
             "borderWidth": 1.5,
             "data": [
@@ -79,8 +79,8 @@
             ],
             "fill": false,
             "label": "Produit Legacy Desktop (Context)",
-            "pointBackgroundColor": "#4C566A",
-            "pointBorderColor": "#4C566A",
+            "pointBackgroundColor": "#7B88A1",
+            "pointBorderColor": "#7B88A1",
             "pointBorderWidth": 1.5,
             "pointHoverRadius": 6,
             "pointRadius": 2,
@@ -141,7 +141,7 @@
         "plugins": {
           "legend": {
             "align": "end",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 8,
               "boxWidth": 8,
@@ -218,8 +218,16 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "nord-cognitive-dark"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "kitChartsDirectLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

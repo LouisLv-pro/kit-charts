@@ -32,6 +32,19 @@
   };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const readableText = (fg, surface, alpha) => {
+    const parse = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim()) || /^#?([0-9a-f]{3})$/i.exec(String(h || '').trim()); if (!m) return null; let x = m[1]; if (x.length === 3) x = x.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16)); };
+    const lum = (c) => { const l = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+    const f = parse(fg), s = parse(surface);
+    if (!f || !s) return fg;
+    const a = alpha == null ? 0.18 : alpha;
+    const bg = s.map((v, i) => Math.round(v * (1 - a) + f[i] * a));
+    const toward = lum(bg) < 0.4 ? 255 : 0;
+    let c = f.slice();
+    for (let t = 0; t <= 1.0001 && ratio(c, bg) < 4.6; t += 0.05) c = f.map(v => Math.round(v + (toward - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   const DEFAULT_DATA = {
@@ -101,7 +114,7 @@
     let tNominal = data.thresholds.nominal;
     let tCritical = data.thresholds.critical;
     // Échelle : fournie, sinon déduite des valeurs fournies (jamais un plafond d'exemple)
-    const maxVal = isNum(data.maxScale) ? Math.max(data.maxScale, tNominal, tCritical) : Math.max(val, tNominal, tCritical) * 1.2;
+    const maxVal = isNum(data.maxScale) ? Math.max(data.maxScale, tNominal, tCritical, val) : Math.max(val, tNominal, tCritical) * 1.2;
     const isHigherBetter = data.polarity === 'higher-is-better';
     const unitStr = data.unit || '';
 
@@ -212,7 +225,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -344,7 +357,7 @@
             font-weight: 700;
             font-variant-numeric: tabular-nums;
             background: ${badgeBg};
-            color: ${statusColor};
+            color: ${readableText(statusColor, (tokens.surfaceRaised || tokens.surface), isDark ? 0.18 : 0.10)};
             border: 1px solid ${badgeBorder};
           ">
             <span>${statusIcon}</span>
@@ -352,7 +365,7 @@
           </span>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 0.25rem;">
           <div style="
             font-size: 2.1rem;
             font-weight: 800;
@@ -363,7 +376,7 @@
           ">
             ${val.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="font-size: 0.75rem; color: ${tokens.textMuted}; font-weight: 500;">
+          <div style="font-size: 0.75rem; color: ${tokens.textMuted}; font-weight: 500; white-space: nowrap;">
             Plage nominale : ${isHigherBetter ? '&gt;' : '&lt;'} ${tNominal} ${escapeHtml(data.unit || '')}
           </div>
         </div>
@@ -378,7 +391,7 @@
           padding-top: 0.4rem;
           border-top: 1px solid ${tokens.gridColor || tokens.border};
           font-size: 0.7rem;
-          color: ${statusKey === 'danger' ? statusColor : tokens.textMuted};
+          color: ${statusKey === 'danger' ? readableText(statusColor, (tokens.surfaceRaised || tokens.surface), 0) : tokens.textMuted};
           font-weight: ${statusKey === 'danger' ? '600' : 'normal'};
         ">
           ${escapeHtml(data.footnote)}

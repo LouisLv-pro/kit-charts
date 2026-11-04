@@ -22,7 +22,7 @@
               105,
               130
             ],
-            "fill": true,
+            "fill": "origin",
             "label": "Éolien",
             "pointBackgroundColor": "#1D4ED8",
             "pointBorderColor": "#FFFFFF",
@@ -44,7 +44,7 @@
               100,
               135
             ],
-            "fill": true,
+            "fill": "-1",
             "label": "Solaire",
             "pointBackgroundColor": "#525252",
             "pointBorderColor": "#FFFFFF",
@@ -66,10 +66,10 @@
               60,
               63
             ],
-            "fill": true,
+            "fill": "-1",
             "label": "Hydroélectrique",
             "pointBackgroundColor": "#737373",
-            "pointBorderColor": "#D4D4D4",
+            "pointBorderColor": "#A3A3A3",
             "pointHoverRadius": 5,
             "pointRadius": 0,
             "pointStyle": "circle",
@@ -141,7 +141,8 @@
               "padding": 14,
               "usePointStyle": true
             },
-            "position": "top"
+            "position": "top",
+            "reverse": true
           },
           "tooltip": {
             "backgroundColor": "#111111",
@@ -207,7 +208,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "tufte-minimalist-executive"
       },
       "type": "line"
     },

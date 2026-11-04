@@ -31,7 +31,7 @@
               "align": "top",
               "anchor": "center",
               "color": "#3E4A89",
-              "display": true,
+              "display": false,
               "font": {
                 "size": 10,
                 "weight": "600"
@@ -65,7 +65,7 @@
               "align": "bottom",
               "anchor": "center",
               "color": "#26828E",
-              "display": true,
+              "display": false,
               "font": {
                 "size": 10,
                 "weight": "600"
@@ -107,7 +107,7 @@
           "emphasis": {
             "anomaly": "#FDE725",
             "benchmark": "#3E4A89",
-            "context": "#CBD5E1",
+            "context": "#94A3B8",
             "focal": "#26828E",
             "forecastAlpha": 0.5
           },
@@ -202,7 +202,7 @@
         "plugins": {
           "datalabels": {
             "color": "#0F172A",
-            "display": true,
+            "display": false,
             "font": {
               "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
               "size": 10,
@@ -213,16 +213,20 @@
             "thresholdRatio": 0.05
           },
           "legend": {
-            "align": "end",
+            "align": "center",
             "display": true,
             "labels": {
+              "boxWidth": 24,
               "color": "#0F172A",
               "font": {
                 "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12
-              }
+                "size": 11
+              },
+              "padding": 10,
+              "pointStyle": "line",
+              "usePointStyle": true
             },
-            "position": "top"
+            "position": "bottom"
           },
           "tooltip": {
             "animation": false,
@@ -261,8 +265,7 @@
         "scales": {
           "x": {
             "border": {
-              "color": "#475569",
-              "width": 1
+              "color": "#E2E8F0"
             },
             "grid": {
               "color": "rgba(15, 23, 42, 0.06)"
@@ -277,21 +280,23 @@
             }
           },
           "y": {
+            "beginAtZero": true,
             "grid": {
               "color": "rgba(15, 23, 42, 0.06)"
             },
-            "max": 29,
+            "max": 30,
             "min": 0,
             "position": "left",
             "ticks": {
-              "color": "#3E4A89",
+              "color": "#3e4a89",
               "font": {
                 "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
                 "weight": "600"
-              }
+              },
+              "stepSize": 5
             },
             "title": {
-              "color": "#3E4A89",
+              "color": "#3e4a89",
               "display": true,
               "font": {
                 "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -303,21 +308,23 @@
             "type": "linear"
           },
           "y1": {
+            "beginAtZero": true,
             "grid": {
               "display": false
             },
-            "max": 1024,
+            "max": 1200,
             "min": 0,
             "position": "right",
             "ticks": {
-              "color": "#26828E",
+              "color": "#247c87",
               "font": {
                 "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
                 "weight": "600"
-              }
+              },
+              "stepSize": 200
             },
             "title": {
-              "color": "#26828E",
+              "color": "#247c87",
               "display": true,
               "font": {
                 "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -329,8 +336,15 @@
             "type": "linear"
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "viridis-perceptual"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsDualLastLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

@@ -13,11 +13,11 @@
             "backgroundColor": [
               "rgba(68, 119, 170, 0.8)",
               "rgba(68, 119, 170, 0.8)",
-              "rgba(187, 187, 187, 0.5)",
-              "rgba(187, 187, 187, 0.5)",
-              "rgba(187, 187, 187, 0.5)",
-              "rgba(187, 187, 187, 0.5)",
-              "rgba(187, 187, 187, 0.5)"
+              "rgba(153, 153, 153, 0.5)",
+              "rgba(153, 153, 153, 0.5)",
+              "rgba(153, 153, 153, 0.5)",
+              "rgba(153, 153, 153, 0.5)",
+              "rgba(153, 153, 153, 0.5)"
             ],
             "borderColor": "#4477AA",
             "borderRadius": 4,
@@ -32,11 +32,11 @@
               4
             ],
             "datalabels": {
-              "color": "#1E293B",
-              "display": true
+              "display": false
             },
             "label": "Occurrences d'Incidents",
             "order": 2,
+            "pointStyle": "rectRounded",
             "type": "bar",
             "yAxisID": "y"
           },
@@ -98,7 +98,7 @@
           "emphasis": {
             "anomaly": "#EE6677",
             "benchmark": "#475569",
-            "context": "#BBBBBB",
+            "context": "#999999",
             "focal": "#4477AA",
             "forecastAlpha": 0.5
           },
@@ -206,11 +206,14 @@
             "align": "end",
             "display": true,
             "labels": {
+              "boxWidth": 10,
               "color": "#1E293B",
               "font": {
                 "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 12
-              }
+              },
+              "padding": 10,
+              "usePointStyle": true
             },
             "position": "top"
           },
@@ -258,21 +261,34 @@
               "display": false
             },
             "ticks": {
+              "autoSkip": false,
+              "callback": "[Function:callback]",
               "color": "#334155",
               "font": {
                 "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 11
               },
-              "maxRotation": 30
+              "maxRotation": 30,
+              "minRotation": 0
             }
           },
           "y": {
             "beginAtZero": true,
-            "grace": "8%",
             "grid": {
               "color": "rgba(30, 41, 59, 0.06)"
             },
+            "max": 325,
+            "min": 0,
             "position": "left",
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "includeBounds": false,
+              "maxTicksLimit": "[undefined]"
+            },
             "title": {
               "color": "#334155",
               "display": true,
@@ -290,7 +306,7 @@
             "grid": {
               "display": false
             },
-            "max": 105,
+            "max": 100,
             "min": 0,
             "position": "right",
             "ticks": {
@@ -299,7 +315,8 @@
               "font": {
                 "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
                 "size": 11
-              }
+              },
+              "stepSize": 20
             },
             "title": {
               "color": "#4477AA",
@@ -309,17 +326,22 @@
                 "size": 12,
                 "weight": "500"
               },
-              "text": "Pourcentage cumulé"
+              "text": "Pourcentage cumulé (Gini = 0.534)"
             },
             "type": "linear"
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "paul-tol-scientific"
       },
       "plugins": [
         {
           "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
           "id": "kitChartsPareto80Line"
+        },
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsParetoBarLabels"
         }
       ],
       "type": "bar"

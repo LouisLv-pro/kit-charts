@@ -28,6 +28,19 @@
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const readableText = (fg, surface, alpha) => {
+    const parse = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim()) || /^#?([0-9a-f]{3})$/i.exec(String(h || '').trim()); if (!m) return null; let x = m[1]; if (x.length === 3) x = x.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16)); };
+    const lum = (c) => { const l = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+    const f = parse(fg), s = parse(surface);
+    if (!f || !s) return fg;
+    const a = alpha == null ? 0.18 : alpha;
+    const bg = s.map((v, i) => Math.round(v * (1 - a) + f[i] * a));
+    const toward = lum(bg) < 0.4 ? 255 : 0;
+    let c = f.slice();
+    for (let t = 0; t <= 1.0001 && ratio(c, bg) < 4.6; t += 0.05) c = f.map(v => Math.round(v + (toward - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   const DEFAULT_DATA = {
@@ -95,7 +108,7 @@
 
     const bgColors = drivers.map(d => {
       const isPos = d.delta >= 0;
-      return getValenceColor(tokens, isPos ? 1 : -1, 'gain');
+      return getValenceColor(tokens, isPos ? 1 : -1, d.metricType || 'gain');
     });
 
     if (typeof Chart === 'undefined') return null;
@@ -115,13 +128,13 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
             enabled: true,
             callbacks: {
-              label: (ctx) => `Variation : ${ctx.parsed.x > 0 ? '+' : ''}${ctx.parsed.x}%`
+              label: (ctx) => `Variation : ${ctx.parsed.x > 0 ? '+' : ''}${ctx.parsed.x.toLocaleString('fr-FR', { maximumFractionDigits: 2 })}%`
             }
           }
         },
@@ -158,6 +171,7 @@
     const drivers = data.drivers;
     const isDark = Boolean(tokens.isDark);
 
+    const fmtDelta = (n) => Math.abs(n).toLocaleString('fr-FR', { maximumFractionDigits: 2 }).replace(/^/, n < 0 ? '-' : '');
     const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
@@ -168,7 +182,7 @@
     // Génération des 3 colonnes drivers
     const driversHtml = drivers.map(drv => {
       const drvPos = drv.delta >= 0;
-      const drvColor = getValenceColor(tokens, drvPos ? 1 : -1, 'gain');
+      const drvColor = readableText(getValenceColor(tokens, drvPos ? 1 : -1, drv.metricType || 'gain'), (tokens.surfaceRaised || tokens.surface), 0);
       const valStr = typeof drv.value === 'number' ? drv.value.toLocaleString('fr-FR') : String(drv.value);
       return `
         <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -179,7 +193,7 @@
             ${escapeHtml(valStr)} <span style="font-size: 0.75rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(drv.unit || '')}</span>
           </span>
           <span style="font-size: 0.7rem; font-weight: 700; color: ${drvColor}; font-variant-numeric: tabular-nums;">
-            ${drvPos ? '▲ +' : '▼ '}${drv.delta}${escapeHtml(drv.deltaUnit || '%')}
+            ${drvPos ? '▲ +' : '▼ '}${fmtDelta(drv.delta)}${escapeHtml(drv.deltaUnit || '%')}
           </span>
         </div>
       `;
@@ -220,11 +234,11 @@
             font-weight: 700;
             font-variant-numeric: tabular-nums;
             background: ${badgeBg};
-            color: ${valenceColor};
+            color: ${readableText(valenceColor, (tokens.surfaceRaised || tokens.surface), isDark ? 0.18 : 0.10)};
             border: 1px solid ${badgeBorder};
           ">
             <span>${isPositive ? '▲' : '▼'}</span>
-            <span>${isPositive ? '+' : ''}${data.delta}%</span>
+            <span>${isPositive ? '+' : ''}${fmtDelta(data.delta)}%</span>
           </span>` : ''}
         </div>
 

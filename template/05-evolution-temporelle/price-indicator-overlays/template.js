@@ -38,10 +38,8 @@
   function computeSMA(prices, period = 20) {
     if (!Array.isArray(prices)) return [];
     return prices.map((val, idx, arr) => {
-      if (idx < period - 1) {
-        const slice = arr.slice(0, idx + 1);
-        return Math.round((slice.reduce((s, v) => s + v, 0) / slice.length) * 100) / 100;
-      }
+      // Moyenne mobile indéfinie tant que la fenêtre n'est pas complète (pas de fenêtre partielle trompeuse).
+      if (idx < period - 1) return null;
       const slice = arr.slice(idx - period + 1, idx + 1);
       return Math.round((slice.reduce((s, v) => s + v, 0) / period) * 100) / 100;
     });
@@ -63,6 +61,11 @@
     const lower = [];
 
     prices.forEach((val, idx, arr) => {
+      if (idx < period - 1) {
+        upper.push(null);
+        lower.push(null);
+        return;
+      }
       const start = Math.max(0, idx - period + 1);
       const slice = arr.slice(start, idx + 1);
       const mean = sma[idx];
@@ -140,23 +143,25 @@
             order: 1
           },
           {
-            label: 'Moyenne Mobile (SMA 10)',
+            label: 'Moyenne mobile SMA 10',
             data: bollinger.sma,
             borderColor: smaColor,
             borderWidth: 1.5,
             borderDash: [3, 3],
+            pointStyle: 'line',
             pointRadius: 0,
             tension: 0.3,
             order: 2
           },
           {
-            label: 'Bollinger Supérieure (+2σ)',
+            label: 'Bollinger ±2σ',
             data: bollinger.upper,
             borderColor: hexToRgba(bandColor, 0.60),
             borderWidth: 1,
             pointRadius: 0,
             fill: '+1',
-            backgroundColor: hexToRgba(bandColor, isDark ? 0.18 : 0.10),
+            pointStyle: 'rect',
+            backgroundColor: hexToRgba(bandColor, isDark ? 0.22 : 0.18),
             tension: 0.3,
             order: 3
           },
@@ -183,11 +188,15 @@
           ...defaultOpts.plugins,
           legend: {
             display: true,
-            position: 'top',
-            align: 'end',
+            position: 'bottom',
+            align: 'center',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 },
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              boxWidth: 22,
+              boxHeight: 8,
+              padding: 10,
               filter: (item) => !item.text.includes('Inférieure')
             }
           },
@@ -196,7 +205,7 @@
             callbacks: {
               title: (items) => `Jour : ${items[0].label}`,
               label: (ctx) => {
-                return `${ctx.dataset.label} : ${ctx.parsed.y.toFixed(2)} €`;
+                return ctx.parsed.y == null ? `${ctx.dataset.label} : n/d` : `${ctx.dataset.label} : ${ctx.parsed.y.toFixed(2)} €`;
               }
             }
           }
@@ -204,7 +213,8 @@
         scales: {
           x: {
             ...defaultOpts.scales.x,
-            grid: { color: tokens.gridColor }
+            grid: { color: tokens.gridColor },
+            border: { color: tokens.border || tokens.gridColor }
           },
           y: {
             ...defaultOpts.scales.y,

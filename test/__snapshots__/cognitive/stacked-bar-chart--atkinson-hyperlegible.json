@@ -79,7 +79,7 @@
           "emphasis": {
             "anomaly": "#DC3220",
             "benchmark": "#27272A",
-            "context": "#A1A1AA",
+            "context": "#8E8E96",
             "focal": "#005AB5",
             "forecastAlpha": 0.55
           },
@@ -191,7 +191,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -282,8 +281,15 @@
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "atkinson-hyperlegible"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kcStackTotals"
+        }
+      ],
       "type": "bar"
     },
     "kind": "chart-config"

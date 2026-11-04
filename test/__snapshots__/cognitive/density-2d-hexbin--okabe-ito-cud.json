@@ -558,7 +558,7 @@
             "bottom": 12,
             "left": 12,
             "right": 24,
-            "top": 20
+            "top": 56
           }
         },
         "maintainAspectRatio": false,
@@ -571,9 +571,10 @@
               "color": "#1E293B",
               "font": {
                 "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
+                "size": 11,
                 "weight": "500"
               },
+              "generateLabels": "[Function:generateLabels]",
               "usePointStyle": true
             },
             "position": "bottom"
@@ -621,8 +622,8 @@
             "grid": {
               "color": "rgba(30, 41, 59, 0.06)"
             },
-            "max": 201,
-            "min": 148,
+            "max": 200,
+            "min": 145,
             "ticks": {
               "color": "#334155",
               "font": {
@@ -652,7 +653,7 @@
               "color": "rgba(30, 41, 59, 0.06)"
             },
             "max": 100,
-            "min": 44,
+            "min": 40,
             "ticks": {
               "color": "#334155",
               "font": {
@@ -673,7 +674,8 @@
             },
             "type": "linear"
           }
-        }
+        },
+        "themeName": "okabe-ito-cud"
       },
       "plugins": [
         {

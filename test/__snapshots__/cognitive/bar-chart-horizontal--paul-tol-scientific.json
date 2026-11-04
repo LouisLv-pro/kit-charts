@@ -56,7 +56,7 @@
           "emphasis": {
             "anomaly": "#EE6677",
             "benchmark": "#475569",
-            "context": "#BBBBBB",
+            "context": "#999999",
             "focal": "#4477AA",
             "forecastAlpha": 0.5
           },
@@ -173,7 +173,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -234,6 +233,16 @@
                 "size": 11
               },
               "padding": 6
+            },
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "500"
+              },
+              "text": "Population (Millions)"
             }
           },
           "y": {
@@ -254,7 +263,8 @@
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "paul-tol-scientific"
       },
       "type": "bar"
     },

@@ -53,9 +53,9 @@
 const DEFAULT_DATA = {
   labels: ['Équipe A', 'Équipe B', 'Équipe C', 'Équipe D'],
   datasets: [
-    { label: 'Succès', data: [75, 60, 82, 90] },
-    { label: 'En cours', data: [15, 25, 10, 5] },
-    { label: 'Échec', data: [10, 15, 8, 5] }
+    { label: 'Succès', data: [75, 60, 82, 90], valence: 1 },
+    { label: 'En cours', data: [15, 25, 10, 5], valence: 0 },
+    { label: 'Échec', data: [10, 15, 8, 5], valence: -1 }
   ]
 };
 
@@ -91,7 +91,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // Préparation des données avec support d'accentuation et de valence
   const rawData = customData || DEFAULT_DATA;
   const labels = rawData.labels ? [...rawData.labels] : [];
-  const datasets = (rawData.datasets || []).map((ds, idx) => {
+  // Normalisation 100% : chaque catégorie est ramenée à sa somme (valeurs brutes conservées pour l'infobulle)
+  const srcDatasets = rawData.datasets || [];
+  const numOf = (v) => {
+    const n = typeof v === 'object' && v !== null ? (v.value ?? v.y ?? v.v ?? 0) : v;
+    return Number(n) || 0;
+  };
+  const colTotals = labels.map((_, i) => srcDatasets.reduce((acc, d) => acc + numOf((d.data || [])[i]), 0));
+  const datasets = srcDatasets.map((ds, idx) => {
     const primaryColor = getColor(tokens, idx);
 
     let bgColors = ds.backgroundColor;
@@ -116,7 +123,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     return {
       label: ds.label || `Segment ${idx + 1}`,
-      data: Array.isArray(ds.data) ? [...ds.data] : [],
+      data: Array.isArray(ds.data) ? ds.data.map((v, i) => (colTotals[i] > 0 ? (numOf(v) / colTotals[i]) * 100 : 0)) : [],
+      rawValues: Array.isArray(ds.data) ? ds.data.map(numOf) : [],
       backgroundColor: bgColors,
       borderColor: borderColors,
       borderWidth: typeof borderWidths === 'number' ? borderWidths : 0,
@@ -129,11 +137,74 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   const chartData = { labels, datasets };
 
+  // Segments trop petits pour porter leur étiquette (part < 5 % ou hauteur < 16 px, mêmes seuils
+  // que le plugin commun) : la part est posée à droite de la barre, dans l'espace entre barres.
+  const smallSegmentLabelsPlugin = {
+    id: 'kitChartsSmallSegmentLabels',
+    afterDatasetsDraw(chart) {
+      if (!showDataLabels || chart.options?.showDataLabels === false) return;
+      // Carte étroite : pas de place entre les barres, les parts se lisent à l'infobulle.
+      if (chart.width < 420) return;
+      const ctx = chart.ctx;
+      const fs = 10;
+      ctx.save();
+      ctx.font = `600 ${fs}px ${tokens.fontMono || 'monospace'}`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const ref = chart.getDatasetMeta(0);
+      const count = ref && ref.data ? ref.data.length : 0;
+      for (let i = 0; i < count; i++) {
+        const items = [];
+        chart.data.datasets.forEach((ds, di) => {
+          const meta = chart.getDatasetMeta(di);
+          if (!meta || meta.hidden) return;
+          const el = meta.data[i];
+          const v = ds.data[i];
+          if (!el || !(v > 0)) return;
+          const p = el.getProps ? el.getProps(['x', 'y', 'base', 'width'], true) : el;
+          const segH = Math.abs(p.base - p.y);
+          if (v / 100 >= 0.05 && segH >= 16) return; // déjà étiqueté dans le segment
+          const color = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
+          if (segH >= 11) {
+            // Segment bas mais lisible : part à l'intérieur, en police réduite
+            const contrast = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) ? KitChartsTheme.getContrastingTextColor(color) : '#0F172A';
+            ctx.save();
+            ctx.font = `600 9px ${tokens.fontMono || 'monospace'}`;
+            ctx.textAlign = 'center';
+            ctx.fillStyle = contrast;
+            ctx.fillText(`${Math.round(v)}%`, p.x, (p.y + p.base) / 2);
+            ctx.restore();
+            return;
+          }
+          items.push({ y: (p.y + p.base) / 2, text: `${Math.round(v)}%`, color: color, x: p.x, w: p.width || 0, el: ref.data[i] });
+        });
+        if (!items.length) continue;
+        items.sort((a, b) => a.y - b.y);
+        for (let k = 1; k < items.length; k++) if (items[k].y - items[k - 1].y < 12) items[k].y = items[k - 1].y + 12;
+        const first = items[0];
+        const left = first.x + first.w / 2 + 4;
+        const nextEl = ref.data[i + 1];
+        const limit = nextEl ? (nextEl.x - (nextEl.width || 0) / 2) : chart.chartArea.right;
+        items.forEach((it) => {
+          const tw = ctx.measureText(it.text).width;
+          if (limit - left < tw + 10) return;
+          // Pastille de la couleur du segment : lie l'étiquette à sa série malgré le décalage
+          ctx.fillStyle = it.color || '#999';
+          ctx.fillRect(left, it.y - 3, 6, 6);
+          ctx.fillStyle = tokens.textPrimary || '#0F172A';
+          ctx.fillText(it.text, left + 9, it.y);
+        });
+      }
+      ctx.restore();
+    }
+  };
+
   // Options Chart.js v4+ avec empilement 100% et capture Fitts 1D
   const defaultOpts = getChartDefaultOptions(tokens);
   const config = {
     type: 'bar',
     data: chartData,
+    plugins: [smallSegmentLabelsPlugin],
     options: {
       ...defaultOpts,
       animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
@@ -154,9 +225,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ...defaultOpts.plugins,
         datalabels: getDataLabelOptions(tokens, {
           display: showDataLabels,
+          isPercent: true, // lu par le plugin de labels (les fonctions d'options sont résolues comme scriptables par Chart.js)
           formatter: (val) => {
-            const num = typeof val === 'object' && val !== null ? (val.value ?? val.y ?? val.v ?? 0) : val;
-            return `${num}%`;
+            const num = typeof val === 'object' && val !== null ? (val.value ?? val.y ?? val.v ?? 0) : Number(val);
+            return `${Math.round(num)}%`;
           }
         }),
         legend: {
@@ -191,7 +263,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               const formatted = typeof val === 'number'
                 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val)
                 : val;
-              return ` ${context.dataset.label || ''}: ${formatted}%`;
+              const rv = context.dataset.rawValues && context.dataset.rawValues[context.dataIndex];
+              const rawTxt = (typeof rv === 'number' && Math.abs(rv - val) > 0.05)
+                ? ` (valeur : ${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(rv)})`
+                : '';
+              return ` ${context.dataset.label || ''}: ${formatted}%${rawTxt}`;
             }
           }
         }

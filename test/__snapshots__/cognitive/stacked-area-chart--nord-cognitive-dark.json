@@ -22,7 +22,7 @@
               105,
               130
             ],
-            "fill": true,
+            "fill": "origin",
             "label": "Éolien",
             "pointBackgroundColor": "#88C0D0",
             "pointBorderColor": "#434C5E",
@@ -32,8 +32,8 @@
             "tension": 0.3
           },
           {
-            "backgroundColor": "rgba(129, 161, 193, 0.65)",
-            "borderColor": "#81A1C1",
+            "backgroundColor": "rgba(235, 203, 139, 0.65)",
+            "borderColor": "#EBCB8B",
             "borderDash": [],
             "borderWidth": 2,
             "data": [
@@ -44,9 +44,9 @@
               100,
               135
             ],
-            "fill": true,
+            "fill": "-1",
             "label": "Solaire",
-            "pointBackgroundColor": "#81A1C1",
+            "pointBackgroundColor": "#EBCB8B",
             "pointBorderColor": "#434C5E",
             "pointHoverRadius": 5,
             "pointRadius": 0,
@@ -54,8 +54,8 @@
             "tension": 0.3
           },
           {
-            "backgroundColor": "rgba(94, 129, 172, 0.65)",
-            "borderColor": "#5E81AC",
+            "backgroundColor": "rgba(180, 142, 173, 0.65)",
+            "borderColor": "#B48EAD",
             "borderDash": [],
             "borderWidth": 2,
             "data": [
@@ -66,10 +66,10 @@
               60,
               63
             ],
-            "fill": true,
+            "fill": "-1",
             "label": "Hydroélectrique",
-            "pointBackgroundColor": "#5E81AC",
-            "pointBorderColor": "#4C566A",
+            "pointBackgroundColor": "#B48EAD",
+            "pointBorderColor": "#7B88A1",
             "pointHoverRadius": 5,
             "pointRadius": 0,
             "pointStyle": "circle",
@@ -141,7 +141,8 @@
               "padding": 14,
               "usePointStyle": true
             },
-            "position": "top"
+            "position": "top",
+            "reverse": true
           },
           "tooltip": {
             "backgroundColor": "#434C5E",
@@ -207,7 +208,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "nord-cognitive-dark"
       },
       "type": "line"
     },

@@ -75,7 +75,7 @@
         metricType: 'revenue',
         trend: [108.0, 108.5, 109.2, 110.0, 109.8, 111.0, 111.8, 112.5, 113.0, 113.8, 114.0, 114.2],
         status: 'success',
-        statusText: 'Conforme'
+        statusText: 'Dépassé'
       },
       {
         kpi: 'Coût d\'Acquisition Client (CAC)',
@@ -130,7 +130,7 @@
         statusText: 'Alerte'
       },
       {
-        kpi: 'Latence API Médiane (p95)',
+        kpi: 'Latence API (p95)',
         desc: 'Temps de réponse des requêtes de production',
         category: 'Tech',
         actual: 118,
@@ -153,19 +153,19 @@
     const absVal = Math.abs(val);
     let formatted = '';
     if (absVal >= 1000000) {
-      formatted = (val / 1000000).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' M';
+      formatted = (val / 1000000).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '\u00A0M';
     } else if (absVal >= 1000) {
       formatted = val.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
     } else {
       formatted = Number.isInteger(val) ? val.toString() : val.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
     }
-    return formatted + unit;
+    return formatted + String(unit).replace(/ /g, '\u00A0');
   }
 
   /**
    * Génère le SVG inline de la sparkline de tendance (Edward Tufte)
    */
-  function generateSparklineSVG(values, width = 110, height = 28, strokeColor = '#2B8CBE', isTufte = false) {
+  function generateSparklineSVG(values, width = 110, height = 28, strokeColor = '#2B8CBE', isTufte = false, lowerIsBetter = false, goodColor = '#2E7D32', badColor = '#C62828') {
     if (!values || values.length < 2) return '<span style="color:#94A3B8;">—</span>';
     const min = Math.min(...values);
     const max = Math.max(...values);
@@ -200,11 +200,57 @@
       <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow:visible; display:block; margin:0 auto;" aria-label="${escapeHtml(titleText)}">
         <title>${escapeHtml(titleText)}</title>
         <polyline fill="none" stroke="${strokeColor}" stroke-width="${isTufte ? '1.25' : '1.75'}" stroke-linecap="round" stroke-linejoin="round" points="${points.join(' ')}" />
-        ${!isTufte ? `<circle cx="${minX}" cy="${minY}" r="2" fill="#C62828" opacity="0.85"><title>Min: ${escapeHtml(min)}</title></circle>` : ''}
-        ${!isTufte ? `<circle cx="${maxX}" cy="${maxY}" r="2" fill="#2E7D32" opacity="0.85"><title>Max: ${escapeHtml(max)}</title></circle>` : ''}
+        ${!isTufte ? `<circle cx="${minX}" cy="${minY}" r="2.5" fill="${lowerIsBetter ? goodColor : badColor}" opacity="0.95"><title>Min: ${escapeHtml(min)}</title></circle>` : ''}
+        ${!isTufte ? `<circle cx="${maxX}" cy="${maxY}" r="2.5" fill="${lowerIsBetter ? badColor : goodColor}" opacity="0.95"><title>Max: ${escapeHtml(max)}</title></circle>` : ''}
         <circle cx="${lastX}" cy="${lastY}" r="${isTufte ? '2' : '2.5'}" fill="${strokeColor}"><title>Dernier: ${escapeHtml(values[lastIdx])}</title></circle>
       </svg>
     `;
+  }
+
+  /**
+   * Mélange une couleur hex avec un fond hex (alpha 0..1) et renvoie un hex opaque.
+   */
+  function blendHex(fg, alpha, bg) {
+    const parse = (h) => {
+      let c = String(h || '').replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      return /^[0-9a-fA-F]{6}$/.test(c) ? [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)) : null;
+    };
+    const f = parse(fg), b = parse(bg);
+    if (!f || !b) return bg;
+    return '#' + f.map((v, i) => Math.round(v * alpha + b[i] * (1 - alpha)).toString(16).padStart(2, '0')).join('');
+  }
+
+  /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
   }
 
   /**
@@ -265,6 +311,11 @@
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : domaine et cible masqués, sparkline réduite, statut en pastille symbole
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const hiddenKeys = compact ? ['category', 'target'] : [];
+      const cp = compact ? '7px 5px' : '10px 14px';
 
       const primaryColor = getColor(tokens, 0);
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -309,10 +360,11 @@
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 760}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -323,16 +375,17 @@
               ">
       `;
 
-      data.columns.forEach(col => {
+      data.columns.filter(col => hiddenKeys.indexOf(col.key) < 0).forEach(col => {
+        const shortLabels = { kpi: 'KPI', delta: 'Écart', trend: '12M', status: '' };
         const isSorted = sortColumn === col.key;
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
           <th data-key="${escapeHtml(col.key)}" style="
-            padding: 10px 14px;
+            padding: ${compact ? '8px 5px' : '10px 14px'};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.65rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${isSorted ? primaryColor : textSecondary};
@@ -340,7 +393,7 @@
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${escapeHtml(col.label)}${sortIcon}
+            ${escapeHtml(compact && shortLabels[col.key] !== undefined ? shortLabels[col.key] : col.label)}${sortIcon}
           </th>
         `;
       });
@@ -364,7 +417,7 @@
         }
         const hasDelta = typeof deltaVal === 'number' && !isNaN(deltaVal);
         const effectiveDelta = hasDelta ? deltaVal : 0;
-        const deltaColor = hasDelta ? getValenceColor(tokens, effectiveDelta, row.metricType || 'revenue') : textSecondary;
+        const deltaColor = hasDelta ? readableOn(getValenceColor(tokens, effectiveDelta, row.metricType || 'revenue'), bgSurface, 4.5) : textSecondary;
         const arrow = effectiveDelta > 0 ? '↑' : (effectiveDelta < 0 ? '↓' : '=');
         const plusSign = effectiveDelta > 0 ? '+' : '';
         const deltaFormatted = hasDelta ? `${plusSign}${effectiveDelta.toFixed(2)}%` : '—';
@@ -374,18 +427,13 @@
         let statusColor = textSecondary;
         let statusSymbol = '●';
 
-        if (row.status === 'success') {
-          statusBg = isDark ? 'rgba(46, 125, 50, 0.25)' : 'rgba(46, 125, 50, 0.12)';
-          statusColor = isDark ? '#81C784' : '#2E7D32';
-          statusSymbol = '✓';
-        } else if (row.status === 'warning') {
-          statusBg = isDark ? 'rgba(239, 108, 0, 0.25)' : 'rgba(239, 108, 0, 0.12)';
-          statusColor = isDark ? '#FFB74D' : '#D97706';
-          statusSymbol = '▲';
-        } else if (row.status === 'danger') {
-          statusBg = isDark ? 'rgba(198, 40, 40, 0.25)' : 'rgba(198, 40, 40, 0.12)';
-          statusColor = isDark ? '#E57373' : '#C62828';
-          statusSymbol = '■';
+        const statusBase = row.status === 'success' ? (tokens.status?.success || '#2E7D32')
+          : row.status === 'warning' ? (tokens.status?.warning || '#EF6C00')
+          : row.status === 'danger' ? (tokens.status?.danger || '#C62828') : null;
+        if (statusBase) {
+          statusBg = blendHex(statusBase, isDark ? 0.25 : 0.14, bgSurface);
+          statusColor = readableOn(statusBase, statusBg, 4.5);
+          statusSymbol = row.status === 'success' ? '✓' : (row.status === 'warning' ? '▲' : '■');
         }
 
         html += `
@@ -394,11 +442,11 @@
             border-bottom: ${borderBottom};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: left; vertical-align: middle;">
               <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.kpi)}</div>
-              ${row.desc ? `<div style="font-size: 0.7rem; color: ${textMuted}; margin-top: 1px;">${escapeHtml(row.desc)}</div>` : ''}
+              ${row.desc && !compact ? `<div style="font-size: 0.7rem; color: ${textMuted}; margin-top: 1px;">${escapeHtml(row.desc)}</div>` : ''}
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: center; vertical-align: middle;">
               <span style="
                 display: inline-block;
                 padding: 2px 7px;
@@ -408,36 +456,36 @@
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
               ">${escapeHtml(row.category)}</span>
-            </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; font-weight: 600; color: ${textPrimary}; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; font-weight: 600; color: ${textPrimary}; vertical-align: middle;">
               ${escapeHtml(formatNumber(row.actual, row.unit || ''))}
             </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${escapeHtml(formatNumber(row.target, row.unit || ''))}
-            </td>
-            <td style="padding: 10px 14px; text-align: right; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; text-align: right; vertical-align: middle; white-space: nowrap;">
               <span style="
                 display: inline-flex;
                 align-items: center;
                 gap: 3px;
                 font-family: ${fontMono};
                 font-weight: 600;
-                font-size: 0.775rem;
+                font-size: ${compact ? '0.7rem' : '0.775rem'};
                 color: ${deltaColor};
               ">
                 <span>${hasDelta ? arrow : ''}</span>
                 <span>${deltaFormatted}</span>
               </span>
             </td>
-            <td style="padding: 6px 10px; text-align: center; vertical-align: middle;">
-              ${generateSparklineSVG(row.trend, 105, 26, primaryColor, isTufte)}
+            <td style="padding: ${compact ? '4px 4px' : '6px 10px'}; text-align: center; vertical-align: middle;">
+              ${generateSparklineSVG(row.trend, compact ? 48 : 105, compact ? 22 : 26, primaryColor, isTufte, ['cost', 'churn', 'risk', 'loss', 'latency', 'cac', 'expense', 'debt', 'defect'].includes(String(row.metricType || 'revenue').toLowerCase().trim()), tokens.status?.success || '#2E7D32', tokens.status?.danger || '#C62828')}
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
-              <span style="
+            <td style="padding: ${cp}; text-align: center; vertical-align: middle;">
+              <span title="${escapeHtml(row.statusText || row.status)}" style="
                 display: inline-flex;
                 align-items: center;
                 gap: 4px;
-                padding: 3px 8px;
+                padding: 3px ${compact ? 6 : 8}px;
                 border-radius: ${isTufte ? '0' : '4px'};
                 font-size: 0.725rem;
                 font-weight: 600;
@@ -447,7 +495,7 @@
                 white-space: nowrap;
               ">
                 <span aria-hidden="true" style="font-size: 0.65rem;">${statusSymbol}</span>
-                <span>${escapeHtml(row.statusText || row.status)}</span>
+                ${compact ? `<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">${escapeHtml(row.statusText || row.status)}</span>` : `<span>${escapeHtml(row.statusText || row.status)}</span>`}
               </span>
             </td>
           </tr>

@@ -12,18 +12,18 @@
           {
             "backgroundColor": "[Function:backgroundColor]",
             "borderColor": [
-              "#CBD5E1",
-              "#CBD5E1",
+              "#94A3B8",
+              "#94A3B8",
               "#26828E",
-              "#CBD5E1",
-              "#CBD5E1",
-              "#CBD5E1",
-              "#CBD5E1",
-              "#CBD5E1",
-              "#CBD5E1",
+              "#94A3B8",
+              "#94A3B8",
+              "#94A3B8",
+              "#94A3B8",
+              "#94A3B8",
+              "#94A3B8",
               "#26828E",
-              "#CBD5E1",
-              "#CBD5E1",
+              "#94A3B8",
+              "#94A3B8",
               "#FDE725"
             ],
             "borderWidth": [
@@ -43,8 +43,9 @@
             ],
             "data": [
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#31688E",
                 "growth": 4.2,
                 "label": "HDF",
                 "name": "Hauts-de-France",
@@ -54,8 +55,9 @@
                 "y": 1
               },
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#3E4A89",
                 "growth": 2.5,
                 "label": "NOR",
                 "name": "Normandie",
@@ -67,6 +69,7 @@
               {
                 "borderColor": "#26828E",
                 "borderWidth": 2,
+                "color": "#FDE725",
                 "growth": 16.8,
                 "label": "IDF",
                 "name": "Île-de-France",
@@ -76,8 +79,9 @@
                 "y": 2
               },
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#26828E",
                 "growth": 5.1,
                 "label": "GES",
                 "name": "Grand Est",
@@ -87,8 +91,9 @@
                 "y": 2
               },
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#35B779",
                 "growth": 8.9,
                 "label": "BRE",
                 "name": "Bretagne",
@@ -98,8 +103,9 @@
                 "y": 3
               },
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#1F9E89",
                 "growth": 6.4,
                 "label": "PDL",
                 "name": "Pays de la Loire",
@@ -109,8 +115,9 @@
                 "y": 3
               },
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#482777",
                 "growth": 1.8,
                 "label": "CVL",
                 "name": "Centre-Val de Loire",
@@ -120,8 +127,9 @@
                 "y": 3
               },
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#3E4A89",
                 "growth": 2,
                 "label": "BFC",
                 "name": "Bourgogne-Franche-Comté",
@@ -131,8 +139,9 @@
                 "y": 3
               },
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#26828E",
                 "growth": 7.2,
                 "label": "NAQ",
                 "name": "Nouvelle-Aquitaine",
@@ -144,6 +153,7 @@
               {
                 "borderColor": "#26828E",
                 "borderWidth": 2,
+                "color": "#6DCD59",
                 "growth": 12.4,
                 "label": "ARA",
                 "name": "Auvergne-Rhône-Alpes",
@@ -153,8 +163,9 @@
                 "y": 4
               },
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#1F9E89",
                 "growth": 9.1,
                 "label": "OCC",
                 "name": "Occitanie",
@@ -164,8 +175,9 @@
                 "y": 5
               },
               {
-                "borderColor": "#CBD5E1",
+                "borderColor": "#94A3B8",
                 "borderWidth": 1,
+                "color": "#35B779",
                 "growth": 10.5,
                 "label": "PAC",
                 "name": "Provence-Alpes-Côte d'Azur",
@@ -177,6 +189,7 @@
               {
                 "borderColor": "#FDE725",
                 "borderWidth": 2,
+                "color": "#440154",
                 "growth": -4.3,
                 "label": "COR",
                 "name": "Corse",
@@ -221,10 +234,7 @@
         },
         "layout": {
           "padding": {
-            "bottom": 16,
-            "left": 16,
-            "right": 20,
-            "top": 20
+            "bottom": 28
           }
         },
         "maintainAspectRatio": false,
@@ -246,7 +256,7 @@
               "emphasis": {
                 "anomaly": "#FDE725",
                 "benchmark": "#3E4A89",
-                "context": "#CBD5E1",
+                "context": "#94A3B8",
                 "focal": "#26828E",
                 "forecastAlpha": 0.5
               },
@@ -363,17 +373,22 @@
             },
             "max": 6.7,
             "min": 0.30000000000000004,
-            "reverse": false,
+            "reverse": true,
             "ticks": {
               "display": false
             }
           }
-        }
+        },
+        "themeName": "viridis-perceptual"
       },
       "plugins": [
         {
           "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
           "id": "tileLabelsPlugin"
+        },
+        {
+          "afterDraw": "[Function:afterDraw]",
+          "id": "tileLegendPlugin"
         }
       ],
       "type": "matrix"

@@ -105,11 +105,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       unchanged: isForecast ? hexToRgba(neutralColor, alpha) : neutralColor
     };
 
+    // Double encodage hors couleur : hausse = corps creux (fond léger), baisse = corps plein.
+    const fillConfig = {
+      up: hexToRgba(upColor, isForecast ? alpha * 0.3 : 0.18),
+      down: isForecast ? hexToRgba(downColor, alpha) : downColor,
+      unchanged: colorConfig.unchanged
+    };
+
     return {
       label: ds.label || `Série ${idx + 1}`,
       data: Array.isArray(ds.data) ? [...ds.data] : [],
       color: ds.color || colorConfig,
       borderColor: ds.borderColor || colorConfig,
+      borderColors: ds.borderColors || colorConfig,
+      backgroundColors: ds.backgroundColors || fillConfig,
       backgroundColor: ds.backgroundColor || (role === 'focal' ? getColor(tokens, idx) : tokens.emphasis?.context || '#CBD5E1')
     };
   });
@@ -164,20 +173,33 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       },
       plugins: {
         legend: {
-          display: datasets.length > 1 && !isTufte,
-          position: 'top',
-          align: 'end',
+          display: true,
+          position: 'bottom',
+          align: 'center',
+          // Légende statique : sens des bougies (hausse creuse, baisse pleine), couleurs lues sur la série focale.
+          onClick: () => {},
           labels: {
             color: tokens.textPrimary,
             font: {
               family: tokens.fontFamily,
-              size: 12,
+              size: 11,
               weight: '500'
             },
             usePointStyle: true,
-            boxWidth: 8,
-            boxHeight: 8,
-            padding: 14
+            pointStyle: 'rect',
+            boxWidth: 12,
+            boxHeight: 12,
+            padding: 12,
+            generateLabels: () => {
+              const d0 = datasets[0] || {};
+              const bc = d0.borderColors || {};
+              const bg = d0.backgroundColors || {};
+              const tx = tokens.textPrimary;
+              return [
+                { text: 'Hausse (creux)', fillStyle: bg.up, strokeStyle: bc.up, lineWidth: 2, fontColor: tx, pointStyle: 'rect', hidden: false, datasetIndex: 0 },
+                { text: 'Baisse (plein)', fillStyle: bg.down, strokeStyle: bc.down, lineWidth: 2, fontColor: tx, pointStyle: 'rect', hidden: false, datasetIndex: 0 }
+              ];
+            }
           }
         },
         tooltip: {

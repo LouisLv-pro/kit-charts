@@ -59,36 +59,37 @@ const DEFAULT_DATA = {
     'Grands Comptes B2B'
   ],
   datasets: [
-    // Cluster 1 : Retail B2C (Feuilles 1 & 2)
+    // Cluster B2C : fusions (1,2) h=14, (3,4) h=18, puis les deux ensemble h=32.
+    // Chaque fusion = connecteur orthogonal en U : feuille, palier horizontal, trait vertical, palier, feuille.
     {
       label: 'Cluster B2C Grand Public',
       role: 'context',
       data: [
         { x: 0, y: 1 }, { x: 14, y: 1 }, { x: 14, y: 2 }, { x: 0, y: 2 },
-        { x: 14, y: 1.5 }, { x: 32, y: 1.5 }, { x: 32, y: 3 }, { x: 18, y: 3 },
-        { x: 18, y: 3 }, { x: 0, y: 3 }, { x: 18, y: 4 }, { x: 0, y: 4 }
+        { x: 14, y: 2 }, { x: 14, y: 1.5 }, { x: 32, y: 1.5 }, { x: 32, y: 3.5 },
+        { x: 18, y: 3.5 }, { x: 18, y: 3 }, { x: 0, y: 3 }, { x: 18, y: 3 },
+        { x: 18, y: 4 }, { x: 0, y: 4 }
       ]
     },
-    // Cluster 2 : Entreprises B2B (Feuilles 5 & 6) - Cible focale haute valeur
+    // Cluster B2B : fusion (5,6) h=22, cible focale haute valeur
     {
       label: 'Cluster B2B Professionnel (Cible Focale)',
       role: 'focal',
       data: [
-        { x: 0, y: 5 }, { x: 22, y: 5 }, { x: 22, y: 6 }, { x: 0, y: 6 },
-        { x: 22, y: 5.5 }, { x: 48, y: 5.5 }
+        { x: 0, y: 5 }, { x: 22, y: 5 }, { x: 22, y: 6 }, { x: 0, y: 6 }
       ]
     },
-    // Tronc principal reliant les méta-clusters
+    // Tronc : fusion finale des deux clusters à h=65 (U entre y=2.5 et y=5.5)
     {
       label: 'Jonction Hiérarchique Principale',
       role: 'context',
       data: [
-        { x: 32, y: 2.25 }, { x: 65, y: 2.25 }, { x: 65, y: 5.5 }, { x: 48, y: 5.5 }
+        { x: 32, y: 2.5 }, { x: 65, y: 2.5 }, { x: 65, y: 5.5 }, { x: 22, y: 5.5 }
       ]
     },
-    // Ligne de coupe de seuil K=2 clusters (Benchmark de partition)
+    // Ligne de coupe K=2 clusters : traverse uniquement la fusion finale (h=65)
     {
-      label: 'Seuil de Partition (Cutoff Benchmark)',
+      label: 'Seuil de Partition (K=2)',
       role: 'benchmark',
       data: [
         { x: 40, y: 0.5 }, { x: 40, y: 6.5 }
@@ -143,9 +144,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       color = emp.borderColor || emp.backgroundColor || color;
       borderWidth = emp.borderWidth !== undefined ? emp.borderWidth : borderWidth;
       borderDash = emp.borderDash || borderDash;
-      if (ds.role === 'benchmark') {
-        pointRadius = 0;
+      if (ds.role === 'context') {
+        color = tokens.textSecondary || color;
       }
+      pointRadius = 0;
     } else if (ds.valence !== undefined || ds.delta !== undefined) {
       color = getValenceColor(tokens, ds.valence !== undefined ? ds.valence : ds.delta, ds.metricType || 'gain');
     } else if (isCutoff) {
@@ -184,6 +186,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       pointHoverRadius: 6,
       fill: false,
       stepped: false,
+      tension: 0,
       showLine: true
     };
   });
@@ -200,6 +203,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
   const config = {
     type: 'line',
+    plugins: [{
+      id: 'dendroCutoffLabel',
+      afterDatasetsDraw(chart) {
+        const di = chart.data.datasets.findIndex(d => /seuil|cutoff/i.test(d.label || ''));
+        if (di < 0) return;
+        const pts = chart.getDatasetMeta(di).data;
+        if (!pts || !pts.length) return;
+        const top = pts[pts.length - 1];
+        const c = chart.ctx;
+        c.save();
+        c.fillStyle = tokens.textPrimary;
+        c.font = `600 11px ${tokens.fontFamily}`;
+        c.textAlign = 'left';
+        c.fillText('Coupe K = 2', top.x + 6, top.y + 12);
+        c.restore();
+      }
+    }],
     data: chartData,
     options: {
       scales: {},
@@ -221,7 +241,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       plugins: {
         ...defaultOpts.plugins,
         legend: {
-          display: datasets.length > 1 && !isTufte,
+          display: false,
           position: 'top',
           align: 'end',
           labels: {
@@ -276,6 +296,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       scales: {
         x: {
           type: 'linear',
+          min: 0,
+          beginAtZero: true,
           title: {
             display: true,
             text: 'Distance de Dissimilarité (Indice de Ward / Hauteur)',

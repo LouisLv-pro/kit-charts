@@ -199,11 +199,115 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       pointHitRadius: 12,
       fill: false,
       showLine: true,
-      tension: 0.15
+      tension: 0
     };
   });
 
   const chartData = { datasets };
+  const xTitle = (rawData.axes && rawData.axes.x) || 'Chômage (%)';
+  const yTitle = (rawData.axes && rawData.axes.y) || 'Inflation (%)';
+  const trajectoryPlugin = {
+    id: 'kitChartsTrajectoryMarks',
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      ctx.save();
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        const pts = meta.data;
+        const n = pts.length;
+        if (!n) return;
+        const col = Array.isArray(ds.borderColor) ? ds.borderColor[0] : ds.borderColor;
+        // Flèches de direction au milieu de chaque segment
+        ctx.fillStyle = col;
+        for (let i = 0; i < n - 1; i++) {
+          const a = pts[i], b = pts[i + 1];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const len = Math.hypot(dx, dy);
+          if (len < 26) continue;
+          const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+          const ang = Math.atan2(dy, dx);
+          ctx.save();
+          ctx.translate(mx, my);
+          ctx.rotate(ang);
+          ctx.beginPath();
+          ctx.moveTo(6, 0);
+          ctx.lineTo(-5, -4.5);
+          ctx.lineTo(-5, 4.5);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+        // Départ (plein) et arrivée (anneau épais)
+        pts.forEach((el, i) => {
+          if (i === 0 || i === n - 1) {
+            ctx.beginPath();
+            ctx.arc(el.x, el.y, 6.5, 0, Math.PI * 2);
+            if (i === 0) { ctx.fillStyle = col; ctx.fill(); }
+            else { ctx.lineWidth = 3.5; ctx.strokeStyle = col; ctx.stroke(); }
+          }
+        });
+        // Étiquettes temporelles : placement glouton sans chevauchement (8 positions autour du point,
+        // en évitant les autres étiquettes, les points et la trajectoire) ; extrémités prioritaires.
+        const fs = chart.width < 460 ? 10 : 11;
+        ctx.font = `600 ${fs}px ${tokens.fontFamily || 'sans-serif'}`;
+        ctx.textBaseline = 'middle';
+        const h = fs + 2;
+        const tagOf = (i) => {
+          const raw = ds.data[i] || {};
+          return raw.year !== undefined ? raw.year : (raw.label !== undefined ? raw.label : raw.t);
+        };
+        const order = [];
+        for (let i = 0; i < n; i++) {
+          if (tagOf(i) === undefined) continue;
+          if (n > 12 && i !== 0 && i !== n - 1) continue;
+          order.push(i);
+        }
+        order.sort((p, q) => ((p === 0 || p === n - 1) ? 0 : 1) - ((q === 0 || q === n - 1) ? 0 : 1) || p - q);
+        const placed = [];
+        const segHits = (r) => {
+          for (let i = 0; i < n - 1; i++) {
+            const a = pts[i], b = pts[i + 1];
+            if (Math.max(a.x, b.x) < r.x0 || Math.min(a.x, b.x) > r.x1 || Math.max(a.y, b.y) < r.y0 || Math.min(a.y, b.y) > r.y1) continue;
+            for (let k = 0; k <= 8; k++) {
+              const px = a.x + (b.x - a.x) * k / 8, py = a.y + (b.y - a.y) * k / 8;
+              if (px >= r.x0 && px <= r.x1 && py >= r.y0 && py <= r.y1) return true;
+            }
+          }
+          return false;
+        };
+        order.forEach((i) => {
+          const el = pts[i];
+          const text = String(tagOf(i));
+          const w = ctx.measureText(text).width;
+          const g = 7;
+          const cands = [
+            { x0: el.x + g, y0: el.y - g - h, al: 'left' },
+            { x0: el.x + g, y0: el.y + g, al: 'left' },
+            { x0: el.x - g - w, y0: el.y - g - h, al: 'right' },
+            { x0: el.x - g - w, y0: el.y + g, al: 'right' },
+            { x0: el.x + g + 2, y0: el.y - h / 2, al: 'left' },
+            { x0: el.x - g - 2 - w, y0: el.y - h / 2, al: 'right' },
+            { x0: el.x - w / 2, y0: el.y - g - h - 2, al: 'center' },
+            { x0: el.x - w / 2, y0: el.y + g + 2, al: 'center' }
+          ];
+          for (const c of cands) {
+            const r = { x0: c.x0, x1: c.x0 + w, y0: c.y0, y1: c.y0 + h };
+            if (r.x0 < chartArea.left || r.x1 > chartArea.right || r.y0 < chartArea.top || r.y1 > chartArea.bottom) continue;
+            if (placed.some(p => r.x0 < p.x1 && r.x1 > p.x0 && r.y0 < p.y1 && r.y1 > p.y0)) continue;
+            if (pts.some((q, j) => j !== i && q.x > r.x0 - 5 && q.x < r.x1 + 5 && q.y > r.y0 - 5 && q.y < r.y1 + 5)) continue;
+            if (segHits(r)) continue;
+            placed.push(r);
+            ctx.fillStyle = tokens.textPrimary || '#0F172A';
+            ctx.textAlign = c.al;
+            ctx.fillText(text, c.al === 'left' ? r.x0 : c.al === 'right' ? r.x1 : (r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2);
+            break;
+          }
+        });
+      });
+      ctx.restore();
+    }
+  };
   const defaultOpts = getChartDefaultOptions(tokens);
   const spatialOpts = getSpatialInteractionOptions(tokens, { mode: 'nearest', axis: 'xy', hitRadius: 14, hoverRadius: 7 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuad' });
@@ -211,6 +315,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const config = {
     type: 'line',
     data: chartData,
+    plugins: [trajectoryPlugin],
     options: {
       ...defaultOpts,
       ...spatialOpts,
@@ -250,6 +355,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       scales: {
         x: {
           type: 'linear',
+          title: { display: true, text: xTitle, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '600' } },
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -267,6 +373,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         },
         y: {
           type: 'linear',
+          title: { display: true, text: yTitle, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '600' } },
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

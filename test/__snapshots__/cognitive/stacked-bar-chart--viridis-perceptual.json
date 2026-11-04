@@ -79,7 +79,7 @@
           "emphasis": {
             "anomaly": "#FDE725",
             "benchmark": "#3E4A89",
-            "context": "#CBD5E1",
+            "context": "#94A3B8",
             "focal": "#26828E",
             "forecastAlpha": 0.5
           },
@@ -196,7 +196,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -287,8 +286,15 @@
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "viridis-perceptual"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kcStackTotals"
+        }
+      ],
       "type": "bar"
     },
     "kind": "chart-config"

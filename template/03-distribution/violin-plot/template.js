@@ -76,8 +76,8 @@ var factory = function(KitChartsTheme) {
     const h = (typeof bandwidth === 'number' && bandwidth > 0) ? bandwidth : computeScottBandwidth(clean);
     const minVal = clean[0];
     const maxVal = clean[clean.length - 1];
-    const spanMin = minVal - 3 * h;
-    const spanMax = maxVal + 3 * h;
+    const spanMin = minVal; // KDE tronquée au domaine des données (cut=0)
+    const spanMax = maxVal;
     const step = (spanMax - spanMin) / (gridPoints - 1);
 
     const SQRT_2PI = Math.sqrt(2 * Math.PI);
@@ -148,6 +148,20 @@ var factory = function(KitChartsTheme) {
    * @param {Object} [options={}] - Options (showInnerBox, showRawPoints)
    * @returns {Object} Instance Chart.js
    */
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
+
   function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
     const canvas = typeof canvasTarget === 'string'
       ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -192,6 +206,8 @@ var factory = function(KitChartsTheme) {
       if (ga.kde.max > globalMax) globalMax = ga.kde.max;
     });
     if (globalMin === Infinity) { globalMin = 0; globalMax = 100; }
+    // Largeur commune : même échelle de densité pour tous les groupes (comparabilité des amplitudes)
+    const globalMaxDensity = groupAnalysis.reduce((m, e) => Math.max(m, e.kde.maxDensity || 0), 0) || 1;
     const span = globalMax - globalMin || 10;
     const yPad = span * 0.05;
 
@@ -218,7 +234,7 @@ var factory = function(KitChartsTheme) {
           for (let j = 0; j < kde.grid.length; j++) {
             const yVal = kde.grid[j];
             const yPx = y.getPixelForValue(yVal);
-            const wRatio = kde.density[j] / kde.maxDensity;
+            const wRatio = kde.density[j] / globalMaxDensity;
             const xOffset = wRatio * maxViolinHalfWidth;
             const xPx = xCenter + xOffset;
             if (j === 0) ctx.moveTo(xPx, yPx);
@@ -228,7 +244,7 @@ var factory = function(KitChartsTheme) {
           for (let j = kde.grid.length - 1; j >= 0; j--) {
             const yVal = kde.grid[j];
             const yPx = y.getPixelForValue(yVal);
-            const wRatio = kde.density[j] / kde.maxDensity;
+            const wRatio = kde.density[j] / globalMaxDensity;
             const xOffset = wRatio * maxViolinHalfWidth;
             const xPx = xCenter - xOffset;
             ctx.lineTo(xPx, yPx);
@@ -347,12 +363,22 @@ var factory = function(KitChartsTheme) {
         scales: {
           x: {
             ...defaultOpts.scales.x,
-            grid: { display: false }
+            ticks: {
+              ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
+              maxRotation: 0,
+              minRotation: 0,
+              autoSkip: false,
+              callback: function(value) {
+                return wrapCategoryLabel(this.getLabelForValue(value), (this.chart.width - 70) / Math.max(1, labels.length) - 6, 11);
+              }
+            },
+            grid: { display: false },
+            border: { display: true, color: tokens.gridColor }
           },
           y: {
             ...defaultOpts.scales.y,
-            min: Math.floor(globalMin - yPad),
-            max: Math.ceil(globalMax + yPad),
+            min: Math.floor((globalMin - yPad) / 10) * 10,
+            max: Math.ceil((globalMax + yPad) / 10) * 10,
             title: {
               display: true,
               text: (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Valeur',

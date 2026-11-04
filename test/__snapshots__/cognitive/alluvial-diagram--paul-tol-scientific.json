@@ -12,74 +12,245 @@
           {
             "backgroundColor": "#4477AA",
             "borderWidth": 0,
-            "colorFrom": "[Function:defaultColorFrom]",
-            "colorMode": "gradient",
-            "colorTo": "[Function:defaultColorTo]",
+            "color": "#1E293B",
+            "colorFrom": "[Function:colorFrom]",
+            "colorMode": "from",
+            "colorTo": "[Function:colorTo]",
+            "column": {
+              "Désabonné@T2 2025": 1,
+              "Désabonné@T3 2025": 2,
+              "Entreprise@T1 2025": 0,
+              "Entreprise@T2 2025": 1,
+              "Entreprise@T3 2025": 2,
+              "Gratuit@T1 2025": 0,
+              "Gratuit@T2 2025": 1,
+              "Gratuit@T3 2025": 2,
+              "Pro@T1 2025": 0,
+              "Pro@T2 2025": 1,
+              "Pro@T3 2025": 2
+            },
             "data": [
               {
-                "flow": 600,
-                "from": "Acquisition Organique",
-                "to": "Plan Gratuit",
-                "valence": "neutral"
-              },
-              {
-                "flow": 250,
-                "from": "Acquisition Organique",
-                "to": "Plan Pro",
-                "valence": "positive"
-              },
-              {
-                "flow": 400,
-                "from": "Acquisition Payante (Ads)",
-                "to": "Plan Gratuit",
-                "valence": "neutral"
-              },
-              {
-                "flow": 450,
-                "from": "Acquisition Payante (Ads)",
-                "to": "Plan Pro",
-                "valence": "positive"
-              },
-              {
-                "flow": 350,
-                "from": "Plan Gratuit",
-                "to": "Désabonné (Churn)",
-                "valence": "negative"
-              },
-              {
-                "flow": 450,
-                "from": "Plan Gratuit",
-                "to": "Plan Pro (Upgrade)",
-                "valence": "positive"
+                "flow": 650,
+                "from": "Gratuit@T1 2025",
+                "fromName": "Gratuit",
+                "fromStage": "T1 2025",
+                "to": "Gratuit@T2 2025",
+                "toName": "Gratuit",
+                "toStage": "T2 2025"
               },
               {
                 "flow": 200,
-                "from": "Plan Gratuit",
-                "to": "Plan Gratuit (Actif)",
-                "valence": "neutral"
+                "from": "Gratuit@T1 2025",
+                "fromName": "Gratuit",
+                "fromStage": "T1 2025",
+                "to": "Pro@T2 2025",
+                "toName": "Pro",
+                "toStage": "T2 2025"
               },
               {
-                "flow": 280,
-                "from": "Plan Pro",
-                "to": "Plan Entreprise (Expansion)",
-                "valence": "positive"
+                "flow": 150,
+                "from": "Gratuit@T1 2025",
+                "fromName": "Gratuit",
+                "fromStage": "T1 2025",
+                "to": "Désabonné@T2 2025",
+                "toName": "Désabonné",
+                "toStage": "T2 2025",
+                "valence": "negative"
               },
               {
-                "flow": 360,
-                "from": "Plan Pro",
-                "to": "Plan Pro (Renouvelé)",
-                "valence": "positive"
+                "flow": 330,
+                "from": "Pro@T1 2025",
+                "fromName": "Pro",
+                "fromStage": "T1 2025",
+                "to": "Pro@T2 2025",
+                "toName": "Pro",
+                "toStage": "T2 2025"
               },
               {
-                "flow": 60,
-                "from": "Plan Pro",
-                "to": "Désabonné (Churn)",
+                "flow": 40,
+                "from": "Pro@T1 2025",
+                "fromName": "Pro",
+                "fromStage": "T1 2025",
+                "to": "Entreprise@T2 2025",
+                "toName": "Entreprise",
+                "toStage": "T2 2025"
+              },
+              {
+                "flow": 30,
+                "from": "Pro@T1 2025",
+                "fromName": "Pro",
+                "fromStage": "T1 2025",
+                "to": "Désabonné@T2 2025",
+                "toName": "Désabonné",
+                "toStage": "T2 2025",
+                "valence": "negative"
+              },
+              {
+                "flow": 95,
+                "from": "Entreprise@T1 2025",
+                "fromName": "Entreprise",
+                "fromStage": "T1 2025",
+                "to": "Entreprise@T2 2025",
+                "toName": "Entreprise",
+                "toStage": "T2 2025"
+              },
+              {
+                "flow": 5,
+                "from": "Entreprise@T1 2025",
+                "fromName": "Entreprise",
+                "fromStage": "T1 2025",
+                "to": "Désabonné@T2 2025",
+                "toName": "Désabonné",
+                "toStage": "T2 2025",
+                "valence": "negative"
+              },
+              {
+                "flow": 480,
+                "from": "Gratuit@T2 2025",
+                "fromName": "Gratuit",
+                "fromStage": "T2 2025",
+                "to": "Gratuit@T3 2025",
+                "toName": "Gratuit",
+                "toStage": "T3 2025"
+              },
+              {
+                "flow": 120,
+                "from": "Gratuit@T2 2025",
+                "fromName": "Gratuit",
+                "fromStage": "T2 2025",
+                "to": "Pro@T3 2025",
+                "toName": "Pro",
+                "toStage": "T3 2025"
+              },
+              {
+                "flow": 50,
+                "from": "Gratuit@T2 2025",
+                "fromName": "Gratuit",
+                "fromStage": "T2 2025",
+                "to": "Désabonné@T3 2025",
+                "toName": "Désabonné",
+                "toStage": "T3 2025",
+                "valence": "negative"
+              },
+              {
+                "flow": 440,
+                "from": "Pro@T2 2025",
+                "fromName": "Pro",
+                "fromStage": "T2 2025",
+                "to": "Pro@T3 2025",
+                "toName": "Pro",
+                "toStage": "T3 2025"
+              },
+              {
+                "flow": 50,
+                "from": "Pro@T2 2025",
+                "fromName": "Pro",
+                "fromStage": "T2 2025",
+                "to": "Entreprise@T3 2025",
+                "toName": "Entreprise",
+                "toStage": "T3 2025"
+              },
+              {
+                "flow": 40,
+                "from": "Pro@T2 2025",
+                "fromName": "Pro",
+                "fromStage": "T2 2025",
+                "to": "Désabonné@T3 2025",
+                "toName": "Désabonné",
+                "toStage": "T3 2025",
+                "valence": "negative"
+              },
+              {
+                "flow": 128,
+                "from": "Entreprise@T2 2025",
+                "fromName": "Entreprise",
+                "fromStage": "T2 2025",
+                "to": "Entreprise@T3 2025",
+                "toName": "Entreprise",
+                "toStage": "T3 2025"
+              },
+              {
+                "flow": 7,
+                "from": "Entreprise@T2 2025",
+                "fromName": "Entreprise",
+                "fromStage": "T2 2025",
+                "to": "Désabonné@T3 2025",
+                "toName": "Désabonné",
+                "toStage": "T3 2025",
+                "valence": "negative"
+              },
+              {
+                "flow": 185,
+                "from": "Désabonné@T2 2025",
+                "fromName": "Désabonné",
+                "fromStage": "T2 2025",
+                "to": "Désabonné@T3 2025",
+                "toName": "Désabonné",
+                "toStage": "T3 2025",
                 "valence": "negative"
               }
             ],
-            "label": "Parcours & Migration des Cohortes Utilisateurs",
+            "font": {
+              "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "kcLabels": {
+              "Désabonné@T2 2025": "Désabonné · 185",
+              "Désabonné@T3 2025": "Désabonné · 282",
+              "Entreprise@T1 2025": "Entreprise · 100",
+              "Entreprise@T2 2025": "Entreprise · 135",
+              "Entreprise@T3 2025": "Entreprise · 178",
+              "Gratuit@T1 2025": "Gratuit · 1 000",
+              "Gratuit@T2 2025": "Gratuit · 650",
+              "Gratuit@T3 2025": "Gratuit · 480",
+              "Pro@T1 2025": "Pro · 400",
+              "Pro@T2 2025": "Pro · 530",
+              "Pro@T3 2025": "Pro · 560"
+            },
+            "kcShort": {
+              "Désabonné@T2 2025": "Désabonné",
+              "Désabonné@T3 2025": "Désabonné",
+              "Entreprise@T1 2025": "Entreprise",
+              "Entreprise@T2 2025": "Entreprise",
+              "Entreprise@T3 2025": "Entreprise",
+              "Gratuit@T1 2025": "Gratuit",
+              "Gratuit@T2 2025": "Gratuit",
+              "Gratuit@T3 2025": "Gratuit",
+              "Pro@T1 2025": "Pro",
+              "Pro@T2 2025": "Pro",
+              "Pro@T3 2025": "Pro"
+            },
+            "label": "Migration de la cohorte (utilisateurs)",
+            "labels": {
+              "Désabonné@T2 2025": " ",
+              "Désabonné@T3 2025": " ",
+              "Entreprise@T1 2025": " ",
+              "Entreprise@T2 2025": " ",
+              "Entreprise@T3 2025": " ",
+              "Gratuit@T1 2025": " ",
+              "Gratuit@T2 2025": " ",
+              "Gratuit@T3 2025": " ",
+              "Pro@T1 2025": " ",
+              "Pro@T2 2025": " ",
+              "Pro@T3 2025": " "
+            },
             "nodePadding": 18,
-            "nodeWidth": 16
+            "nodeWidth": 16,
+            "priority": {
+              "Désabonné@T2 2025": 3,
+              "Désabonné@T3 2025": 3,
+              "Entreprise@T1 2025": 2,
+              "Entreprise@T2 2025": 2,
+              "Entreprise@T3 2025": 2,
+              "Gratuit@T1 2025": 0,
+              "Gratuit@T2 2025": 0,
+              "Gratuit@T3 2025": 0,
+              "Pro@T1 2025": 1,
+              "Pro@T2 2025": 1,
+              "Pro@T3 2025": 1
+            }
           }
         ]
       },
@@ -102,8 +273,8 @@
           }
         },
         "hover": {
-          "animationDuration": 100,
-          "intersect": true,
+          "animationDuration": 0,
+          "intersect": false,
           "mode": "nearest"
         },
         "interaction": {
@@ -115,7 +286,7 @@
             "bottom": 16,
             "left": 16,
             "right": 16,
-            "top": 16
+            "top": 34
           }
         },
         "maintainAspectRatio": false,
@@ -191,8 +362,19 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "paul-tol-scientific"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsAlluvialStages"
+        },
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsSankeyNodeLabels"
+        }
+      ],
       "type": "sankey"
     },
     "kind": "chart-config"

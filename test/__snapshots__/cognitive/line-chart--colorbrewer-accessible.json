@@ -172,7 +172,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "colorbrewer-accessible"
       },
       "type": "line"
     },

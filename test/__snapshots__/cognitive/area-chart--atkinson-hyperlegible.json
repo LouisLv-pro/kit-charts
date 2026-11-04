@@ -34,7 +34,7 @@
             "pointBorderColor": "#FFFFFF",
             "pointBorderWidth": 1.5,
             "pointHoverRadius": 6,
-            "pointRadius": 4,
+            "pointRadius": 0,
             "pointStyle": "circle",
             "tension": 0.3
           }
@@ -173,7 +173,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "atkinson-hyperlegible"
       },
       "type": "line"
     },

@@ -100,6 +100,7 @@ const DEFAULT_DATA = (() => {
 
   return {
     categories: ['Groupe A (Témoin)', 'Groupe B (Traitement 1)', 'Groupe C (Traitement 2)'],
+    yLabel: 'Score de récupération clinique',
     datasets: [
       {
         label: 'Groupe A (Témoin)',
@@ -125,6 +126,20 @@ const DEFAULT_DATA = (() => {
  * @param {string} [themeName='colorbrewer-accessible'] - Identifiant du thème cognitif
  * @returns {Object} Instance Chart.js initialisée
  */
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
+
 function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
   const canvas = typeof canvasTarget === 'string'
     ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -256,7 +271,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ...defaultOpts.plugins,
         legend: {
           ...defaultOpts.plugins?.legend,
-          display: datasets.length > 1 && !isTufte
+          display: datasets.length > 1 && !isTufte && datasets.length !== categories.length
         },
         tooltip: {
           ...defaultOpts.plugins?.tooltip,
@@ -282,13 +297,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       scales: {
         x: {
           type: 'linear',
-          min: 0.5,
+          min: 0.4,
           max: (categories.length || datasets.length) + 0.5,
-          grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
-            drawBorder: false
-          },
+          grid: { display: false },
           border: { display: false },
           ticks: {
             stepSize: 1,
@@ -299,13 +310,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
               size: 11
             },
             padding: 8,
-            callback: (val) => {
+            maxRotation: 0,
+            minRotation: 0,
+            autoSkip: false,
+            callback: function(val) {
               const idx = Math.round(val) - 1;
-              return categories[idx] || '';
+              const n = Math.max(1, categories.length || datasets.length);
+              return wrapCategoryLabel(categories[idx] || '', (this.chart.width - 70) / n - 6, 11);
             }
           }
         },
         y: {
+          title: {
+            display: !!rawData.yLabel,
+            text: rawData.yLabel || '',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

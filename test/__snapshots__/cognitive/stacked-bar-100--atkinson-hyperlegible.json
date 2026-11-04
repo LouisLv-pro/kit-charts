@@ -10,9 +10,9 @@
       "data": {
         "datasets": [
           {
-            "backgroundColor": "#005AB5",
+            "backgroundColor": "#009E73",
             "barPercentage": 0.9,
-            "borderColor": "#005AB5",
+            "borderColor": "#009E73",
             "borderRadius": 0,
             "borderSkipped": false,
             "borderWidth": 0,
@@ -23,12 +23,18 @@
               82,
               90
             ],
-            "label": "Succès"
+            "label": "Succès",
+            "rawValues": [
+              75,
+              60,
+              82,
+              90
+            ]
           },
           {
-            "backgroundColor": "#DC3220",
+            "backgroundColor": "#71717A",
             "barPercentage": 0.9,
-            "borderColor": "#DC3220",
+            "borderColor": "#71717A",
             "borderRadius": 0,
             "borderSkipped": false,
             "borderWidth": 0,
@@ -39,12 +45,18 @@
               10,
               5
             ],
-            "label": "En cours"
+            "label": "En cours",
+            "rawValues": [
+              15,
+              25,
+              10,
+              5
+            ]
           },
           {
-            "backgroundColor": "#009E73",
+            "backgroundColor": "#DC3220",
             "barPercentage": 0.9,
-            "borderColor": "#009E73",
+            "borderColor": "#DC3220",
             "borderRadius": 4,
             "borderSkipped": false,
             "borderWidth": 0,
@@ -55,7 +67,13 @@
               8,
               5
             ],
-            "label": "Échec"
+            "label": "Échec",
+            "rawValues": [
+              10,
+              15,
+              8,
+              5
+            ]
           }
         ],
         "labels": [
@@ -113,6 +131,7 @@
               "weight": "600"
             },
             "formatter": "[Function:formatter]",
+            "isPercent": true,
             "padding": 4,
             "thresholdRatio": 0.05
           },
@@ -129,7 +148,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top",
@@ -214,8 +232,15 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "atkinson-hyperlegible"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsSmallSegmentLabels"
+        }
+      ],
       "type": "bar"
     },
     "kind": "chart-config"

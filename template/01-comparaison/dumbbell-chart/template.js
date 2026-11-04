@@ -74,7 +74,9 @@ const dumbbellConnectorPlugin = {
     const count = Math.min(meta0.data.length, meta1.data.length);
     ctx.save();
     ctx.lineWidth = 3;
-    ctx.strokeStyle = chart.options.scales?.x?.grid?.color || 'rgba(148, 163, 184, 0.4)';
+    // Trait de liaison : contraste de contour >= 3:1 (et non la couleur quasi transparente de la grille)
+    const connTokens = chart.options?._kitChartsTokens || getThemeTokens(DEFAULT_THEME);
+    ctx.strokeStyle = connTokens.textMuted || connTokens.axisColor || '#64748B';
 
     for (let i = 0; i < count; i++) {
       const p0 = meta0.data[i];
@@ -115,14 +117,14 @@ const dumbbellConnectorPlugin = {
       const isClose = dx < 36;
 
       if (v0 !== undefined && v0 !== null) {
-        ctx.fillStyle = chart.data.datasets[0]?.backgroundColor || tokens.palette[1] || '#E66101';
+        ctx.fillStyle = tokens.textPrimary || '#0F172A'; // texte neutre (contraste 4.5:1), la série se lit via la couleur du point
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText(String(v0), p0.x, p0.y - 8);
       }
 
       if (v1 !== undefined && v1 !== null) {
-        ctx.fillStyle = chart.data.datasets[1]?.backgroundColor || tokens.palette[0] || '#2B8CBE';
+        ctx.fillStyle = tokens.textPrimary || '#0F172A';
         ctx.textAlign = 'center';
         ctx.textBaseline = isClose ? 'top' : 'bottom';
         const yOffset = isClose ? 14 : -8;

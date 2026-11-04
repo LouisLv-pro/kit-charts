@@ -63,7 +63,7 @@
             "tension": 0.25
           },
           {
-            "backgroundColor": "rgba(186, 176, 172, 0.4)",
+            "backgroundColor": "rgba(154, 145, 140, 0.4)",
             "borderColor": "#E15759",
             "borderDash": [],
             "borderWidth": 1.5,
@@ -79,8 +79,8 @@
             ],
             "fill": false,
             "label": "Produit Legacy Desktop (Context)",
-            "pointBackgroundColor": "#BAB0AC",
-            "pointBorderColor": "#BAB0AC",
+            "pointBackgroundColor": "#9A918C",
+            "pointBorderColor": "#9A918C",
             "pointBorderWidth": 1.5,
             "pointHoverRadius": 6,
             "pointRadius": 2,
@@ -141,7 +141,7 @@
         "plugins": {
           "legend": {
             "align": "end",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 8,
               "boxWidth": 8,
@@ -218,8 +218,16 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "tableau-stone-categorical"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "kitChartsDirectLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

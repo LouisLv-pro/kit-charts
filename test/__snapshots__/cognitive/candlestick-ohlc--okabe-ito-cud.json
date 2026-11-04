@@ -11,7 +11,17 @@
         "datasets": [
           {
             "backgroundColor": "#0072B2",
+            "backgroundColors": {
+              "down": "#D55E00",
+              "unchanged": "#999999",
+              "up": "rgba(0, 158, 115, 0.18)"
+            },
             "borderColor": {
+              "down": "#D55E00",
+              "unchanged": "#999999",
+              "up": "#009E73"
+            },
+            "borderColors": {
               "down": "#D55E00",
               "unchanged": "#999999",
               "up": "#009E73"
@@ -138,21 +148,24 @@
         "mode": "index",
         "plugins": {
           "legend": {
-            "align": "end",
-            "display": false,
+            "align": "center",
+            "display": true,
             "labels": {
-              "boxHeight": 8,
-              "boxWidth": 8,
+              "boxHeight": 12,
+              "boxWidth": 12,
               "color": "#1E293B",
               "font": {
                 "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
+                "size": 11,
                 "weight": "500"
               },
-              "padding": 14,
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 12,
+              "pointStyle": "rect",
               "usePointStyle": true
             },
-            "position": "top"
+            "onClick": "[Function:onClick]",
+            "position": "bottom"
           },
           "tooltip": {
             "backgroundColor": "rgba(30, 41, 59, 0.92)",
@@ -215,7 +228,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "okabe-ito-cud"
       },
       "type": "candlestick"
     },

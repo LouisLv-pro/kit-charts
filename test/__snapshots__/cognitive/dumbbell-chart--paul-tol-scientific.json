@@ -100,7 +100,7 @@
           "emphasis": {
             "anomaly": "#EE6677",
             "benchmark": "#475569",
-            "context": "#BBBBBB",
+            "context": "#999999",
             "focal": "#4477AA",
             "forecastAlpha": 0.5
           },
@@ -218,7 +218,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -310,7 +309,8 @@
             "type": "category"
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "paul-tol-scientific"
       },
       "plugins": [
         {

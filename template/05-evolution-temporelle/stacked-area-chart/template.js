@@ -123,7 +123,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : emphasisStyle.borderWidth,
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [5, 5] : []),
       tension: typeof ds.tension === 'number' ? ds.tension : 0.3,
-      fill: ds.fill !== undefined ? ds.fill : true,
+      fill: ds.fill !== undefined ? ds.fill : (idx === 0 ? 'origin' : '-1'),
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : 0,
       pointHoverRadius: 5,
       pointStyle: ds.pointStyle || emphasisStyle.pointStyle || (isForecast ? 'crossRot' : 'circle'),
@@ -193,6 +193,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           display: true && !isTufte,
           position: 'top',
           align: 'end',
+          reverse: true,
           labels: {
             color: tokens.textPrimary,
             font: {
@@ -212,6 +213,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
                 text: ds.label || ('Série ' + (i + 1)),
                 fillStyle: c,
                 strokeStyle: c,
+                fontColor: tokens.textPrimary,
                 lineWidth: 2,
                 pointStyle: 'line',
                 hidden: !chart.isDatasetVisible(i),

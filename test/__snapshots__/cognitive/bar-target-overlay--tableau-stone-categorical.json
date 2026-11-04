@@ -64,7 +64,7 @@
           "emphasis": {
             "anomaly": "#E15759",
             "benchmark": "#57606C",
-            "context": "#BAB0AC",
+            "context": "#9A918C",
             "focal": "#4E79A7",
             "forecastAlpha": 0.5
           },
@@ -145,7 +145,7 @@
         },
         "layout": {
           "padding": {
-            "right": 32
+            "right": 120
           }
         },
         "maintainAspectRatio": false,
@@ -163,7 +163,23 @@
             "thresholdRatio": 0.05
           },
           "legend": {
-            "display": false
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#1E293B",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 11,
+                "weight": "500"
+              },
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 10,
+              "usePointStyle": true
+            },
+            "onClick": null,
+            "position": "top"
           },
           "tooltip": {
             "animation": false,
@@ -213,9 +229,10 @@
             "ticks": {
               "color": "#334155",
               "font": {
-                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-                "size": 11
+                "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 12
               },
+              "maxTicksLimit": 8,
               "padding": 6
             },
             "title": {
@@ -241,13 +258,14 @@
               "color": "#334155",
               "font": {
                 "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
-                "size": 11
+                "size": 12
               },
               "padding": 8
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "tableau-stone-categorical"
       },
       "plugins": [
         {

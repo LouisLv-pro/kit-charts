@@ -59,13 +59,48 @@
     return (d1 > 0 && d2 > 0) ? Math.round((num / Math.sqrt(d1 * d2)) * 1000) / 1000 : 0;
   }
 
+  // Bornes "propres" : 6 intervalles identiques sur les deux axes, zéros alignés,
+  // si bien que chaque graduation de l'axe droit tombe sur la grille de l'axe gauche.
+  const DUAL_AXIS_INTERVALS = 6;
+  function niceStep(rawStep) {
+    const exp = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const f = rawStep / exp;
+    const nice = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10;
+    return nice * exp;
+  }
   function computeZeroAlignedBounds(s1, s2) {
     const max1 = Math.max(...s1, 10);
     const max2 = Math.max(...s2, 10);
+    const step1 = niceStep((max1 * 1.05) / DUAL_AXIS_INTERVALS);
+    const step2 = niceStep((max2 * 1.05) / DUAL_AXIS_INTERVALS);
     return {
-      y1: { min: 0, max: Math.ceil(max1 * 1.15) },
-      y2: { min: 0, max: Math.ceil(max2 * 1.15) }
+      y1: { min: 0, max: step1 * DUAL_AXIS_INTERVALS, step: step1 },
+      y2: { min: 0, max: step2 * DUAL_AXIS_INTERVALS, step: step2 }
     };
+  }
+
+
+  // Texte lisible (WCAG AA 4.5:1) : assombrit/éclaircit la couleur de série jusqu'au contraste requis sur la surface.
+  function legibleOn(color, surface) {
+    const hex = (c) => {
+      const m = /^#([0-9a-f]{6})$/i.exec(String(c || '').trim());
+      return m ? [0, 2, 4].map(i => parseInt(m[1].substr(i, 2), 16)) : null;
+    };
+    const lum = (rgb) => {
+      const ch = rgb.map(v => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+      return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+    };
+    const fg = hex(color);
+    const bg = hex(surface) || [255, 255, 255];
+    if (!fg) return color;
+    const target = lum(bg) > 0.4 ? 0 : 255;
+    let cur = fg;
+    for (let k = 0; k <= 20; k++) {
+      const l1 = lum(cur), l2 = lum(bg);
+      if ((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) >= 4.5) break;
+      cur = fg.map(v => Math.round(v + (target - v) * (k + 1) * 0.05));
+    }
+    return '#' + cur.map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
   const DEFAULT_DATA = {
@@ -117,9 +152,40 @@
 
     const color1 = getColor(tokens, 0);
     const color2 = getColor(tokens, 1);
+    const text1 = legibleOn(color1, tokens.surface);
+    const text2 = legibleOn(color2, tokens.surface);
+
+    // Étiquettes du dernier point de chaque série (plugin local) : série 1 au-dessus, série 2 en dessous, à droite du point.
+    const lastPointLabelsPlugin = {
+      id: 'kitChartsDualLastLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'right';
+        [[0, text1], [1, text2]].forEach(([di, col]) => {
+          const meta = chart.getDatasetMeta(di);
+          const arr = chart.data.datasets[di].data;
+          const el = meta.data[arr.length - 1];
+          if (!el) return;
+          const text = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(arr[arr.length - 1]);
+          const prev = meta.data[arr.length - 2];
+          // Côté libre : à l'opposé de la direction d'arrivée de la courbe (aucun chevauchement avec le tracé).
+          const dy = prev && prev.y > el.y ? -12 : 12;
+          let y = el.y + dy;
+          y = Math.max(chartArea.top + 6, Math.min(chartArea.bottom - 6, y));
+          ctx.fillStyle = col;
+          ctx.fillText(text, el.x - 6, y);
+        });
+        ctx.restore();
+      }
+    };
 
     const defaultOpts = getChartDefaultOptions(tokens);
     const config = {
+      plugins: [lastPointLabelsPlugin],
       type: 'line',
       data: {
         labels,
@@ -135,7 +201,7 @@
             pointHoverRadius: 6,
             tension: 0.3,
             datalabels: {
-              display: showDataLabels,
+              display: false,
               color: color1,
               align: 'top',
               anchor: 'center',
@@ -153,7 +219,7 @@
             pointHoverRadius: 6,
             tension: 0.3,
             datalabels: {
-              display: showDataLabels,
+              display: false,
               color: color2,
               align: 'bottom',
               anchor: 'center',
@@ -174,16 +240,20 @@
         plugins: {
           ...defaultOpts.plugins,
           datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
+            display: false, // plugin commun désactivé : étiquettes gérées par le plugin local ci-dessous
             formatter: (v) => formatLabelValue(v)
           }),
           legend: {
             display: true,
-            position: 'top',
-            align: 'end',
+            position: 'bottom',
+            align: 'center',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              pointStyle: 'line',
+              boxWidth: 24,
+              padding: 10
             }
           },
           tooltip: {
@@ -197,22 +267,25 @@
         scales: {
           x: {
             ...defaultOpts.scales.x,
-            grid: { color: tokens.gridColor }
+            grid: { color: tokens.gridColor },
+            border: { color: tokens.border || tokens.gridColor }
           },
           y: {
             type: 'linear',
             position: 'left',
             min: bounds.y1.min,
             max: bounds.y1.max,
+            beginAtZero: true,
             grid: { color: tokens.gridColor },
             ticks: {
-              color: color1,
+              color: text1,
+              stepSize: bounds.y1.step,
               font: { family: tokens.fontMono, weight: '600' }
             },
             title: {
               display: true,
               text: label1,
-              color: color1,
+              color: text1,
               font: { family: tokens.fontFamily, size: 12, weight: '600' }
             }
           },
@@ -221,15 +294,17 @@
             position: 'right',
             min: bounds.y2.min,
             max: bounds.y2.max,
+            beginAtZero: true,
             grid: { display: false },
             ticks: {
-              color: color2,
+              color: text2,
+              stepSize: bounds.y2.step,
               font: { family: tokens.fontMono, weight: '600' }
             },
             title: {
               display: true,
               text: label2,
-              color: color2,
+              color: text2,
               font: { family: tokens.fontFamily, size: 12, weight: '600' }
             }
           }

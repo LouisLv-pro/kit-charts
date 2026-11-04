@@ -22,7 +22,7 @@
               105,
               130
             ],
-            "fill": true,
+            "fill": "origin",
             "label": "Éolien",
             "pointBackgroundColor": "#0072B2",
             "pointBorderColor": "#FFFFFF",
@@ -44,7 +44,7 @@
               100,
               135
             ],
-            "fill": true,
+            "fill": "-1",
             "label": "Solaire",
             "pointBackgroundColor": "#D55E00",
             "pointBorderColor": "#FFFFFF",
@@ -66,10 +66,10 @@
               60,
               63
             ],
-            "fill": true,
+            "fill": "-1",
             "label": "Hydroélectrique",
             "pointBackgroundColor": "#009E73",
-            "pointBorderColor": "#CBD5E1",
+            "pointBorderColor": "#94A3B8",
             "pointHoverRadius": 5,
             "pointRadius": 0,
             "pointStyle": "circle",
@@ -141,7 +141,8 @@
               "padding": 14,
               "usePointStyle": true
             },
-            "position": "top"
+            "position": "top",
+            "reverse": true
           },
           "tooltip": {
             "backgroundColor": "rgba(30, 41, 59, 0.92)",
@@ -207,7 +208,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "okabe-ito-cud"
       },
       "type": "line"
     },

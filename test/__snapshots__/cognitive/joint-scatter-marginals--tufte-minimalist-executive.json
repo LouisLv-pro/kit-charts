@@ -179,10 +179,11 @@
               }
             ],
             "fill": false,
-            "label": "Régression OLS (r = -0.933)",
+            "label": "Régression OLS (r = -0.933, R² = 0.87)",
             "order": 3,
             "pointHoverRadius": 0,
             "pointRadius": 0,
+            "pointStyle": "line",
             "tension": 0,
             "type": "line"
           }
@@ -218,8 +219,8 @@
         },
         "layout": {
           "padding": {
-            "bottom": 8,
-            "left": 6,
+            "bottom": 4,
+            "left": 4,
             "right": 64,
             "top": 54
           }
@@ -234,9 +235,9 @@
               "color": "#111111",
               "font": {
                 "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
-                "size": 12
+                "size": 11
               },
-              "padding": 16,
+              "padding": 10,
               "usePointStyle": true
             },
             "position": "bottom"
@@ -283,6 +284,8 @@
             "grid": {
               "color": "rgba(0, 0, 0, 0.04)"
             },
+            "max": 45,
+            "min": 0,
             "ticks": {
               "color": "#333333",
               "font": {
@@ -311,7 +314,10 @@
             "grid": {
               "color": "rgba(0, 0, 0, 0.04)"
             },
+            "max": 110,
+            "min": 0,
             "ticks": {
+              "callback": "[Function:callback]",
               "color": "#333333",
               "font": {
                 "family": "'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
@@ -331,12 +337,14 @@
             },
             "type": "linear"
           }
-        }
+        },
+        "themeName": "tufte-minimalist-executive"
       },
       "plugins": [
         {
           "afterDraw": "[Function:afterDraw]",
           "beforeDatasetsDraw": "[Function:beforeDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
           "id": "kitChartsJointMarginalsPainter"
         }
       ],

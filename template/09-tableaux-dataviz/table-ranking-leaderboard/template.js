@@ -55,6 +55,38 @@
   };
 
   /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
+  }
+
+  /**
    * Génère une micro-jauge de score proportionnelle à la première place
    */
   function generateScoreBarSVG(score, maxScore = 100, width = 100, height = 12, color = '#2B8CBE', isDark = false, isTufte = false) {
@@ -153,6 +185,11 @@
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : région, contrats, conversion et activité masqués, barre de score réduite
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const hiddenKeys = compact ? ['region', 'deals', 'conversion', 'monthlyActivity'] : [];
+      const cp = compact ? '7px 5px' : '10px 9px';
 
       const primaryColor = getColor(tokens, 0);
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -197,10 +234,11 @@
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 860}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -211,16 +249,17 @@
               ">
       `;
 
-      data.columns.forEach(col => {
+      data.columns.filter(col => hiddenKeys.indexOf(col.key) < 0).forEach(col => {
+        const shortLabels = { rank: '#', trendRank: 'Évol.', team: 'Équipe', score: 'Score' };
         const isSorted = sortColumn === col.key;
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
           <th data-key="${escapeHtml(col.key)}" style="
-            padding: 10px 14px;
+            padding: ${compact ? '8px 5px' : '10px 9px'};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.65rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${isSorted ? primaryColor : textSecondary};
@@ -228,7 +267,7 @@
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${escapeHtml(col.label)}${sortIcon}
+            ${escapeHtml(compact && shortLabels[col.key] !== undefined ? shortLabels[col.key] : col.label)}${sortIcon}
           </th>
         `;
       });
@@ -274,9 +313,9 @@
         const deltaRank = (row.prevRank || row.rank) - row.rank;
         let trendHtml = `<span style="color: ${textMuted}; font-size: 0.75rem;">=</span>`;
         if (deltaRank > 0) {
-          trendHtml = `<span style="color: ${tokens.status?.success || '#2E7D32'}; font-weight: 700; font-size: 0.75rem;">▲ +${deltaRank}</span>`;
+          trendHtml = `<span style="color: ${readableOn(tokens.status?.success || '#2E7D32', bgSurface, 4.5)}; font-weight: 700; font-size: 0.75rem;">▲ +${deltaRank}</span>`;
         } else if (deltaRank < 0) {
-          trendHtml = `<span style="color: ${tokens.status?.danger || '#C62828'}; font-weight: 700; font-size: 0.75rem;">▼ ${deltaRank}</span>`;
+          trendHtml = `<span style="color: ${readableOn(tokens.status?.danger || '#C62828', bgSurface, 4.5)}; font-weight: 700; font-size: 0.75rem;">▼ ${deltaRank}</span>`;
         }
 
         html += `
@@ -285,44 +324,45 @@
             border-bottom: ${borderBottom};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: center; vertical-align: middle;">
               ${rankBadge}
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: center; vertical-align: middle; white-space: nowrap;">
               ${trendHtml}
             </td>
-            <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: left; vertical-align: middle;">
               <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.team)}</div>
-              ${row.leader ? `<div style="font-size: 0.7rem; color: ${textMuted};">Lead: ${escapeHtml(row.leader)}</div>` : ''}
+              ${row.leader && !compact ? `<div style="font-size: 0.7rem; color: ${textMuted};">Lead: ${escapeHtml(row.leader)}</div>` : ''}
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: center; vertical-align: middle;">
               <span style="
                 display: inline-block;
                 padding: 2px 7px;
                 border-radius: 9999px;
                 font-size: 0.7rem;
                 font-weight: 500;
+                white-space: nowrap;
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
               ">${escapeHtml(row.region)}</span>
-            </td>
-            <td style="padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;">
+            </td>`}
+            <td style="padding: ${cp}; text-align: right; vertical-align: middle; white-space: nowrap;">
               <div style="display: flex; align-items: center; justify-content: flex-end;">
-                ${generateScoreBarSVG(row.score, 100, 75, 12, primaryColor, isDark, isTufte)}
+                ${generateScoreBarSVG(row.score, 100, compact ? 44 : 75, 12, primaryColor, isDark, isTufte)}
                 <span style="font-family: ${fontMono}; font-weight: 700; color: ${textPrimary}; width: 38px; text-align: right;">
                   ${row.score.toFixed(1)}
                 </span>
               </div>
             </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textPrimary}; vertical-align: middle;">
               ${escapeHtml(row.deals)}
             </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${row.conversion.toFixed(1)}%
             </td>
             <td style="padding: 6px 10px; text-align: center; vertical-align: middle;">
               ${generateSparkbarSVG(row.activity, 72, 22, textMuted, primaryColor, isTufte)}
-            </td>
+            </td>`}
           </tr>
         `;
       });

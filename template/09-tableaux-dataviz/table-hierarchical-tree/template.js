@@ -164,6 +164,52 @@
   }
 
   /**
+   * Mélange une couleur hex avec un fond hex (alpha 0..1) et renvoie un hex opaque.
+   */
+  function blendHex(fg, alpha, bg) {
+    const parse = (h) => {
+      let c = String(h || '').replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      return /^[0-9a-fA-F]{6}$/.test(c) ? [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)) : null;
+    };
+    const f = parse(fg), b = parse(bg);
+    if (!f || !b) return bg;
+    return '#' + f.map((v, i) => Math.round(v * alpha + b[i] * (1 - alpha)).toString(16).padStart(2, '0')).join('');
+  }
+
+  /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
+  }
+
+  /**
    * Crée et initialise un Tableau Hiérarchique & Arborescent
    *
    * @param {string|HTMLElement} target - ID ou élément DOM cible
@@ -229,6 +275,11 @@
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : effectifs, dépenses et badge masqués (statut porté par la couleur du taux), retrait réduit
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const hiddenKeys = compact ? ['headcount', 'spent', 'status'] : [];
+      const cp = compact ? '7px 6px' : '9px 14px';
 
       const primaryColor = getColor(tokens, 0);
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -268,10 +319,11 @@
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 620}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -282,20 +334,21 @@
               ">
       `;
 
-      data.columns.forEach(col => {
+      data.columns.filter(col => hiddenKeys.indexOf(col.key) < 0).forEach(col => {
+        const shortLabels = { name: 'Équipe', budget: 'Budget', burnRate: 'Exécution' };
         html += `
           <th style="
-            padding: 10px 14px;
+            padding: ${compact ? '8px 6px' : '10px 14px'};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.65rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${textSecondary};
             border: none;
             white-space: nowrap;
           ">
-            ${escapeHtml(col.label)}
+            ${escapeHtml(compact && shortLabels[col.key] ? shortLabels[col.key] : col.label)}
           </th>
         `;
       });
@@ -309,7 +362,7 @@
       flatRows.forEach((row, idx) => {
         const isParent = row.level === 0;
         const isSubParent = row.level === 1;
-        const indentPx = row.level * 22;
+        const indentPx = row.level * (compact ? 12 : 22);
 
         let rowBg = 'transparent';
         if (isParent) {
@@ -324,21 +377,22 @@
 
         const burnRate = row.budget > 0 ? (row.spent / row.budget) * 100 : 0;
         const isOverBudget = burnRate > 100;
-        const isWarning = burnRate >= 95 && burnRate <= 100;
+        const warnThreshold = typeof options.warningThreshold === 'number' ? options.warningThreshold : 95;
+        const isWarning = burnRate >= warnThreshold && burnRate <= 100;
 
-        let statusBg = isDark ? 'rgba(46, 125, 50, 0.2)' : 'rgba(46, 125, 50, 0.12)';
-        let statusColor = isDark ? '#81C784' : '#2E7D32';
+        // Statut TARGET_BASED : dans la cible = vert, tension = orange, dépassement = rouge (couleurs du thème)
+        let statusBase = tokens.status?.success || '#2E7D32';
         let statusLabel = 'Maîtrisé';
-
         if (isOverBudget) {
-          statusBg = isDark ? 'rgba(198, 40, 40, 0.25)' : 'rgba(198, 40, 40, 0.12)';
-          statusColor = isDark ? '#E57373' : '#C62828';
+          statusBase = tokens.status?.danger || '#C62828';
           statusLabel = 'Dépassement';
         } else if (isWarning) {
-          statusBg = isDark ? 'rgba(239, 108, 0, 0.25)' : 'rgba(239, 108, 0, 0.12)';
-          statusColor = isDark ? '#FFB74D' : '#D97706';
+          statusBase = tokens.status?.warning || '#EF6C00';
           statusLabel = 'Sous tension';
         }
+        const statusBgAlpha = isDark ? 0.25 : 0.14;
+        const statusBg = blendHex(statusBase, statusBgAlpha, bgSurface);
+        const statusColor = readableOn(statusBase, statusBg, 4.5);
 
         const chevron = row.hasChildren
           ? `<span class="kc-tree-toggle" data-node-id="${escapeHtml(row.id)}" style="
@@ -348,13 +402,13 @@
               line-height: 16px;
               text-align: center;
               font-size: 0.65rem;
-              margin-right: 6px;
+              margin-right: ${compact ? 2 : 6}px;
               cursor: pointer;
               user-select: none;
               color: ${primaryColor};
               font-weight: 700;
             ">${row.isExpanded ? '▼' : '▶'}</span>`
-          : `<span style="display: inline-block; width: 22px;"></span>`;
+          : `<span style="display: inline-block; width: ${compact ? 18 : 22}px;"></span>`;
 
         html += `
           <tr class="kc-table-row" style="
@@ -363,22 +417,22 @@
             font-weight: ${fontWeight};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
+            <td style="padding: ${cp}; text-align: left; vertical-align: middle; white-space: ${compact ? 'normal' : 'nowrap'};">
               <div style="padding-left: ${indentPx}px; display: flex; align-items: center;">
                 ${chevron}
                 <span style="color: ${textColor};">${escapeHtml(row.name)}</span>
               </div>
             </td>
-            <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
               ${escapeHtml(row.headcount)} ETP
-            </td>
-            <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle; white-space: nowrap;">
               ${(row.budget / 1000000).toFixed(2)} M€
             </td>
-            <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
               ${(row.spent / 1000000).toFixed(2)} M€
-            </td>
-            <td style="padding: 9px 14px; text-align: right; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; text-align: right; vertical-align: middle; white-space: nowrap;" title="${statusLabel}">
               <span style="
                 font-family: ${fontMono};
                 font-weight: ${isParent ? '700' : '600'};
@@ -387,7 +441,7 @@
                 ${burnRate.toFixed(1)}%
               </span>
             </td>
-            <td style="padding: 9px 14px; text-align: center; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: center; vertical-align: middle;">
               <span style="
                 display: inline-block;
                 padding: 2px 7px;
@@ -399,7 +453,7 @@
                 border: ${isTufte ? `1px solid ${statusColor}` : 'none'};
                 white-space: nowrap;
               ">${statusLabel}</span>
-            </td>
+            </td>`}
           </tr>
         `;
       });
@@ -411,24 +465,24 @@
                 background: ${bgHeader};
                 font-weight: 700;
               ">
-                <td style="padding: 11px 14px; text-align: left; color: ${textPrimary};">
-                  TOTAL ORGANISATION
+                <td style="padding: ${compact ? '8px 6px' : '11px 14px'}; text-align: left; color: ${textPrimary};">
+                  ${compact ? 'TOTAL' : 'TOTAL ORGANISATION'}
                 </td>
-                <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
+                ${compact ? '' : `<td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
                   ${escapeHtml(totalHeadcount)} ETP
-                </td>
-                <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
+                </td>`}
+                <td style="padding: ${compact ? '8px 6px' : '11px 14px'}; text-align: right; font-family: ${fontMono}; color: ${textPrimary}; white-space: nowrap;">
                   ${(totalBudget / 1000000).toFixed(2)} M€
                 </td>
-                <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
+                ${compact ? '' : `<td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
                   ${(totalSpent / 1000000).toFixed(2)} M€
-                </td>
-                <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${grandBurnRate <= 100 ? (tokens.status?.success || '#2E7D32') : (tokens.status?.danger || '#C62828')};">
+                </td>`}
+                <td style="padding: ${compact ? '8px 6px' : '11px 14px'}; text-align: right; font-family: ${fontMono}; color: ${readableOn(grandBurnRate <= 100 ? (tokens.status?.success || '#2E7D32') : (tokens.status?.danger || '#C62828'), bgSurface, 4.5)};">
                   ${grandBurnRate.toFixed(1)}%
                 </td>
-                <td style="padding: 11px 14px; text-align: center; color: ${textPrimary}; font-size: 0.725rem;">
+                ${compact ? '' : `<td style="padding: 11px 14px; text-align: center; color: ${textPrimary}; font-size: 0.725rem;">
                   100% Alloué
-                </td>
+                </td>`}
               </tr>
             </tbody>
           </table>

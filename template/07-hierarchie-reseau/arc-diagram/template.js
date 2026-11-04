@@ -143,7 +143,7 @@ const arcDiagramLinksPlugin = {
       if (radius <= 0) continue;
 
       const sourceIdx = typeof link.source === 'number' ? link.source : i;
-      let color = palette[sourceIdx % palette.length];
+      let color = palette[0];
       let isDashed = false;
       let strokeWidth = Math.max(1, Math.min(5, (link.value || link.weight || 2) * 0.6));
 
@@ -155,7 +155,7 @@ const arcDiagramLinksPlugin = {
         color = (tokens.emphasis && tokens.emphasis.focal) || color;
         strokeWidth = Math.max(2.5, strokeWidth + 1);
       } else if (link.role === 'context') {
-        color = (tokens.emphasis && tokens.emphasis.context) || '#CBD5E1';
+        color = tokens.textSecondary || (tokens.emphasis && tokens.emphasis.context) || '#64748B';
         strokeWidth = 1;
       }
 
@@ -165,7 +165,9 @@ const arcDiagramLinksPlugin = {
       } else {
         ctx.setLineDash([]);
       }
-      ctx.arc(cx, y0, radius, Math.PI, 0, false);
+      // Arc semi-elliptique : le rayon vertical est plafonné pour ne jamais sortir de la zone de tracé
+      const ry = Math.min(radius, Math.max(10, y0 - chart.chartArea.top - 6));
+      ctx.ellipse(cx, y0, radius, ry, 0, Math.PI, 0, false);
       ctx.strokeStyle = color;
       ctx.lineWidth = strokeWidth;
       ctx.stroke();
@@ -224,7 +226,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       if (node.role === 'focal') {
         nodeRadius = Math.max(nodeRadius, 12);
       } else if (node.role === 'context') {
-        nodeRadius = Math.min(nodeRadius, 6);
+        nodeRadius = Math.max(7, Math.min(nodeRadius, 8));
       }
     } else if (node.valence !== undefined || node.delta !== undefined) {
       nodeColor = getValenceColor(tokens, node.valence !== undefined ? node.valence : node.delta, node.metricType || 'gain');
@@ -371,8 +373,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           min: -0.5,
           max: 6,
           grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
+            display: false,
             drawBorder: false
           },
           border: { display: false },

@@ -38,6 +38,7 @@
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const getContrastingTextColor = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) || (typeof window !== 'undefined' && window.getContrastingTextColor) || null;
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -55,6 +56,42 @@ const DEFAULT_DATA = {
   datasets: [{
     data: [42, 28, 35, 18, 50, 32, 45, 22]
   }]
+};
+
+
+/**
+ * Étiquettes de valeurs réelles au centre des secteurs (le rayon porte √V, pas V).
+ */
+const polarValueLabelsPlugin = {
+  id: 'kcPolarValueLabels',
+  afterDatasetsDraw(chart) {
+    if (chart.options?.showDataLabels === false) return;
+    const tokens = chart.options?._kitChartsTokens || {};
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    chart.data.datasets.forEach((ds, di) => {
+      const meta = chart.getDatasetMeta(di);
+      if (!meta || meta.hidden) return;
+      (meta.data || []).forEach((arc, i) => {
+        const raw = ds.rawValues ? ds.rawValues[i] : ds.data[i];
+        if (raw === null || raw === undefined || !arc) return;
+        const p = arc.getProps(['startAngle', 'endAngle', 'outerRadius', 'x', 'y'], true);
+        const r = p.outerRadius * 0.62;
+        if (r < 14) return;
+        const a = (p.startAngle + p.endAngle) / 2;
+        const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
+        ctx.fillStyle = (typeof getContrastingTextColor === 'function' ? getContrastingTextColor(bg) : '#0F172A');
+        const txt = typeof raw === 'number' && Math.abs(raw) >= 1000
+          ? new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(raw)
+          : new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(raw);
+        ctx.fillText(txt, p.x + Math.cos(a) * r, p.y + Math.sin(a) * r);
+      });
+    });
+    ctx.restore();
+  }
 };
 
 /**
@@ -105,13 +142,18 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           i === ds.focusIndex ? (tokens.emphasis?.focal || getColor(tokens, 0)) : (tokens.emphasis?.context || tokens.textMuted || '#CBD5E1')
         );
       } else if (!Array.isArray(bgColors)) {
-        bgColors = Array.from({ length: dataLen }, (_, i) => getColor(tokens, i));
+        // Teinte unique : les directions sont déjà portées par les étiquettes angulaires
+        const mono = getColor(tokens, 0);
+        bgColors = Array.from({ length: dataLen }, () => mono);
       }
     }
 
+    const rawValues = Array.isArray(ds.data) ? [...ds.data] : [];
     return {
       label: ds.label || 'Valeur',
-      data: Array.isArray(ds.data) ? [...ds.data] : [],
+      rawValues,
+      // Nightingale : rayon = racine de la valeur pour que l'AIRE soit proportionnelle à la valeur
+      data: rawValues.map(v => Math.sqrt(Math.max(0, Number(v) || 0))),
       backgroundColor: bgColors,
       borderColor: tokens.bg,
       borderWidth: isTufte ? 1 : 2
@@ -125,6 +167,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'polarArea',
     data: chartData,
+    plugins: [polarValueLabelsPlugin],
     options: {
       ...defaultOpts,
       animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
@@ -140,18 +183,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         ...defaultOpts.plugins,
-        datalabels: getDataLabelOptions(tokens, {
-          display: showDataLabels,
-          formatter: (val) => {
-            if (typeof val === 'number' && Math.abs(val) >= 1000) {
-              return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-            }
-            return val;
-          }
-        }),
+        // Étiquettes dessinées par le plugin local (valeurs réelles, pas les rayons √V)
+        datalabels: getDataLabelOptions(tokens, { display: false }),
         legend: {
           ...defaultOpts.plugins.legend,
-          display: !isTufte,
+          display: false,
           position: 'right',
           align: 'center'
         },
@@ -172,9 +208,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           animation: (isTufte || isReducedMotionPreferred()) ? false : { duration: 150, easing: 'easeOutQuad' },
           callbacks: {
             label: (context) => {
-              const val = context.parsed.r !== null && context.parsed.r !== undefined
-                ? context.parsed.r
-                : context.raw;
+              const rv = context.dataset.rawValues;
+              const val = rv ? rv[context.dataIndex] : context.raw;
               const formatted = typeof val === 'number'
                 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val)
                 : val;
@@ -192,18 +227,32 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             lineWidth: 1
           },
           grid: {
-            color: tokens.gridColor,
+            color: tokens.border || tokens.gridColor,
             lineWidth: 1
           },
-          ticks: {
-            backdropColor: 'transparent',
-            color: tokens.textMuted,
-            font: {
-              family: tokens.fontMono || tokens.fontFamily,
-              size: 10
-            },
-            showLabelBackdrop: false
+          // Centre chaque secteur sur sa direction (Nord = haut) : décalage d'une demi-part
+          startAngle: labels.length > 0 ? -180 / labels.length : 0,
+          // Libellés de direction autour du cercle (remplacent la légende)
+          pointLabels: {
+            display: true,
+            centerPointLabels: true,
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: 11, weight: '500' },
+            padding: 6
           },
+          // Anneaux positionnés sur des valeurs réelles rondes (échelle racine)
+          afterBuildTicks: (scale) => {
+            const maxRaw = scale.max * scale.max;
+            const steps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000, 100000];
+            const step = steps.find(st => maxRaw / st <= 5) || steps[steps.length - 1];
+            const ticks = [];
+            for (let v = step; v <= maxRaw * 1.0001; v += step) ticks.push({ value: Math.sqrt(v) });
+            scale.ticks = ticks;
+          },
+          ticks: {
+            display: false
+          },
+          min: 0,
           suggestedMin: 0
         }
       }

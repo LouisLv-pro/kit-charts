@@ -35,7 +35,10 @@
           {
             "backgroundColor": "rgba(230, 97, 1, 0.2)",
             "borderColor": "#E66101",
-            "borderDash": [],
+            "borderDash": [
+              6,
+              4
+            ],
             "borderWidth": 2,
             "data": [
               70,
@@ -53,7 +56,7 @@
             "pointHitRadius": 10,
             "pointHoverRadius": 7,
             "pointRadius": 4,
-            "pointStyle": "circle"
+            "pointStyle": "rectRot"
           }
         ],
         "labels": [
@@ -66,6 +69,79 @@
         ]
       },
       "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#94A3B8",
+          "bg": "#FFFFFF",
+          "border": "#E2E8F0",
+          "borderStrong": "#CBD5E1",
+          "divergent": {
+            "center": "#F7F7F7",
+            "mid": "#FFFFFF",
+            "neg": "#CA0020",
+            "neg1": "#FDDBC7",
+            "neg2": "#F4A582",
+            "neg3": "#CA0020",
+            "pos": "#0571B0",
+            "pos1": "#D1E5F0",
+            "pos2": "#67A9CF",
+            "pos3": "#0571B0"
+          },
+          "emphasis": {
+            "anomaly": "#D01C8B",
+            "benchmark": "#475569",
+            "context": "#94A3B8",
+            "focal": "#2B8CBE",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+          "gridColor": "rgba(15, 23, 42, 0.06)",
+          "id": "01-colorbrewer-accessible",
+          "isDark": false,
+          "label": "ColorBrewer Accessible",
+          "name": "colorbrewer-accessible",
+          "palette": [
+            "#2B8CBE",
+            "#E66101",
+            "#5E3C99",
+            "#4DAC26",
+            "#D01C8B",
+            "#FDB863",
+            "#B8E186",
+            "#999999"
+          ],
+          "semantic": {
+            "info": "#1565C0",
+            "negative": "#C62828",
+            "neutral": "#999999",
+            "positive": "#2E7D32",
+            "warning": "#EF6C00"
+          },
+          "sequential": [
+            "#EFF3FF",
+            "#C6DBEF",
+            "#9ECAE1",
+            "#6BAED6",
+            "#3182BD",
+            "#08519C"
+          ],
+          "status": {
+            "danger": "#C62828",
+            "info": "#1565C0",
+            "neutral": "#94A3B8",
+            "success": "#2E7D32",
+            "warning": "#EF6C00"
+          },
+          "surface": "#F8FAFC",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#64748B",
+          "textPrimary": "#0F172A",
+          "textSecondary": "#334155",
+          "tooltipBg": "rgba(15, 23, 42, 0.92)",
+          "tooltipText": "#F8FAFC",
+          "zeroLine": "#475569"
+        },
         "animation": false,
         "barPercentage": 0.9,
         "categoryPercentage": 0.8,
@@ -103,45 +179,23 @@
         "maintainAspectRatio": false,
         "plugins": {
           "datalabels": {
-            "align": "[Function:align]",
-            "anchor": "[Function:anchor]",
-            "backgroundColor": "[Function:backgroundColor]",
-            "borderColor": "[Function:borderColor]",
-            "borderRadius": 4,
-            "borderWidth": 1,
-            "color": "[Function:color]",
-            "display": "[Function:display]",
-            "font": {
-              "family": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
-              "size": 10,
-              "weight": "700"
-            },
-            "formatter": "[Function:formatter]",
-            "offset": 6,
-            "padding": {
-              "bottom": 2,
-              "left": 4,
-              "right": 4,
-              "top": 2
-            }
+            "display": "[Function:display]"
           },
           "legend": {
-            "align": "end",
+            "align": "[Function:align]",
             "display": true,
             "labels": {
-              "boxHeight": 12,
-              "boxWidth": 12,
+              "boxHeight": 10,
+              "boxWidth": 10,
               "color": "#0F172A",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
-                "weight": "500"
+                "size": 10
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
-            "position": "top"
+            "position": "[Function:position]"
           },
           "tooltip": {
             "animation": {
@@ -189,18 +243,24 @@
               "color": "rgba(15, 23, 42, 0.06)",
               "lineWidth": 1
             },
+            "max": 100,
+            "min": 0,
             "pointLabels": {
               "color": "#0F172A",
-              "font": {
-                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 11,
-                "weight": "500"
-              },
-              "padding": 16
+              "font": "[Function:font]",
+              "padding": "[Function:padding]"
             },
             "suggestedMin": 0,
             "ticks": {
-              "display": false
+              "backdropColor": "transparent",
+              "color": "#64748B",
+              "display": false,
+              "font": {
+                "family": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                "size": 9
+              },
+              "showLabelBackdrop": false,
+              "stepSize": 25
             }
           },
           "x": {
@@ -209,8 +269,16 @@
           "y": {
             "display": false
           }
-        }
+        },
+        "showDataLabels": true,
+        "themeName": "colorbrewer-accessible"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kcRadarBadges"
+        }
+      ],
       "type": "radar"
     },
     "kind": "chart-config"

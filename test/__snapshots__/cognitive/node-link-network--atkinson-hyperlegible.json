@@ -12,41 +12,41 @@
           {
             "backgroundColor": [
               "#005AB5",
-              "rgba(161, 161, 170, 0.4)",
-              "rgba(161, 161, 170, 0.4)",
-              "#005AB5",
-              "rgba(161, 161, 170, 0.4)",
-              "rgba(161, 161, 170, 0.4)",
-              "#005AB5",
               "#DC3220",
-              "rgba(161, 161, 170, 0.4)"
+              "#DC3220",
+              "#009E73",
+              "#009E73",
+              "#FE6100",
+              "#FE6100",
+              "#DC3220",
+              "#785EF0"
             ],
             "borderColor": [
-              "#005AB5",
-              "#A1A1AA",
-              "#A1A1AA",
-              "#005AB5",
-              "#A1A1AA",
-              "#A1A1AA",
-              "#005AB5",
-              "#DC3220",
-              "#A1A1AA"
+              "#000000",
+              "#FFFFFF",
+              "#FFFFFF",
+              "#000000",
+              "#FFFFFF",
+              "#FFFFFF",
+              "#000000",
+              "#FFFFFF",
+              "#FFFFFF"
             ],
             "borderWidth": [
-              2,
-              1,
-              1,
-              2,
-              1,
-              1,
+              3,
               2,
               2,
-              1
+              3,
+              2,
+              2,
+              3,
+              2,
+              2
             ],
             "data": [
               {
-                "borderColor": "#005AB5",
-                "borderWidth": 2,
+                "borderColor": "#000000",
+                "borderWidth": 3,
                 "cluster": 0,
                 "color": "#005AB5",
                 "connections": 4,
@@ -58,10 +58,10 @@
                 "y": 85
               },
               {
-                "borderColor": "#A1A1AA",
-                "borderWidth": 1,
+                "borderColor": "#FFFFFF",
+                "borderWidth": 2,
                 "cluster": 1,
-                "color": "rgba(161, 161, 170, 0.4)",
+                "color": "#DC3220",
                 "connections": 2,
                 "id": "auth-svc",
                 "label": "Auth Service",
@@ -71,10 +71,10 @@
                 "y": 65
               },
               {
-                "borderColor": "#A1A1AA",
-                "borderWidth": 1,
+                "borderColor": "#FFFFFF",
+                "borderWidth": 2,
                 "cluster": 1,
-                "color": "rgba(161, 161, 170, 0.4)",
+                "color": "#DC3220",
                 "connections": 3,
                 "id": "user-svc",
                 "label": "User Service",
@@ -84,10 +84,10 @@
                 "y": 65
               },
               {
-                "borderColor": "#005AB5",
-                "borderWidth": 2,
+                "borderColor": "#000000",
+                "borderWidth": 3,
                 "cluster": 2,
-                "color": "#005AB5",
+                "color": "#009E73",
                 "connections": 4,
                 "id": "order-engine",
                 "label": "Order Engine",
@@ -97,10 +97,10 @@
                 "y": 45
               },
               {
-                "borderColor": "#A1A1AA",
-                "borderWidth": 1,
+                "borderColor": "#FFFFFF",
+                "borderWidth": 2,
                 "cluster": 2,
-                "color": "rgba(161, 161, 170, 0.4)",
+                "color": "#009E73",
                 "connections": 2,
                 "id": "pay-gw",
                 "label": "Payment Gateway",
@@ -110,10 +110,10 @@
                 "y": 35
               },
               {
-                "borderColor": "#A1A1AA",
-                "borderWidth": 1,
+                "borderColor": "#FFFFFF",
+                "borderWidth": 2,
                 "cluster": 3,
-                "color": "rgba(161, 161, 170, 0.4)",
+                "color": "#FE6100",
                 "connections": 3,
                 "id": "inventory-svc",
                 "label": "Inventory Service",
@@ -123,10 +123,10 @@
                 "y": 45
               },
               {
-                "borderColor": "#005AB5",
-                "borderWidth": 2,
+                "borderColor": "#000000",
+                "borderWidth": 3,
                 "cluster": 3,
-                "color": "#005AB5",
+                "color": "#FE6100",
                 "connections": 3,
                 "id": "primary-db",
                 "label": "Primary PostgreSQL",
@@ -136,7 +136,7 @@
                 "y": 25
               },
               {
-                "borderColor": "#DC3220",
+                "borderColor": "#FFFFFF",
                 "borderWidth": 2,
                 "cluster": 3,
                 "color": "#DC3220",
@@ -149,10 +149,10 @@
                 "y": 20
               },
               {
-                "borderColor": "#A1A1AA",
-                "borderWidth": 1,
+                "borderColor": "#FFFFFF",
+                "borderWidth": 2,
                 "cluster": 4,
-                "color": "rgba(161, 161, 170, 0.4)",
+                "color": "#785EF0",
                 "connections": 2,
                 "id": "analytics-bus",
                 "label": "Kafka Event Bus",
@@ -275,10 +275,10 @@
         },
         "layout": {
           "padding": {
-            "bottom": 16,
-            "left": 16,
-            "right": 20,
-            "top": 20
+            "bottom": 22,
+            "left": 6,
+            "right": 6,
+            "top": 8
           }
         },
         "maintainAspectRatio": false,
@@ -301,7 +301,7 @@
               "emphasis": {
                 "anomaly": "#DC3220",
                 "benchmark": "#27272A",
-                "context": "#A1A1AA",
+                "context": "#8E8E96",
                 "focal": "#005AB5",
                 "forecastAlpha": 0.55
               },
@@ -393,11 +393,14 @@
             "border": {
               "display": false
             },
+            "display": false,
             "grid": {
               "color": "rgba(0, 0, 0, 0.12)",
               "drawBorder": false,
               "lineWidth": 1
             },
+            "max": 100,
+            "min": 0,
             "ticks": {
               "color": "#18181B",
               "font": {
@@ -411,11 +414,14 @@
             "border": {
               "display": false
             },
+            "display": false,
             "grid": {
               "color": "rgba(0, 0, 0, 0.12)",
               "drawBorder": false,
               "lineWidth": 1
             },
+            "max": 100,
+            "min": 0,
             "ticks": {
               "color": "#18181B",
               "font": {
@@ -425,12 +431,17 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "atkinson-hyperlegible"
       },
       "plugins": [
         {
           "beforeDatasetsDraw": "[Function:beforeDatasetsDraw]",
           "id": "networkLinksPlugin"
+        },
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "networkLabelsPlugin"
         }
       ],
       "type": "scatter"

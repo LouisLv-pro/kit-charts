@@ -127,8 +127,10 @@
           pointBackgroundColor: (ctx) => {
             const idx = ctx.dataIndex;
             if (idx === lastIndex) return strokeColor;
-            if (idx === maxIndex) return tokens.palette[1] || strokeColor;
-            if (idx === minIndex) return tokens.textMuted || '#64748B';
+            const lowerBetter = data.metricType === 'cost';
+            const bestIdx = lowerBetter ? minIndex : maxIndex;
+            if (idx === bestIdx) return tokens.semantic?.positive || strokeColor;
+            if (idx === (lowerBetter ? maxIndex : minIndex)) return tokens.semantic?.negative || tokens.textMuted || '#64748B';
             return strokeColor;
           },
           pointBorderColor: tokens.surfaceRaised || tokens.bg || '#FFFFFF',
@@ -139,7 +141,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -154,7 +156,7 @@
             bodyFont: { family: tokens.fontMono, size: 11, weight: '600' },
             callbacks: {
               title: (items) => items[0]?.label || '',
-              label: (ctx) => `${data.title} : ${ctx.parsed.y}${data.unit || ''}`
+              label: (ctx) => `${data.title} : ${ctx.parsed.y.toLocaleString('fr-FR')}${data.unit ? ' ' + data.unit : ''}`
             }
           }
         },

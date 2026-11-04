@@ -11,16 +11,17 @@
         "datasets": [
           {
             "backgroundColor": "#4E79A7",
-            "barPercentage": 0.45,
+            "barPercentage": 0.32,
             "borderColor": "#4E79A7",
             "borderRadius": 3,
             "borderWidth": 0,
-            "categoryPercentage": 0.8,
+            "categoryPercentage": 0.7,
             "data": [
               275,
               185,
               310
             ],
+            "grouped": false,
             "label": "Réalisé",
             "order": 1,
             "type": "bar"
@@ -52,51 +53,54 @@
             "type": "scatter"
           },
           {
-            "backgroundColor": "#CBD5E1",
-            "barPercentage": 0.85,
-            "borderColor": "#CBD5E1",
+            "backgroundColor": "#E2E8F0",
+            "barPercentage": 1,
+            "borderColor": "#E2E8F0",
             "borderRadius": 0,
             "borderWidth": 0,
-            "categoryPercentage": 0.8,
+            "categoryPercentage": 0.7,
             "data": [
               300,
               250,
               350
             ],
+            "grouped": false,
             "label": "Excellent",
             "order": 12,
             "type": "bar"
           },
           {
             "backgroundColor": "#CBD5E1",
-            "barPercentage": 0.85,
+            "barPercentage": 1,
             "borderColor": "#CBD5E1",
             "borderRadius": 0,
             "borderWidth": 0,
-            "categoryPercentage": 0.8,
+            "categoryPercentage": 0.7,
             "data": [
               200,
               150,
               250
             ],
+            "grouped": false,
             "label": "Moyen",
-            "order": 13,
+            "order": 11,
             "type": "bar"
           },
           {
-            "backgroundColor": "#CBD5E1",
-            "barPercentage": 0.85,
-            "borderColor": "#CBD5E1",
+            "backgroundColor": "#94A3B8",
+            "barPercentage": 1,
+            "borderColor": "#94A3B8",
             "borderRadius": 0,
             "borderWidth": 0,
-            "categoryPercentage": 0.8,
+            "categoryPercentage": 0.7,
             "data": [
               100,
               75,
               120
             ],
+            "grouped": false,
             "label": "Faible",
-            "order": 14,
+            "order": 10,
             "type": "bar"
           }
         ],
@@ -258,7 +262,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "tableau-stone-categorical"
       },
       "type": "bar"
     },

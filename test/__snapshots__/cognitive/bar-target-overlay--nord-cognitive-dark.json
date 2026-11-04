@@ -64,7 +64,7 @@
           "emphasis": {
             "anomaly": "#BF616A",
             "benchmark": "#ECEFF4",
-            "context": "#4C566A",
+            "context": "#7B88A1",
             "focal": "#88C0D0",
             "forecastAlpha": 0.5
           },
@@ -78,13 +78,13 @@
           "name": "nord-cognitive-dark",
           "palette": [
             "#88C0D0",
+            "#EBCB8B",
+            "#B48EAD",
+            "#A3BE8C",
+            "#D08770",
             "#81A1C1",
             "#5E81AC",
-            "#A3BE8C",
-            "#EBCB8B",
-            "#D08770",
-            "#BF616A",
-            "#B48EAD"
+            "#BF616A"
           ],
           "semantic": {
             "info": "#88C0D0",
@@ -146,7 +146,7 @@
         },
         "layout": {
           "padding": {
-            "right": 32
+            "right": 120
           }
         },
         "maintainAspectRatio": false,
@@ -164,7 +164,23 @@
             "thresholdRatio": 0.05
           },
           "legend": {
-            "display": false
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "500"
+              },
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 10,
+              "usePointStyle": true
+            },
+            "onClick": null,
+            "position": "top"
           },
           "tooltip": {
             "animation": false,
@@ -214,9 +230,10 @@
             "ticks": {
               "color": "#D8DEE9",
               "font": {
-                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 11
+                "family": "'JetBrains Mono', monospace",
+                "size": 12
               },
+              "maxTicksLimit": 8,
               "padding": 6
             },
             "title": {
@@ -242,13 +259,14 @@
               "color": "#D8DEE9",
               "font": {
                 "family": "'JetBrains Mono', monospace",
-                "size": 11
+                "size": 12
               },
               "padding": 8
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "nord-cognitive-dark"
       },
       "plugins": [
         {

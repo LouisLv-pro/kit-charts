@@ -35,7 +35,10 @@
           {
             "backgroundColor": "rgba(220, 50, 32, 0.2)",
             "borderColor": "#DC3220",
-            "borderDash": [],
+            "borderDash": [
+              6,
+              4
+            ],
             "borderWidth": 2,
             "data": [
               70,
@@ -53,7 +56,7 @@
             "pointHitRadius": 10,
             "pointHoverRadius": 7,
             "pointRadius": 4,
-            "pointStyle": "circle"
+            "pointStyle": "rectRot"
           }
         ],
         "labels": [
@@ -66,6 +69,71 @@
         ]
       },
       "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#71717A",
+          "bg": "#FFFFFF",
+          "border": "#D4D4D8",
+          "borderStrong": "#71717A",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#DC3220",
+            "pos": "#005AB5"
+          },
+          "emphasis": {
+            "anomaly": "#DC3220",
+            "benchmark": "#27272A",
+            "context": "#8E8E96",
+            "focal": "#005AB5",
+            "forecastAlpha": 0.55
+          },
+          "fontFamily": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;600&display=swap",
+          "gridColor": "rgba(0, 0, 0, 0.12)",
+          "id": "08-atkinson-hyperlegible",
+          "isDark": false,
+          "label": "Atkinson Hyperlegible",
+          "name": "atkinson-hyperlegible",
+          "palette": [
+            "#005AB5",
+            "#DC3220",
+            "#009E73",
+            "#FE6100",
+            "#785EF0",
+            "#FFB000",
+            "#3F3F46",
+            "#64748B"
+          ],
+          "semantic": {
+            "info": "#005AB5",
+            "negative": "#DC3220",
+            "neutral": "#71717A",
+            "positive": "#009E73",
+            "warning": "#FE6100"
+          },
+          "sequential": [
+            "#E6F0FA",
+            "#BDD7F1",
+            "#6BA3DC",
+            "#005AB5",
+            "#003B75"
+          ],
+          "status": {
+            "danger": "#DC3220",
+            "info": "#005AB5",
+            "neutral": "#71717A",
+            "success": "#009E73",
+            "warning": "#FE6100"
+          },
+          "surface": "#F4F4F5",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#3F3F46",
+          "textPrimary": "#000000",
+          "textSecondary": "#18181B",
+          "tooltipBg": "rgba(0, 0, 0, 0.95)",
+          "tooltipText": "#FFFFFF",
+          "zeroLine": "#18181B"
+        },
         "animation": false,
         "barPercentage": 0.9,
         "categoryPercentage": 0.8,
@@ -103,45 +171,23 @@
         "maintainAspectRatio": false,
         "plugins": {
           "datalabels": {
-            "align": "[Function:align]",
-            "anchor": "[Function:anchor]",
-            "backgroundColor": "[Function:backgroundColor]",
-            "borderColor": "[Function:borderColor]",
-            "borderRadius": 4,
-            "borderWidth": 1,
-            "color": "[Function:color]",
-            "display": "[Function:display]",
-            "font": {
-              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
-              "size": 10,
-              "weight": "700"
-            },
-            "formatter": "[Function:formatter]",
-            "offset": 6,
-            "padding": {
-              "bottom": 2,
-              "left": 4,
-              "right": 4,
-              "top": 2
-            }
+            "display": "[Function:display]"
           },
           "legend": {
-            "align": "end",
+            "align": "[Function:align]",
             "display": true,
             "labels": {
-              "boxHeight": 12,
-              "boxWidth": 12,
+              "boxHeight": 10,
+              "boxWidth": 10,
               "color": "#000000",
               "font": {
                 "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
-                "weight": "500"
+                "size": 10
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
-            "position": "top"
+            "position": "[Function:position]"
           },
           "tooltip": {
             "animation": {
@@ -189,18 +235,24 @@
               "color": "rgba(0, 0, 0, 0.12)",
               "lineWidth": 1
             },
+            "max": 100,
+            "min": 0,
             "pointLabels": {
               "color": "#000000",
-              "font": {
-                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 11,
-                "weight": "500"
-              },
-              "padding": 16
+              "font": "[Function:font]",
+              "padding": "[Function:padding]"
             },
             "suggestedMin": 0,
             "ticks": {
-              "display": false
+              "backdropColor": "transparent",
+              "color": "#3F3F46",
+              "display": false,
+              "font": {
+                "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+                "size": 9
+              },
+              "showLabelBackdrop": false,
+              "stepSize": 25
             }
           },
           "x": {
@@ -209,8 +261,16 @@
           "y": {
             "display": false
           }
-        }
+        },
+        "showDataLabels": true,
+        "themeName": "atkinson-hyperlegible"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kcRadarBadges"
+        }
+      ],
       "type": "radar"
     },
     "kind": "chart-config"

@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Chandeliers Japonais + Volume (OHLCV) — kit-charts</title>
+  <title>Chandeliers et volumes · Kit-Charts</title>
   <!-- Google Fonts pour tous les thèmes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Chart.js v4.4.7 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/luxon@3.5.0/build/global/luxon.min.js"></script>
@@ -268,6 +268,16 @@
       grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
       gap: 1.25rem;
     }
+
+    /* Habillage en thème sombre : updateTheme pose data-kc-dark sur <html>. */
+    html[data-kc-dark] .title-group h1, html[data-kc-dark] .toolbar-theme-label { color: #ECEFF4; }
+    html[data-kc-dark] .breadcrumb, html[data-kc-dark] .title-group p { color: #D8DEE9; }
+    html[data-kc-dark] .breadcrumb a, html[data-kc-dark] .rule-item h3 { color: #88C0D0; }
+    html[data-kc-dark] .header-panel { border-bottom-color: #4C566A; }
+    html[data-kc-dark] .theme-swatches-group { background: #3B4252; border-color: #4C566A; }
+    html[data-kc-dark] .active-theme-name-tag { background: #3B4252; color: #ECEFF4; border-color: #4C566A; }
+    html[data-kc-dark] .rule-item p, html[data-kc-dark] .rule-item strong { color: #D8DEE9; }
+    html[data-kc-dark] .btn-action { background: #3B4252; color: #ECEFF4; border-color: #4C566A; }
   </style>
 </head>
 <body>
@@ -278,8 +288,8 @@
       </div>
       <div class="header-panel">
         <div class="title-group">
-          <h1>Chandeliers Japonais + Volume (OHLCV)</h1>
-          <p>Panneaux empilés verticaux synchronisés sur l'axe temporel : cours boursier OHLC et volume de transactions avec moyenne mobile.</p>
+          <h1>Chandeliers et volumes</h1>
+          <p>Les chandeliers du cours en haut, et en bas les volumes échangés avec leur moyenne mobile.</p>
         </div>
         <div class="controls-group">
           <div class="toolbar-theme-label"><span>🎨</span> Thème :</div>
@@ -298,25 +308,20 @@
       </div>
     </div>
 
-    <!-- Conteneur Graphique Double Fenêtre (70% Prix / 30% Volume) -->
-    <div id="chartContainer" class="chart-container" style="height: 480px; display: flex; flex-direction: column; gap: 0.5rem;">
-      <div style="flex: 7; position: relative; min-height: 0;">
-        <canvas id="chartCanvas"></canvas>
-      </div>
-      <div style="flex: 3; position: relative; min-height: 0;">
-        <canvas id="volumeCanvas"></canvas>
-      </div>
+    <!-- Conteneur Graphique Deux panneaux empilés (prix / volume) dans un seul canvas -->
+    <div id="chartContainer" class="chart-container" style="height: 480px; position: relative;">
+      <canvas id="chartCanvas"></canvas>
     </div>
 
     <!-- Synthèse des Recommandations & Règles Cognitives -->
     <div id="cognitiveRulesCard" class="cognitive-rules-card">
       <div class="rule-item">
         <h3>✅ Quand l'utiliser</h3>
-        <p><strong>Cas d'usage :</strong> Analyse technique couplant chandeliers japonais (70%) et barres d'histogramme de volume (30%).</p>
+        <p>Voir si un mouvement de prix est soutenu par un fort volume d'échanges.</p>
       </div>
       <div class="rule-item">
         <h3>❌ Quand NE PAS l'utiliser</h3>
-        <p><strong>Contre-indications :</strong> Présentation grand public sans familiarité avec le trading technique.</p>
+        <p>Un public non familier de l'analyse boursière.</p>
       </div>
     </div>
   </div>
@@ -349,7 +354,7 @@
         const chartModule = (window.KitCharts && window.KitCharts['candlestick-volume']) || window;
         if (typeof chartModule.createChart === 'function') {
           const chartData = chartModule.DEFAULT_DATA ? { ...chartModule.DEFAULT_DATA, showDataLabels } : null;
-          chartModule.createChart(canvasId, chartData, currentTheme, { showDataLabels, volumeCanvasId: 'volumeCanvas' });
+          chartModule.createChart(canvasId, chartData, currentTheme, { showDataLabels });
         }
       }
 
@@ -371,6 +376,7 @@
         }
 
         if (tokens) {
+          document.documentElement.toggleAttribute('data-kc-dark', Boolean(tokens.isDark));
           document.body.style.backgroundColor = tokens.isDark ? '#242933' : '#F8FAFC';
           document.body.style.color = tokens.textPrimary || '#0F172A';
           if (rulesCard) {

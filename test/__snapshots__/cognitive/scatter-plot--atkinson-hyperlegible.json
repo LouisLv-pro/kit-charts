@@ -125,6 +125,7 @@
             "label": "Tendance (R² = 0.99)",
             "pointHoverRadius": 0,
             "pointRadius": 0,
+            "pointStyle": "line",
             "tension": 0,
             "type": "line"
           }
@@ -157,10 +158,7 @@
         },
         "layout": {
           "padding": {
-            "bottom": 16,
-            "left": 16,
-            "right": 20,
-            "top": 20
+            "top": 0
           }
         },
         "maintainAspectRatio": false,
@@ -179,7 +177,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -236,6 +233,16 @@
               },
               "padding": 6
             },
+            "title": {
+              "color": "#18181B",
+              "display": true,
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "600"
+              },
+              "text": "Dépenses R&D (% du CA)"
+            },
             "type": "linear"
           },
           "y": {
@@ -255,9 +262,20 @@
               },
               "padding": 8
             },
+            "title": {
+              "color": "#18181B",
+              "display": true,
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "600"
+              },
+              "text": "Croissance annuelle du CA (%)"
+            },
             "type": "linear"
           }
-        }
+        },
+        "themeName": "atkinson-hyperlegible"
       },
       "plugins": [],
       "type": "scatter"

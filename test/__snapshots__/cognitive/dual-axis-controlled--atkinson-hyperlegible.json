@@ -31,7 +31,7 @@
               "align": "top",
               "anchor": "center",
               "color": "#005AB5",
-              "display": true,
+              "display": false,
               "font": {
                 "size": 10,
                 "weight": "600"
@@ -65,7 +65,7 @@
               "align": "bottom",
               "anchor": "center",
               "color": "#DC3220",
-              "display": true,
+              "display": false,
               "font": {
                 "size": 10,
                 "weight": "600"
@@ -107,7 +107,7 @@
           "emphasis": {
             "anomaly": "#DC3220",
             "benchmark": "#27272A",
-            "context": "#A1A1AA",
+            "context": "#8E8E96",
             "focal": "#005AB5",
             "forecastAlpha": 0.55
           },
@@ -197,7 +197,7 @@
         "plugins": {
           "datalabels": {
             "color": "#000000",
-            "display": true,
+            "display": false,
             "font": {
               "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
               "size": 10,
@@ -208,16 +208,20 @@
             "thresholdRatio": 0.05
           },
           "legend": {
-            "align": "end",
+            "align": "center",
             "display": true,
             "labels": {
+              "boxWidth": 24,
               "color": "#000000",
               "font": {
                 "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12
-              }
+                "size": 11
+              },
+              "padding": 10,
+              "pointStyle": "line",
+              "usePointStyle": true
             },
-            "position": "top"
+            "position": "bottom"
           },
           "tooltip": {
             "animation": false,
@@ -256,8 +260,7 @@
         "scales": {
           "x": {
             "border": {
-              "color": "#18181B",
-              "width": 1
+              "color": "#D4D4D8"
             },
             "grid": {
               "color": "rgba(0, 0, 0, 0.12)"
@@ -272,21 +275,23 @@
             }
           },
           "y": {
+            "beginAtZero": true,
             "grid": {
               "color": "rgba(0, 0, 0, 0.12)"
             },
-            "max": 29,
+            "max": 30,
             "min": 0,
             "position": "left",
             "ticks": {
-              "color": "#005AB5",
+              "color": "#005ab5",
               "font": {
                 "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
                 "weight": "600"
-              }
+              },
+              "stepSize": 5
             },
             "title": {
-              "color": "#005AB5",
+              "color": "#005ab5",
               "display": true,
               "font": {
                 "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -298,21 +303,23 @@
             "type": "linear"
           },
           "y1": {
+            "beginAtZero": true,
             "grid": {
               "display": false
             },
-            "max": 1024,
+            "max": 1200,
             "min": 0,
             "position": "right",
             "ticks": {
-              "color": "#DC3220",
+              "color": "#d1301e",
               "font": {
                 "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
                 "weight": "600"
-              }
+              },
+              "stepSize": 200
             },
             "title": {
-              "color": "#DC3220",
+              "color": "#d1301e",
               "display": true,
               "font": {
                 "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -324,8 +331,15 @@
             "type": "linear"
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "atkinson-hyperlegible"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsDualLastLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

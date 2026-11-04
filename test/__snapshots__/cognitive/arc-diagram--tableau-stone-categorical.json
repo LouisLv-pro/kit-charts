@@ -11,20 +11,20 @@
         "datasets": [
           {
             "backgroundColor": [
-              "rgba(186, 176, 172, 0.4)",
-              "rgba(186, 176, 172, 0.4)",
-              "rgba(186, 176, 172, 0.4)",
-              "rgba(186, 176, 172, 0.4)",
-              "rgba(186, 176, 172, 0.4)",
+              "rgba(154, 145, 140, 0.4)",
+              "rgba(154, 145, 140, 0.4)",
+              "rgba(154, 145, 140, 0.4)",
+              "rgba(154, 145, 140, 0.4)",
+              "rgba(154, 145, 140, 0.4)",
               "#4E79A7",
               "#E15759"
             ],
             "borderColor": [
-              "#BAB0AC",
-              "#BAB0AC",
-              "#BAB0AC",
-              "#BAB0AC",
-              "#BAB0AC",
+              "#9A918C",
+              "#9A918C",
+              "#9A918C",
+              "#9A918C",
+              "#9A918C",
               "#4E79A7",
               "#E15759"
             ],
@@ -39,56 +39,56 @@
             ],
             "data": [
               {
-                "borderColor": "#BAB0AC",
+                "borderColor": "#9A918C",
                 "borderWidth": 1,
-                "color": "rgba(186, 176, 172, 0.4)",
+                "color": "rgba(154, 145, 140, 0.4)",
                 "id": "node-0",
                 "label": "1. Ingestion",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 1,
                 "y": 0
               },
               {
-                "borderColor": "#BAB0AC",
+                "borderColor": "#9A918C",
                 "borderWidth": 1,
-                "color": "rgba(186, 176, 172, 0.4)",
+                "color": "rgba(154, 145, 140, 0.4)",
                 "id": "node-1",
                 "label": "2. Validation",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 2,
                 "y": 0
               },
               {
-                "borderColor": "#BAB0AC",
+                "borderColor": "#9A918C",
                 "borderWidth": 1,
-                "color": "rgba(186, 176, 172, 0.4)",
+                "color": "rgba(154, 145, 140, 0.4)",
                 "id": "node-2",
                 "label": "3. Dédoublonnage",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 3,
                 "y": 0
               },
               {
-                "borderColor": "#BAB0AC",
+                "borderColor": "#9A918C",
                 "borderWidth": 1,
-                "color": "rgba(186, 176, 172, 0.4)",
+                "color": "rgba(154, 145, 140, 0.4)",
                 "id": "node-3",
                 "label": "4. Enrichissement",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 4,
                 "y": 0
               },
               {
-                "borderColor": "#BAB0AC",
+                "borderColor": "#9A918C",
                 "borderWidth": 1,
-                "color": "rgba(186, 176, 172, 0.4)",
+                "color": "rgba(154, 145, 140, 0.4)",
                 "id": "node-4",
                 "label": "5. Feature Store",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 5,
                 "y": 0
@@ -239,7 +239,7 @@
               "emphasis": {
                 "anomaly": "#E15759",
                 "benchmark": "#57606C",
-                "context": "#BAB0AC",
+                "context": "#9A918C",
                 "focal": "#4E79A7",
                 "forecastAlpha": 0.5
               },
@@ -360,9 +360,8 @@
               "display": false
             },
             "grid": {
-              "color": "rgba(30, 41, 59, 0.06)",
-              "drawBorder": false,
-              "lineWidth": 1
+              "display": false,
+              "drawBorder": false
             },
             "max": 6,
             "min": -0.5,
@@ -371,7 +370,8 @@
               "display": false
             }
           }
-        }
+        },
+        "themeName": "tableau-stone-categorical"
       },
       "plugins": [
         {

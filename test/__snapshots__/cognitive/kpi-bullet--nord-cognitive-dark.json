@@ -21,7 +21,7 @@
             "zIndex": 10
           },
           {
-            "backgroundColor": "rgba(255, 255, 255, 0.06)",
+            "backgroundColor": "rgba(255, 255, 255, 0.144)",
             "barThickness": 24,
             "borderRadius": 4,
             "data": [
@@ -32,7 +32,7 @@
             "order": 4
           },
           {
-            "backgroundColor": "rgba(255, 255, 255, 0.10)",
+            "backgroundColor": "rgba(255, 255, 255, 0.08800000000000001)",
             "barThickness": 24,
             "borderRadius": 4,
             "data": [
@@ -43,7 +43,7 @@
             "order": 3
           },
           {
-            "backgroundColor": "rgba(255, 255, 255, 0.14)",
+            "backgroundColor": "rgba(255, 255, 255, 0.04000000000000001)",
             "barThickness": 24,
             "borderRadius": 4,
             "data": [
@@ -59,10 +59,7 @@
         ]
       },
       "options": {
-        "animation": {
-          "duration": 400,
-          "easing": "easeOutQuart"
-        },
+        "animation": false,
         "indexAxis": "y",
         "maintainAspectRatio": false,
         "plugins": {

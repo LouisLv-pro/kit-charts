@@ -63,7 +63,7 @@
             "tension": 0.25
           },
           {
-            "backgroundColor": "rgba(203, 213, 225, 0.4)",
+            "backgroundColor": "rgba(148, 163, 184, 0.4)",
             "borderColor": "#009E73",
             "borderDash": [],
             "borderWidth": 1.5,
@@ -79,8 +79,8 @@
             ],
             "fill": false,
             "label": "Produit Legacy Desktop (Context)",
-            "pointBackgroundColor": "#CBD5E1",
-            "pointBorderColor": "#CBD5E1",
+            "pointBackgroundColor": "#94A3B8",
+            "pointBorderColor": "#94A3B8",
             "pointBorderWidth": 1.5,
             "pointHoverRadius": 6,
             "pointRadius": 2,
@@ -141,7 +141,7 @@
         "plugins": {
           "legend": {
             "align": "end",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 8,
               "boxWidth": 8,
@@ -218,8 +218,16 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "okabe-ito-cud"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "kitChartsDirectLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

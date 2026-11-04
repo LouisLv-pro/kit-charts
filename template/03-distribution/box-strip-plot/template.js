@@ -109,6 +109,20 @@
     }]
   };
 
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
+
   function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
     const canvas = typeof canvasTarget === 'string'
       ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -207,8 +221,8 @@
             ctx.beginPath();
             ctx.fillStyle = isOutlier
               ? (tokens.emphasis?.anomaly || '#D01C8B')
-              : hexToRgba(color, 0.85);
-            ctx.arc(xCenter + xOffset, yPt, isOutlier ? 3.5 : 2.5, 0, Math.PI * 2);
+              : (isDark ? 'rgba(236,239,244,0.85)' : hexToRgba(color, 0.9));
+            ctx.arc(xCenter + xOffset, yPt, isOutlier ? 4 : 3, 0, Math.PI * 2);
             ctx.fill();
 
             if (isOutlier) {
@@ -274,12 +288,22 @@
         scales: {
           x: {
             ...defaultOpts.scales.x,
-            grid: { display: false }
+            ticks: {
+              ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
+              maxRotation: 0,
+              minRotation: 0,
+              autoSkip: false,
+              callback: function(value) {
+                return wrapCategoryLabel(this.getLabelForValue(value), (this.chart.width - 70) / Math.max(1, labels.length) - 6, 11);
+              }
+            },
+            grid: { display: false },
+            border: { display: true, color: tokens.gridColor }
           },
           y: {
             ...defaultOpts.scales.y,
-            min: Math.floor(globalMin - yPad),
-            max: Math.ceil(globalMax + yPad),
+            min: Math.floor((globalMin - yPad) / 10) * 10,
+            max: Math.ceil((globalMax + yPad) / 10) * 10,
             title: {
               display: true,
               text: (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Valeur',

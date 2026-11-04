@@ -231,10 +231,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         datalabels: getDataLabelOptions(tokens, {
           display: showDataLabels,
           formatter: (val) => {
-            if (typeof val === 'number' && Math.abs(val) >= 1000) {
-              return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-            }
-            return val;
+            // Valeur exacte (milliers séparés), cohérente avec l'infobulle ; l'axe garde le format compact
+            return typeof val === 'number' ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val) : val;
           }
         }),
         legend: {
@@ -293,6 +291,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage par longueur
+          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1', text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
           grace: '10%',
           grid: {
             color: tokens.gridColor,
@@ -308,10 +307,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             },
             padding: 8,
             callback: (val) => {
-              if (typeof val === 'number' && Math.abs(val) >= 1000) {
-                return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-              }
-              return val;
+              // Même format que les étiquettes de barres (milliers séparés), jamais de notation compacte
+              return typeof val === 'number' ? new Intl.NumberFormat('fr-FR').format(val) : val;
             }
           }
         }

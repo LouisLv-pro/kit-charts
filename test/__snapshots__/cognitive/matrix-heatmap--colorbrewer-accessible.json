@@ -229,10 +229,8 @@
         },
         "layout": {
           "padding": {
-            "bottom": 16,
-            "left": 16,
-            "right": 20,
-            "top": 20
+            "right": 48,
+            "top": 8
           }
         },
         "maintainAspectRatio": false,
@@ -291,6 +289,7 @@
               "Pétrole",
               "Immobilier"
             ],
+            "offset": true,
             "ticks": {
               "color": "#0F172A",
               "font": {
@@ -317,6 +316,8 @@
               "Pétrole",
               "Immobilier"
             ],
+            "offset": true,
+            "reverse": false,
             "ticks": {
               "color": "#0F172A",
               "font": {
@@ -328,8 +329,15 @@
             },
             "type": "category"
           }
-        }
+        },
+        "themeName": "colorbrewer-accessible"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsMatrixValues"
+        }
+      ],
       "type": "matrix"
     },
     "kind": "chart-config"

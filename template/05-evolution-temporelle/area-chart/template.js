@@ -115,7 +115,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [5, 5] : []),
       tension: typeof ds.tension === 'number' ? ds.tension : 0.3,
       fill: ds.fill !== undefined ? ds.fill : 'origin',
-      pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : (emphasisStyle.pointRadius ?? 3),
+      pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : 0,
       pointHoverRadius: 6,
       pointStyle: ds.pointStyle || emphasisStyle.pointStyle || (isForecast ? 'crossRot' : 'circle'),
       pointBackgroundColor: ds.pointBackgroundColor || emphasisStyle.pointBackgroundColor || border,

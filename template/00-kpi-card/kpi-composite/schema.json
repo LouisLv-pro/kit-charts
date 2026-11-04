@@ -161,6 +161,13 @@
               },
               "deltaUnit": {
                 "type": "string"
+              },
+              "metricType": {
+                "type": "string",
+                "enum": [
+                  "gain",
+                  "cost"
+                ]
               }
             },
             "required": [

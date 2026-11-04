@@ -172,7 +172,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "tableau-stone-categorical"
       },
       "type": "line"
     },

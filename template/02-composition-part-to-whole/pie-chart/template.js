@@ -105,8 +105,22 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     pairs.sort((a, b) => b.val - a.val);
   }
 
+  // Consolidation des tranches < 3% en "Autres" (règle famille 02)
+  if (ds0.groupSmall !== false && pairs.length > 2) {
+    const sum0 = pairs.reduce((a, p) => a + p.val, 0);
+    const small = pairs.filter(p => sum0 > 0 && p.val / sum0 < 0.03);
+    if (small.length > 0 && pairs.length - small.length >= 2) {
+      const keep = pairs.filter(p => !small.includes(p));
+      keep.push({ label: 'Autres', val: small.reduce((a, p) => a + p.val, 0), color: tokens.emphasis?.context || tokens.textMuted || '#94A3B8', isOther: true });
+      pairs.length = 0;
+      keep.forEach(p => pairs.push(p));
+      if (ds0.sorted !== false) pairs.sort((a, b) => (a.isOther ? 1 : b.isOther ? -1 : b.val - a.val));
+    }
+  }
+
   labels = pairs.map(p => p.label);
   const data = pairs.map(p => p.val);
+  const total = data.reduce((a, b) => a + b, 0);
   const bgColors = pairs.map((p, i) => p.color || getColor(tokens, i));
 
   const defaultOpts = getChartDefaultOptions(tokens);
@@ -142,9 +156,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       plugins: {
         datalabels: getDataLabelOptions(tokens, {
           display: showDataLabels,
+          fontSize: 12,
           formatter: (val) => {
-            const num = typeof val === 'object' && val !== null ? (val.value ?? val.v ?? 0) : val;
-            return `${num}%`;
+            const num = typeof val === 'object' && val !== null ? (val.value ?? val.v ?? 0) : (Number(val) || 0);
+            return total > 0 ? `${Math.round((num / total) * 100)}%` : '';
           }
         }),
         legend: {
@@ -169,7 +184,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           callbacks: {
             label: (ctx) => {
               const val = ctx.parsed;
-              return ` ${ctx.label} : ${val} %`;
+              const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+              return ` ${ctx.label} : ${val} (${pct}%)`;
             }
           }
         }

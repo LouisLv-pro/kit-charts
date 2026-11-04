@@ -13,18 +13,18 @@
             "backgroundColor": [
               "rgba(136, 192, 208, 0.3)",
               "rgba(136, 192, 208, 0.3)",
-              "rgba(129, 161, 193, 0.3)",
-              "rgba(129, 161, 193, 0.3)",
-              "rgba(94, 129, 172, 0.3)",
-              "rgba(94, 129, 172, 0.3)"
+              "rgba(235, 203, 139, 0.3)",
+              "rgba(235, 203, 139, 0.3)",
+              "rgba(180, 142, 173, 0.3)",
+              "rgba(180, 142, 173, 0.3)"
             ],
             "borderColor": [
               "#88C0D0",
               "#88C0D0",
-              "#81A1C1",
-              "#81A1C1",
-              "#5E81AC",
-              "#5E81AC"
+              "#EBCB8B",
+              "#EBCB8B",
+              "#B48EAD",
+              "#B48EAD"
             ],
             "borderRadius": 4,
             "borderWidth": 1.5,
@@ -82,7 +82,7 @@
           "emphasis": {
             "anomaly": "#BF616A",
             "benchmark": "#ECEFF4",
-            "context": "#4C566A",
+            "context": "#7B88A1",
             "focal": "#88C0D0",
             "forecastAlpha": 0.5
           },
@@ -96,13 +96,13 @@
           "name": "nord-cognitive-dark",
           "palette": [
             "#88C0D0",
+            "#EBCB8B",
+            "#B48EAD",
+            "#A3BE8C",
+            "#D08770",
             "#81A1C1",
             "#5E81AC",
-            "#A3BE8C",
-            "#EBCB8B",
-            "#D08770",
-            "#BF616A",
-            "#B48EAD"
+            "#BF616A"
           ],
           "semantic": {
             "info": "#88C0D0",
@@ -169,6 +169,7 @@
           }
         },
         "maintainAspectRatio": false,
+        "onResize": "[Function:onResize]",
         "plugins": {
           "datalabels": {
             "color": "#ECEFF4",
@@ -231,7 +232,14 @@
             "max": 15,
             "min": 0,
             "ticks": {
+              "autoSkip": true,
               "callback": "[Function:callback]",
+              "color": "#ECEFF4",
+              "font": {
+                "size": 11
+              },
+              "maxRotation": 0,
+              "minRotation": 0,
               "stepSize": 1
             },
             "title": {
@@ -255,16 +263,19 @@
               "display": false
             },
             "ticks": {
-              "color": "#D8DEE9",
+              "callback": "[Function:callback]",
+              "color": "#ECEFF4",
               "font": {
-                "family": "'JetBrains Mono', monospace",
-                "size": 11
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "500"
               },
               "padding": 8
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "nord-cognitive-dark"
       },
       "plugins": [
         {

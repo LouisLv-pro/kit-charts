@@ -4,214 +4,188 @@
 
 # kit-charts
 
-Un kit pour vos agents d'IA (Antigravity, Claude Code, Cursor, etc.) pour générer des graphiques fiables, clairs et sans erreurs avec Chart.js.
+73 graphiques et tableaux prêts à l'emploi, pensés pour être compris du premier coup et lisibles par tous.
 
-L'agent n'a **plus besoin de recréer les graphiques de zéro** : il pioche dans **73 modèles prêts à l'emploi**, applique de bonnes règles de lisibilité et livre une page HTML que vous pouvez ouvrir directement dans votre navigateur.
+kit-charts sert surtout aux assistants IA (Claude Code, Cursor, Antigravity...). Au lieu d'inventer un graphique à chaque demande, l'assistant choisit un modèle éprouvé, y met vos données et vous rend une page que vous ouvrez dans votre navigateur.
 
 ---
 
 ## Pourquoi ce kit ?
 
-Quand une IA essaie de coder un graphique à partir d'une feuille blanche, elle fait souvent de grosses erreurs :
-- **Des axes coupés** qui trompent l'œil et font paraître de petits écarts énormes.
-- **Trop d'informations entassées** (15 barres verticales illisibles ou 10 courbes emmêlées).
-- **Des couleurs mal choisies**, impossibles à lire pour les personnes daltoniennes.
-- **Des animations lentes, instables ou clignotantes** qui nuisent à la lecture immédiate.
-- **Du code bricolé**, difficile à relire ou à réutiliser.
+Un graphique écrit à la volée par une IA tombe souvent dans les mêmes pièges :
 
-**kit-charts** règle ce problème en garantissant un **rendu instantané déterministe (0 ms de latence)**, des infobulles/étiquettes impeccables et des modèles déjà testés :
+- **Un axe qui ne part pas de zéro** : un écart de 2 % ressemble à un écart du simple au double.
+- **Trop d'éléments** : 15 barres serrées ou 10 courbes emmêlées.
+- **Des couleurs mal choisies** : illisibles pour les personnes daltoniennes, ou une hausse des coûts affichée en vert.
+- **Un graphique qui n'est pas celui demandé** : un « diagramme de cordes » qui est en fait un radar.
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ UN SEUL AGENT : dataviz                                     │
-│                                                             │
-│ 1. Qualifie : le message, les données, le sens de la        │
-│    métrique (une hausse est-elle bonne ?)                   │
-│ 2. Construit : choisit le modèle, écrit la spec, compile    │
-│    dans output/<nom-du-graphique>/index.html                │
-│ 3. Audite : vérifie les règles, relit titre et couleurs,    │
-│    corrige jusqu'à zéro erreur                              │
-└─────────────────────────────────────────────────────────────┘
-```
+kit-charts évite ces pièges. Chaque modèle a été vérifié à l'œil, en thème clair et en thème sombre, et des contrôles automatiques bloquent un graphique qui enfreint une règle de lisibilité.
 
 ---
 
-## Démarrer en 3 Étapes
+## Démarrer
 
-### 1. Cloner le Répertoire
+### 1. Récupérer le kit
+
 ```bash
 git clone https://github.com/LouisLv-pro/kit-charts.git
 cd kit-charts
 ```
-*Rien d'autre à installer pour faire fonctionner les graphiques.*
 
-### 2. Explorer la Galerie dans votre Navigateur
-Ouvrez simplement [**`index.html`**](index.html) dans votre navigateur (double-clic ou `open index.html`).
-- **100% Hors-Ligne** : Tous les graphiques s'affichent immédiatement, sans avoir besoin d'un serveur web.
-- **Interactif** : Testez les 8 thèmes de couleurs en un clic et parcourez les 73 modèles.
+Rien d'autre à installer pour voir les graphiques.
 
-### 3. Demander à votre IA de Créer un Graphique
-Donnez simplement votre besoin en langage naturel à votre agent IA :
+### 2. Parcourir la galerie
+
+Ouvrez [`index.html`](index.html) dans votre navigateur (double-clic, ou `open index.html`).
+
+- Elle fonctionne sans serveur, directement depuis le fichier.
+- Changez de thème de couleurs en un clic : tous les graphiques suivent.
+- Chaque carte s'ouvre en grand avec une explication : à quoi sert ce graphique, et quand l'éviter.
+
+### 3. Demander un graphique à votre assistant IA
+
+Décrivez simplement ce que vous voulez montrer :
 
 ```text
-"Fais-moi un graphique pour comparer les ventes par région par rapport aux objectifs de l'année, avec un thème sombre et des alertes claires."
+"Compare les ventes de chaque région à leur objectif de l'année, en thème sombre, avec les retards bien visibles."
 ```
 
-L'agent choisit le bon modèle (`bullet-chart`), applique les bonnes couleurs et place le résultat dans `output/ventes-regions/index.html`.
+L'assistant choisit le bon modèle (ici une jauge linéaire, `bullet-chart`), applique les bonnes couleurs et enregistre la page dans `output/ventes-regions/index.html`.
 
-### Utiliser le kit dans n'importe quel projet
+### Utiliser le kit dans un autre projet
 
-Inutile de copier ce dépôt dans chaque dossier : installez la commande `kit-charts` une fois.
+Installez la commande une seule fois :
 
 ```bash
 npm i -g github:LouisLv-pro/kit-charts
 ```
 
-Puis, dans le projet où vous voulez des graphiques, installez le skill et l'agent pour votre IA :
+Puis, dans le projet où vous voulez des graphiques, donnez le kit à votre assistant IA :
 
 ```bash
 kit-charts install-skill
 ```
 
-Les graphiques et leurs configurations sont créés dans `output/` du projet courant.
+Les graphiques sont créés dans le dossier `output/` de ce projet.
 
 ---
 
-## Ce que fait l'Agent du Kit
+## Comment l'assistant s'y prend
 
-Un seul agent, **`dataviz`** ([`.agents/agents/dataviz.md`](.agents/agents/dataviz.md)), fait tout le cycle en s'appuyant sur le skill [`kit-charts`](.agents/skills/kit-charts/SKILL.md) :
+Un seul agent, `dataviz` ([`.agents/agents/dataviz.md`](.agents/agents/dataviz.md)), suit trois étapes décrites dans le skill [`kit-charts`](.agents/skills/kit-charts/SKILL.md) :
 
-| Étape | Ce qu'il fait | Outil |
+| Étape | Ce qu'il fait |
+| :--- | :--- |
+| **Comprendre** | Quel message faire passer ? Une hausse est-elle une bonne ou une mauvaise nouvelle ? |
+| **Construire** | Choisit parmi les modèles adaptés à vos données, puis génère la page. Une configuration qui enfreint une règle est refusée. |
+| **Vérifier** | Contrôles automatiques (contraste, axe à zéro, nombre d'éléments), puis relecture du titre, des unités et des couleurs. |
+
+---
+
+## Les 73 modèles, rangés par question
+
+| Vous voulez... | Exemples | La règle appliquée |
 | :--- | :--- | :--- |
-| **Qualifier** | Comprend le message à transmettre et note ses hypothèses | Le skill `kit-charts` |
-| **Choisir** | Propose les modèles compatibles avec vos données, écarte ceux qui violent une règle | `recommend-template.js` |
-| **Construire** | Écrit la configuration et génère la page | `compile-chart.js` (refuse une configuration non conforme) |
-| **Auditer** | Vérifie les règles automatiques, puis relit le sens (titre, unité, tri, couleurs) | `validate-chart.js` + revue experte |
+| **Afficher un chiffre clé** | `kpi-standard`, `kpi-sparkline`, `kpi-bullet` | Le chiffre en grand, avec la période à laquelle on le compare. |
+| **Comparer des valeurs** | `bar-chart-vertical`, `bar-chart-horizontal`, `bullet-chart` | Les barres partent toujours de zéro. Au-delà de 7 éléments, on passe aux barres horizontales. |
+| **Découper un total** | `doughnut-chart`, `stacked-bar-100`, `treemap` | Les parts font 100 %, peu de tranches, jamais de 3D. |
+| **Voir comment se répartissent des valeurs** | `box-plot`, `histogramme`, `density-plot` | La médiane et les valeurs inhabituelles se voient tout de suite. |
+| **Relier deux mesures** | `scatter-plot`, `bubble-chart`, `matrix-heatmap` | Pour les bulles, c'est la surface qui compte, pas le rayon. |
+| **Suivre une évolution** | `line-chart`, `multi-line-chart`, `area-chart` | Le temps se lit de gauche à droite, 5 courbes au plus. |
+| **Montrer des étapes ou des flux** | `funnel-chart`, `waterfall-chart`, `sankey-diagram` | Le taux de passage d'une étape à l'autre est affiché. |
+| **Montrer une hiérarchie ou un réseau** | `sunburst`, `dendrogram`, `marimekko-chart` | Trois niveaux au plus, pour rester lisible. |
+| **Placer des valeurs sur une carte** | `choropleth-map`, `bubble-map`, `cartogram-tilegram` | Des valeurs par habitant plutôt que des totaux, pour ne pas avantager les grands pays. |
+| **Enrichir un tableau** | `table-kpi-scorecard`, `table-bar-in-cell` | Chiffres alignés à droite, petites barres et flèches dans les cellules. |
+
+La galerie montre aussi une démonstration d'infobulles : au survol, une bulle donne le détail d'une valeur sans masquer les données voisines.
 
 ---
 
-## Les 10 Familles de Graphiques (73 Modèles Prêts à l'Emploi)
+## 8 thèmes de couleurs
 
-Chaque modèle est rangé dans son dossier avec sa structure standard (`template.html`, `schema.json`, `template.js`) :
+Tous restent lisibles par les personnes daltoniennes.
 
-| Famille | Exemples de modèles | Règle de bonne pratique |
-| :--- | :--- | :--- |
-| **00. Cartes KPI** | `kpi-standard`, `kpi-sparkline`, `kpi-bullet` | Gros chiffres bien lisibles et rappel clair de la période comparée. |
-| **01. Comparer des valeurs** | `bar-chart-vertical`, `bar-chart-horizontal`, `bullet-chart` | L'axe commence toujours à 0 pour ne pas tromper l'œil. Barres horizontales dès qu'il y a plus de 7 éléments. |
-| **02. Montrer des parts (100%)** | `doughnut-chart`, `stacked-bar-100`, `treemap` | Total égal à 100%, 2 à 5 tranches maximum, jamais d'effet 3D. |
-| **03. Répartition & Distribution** | `box-plot`, `histogramme`, `density-plot` | Affichage net de la médiane et des valeurs exceptionnelles (anomalies). |
-| **04. Corrélation & Liens** | `scatter-plot`, `bubble-chart`, `matrix-heatmap` | Pour les bulles, la taille représente la surface réelle et non le rayon. |
-| **05. Évolution dans le temps** | `line-chart`, `multi-line-chart`, `area-chart` | Le temps se lit toujours de gauche à droite, avec un maximum de 5 courbes. |
-| **06. Étapes & Flux** | `funnel-chart`, `waterfall-chart` | Étapes en cascade et taux de passage d'une étape à l'autre bien visibles. |
-| **07. Hiérarchies & Arbres** | `sunburst`, `dendrogram`, `marimekko-chart` | 3 niveaux maximum pour éviter la surcharge visuelle. |
-| **08. Cartes géographiques** | `choropleth-map`, `bubble-map`, `cartogram-tilegram` | Valeurs ramenées par habitant ou par surface pour éviter les fausses impressions. |
-| **09. Tableaux avec graphiques** | `table-kpi-scorecard`, `table-bar-in-cell` | Chiffres alignés à droite avec mini-barres de comparaison intégrées. |
-| **Bonus. Infobulles & Détails** | `tooltip` (démonstrateur de la galerie, hors registre) | Infobulles anti-occlusion respectant Mayer et Fitts. |
+1. **`colorbrewer-accessible`** (par défaut) : clair et polyvalent.
+2. **`viridis-perceptual`** : un dégradé régulier, qui reste lisible imprimé en noir et blanc.
+3. **`paul-tol-scientific`** : pour bien distinguer plusieurs courbes.
+4. **`tableau-stone-categorical`** : sobre, pour les rapports d'entreprise.
+5. **`okabe-ito-cud`** : une palette conçue au départ pour les personnes daltoniennes.
+6. **`tufte-minimalist-executive`** : noir, blanc et gris, une seule couleur pour l'essentiel.
+7. **`nord-cognitive-dark`** : sombre et doux pour les yeux.
+8. **`atkinson-hyperlegible`** : de forts contrastes pour les personnes malvoyantes.
 
----
+### Le vert et le rouge ont un sens
 
-## 8 Thèmes de Couleurs Adaptés à Tous
+Le kit choisit la couleur selon ce que mesure le chiffre :
 
-Toutes les palettes ont été testées pour être confortables et lisibles par tout le monde, y compris les personnes daltoniennes :
-
-1. **`colorbrewer-accessible`** (thème clair par défaut) : Palette équilibrée et facile à lire.
-2. **`viridis-perceptual`** : Reste parfaitement lisible même si vous imprimez en noir et blanc.
-3. **`paul-tol-scientific`** : Idéal quand vous avez plusieurs courbes à bien différencier.
-4. **`tableau-stone-categorical`** : Couleurs sobres et professionnelles pour rapports d'entreprise.
-5. **`okabe-ito-cud`** : Standard international pour les documents officiels.
-6. **`tufte-minimalist-executive`** : Noir, blanc et gris, avec une seule touche de rouge pour l'essentiel.
-7. **`nord-cognitive-dark`** : Thème sombre et doux pour ne pas fatiguer les yeux.
-8. **`atkinson-hyperlegible`** : Conçu pour les personnes malvoyantes avec de forts contrastes.
-
-### Des Couleurs qui ont du Sens
-Le kit adapte automatiquement le vert et le rouge selon le sujet :
-- **Chiffre d'affaires ou marge** : une hausse est verte, une baisse est rouge.
-- **Pannes, temps d'attente ou coûts** : une hausse est rouge (mauvaise nouvelle), une baisse est verte (bonne nouvelle).
-- **Objectifs à tenir** : vert quand l'objectif est atteint, orange pour un léger retard, rouge en cas d'alerte.
+- **Chiffre d'affaires, marge** : une hausse est verte, une baisse rouge.
+- **Coûts, pannes, temps d'attente** : une hausse est rouge (mauvaise nouvelle), une baisse verte.
+- **Objectif à tenir** : vert si atteint, orange en cas de léger retard, rouge en cas d'alerte.
 
 ---
 
-## Commandes Utiles
+## Pour les développeurs
+
+### Commandes
 
 ```bash
 kit-charts list                                   # les 73 modèles
-kit-charts recommend data.json                    # modèles adaptés à vos données
-kit-charts describe bar-chart-horizontal          # forme des données attendue et exemple
+kit-charts recommend data.json                    # les modèles adaptés à vos données
+kit-charts describe bar-chart-horizontal          # la forme des données attendue, avec un exemple
 kit-charts init-spec bar-chart-horizontal -o output/mon-graphique/spec.json
 kit-charts compile output/mon-graphique/spec.json -o output/mon-graphique/index.html
 kit-charts validate output/mon-graphique/index.html
-kit-charts check output/mon-graphique/index.html  # rendu réel dans Chrome
+kit-charts check output/mon-graphique/index.html  # ouvre la page dans Chrome et vérifie qu'elle s'affiche
 ```
 
-Dans ce dépôt sans installation, remplacez `kit-charts` par `node bin/kit-charts.js`.
+Dans ce dépôt, sans installation, remplacez `kit-charts` par `node bin/kit-charts.js`.
 
-Pour les contributeurs :
+### Tests
 
 ```bash
-npm run build        # régénère catalog-bundle.js
-npm test             # intégration + snapshots
-npm run test:render  # rendu réel des 73 modèles dans Chrome headless (réseau requis)
-npm run test:cli     # paquet installé, parcours complet du CLI
+npm run build        # régénère catalog-bundle.js à partir des modèles
+npm test             # tests d'intégration et comparaison aux configurations de référence
+npm run test:render  # affiche les 73 modèles dans Chrome (connexion internet requise)
+npm run test:cli     # installe le paquet et teste toutes les commandes
 ```
 
----
+Après une modification volontaire d'un modèle, régénérez les configurations de référence avec `npm run snapshots` et relisez les différences avant de les valider. Les règles détaillées sont dans [`AGENTS.md`](AGENTS.md).
 
-## Structure du Projet
+### Organisation du dépôt
 
 ```
 kit-charts/
-├── index.html                        # Galerie interactive pour voir tous les modèles
-├── catalog-bundle.js                 # Fichier complet qui regroupe les 73 modèles et la démo d'infobulles
-├── package.json                      # Commandes du projet
-├── README.md                         # Ce guide
-├── LICENSE                           # Licence libre MIT
-│
-├── template/                         # Les 73 modèles rangés par dossiers
-│   ├── 00-kpi-card/                  # Cartes et indicateurs clés (7 modèles)
-│   ├── 01-comparaison/               # Barres, colonnes, bullet charts (11 modèles)
-│   ├── 02-composition-part-to-whole/ # Parts de marché, camemberts, treemaps (8 modèles)
-│   ├── 03-distribution/              # Histogrammes, boîtes à moustaches (10 modèles)
-│   ├── 04-correlation-relation/      # Nuages de points, bulles, heatmaps (7 modèles)
-│   ├── 05-evolution-temporelle/      # Courbes et aires dans le temps (10 modèles)
-│   ├── 06-flux-processus/            # Entonnoirs de vente, cascades (7 modèles)
-│   ├── 07-hierarchie-reseau/         # Réseaux et arbres (4 modèles)
-│   ├── 08-geospatial-cartes/         # Cartes et pays (3 modèles)
-│   ├── 09-tableaux-dataviz/          # Tableaux avec mini-graphiques (6 modèles)
-│   └── tooltip/                      # Démonstrateur d'infobulles (hors registre)
-│
-├── themes/                           # Les 8 thèmes de couleurs
-│   └── theme-tokens.js               # Gestion des couleurs, contrastes et options Chart.js
-│
-├── output/                           # Dossier où sont enregistrés vos graphiques
-│
-└── .agents/                          # Rôles et instructions pour les agents d'IA
-    ├── agents/                       # L'agent unique dataviz
-    ├── rules/                        # Règles de bonne lisibilité
-    └── skills/kit-charts/            # Outils de génération et de vérification
+├── index.html              # La galerie
+├── catalog-bundle.js       # Tous les modèles regroupés en un fichier (généré)
+├── template/               # Les 73 modèles, un dossier chacun
+│   ├── 00-kpi-card/        # Chiffres clés (7)
+│   ├── 01-comparaison/     # Barres, jauges (11)
+│   ├── 02-composition-part-to-whole/  # Parts d'un tout (8)
+│   ├── 03-distribution/    # Répartition des valeurs (10)
+│   ├── 04-correlation-relation/       # Liens entre mesures (7)
+│   ├── 05-evolution-temporelle/       # Évolution dans le temps (10)
+│   ├── 06-flux-processus/  # Flux et étapes (7)
+│   ├── 07-hierarchie-reseau/          # Hiérarchies et réseaux (4)
+│   ├── 08-geospatial-cartes/          # Cartes (3)
+│   ├── 09-tableaux-dataviz/           # Tableaux enrichis (6)
+│   └── tooltip/            # Démonstration d'infobulles
+├── themes/                 # Les 8 thèmes et les réglages communs
+├── docs/                   # Bannière et rapports de revue
+├── output/                 # Vos graphiques générés
+└── .agents/                # L'agent dataviz, ses règles et ses outils
 ```
+
+Chaque modèle contient `template.js` (le dessin et un exemple de données), `schema.json` (la forme des données acceptée), `template.html` et une page `preview.html`.
 
 ---
 
-## Contribuer & Signaler un Problème
+## Contribuer
 
-Les contributions sont les bienvenues :
-
-- **Ajouter un nouveau modèle** : Proposer un dossier modèle bien structuré (`template.html`, `schema.json`, `template.js`).
-- **Ajouter un thème de couleurs** : Proposer une palette lisible et contrastée.
-- **Signaler un problème** : Ouvrez une [Issue GitHub](https://github.com/LouisLv-pro/kit-charts/issues) en expliquant ce qui ne va pas.
-
-### Vérifications avant d'Envoyer une Modification
-
-```bash
-# 1. Vérifier que tous les tests passent
-npm test
-
-# 2. Mettre à jour le fichier global
-npm run build
-```
+- **Proposer un modèle ou un thème** : suivez la structure d'un dossier existant et passez `npm test`.
+- **Signaler un problème** : ouvrez une [issue GitHub](https://github.com/LouisLv-pro/kit-charts/issues) en décrivant ce que vous voyez.
 
 ---
 
 ## Licence
 
-Projet sous licence libre **MIT**. Vous pouvez l'utiliser librement pour vos projets personnels, professionnels ou vos agents d'IA.
+MIT : libre pour vos projets personnels, professionnels et vos assistants IA.

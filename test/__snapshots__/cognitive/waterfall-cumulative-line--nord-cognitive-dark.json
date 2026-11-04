@@ -61,8 +61,7 @@
               ]
             ],
             "datalabels": {
-              "display": true,
-              "formatter": "[Function:formatter]"
+              "display": false
             },
             "label": "Variation Étape",
             "order": 2,
@@ -87,19 +86,19 @@
             "label": "Trajectoire Cumulée",
             "order": 1,
             "pointHoverRadius": 6,
-            "pointRadius": 4,
-            "tension": 0.15,
+            "pointRadius": 3,
+            "tension": 0,
             "type": "line"
           }
         ],
         "labels": [
-          "CA Brut Initial",
+          "Solde Initial",
           "Nouveaux Contrats",
           "Expansion Comptes",
           "Remises Commerciales",
           "Désabonnements (Churn)",
           "Frais d'Infrastructure",
-          "EBITDA Net"
+          "Solde Final"
         ]
       },
       "options": {
@@ -116,7 +115,7 @@
           "emphasis": {
             "anomaly": "#BF616A",
             "benchmark": "#ECEFF4",
-            "context": "#4C566A",
+            "context": "#7B88A1",
             "focal": "#88C0D0",
             "forecastAlpha": 0.5
           },
@@ -130,13 +129,13 @@
           "name": "nord-cognitive-dark",
           "palette": [
             "#88C0D0",
+            "#EBCB8B",
+            "#B48EAD",
+            "#A3BE8C",
+            "#D08770",
             "#81A1C1",
             "#5E81AC",
-            "#A3BE8C",
-            "#EBCB8B",
-            "#D08770",
-            "#BF616A",
-            "#B48EAD"
+            "#BF616A"
           ],
           "semantic": {
             "info": "#88C0D0",
@@ -203,27 +202,23 @@
         "maintainAspectRatio": false,
         "plugins": {
           "datalabels": {
-            "color": "#ECEFF4",
-            "display": true,
-            "font": {
-              "family": "'JetBrains Mono', monospace",
-              "size": 10,
-              "weight": "600"
-            },
-            "formatter": "[Function:formatter]",
-            "padding": 4,
-            "thresholdRatio": 0.05
+            "display": false
           },
           "legend": {
             "align": "end",
             "display": true,
             "labels": {
+              "boxHeight": 12,
+              "boxWidth": 40,
               "color": "#ECEFF4",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 12
-              }
+              },
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 10
             },
+            "onClick": null,
             "position": "top"
           },
           "tooltip": {
@@ -270,12 +265,14 @@
               "display": false
             },
             "ticks": {
+              "autoSkip": false,
+              "callback": "[Function:callback]",
               "color": "#D8DEE9",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 11
               },
-              "maxRotation": 25
+              "maxRotation": 0
             }
           },
           "y": {
@@ -293,7 +290,8 @@
                 "family": "'JetBrains Mono', monospace",
                 "size": 11
               },
-              "padding": 8
+              "maxTicksLimit": 8,
+              "padding": 6
             },
             "title": {
               "color": "#D8DEE9",
@@ -303,12 +301,20 @@
                 "size": 12,
                 "weight": "500"
               },
+              "padding": 4,
               "text": "Solde Net (k€)"
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "nord-cognitive-dark"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsWaterfallLabels"
+        }
+      ],
       "type": "bar"
     },
     "kind": "chart-config"

@@ -109,7 +109,7 @@
           "emphasis": {
             "anomaly": "#DC3220",
             "benchmark": "#27272A",
-            "context": "#A1A1AA",
+            "context": "#8E8E96",
             "focal": "#005AB5",
             "forecastAlpha": 0.55
           },
@@ -192,8 +192,8 @@
         "layout": {
           "padding": {
             "bottom": 16,
-            "left": 48,
-            "right": 54,
+            "left": 120,
+            "right": 120,
             "top": 16
           }
         },
@@ -201,19 +201,19 @@
         "plugins": {
           "datalabels": {
             "color": "#000000",
-            "display": true,
+            "display": false,
             "font": {
               "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
               "size": 10,
               "weight": "600"
             },
-            "formatter": "[Function:formatter]",
+            "formatter": "[Function:anonymous]",
             "padding": 4,
             "thresholdRatio": 0.05
           },
           "legend": {
             "align": "end",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 12,
               "boxWidth": 12,
@@ -224,7 +224,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -288,24 +287,22 @@
             "border": {
               "display": false
             },
+            "display": false,
             "grid": {
-              "color": "rgba(0, 0, 0, 0.12)",
-              "drawBorder": false,
-              "lineWidth": 1
-            },
-            "ticks": {
-              "callback": "[Function:callback]",
-              "color": "#18181B",
-              "font": {
-                "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
-                "size": 11
-              },
-              "padding": 8
+              "display": false
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "atkinson-hyperlegible"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "kcSlopeDirectLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

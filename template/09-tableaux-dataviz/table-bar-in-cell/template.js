@@ -101,6 +101,38 @@
   }
 
   /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
+  }
+
+  /**
    * Crée et initialise un Tableau Comparatif avec Barres Intégrées
    *
    * @param {string|HTMLElement} target - ID ou élément DOM cible
@@ -156,6 +188,11 @@
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : colonnes secondaires masquées, paddings réduits, barres plus courtes
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const pad = compact ? '7px 8px' : '10px 14px';
+      const hiddenKeys = compact ? ['category', 'volume', 'completion'] : [];
 
       const primaryColor = getColor(tokens, 0);
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -203,10 +240,11 @@
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 640}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -218,15 +256,16 @@
       `;
 
       data.columns.forEach(col => {
+        if (hiddenKeys.indexOf(col.key) >= 0) return;
         const isSorted = sortColumn === col.key;
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
           <th data-key="${escapeHtml(col.key)}" style="
-            padding: 10px 14px;
+            padding: ${pad};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.675rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${isSorted ? primaryColor : textSecondary};
@@ -234,7 +273,7 @@
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${escapeHtml(col.label)}${sortIcon}
+            ${escapeHtml(compact && col.key === 'bullet' ? 'Réalisé / cible' : (compact && col.key === 'revenue' ? 'CA' : col.label))}${sortIcon}
           </th>
         `;
       });
@@ -255,6 +294,8 @@
         const bulletColor = isOverTarget
           ? (tokens.status?.success || '#2E7D32')
           : (tokens.status?.warning || '#D97706');
+        const bulletTextColor = readableOn(bulletColor, bgSurface, 4.5);
+        const bulletSymbol = isOverTarget ? '▲' : '▼';
 
         html += `
           <tr class="kc-table-row" style="
@@ -262,10 +303,10 @@
             border-bottom: ${borderBottom};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
+            <td style="padding: ${pad}; text-align: left; vertical-align: middle;">
               <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.product)}</div>
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${pad}; text-align: center; vertical-align: middle;">
               <span style="
                 display: inline-block;
                 padding: 2px 7px;
@@ -275,36 +316,36 @@
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
               ">${escapeHtml(row.category)}</span>
-            </td>
-            <td style="padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;">
-              <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-                ${generateDataBarSVG(row.revenue, maxRevenueCol, 95, 14, primaryColor, isDark, isTufte)}
+            </td>`}
+            <td style="padding: ${pad}; text-align: right; vertical-align: middle; white-space: nowrap;">
+              <div style="display: flex; align-items: center; justify-content: flex-end; gap: ${compact ? 4 : 8}px;">
+                ${generateDataBarSVG(row.revenue, maxRevenueCol, compact ? 44 : 95, 14, primaryColor, isDark, isTufte)}
                 <span style="font-family: ${fontMono}; font-weight: 600; color: ${textPrimary};">
                   ${(row.revenue / 1000000).toFixed(2)} M€
                 </span>
               </div>
             </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${pad}; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${escapeHtml(row.volume.toLocaleString('fr-FR'))}
-            </td>
-            <td style="padding: 10px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                ${generateBulletGraphSVG(row.actualRate, row.targetRate, 110, 16, bulletColor, isDark, isTufte)}
-                <span style="font-size: 0.7rem; color: ${textMuted}; font-family: ${fontMono};">
+            </td>`}
+            <td style="padding: ${pad}; text-align: left; vertical-align: middle; white-space: nowrap;">
+              <div style="display: flex; align-items: center; gap: ${compact ? 4 : 8}px;">
+                ${generateBulletGraphSVG(row.actualRate, row.targetRate, compact ? 56 : 110, 16, bulletColor, isDark, isTufte)}
+                ${compact ? `<span style="font-family: ${fontMono}; font-weight: 700; color: ${bulletTextColor};">${bulletSymbol} ${escapeHtml(row.actualRate)}%</span>` : `<span style="font-size: 0.7rem; color: ${textMuted}; font-family: ${fontMono};">
                   Cible: ${escapeHtml(row.targetRate)}%
-                </span>
+                </span>`}
               </div>
             </td>
-            <td style="padding: 10px 14px; text-align: right; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${pad}; text-align: right; vertical-align: middle;">
               <span style="
                 font-family: ${fontMono};
                 font-weight: 700;
                 font-size: 0.8125rem;
-                color: ${bulletColor};
+                color: ${bulletTextColor};
               ">
-                ${escapeHtml(row.actualRate)}%
+                ${bulletSymbol} ${escapeHtml(row.actualRate)}%
               </span>
-            </td>
+            </td>`}
           </tr>
         `;
       });

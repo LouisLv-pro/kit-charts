@@ -72,12 +72,12 @@
   /**
    * Génère une micro-barre divergente de variance IBCS à axe zéro central
    */
-  function generateIBCSVarianceBarSVG(deltaPct, metricType = 'revenue', width = 120, height = 16, tokens = {}, isDark = false, isTufte = false) {
-    const maxScalePct = 25; // Axe de -25% à +25%
+  function generateIBCSVarianceBarSVG(deltaPct, metricType = 'revenue', width = 120, height = 16, tokens = {}, isDark = false, isTufte = false, favorableOverride, scalePct) {
+    const maxScalePct = scalePct > 0 ? scalePct : 25; // Axe symétrique -max à +max (adapté aux données)
     const midX = width / 2;
 
     // Règle de valence financière : delta >= 0 est Favorable (Vert), delta < 0 est Défavorable / Perte (Rouge)
-    const isFavorable = deltaPct >= 0;
+    const isFavorable = typeof favorableOverride === 'boolean' ? favorableOverride : deltaPct >= 0;
     const barColor = isFavorable
       ? (tokens.status?.success || '#2E7D32')
       : (tokens.status?.danger || '#C62828');
@@ -101,6 +101,38 @@
         <rect x="${startX}" y="3" width="${barLength}" height="${height - 6}" fill="${barColor}" rx="${isTufte ? 0 : 2}" />
       </svg>
     `;
+  }
+
+  /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
   }
 
   /**
@@ -156,6 +188,11 @@
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : colonnes budget, N-1 et écart absolu masquées, unités retirées (rappelées dans le titre)
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const hiddenKeys = compact ? ['budget', 'priorYear', 'varAbs'] : [];
+      const unitK = compact ? '' : ' k€';
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
       const bgHeader = isDark ? '#1F232B' : (isTufte ? '#FFFFFF' : '#F8FAFC');
@@ -166,6 +203,8 @@
       const textMuted = tokens.textMuted || (isDark ? '#9EABC0' : '#64748B');
       const fontSans = tokens.fontFamily || "'Inter', sans-serif";
       const fontMono = tokens.fontMono || "'JetBrains Mono', monospace";
+
+      const barScalePct = Math.max(5, Math.ceil(Math.max(...data.rows.map(r => r.budget !== 0 ? Math.abs((r.actual - r.budget) / Math.abs(r.budget)) * 100 : 0)) / 5) * 5);
 
       let html = `
         <div class="kc-dataviz-financial-container" style="
@@ -181,10 +220,11 @@
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 860}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -195,20 +235,25 @@
               ">
       `;
 
-      data.columns.forEach(col => {
+      const visCols = data.columns.filter(col => hiddenKeys.indexOf(col.key) < 0);
+      visCols.forEach((col, ci) => {
+        const isLast = ci === visCols.length - 1;
+        const shortLabels = { item: 'Poste', actual: 'Réalisé', varPct: 'Écart %', varBar: 'Variance' };
         html += `
           <th style="
-            padding: 10px 14px;
+            padding: ${compact ? '8px 6px' : '10px 10px'}${isLast ? '; padding-right: 14px' : ''};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.65rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${textSecondary};
             border: none;
-            white-space: nowrap;
+            white-space: ${compact ? 'nowrap' : 'normal'};
+            line-height: 1.25;
+            vertical-align: bottom;
           ">
-            ${escapeHtml(col.label)}
+            ${escapeHtml(compact && shortLabels[col.key] ? shortLabels[col.key] : col.label)}
           </th>
         `;
       });
@@ -236,13 +281,17 @@
           rowBg = isDark ? 'rgba(255,255,255,0.015)' : 'rgba(15,23,42,0.01)';
         }
 
+        const cp = compact ? '6px 6px' : '8px 10px';
         const deltaAbs = row.actual - row.budget;
         const deltaPct = row.budget !== 0 ? (deltaAbs / Math.abs(row.budget)) * 100 : 0;
 
-        const isFavorable = deltaAbs >= 0;
-        const deltaColor = isFavorable
+        // Polarité : convention comptable (charges négatives) => delta >= 0 favorable.
+        // Charge saisie en positif (metricType 'cost') => LOWER_IS_BETTER : hausse défavorable.
+        const isPositiveCost = row.metricType === 'cost' && row.actual >= 0 && row.budget >= 0;
+        const isFavorable = isPositiveCost ? deltaAbs <= 0 : deltaAbs >= 0;
+        const deltaColor = readableOn(isFavorable
           ? (tokens.status?.success || '#2E7D32')
-          : (tokens.status?.danger || '#C62828');
+          : (tokens.status?.danger || '#C62828'), bgSurface, 4.5);
 
         const arrow = deltaAbs > 0 ? '+' : '';
         const fontWeight = isSummaryRow ? '700' : (isHeaderRow ? '600' : '400');
@@ -256,28 +305,28 @@
             font-weight: ${fontWeight};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 8px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
-              <span style="padding-left: ${indentPx}px; color: ${textColor};">
-                ${escapeHtml(row.item)}
+            <td style="padding: ${cp}; text-align: left; vertical-align: middle; white-space: ${compact ? 'normal' : 'nowrap'};">
+              <span style="padding-left: ${compact ? Math.round(indentPx * 0.6) : indentPx}px; color: ${textColor};">
+                ${escapeHtml(compact ? String(row.item).trim() : row.item)}
               </span>
             </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
-              ${escapeHtml(formatAccounting(row.actual))}
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
+              ${escapeHtml(formatAccounting(row.actual, unitK))}
             </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${escapeHtml(formatAccounting(row.budget))}
             </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textMuted}; vertical-align: middle;">
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${textMuted}; vertical-align: middle;">
               ${escapeHtml(formatAccounting(row.priorYear))}
             </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaAbs.toLocaleString('fr-FR')} k€
-            </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaPct.toFixed(1)}%
             </td>
-            <td style="padding: 6px 10px; text-align: center; vertical-align: middle;">
-              ${generateIBCSVarianceBarSVG(deltaPct, row.metricType, 110, 16, tokens, isDark, isTufte)}
+            <td style="padding: ${compact ? '5px 6px' : '6px 10px'}; padding-right: 14px; text-align: center; vertical-align: middle;">
+              ${generateIBCSVarianceBarSVG(deltaPct, row.metricType, compact ? 60 : 100, 16, tokens, isDark, isTufte, isFavorable, barScalePct)}
             </td>
           </tr>
         `;

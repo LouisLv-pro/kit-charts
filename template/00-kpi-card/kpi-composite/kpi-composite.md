@@ -43,3 +43,5 @@ renderCard(document.getElementById('kpi-container'), {
   ]
 }, 'colorbrewer-accessible');
 ```
+
+Chaque levier accepte `metricType` (`'gain'` par défaut, `'cost'` pour un levier où la baisse est favorable, comme un coût d'acquisition ou une latence) : la couleur de son delta suit alors sa propre polarité.

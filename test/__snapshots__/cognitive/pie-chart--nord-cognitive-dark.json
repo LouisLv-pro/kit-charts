@@ -12,8 +12,8 @@
           {
             "backgroundColor": [
               "#88C0D0",
-              "#81A1C1",
-              "#5E81AC"
+              "#EBCB8B",
+              "#B48EAD"
             ],
             "borderColor": "#2E3440",
             "borderWidth": 2,
@@ -74,9 +74,10 @@
             "display": true,
             "font": {
               "family": "'JetBrains Mono', monospace",
-              "size": 10,
+              "size": 12,
               "weight": "600"
             },
+            "fontSize": 12,
             "formatter": "[Function:formatter]",
             "padding": 4,
             "thresholdRatio": 0.05
@@ -134,7 +135,8 @@
         },
         "responsive": true,
         "rotation": -90,
-        "scales": {}
+        "scales": {},
+        "themeName": "nord-cognitive-dark"
       },
       "type": "pie"
     },

@@ -10,76 +10,22 @@
       "data": {
         "datasets": [
           {
-            "backgroundColor": "rgba(38, 130, 142, 0.35)",
-            "borderColor": "#26828E",
-            "borderWidth": 2.5,
-            "data": [
-              0,
-              25,
-              18,
-              12
+            "backgroundColor": [
+              "#3E4A89",
+              "#26828E",
+              "#35B779",
+              "#B4DE2C"
             ],
-            "fill": true,
-            "label": "Flux Émis — Nord (Focal)",
-            "pointBackgroundColor": "#26828E",
-            "pointBorderColor": "#FFFFFF",
-            "pointHitRadius": 12,
-            "pointHoverRadius": 7,
-            "pointRadius": 4
-          },
-          {
-            "backgroundColor": "rgba(38, 130, 142, 0.18)",
-            "borderColor": "#26828E",
-            "borderWidth": 1.5,
+            "borderColor": "#F8FAFC",
+            "borderWidth": 3,
             "data": [
-              20,
-              0,
-              15,
-              30
+              55,
+              65,
+              52,
+              58
             ],
-            "fill": true,
-            "label": "Flux Émis — Sud",
-            "pointBackgroundColor": "#26828E",
-            "pointBorderColor": "#FFFFFF",
-            "pointHitRadius": 12,
-            "pointHoverRadius": 5,
-            "pointRadius": 2
-          },
-          {
-            "backgroundColor": "rgba(53, 183, 121, 0.18)",
-            "borderColor": "#35B779",
-            "borderWidth": 1.5,
-            "data": [
-              14,
-              16,
-              0,
-              22
-            ],
-            "fill": true,
-            "label": "Flux Émis — Est",
-            "pointBackgroundColor": "#35B779",
-            "pointBorderColor": "#FFFFFF",
-            "pointHitRadius": 12,
-            "pointHoverRadius": 5,
-            "pointRadius": 2
-          },
-          {
-            "backgroundColor": "rgba(180, 222, 44, 0.18)",
-            "borderColor": "#B4DE2C",
-            "borderWidth": 1.5,
-            "data": [
-              10,
-              28,
-              20,
-              0
-            ],
-            "fill": true,
-            "label": "Flux Émis — Ouest",
-            "pointBackgroundColor": "#B4DE2C",
-            "pointBorderColor": "#FFFFFF",
-            "pointHitRadius": 12,
-            "pointHoverRadius": 5,
-            "pointRadius": 2
+            "hoverOffset": 0,
+            "label": "Flux émis"
           }
         ],
         "labels": [
@@ -93,6 +39,7 @@
         "animation": false,
         "barPercentage": 0.9,
         "categoryPercentage": 0.8,
+        "cutout": "90%",
         "elements": {
           "bar": {
             "borderRadius": 4
@@ -108,41 +55,27 @@
           }
         },
         "hover": {
-          "animationDuration": 100,
+          "animationDuration": 0,
           "intersect": false,
           "mode": "nearest"
         },
         "interaction": {
-          "axis": "r",
+          "axis": "x",
           "intersect": false,
           "mode": "nearest"
         },
         "layout": {
           "padding": {
-            "bottom": 16,
-            "left": 16,
-            "right": 20,
-            "top": 20
+            "bottom": 36,
+            "left": 150,
+            "right": 150,
+            "top": 36
           }
         },
         "maintainAspectRatio": false,
         "plugins": {
           "legend": {
-            "align": "end",
-            "display": true,
-            "labels": {
-              "boxHeight": 8,
-              "boxWidth": 8,
-              "color": "#0F172A",
-              "font": {
-                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
-                "weight": "500"
-              },
-              "padding": 14,
-              "usePointStyle": true
-            },
-            "position": "top"
+            "display": false
           },
           "tooltip": {
             "backgroundColor": "rgba(15, 23, 42, 0.92)",
@@ -154,9 +87,9 @@
             },
             "borderColor": "#CBD5E1",
             "borderWidth": 1,
-            "boxPadding": 6,
             "callbacks": {
-              "label": "[Function:label]"
+              "label": "[Function:label]",
+              "title": "[Function:title]"
             },
             "cornerRadius": 6,
             "padding": {
@@ -174,36 +107,19 @@
           }
         },
         "responsive": true,
-        "scales": {
-          "r": {
-            "angleLines": {
-              "color": "rgba(15, 23, 42, 0.06)",
-              "lineWidth": 1
-            },
-            "grid": {
-              "color": "rgba(15, 23, 42, 0.06)",
-              "lineWidth": 1
-            },
-            "pointLabels": {
-              "color": "#0F172A",
-              "font": {
-                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 11,
-                "weight": "500"
-              }
-            },
-            "ticks": {
-              "backdropColor": "transparent",
-              "color": "#334155",
-              "font": {
-                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 10
-              }
-            }
-          }
-        }
+        "rotation": 0,
+        "scales": {},
+        "themeName": "viridis-perceptual"
       },
-      "type": "radar"
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeDatasetsDraw": "[Function:beforeDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "kitChartsChordRibbons"
+        }
+      ],
+      "type": "doughnut"
     },
     "kind": "chart-config"
   }

@@ -191,6 +191,60 @@
       }
     };
 
+    // Couleur de texte choisie selon la luminance relative réelle du fond (WCAG), pas en dur.
+    const kcRgb = (c) => {
+      if (typeof c !== 'string') return [255, 255, 255];
+      const m = c.match(/[\d.]+/g);
+      if (c.trim().startsWith('rgb') && m && m.length >= 3) return [Number(m[0]), Number(m[1]), Number(m[2])];
+      let h = c.trim().replace(/^#/, '');
+      if (h.length === 3) h = h.split('').map(x => x + x).join('');
+      if (h.length < 6) return [255, 255, 255];
+      return [parseInt(h.slice(0, 2), 16) || 0, parseInt(h.slice(2, 4), 16) || 0, parseInt(h.slice(4, 6), 16) || 0];
+    };
+    const kcLum = (c) => {
+      const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      const [r, g, b] = kcRgb(c);
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const kcReadableOn = (bg) => {
+      const dark = '#0F172A';
+      const light = '#FFFFFF';
+      const lb = kcLum(bg);
+      const cDark = (lb + 0.05) / (kcLum(dark) + 0.05);
+      const cLight = (kcLum(light) + 0.05) / (lb + 0.05);
+      return cDark >= cLight ? dark : light;
+    };
+
+    // Légende continue de l'échelle séquentielle (barre de dégradé + bornes)
+    const heatmapLegendPlugin = {
+      id: 'kitChartsHeatmapLegend',
+      afterDraw(chart) {
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return;
+        const barW = Math.min(220, chartArea.width * 0.4);
+        const barH = 8;
+        const x0 = chartArea.left + (chartArea.width - barW) / 2;
+        const y0 = chart.height - 20;
+        ctx.save();
+        const steps = 24;
+        for (let i = 0; i < steps; i++) {
+          ctx.fillStyle = getSequentialColor(tokens, i / (steps - 1));
+          ctx.fillRect(x0 + (barW / steps) * i, y0, barW / steps + 0.5, barH);
+        }
+        ctx.strokeStyle = tokens.gridColor || '#94A3B8';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x0, y0, barW, barH);
+        ctx.fillStyle = tokens.textSecondary || '#475569';
+        ctx.font = `500 11px ${tokens.fontMono || 'monospace'}`;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${Math.round(minVal)}%`, x0 - 6, y0 + barH / 2);
+        ctx.textAlign = 'left';
+        ctx.fillText(`${Math.round(maxVal)}%`, x0 + barW + 6, y0 + barH / 2);
+        ctx.restore();
+      }
+    };
+
     const heatmapValueLabelsPlugin = {
       id: 'kitChartsHeatmapValuesPlugin',
       afterDatasetsDraw(chart) {
@@ -207,7 +261,8 @@
           const item = data.datasets[0].data[i];
           if (!item || item.v === undefined) return;
           const ratio = maxVal > minVal ? (item.v - minVal) / (maxVal - minVal) : 0.5;
-          ctx.fillStyle = ratio > 0.45 ? '#FFFFFF' : (tokens.textPrimary || '#0F172A');
+          const cellBg = getSequentialColor(tokens, Math.max(0, Math.min(1, ratio)));
+          ctx.fillStyle = kcReadableOn(cellBg);
           const cp = typeof element.getCenterPoint === 'function'
             ? element.getCenterPoint()
             : { x: element.x + (element.width || 0) / 2, y: element.y + (element.height || 0) / 2 };
@@ -233,7 +288,7 @@
           padding: {
             top: 20,
             right: 20,
-            bottom: 34,
+            bottom: 56,
             left: 12
           }
         },
@@ -280,6 +335,7 @@
           y: {
             type: 'category',
             labels: yLabels,
+            reverse: true,
             position: 'left',
             grid: { display: false },
             border: { display: false },
@@ -295,7 +351,7 @@
           }
         }
       },
-      plugins: [heatmapValueLabelsPlugin]
+      plugins: [heatmapValueLabelsPlugin, heatmapLegendPlugin]
     };
 
     if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function' && typeof Chart === 'function') {
