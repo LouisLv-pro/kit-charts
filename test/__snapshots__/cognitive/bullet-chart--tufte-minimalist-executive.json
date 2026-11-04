@@ -155,7 +155,7 @@
             "anchor": "end",
             "clip": false,
             "color": "#0F172A",
-            "display": true,
+            "display": false,
             "font": {
               "family": "'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
               "size": 11,
@@ -262,6 +262,12 @@
         },
         "themeName": "tufte-minimalist-executive"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "bulletValueLabels"
+        }
+      ],
       "type": "bar"
     },
     "kind": "chart-config"

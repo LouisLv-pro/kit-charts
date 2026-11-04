@@ -51,29 +51,35 @@ Point d'entrée unique : le CLI `kit-charts` (`bin/kit-charts.js`, sans installa
 `node bin/kit-charts.js`). Il délègue aux scripts de `.agents/skills/kit-charts/scripts/`.
 
 ```bash
-# 1. Recommandation de template à partir des données (profil + règles cognitives)
-kit-charts recommend data.json --intent comparison
+# Parcours par défaut, en un appel (CSV, TSV ou JSON en lignes ; JSON formattedData sinon) :
+# recommandation, conversion des données, compilation, audit, rendu réel, export.
+kit-charts make data.csv --title "Le constat" --subtitle "Unité, période" --polarity HIGHER_IS_BETTER [--intent X] [--export png,svg,pdf] [--offline]
+kit-charts update output/<slug> [--data data.csv] [--title ...]   # garde template, thème, polarité, colonnes
+kit-charts compile output/<page>/page.json                        # page à plusieurs graphiques (charts: [spec ou chemin])
+kit-charts export output/<slug>/index.html --format png,svg,pdf
 
-# 2. Contrat de données du template (schema.json + exemple), puis spec squelette sans données d'exemple
+# Pas à pas (cas non couverts par make)
+kit-charts recommend data.json --intent comparison
 kit-charts describe <id>
 kit-charts init-spec <id> -o output/<slug>/spec.json
-
-# 3. Compilation vers HTML autonome (exit 1 si erreur bloquante, --force pour déboguer)
-kit-charts compile output/<slug>/spec.json -o output/<slug>/index.html
-
-# 4. Audit cognitif / WCAG / contrat, puis rendu réel (Chrome headless, data-kc-render)
+kit-charts compile output/<slug>/spec.json -o output/<slug>/index.html   # exit 1 si erreur bloquante, --force pour déboguer
 kit-charts validate output/<slug>/index.html --json
 kit-charts check output/<slug>/index.html
 
-# 5. Suite complète : intégration + filet snapshots (--check).
-#    Rendu réel des 73 templates (Chrome + réseau) : npm run test:render. CLI installé : npm run test:cli.
-#    Toute modification d'un template DOIT passer cette porte (voir § Discipline).
-npm test
+# Tests. Toute modification d'un template DOIT passer cette porte (voir § Discipline).
+npm test             # intégration, parcours make, snapshots --check, benchmark tokens --assert
+npm run test:render  # rendu réel des 73 templates (Chrome + réseau)
+npm run test:export  # PNG, SVG, PDF (Chrome, pages hors ligne)
+npm run test:cli     # paquet installé
+npm run bench        # coût en tokens, pas à pas contre make, sur les 9 cas d'eval
 
-# 6. Régénérer les snapshots APRÈS modification intentionnelle d'un template.
-#    Relire le diff avant de commiter : jamais de régénération aveugle pour verdir un rouge.
+# Régénérer les snapshots APRÈS modification intentionnelle d'un template.
+# Relire le diff avant de commiter : jamais de régénération aveugle pour verdir un rouge.
 npm run snapshots
 node test/snapshot-configs.js --check
+
+# Dépendances épinglées : changer une version dans scripts/vendor-pins.js, puis
+npm run vendor -- --update-hashes   # télécharge dans vendor/ et recalcule les SHA-384
 ```
 
 ---
@@ -105,7 +111,10 @@ Tout agent qui ajoute ou modifie un test **doit** respecter ces règles :
    axe de valeur et jamais `beginAtZero:false`. Exemptions documentées et temporaires :
    `kpi-bullet`, `kpi-distribution` (gabarits DOM, à statuer). Tout agent modifiant un
    template longueur préserve cet invariant.
-7. **Calculs en direct.** `themes/stat-helpers.js` (quantile, mean, studentT, ci95) : asserts
+7. **Économie de tokens surveillée.** `test/token-benchmark.js --assert` (dans `npm test`)
+   échoue si `make` ne coûte plus moins cher que le parcours pas à pas sur un des 9 cas
+   d'eval, ou s'il ne les produit plus sans erreur. Garder la sortie de `make` compacte.
+8. **Calculs en direct.** `themes/stat-helpers.js` (quantile, mean, studentT, ci95) : asserts
    sur fixtures avec valeurs exactes, jamais sur la présence de chaînes dans le HTML.
 
 ---

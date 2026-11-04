@@ -684,6 +684,10 @@
       },
       "plugins": [
         {
+          "id": "kcCompactResize",
+          "resize": "[Function:resize]"
+        },
+        {
           "beforeDatasetsDraw": "[Function:beforeDatasetsDraw]",
           "id": "mekkoRectsPlugin"
         }

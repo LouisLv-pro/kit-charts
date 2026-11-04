@@ -274,6 +274,10 @@
       },
       "plugins": [
         {
+          "id": "kcCompactResize",
+          "resize": "[Function:resize]"
+        },
+        {
           "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
           "id": "kitChartsTargetOverlayPainter"
         }

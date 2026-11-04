@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
@@ -252,8 +253,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const rawItems = (rawData.datasets && rawData.datasets[0]?.data) || (Array.isArray(rawData) ? rawData : []);
   const normalizedData = normalizeMekkoData(rawItems);
 
-  const availW = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
-  const compact = availW > 0 && availW < 460;
+  // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+  const measureCompact = () => {
+    const availW = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
+    return availW > 0 ? availW < 460 : null;
+  };
+  let compact = measureCompact() === true;
   const distinctSubNames = Array.from(new Set(normalizedData.map(d => d.sub)));
   const surfaceBorder = isDark ? (tokens.surface || '#2E3440') : '#FFFFFF';
 
@@ -294,79 +299,85 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     stepSize: 25
   };
 
-  const config = {
-    type: 'scatter',
-    data: chartData,
-    options: {
-      ...defaultOpts,
-      animation: false,
-      layout: { padding: { top: 40 } },
-      interaction: { mode: 'nearest', intersect: false },
-      hover: { mode: 'nearest', intersect: false, animationDuration: 0 },
-      plugins: {
-        ...defaultOpts.plugins,
-        mekkoMeta: { tokens, items: normalizedData, showLabels },
-        legend: {
-          display: !isTufte && distinctSubNames.length > 1,
-          position: 'bottom',
-          labels: {
-            color: tokens.textPrimary,
-            usePointStyle: true,
-            pointStyle: 'rect',
-            boxWidth: 10,
-            boxHeight: 10,
-            font: { family: tokens.fontFamily, size: 11 }
-          }
-        },
-        tooltip: {
-          ...defaultOpts.plugins.tooltip,
-          backgroundColor: tokens.tooltipBg || '#0F172A',
-          titleColor: tokens.tooltipText || '#F8FAFC',
-          bodyColor: tokens.tooltipText || '#F8FAFC',
-          borderColor: tokens.borderStrong || tokens.border || '#334155',
-          borderWidth: 1,
-          padding: { top: 10, bottom: 10, left: 14, right: 14 },
-          cornerRadius: isTufte ? 0 : 6,
-          boxPadding: 6,
-          titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
-          bodyFont: { family: tokens.fontMono, size: 12, weight: '400' },
-          callbacks: {
-            title: (items) => (items.length ? (items[0].raw?.label || 'Segment Mekko') : ''),
-            label: (item) => {
-              const raw = item.raw;
-              if (!raw) return '';
-              const growthInfo = typeof raw.growth === 'number'
-                ? ` Évolution A/A-1 : ${raw.growth > 0 ? '+' : ''}${raw.growth}%`
-                : '';
-              return [
-                ` Segment : ${raw.col} (Poids: ${raw.colWeightPct}%)`,
-                ` Catégorie : ${raw.sub} (Part: ${raw.subSharePct}%)`,
-                ` Volume Global : ${raw.marketShare}% du marché total`,
-                ...(growthInfo ? [growthInfo] : []),
-                ...(raw.role === 'anomaly' ? [' Bordure rouge : segment atypique'] : [])
-              ];
-            }
-          }
+  // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+  const buildOptions = () => ({
+    ...defaultOpts,
+    animation: false,
+    layout: { padding: { top: 40 } },
+    interaction: { mode: 'nearest', intersect: false },
+    hover: { mode: 'nearest', intersect: false, animationDuration: 0 },
+    plugins: {
+      ...defaultOpts.plugins,
+      mekkoMeta: { tokens, items: normalizedData, showLabels },
+      legend: {
+        display: !isTufte && distinctSubNames.length > 1,
+        position: 'bottom',
+        labels: {
+          color: tokens.textPrimary,
+          usePointStyle: true,
+          pointStyle: 'rect',
+          boxWidth: 10,
+          boxHeight: 10,
+          font: { family: tokens.fontFamily, size: 11 }
         }
       },
-      scales: {
-        x: {
-          type: 'linear', min: 0, max: 100,
-          title: { display: true, text: compact ? 'Part cumulée du marché (largeur)' : 'Part cumulée des segments de marché (largeur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
-          grid: { display: false },
-          border: { display: false },
-          ticks: axisTick
-        },
-        y: {
-          type: 'linear', min: 0, max: 100, beginAtZero: true,
-          title: { display: true, text: compact ? 'Part dans le segment (hauteur)' : 'Part de chaque motorisation dans le segment (hauteur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
-          grid: { display: false },
-          border: { display: false },
-          ticks: axisTick
+      tooltip: {
+        ...defaultOpts.plugins.tooltip,
+        backgroundColor: tokens.tooltipBg || '#0F172A',
+        titleColor: tokens.tooltipText || '#F8FAFC',
+        bodyColor: tokens.tooltipText || '#F8FAFC',
+        borderColor: tokens.borderStrong || tokens.border || '#334155',
+        borderWidth: 1,
+        padding: { top: 10, bottom: 10, left: 14, right: 14 },
+        cornerRadius: isTufte ? 0 : 6,
+        boxPadding: 6,
+        titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
+        bodyFont: { family: tokens.fontMono, size: 12, weight: '400' },
+        callbacks: {
+          title: (items) => (items.length ? (items[0].raw?.label || 'Segment Mekko') : ''),
+          label: (item) => {
+            const raw = item.raw;
+            if (!raw) return '';
+            const growthInfo = typeof raw.growth === 'number'
+              ? ` Évolution A/A-1 : ${raw.growth > 0 ? '+' : ''}${raw.growth}%`
+              : '';
+            return [
+              ` Segment : ${raw.col} (Poids: ${raw.colWeightPct}%)`,
+              ` Catégorie : ${raw.sub} (Part: ${raw.subSharePct}%)`,
+              ` Volume Global : ${raw.marketShare}% du marché total`,
+              ...(growthInfo ? [growthInfo] : []),
+              ...(raw.role === 'anomaly' ? [' Bordure rouge : segment atypique'] : [])
+            ];
+          }
         }
       }
     },
-    plugins: [mekkoRectsPlugin]
+    scales: {
+      x: {
+        type: 'linear', min: 0, max: 100,
+        title: { display: true, text: compact ? 'Part cumulée du marché (largeur)' : 'Part cumulée des segments de marché (largeur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
+        grid: { display: false },
+        border: { display: false },
+        ticks: axisTick
+      },
+      y: {
+        type: 'linear', min: 0, max: 100, beginAtZero: true,
+        title: { display: true, text: compact ? 'Part dans le segment (hauteur)' : 'Part de chaque motorisation dans le segment (hauteur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
+        grid: { display: false },
+        border: { display: false },
+        ticks: axisTick
+      }
+    }
+  });
+
+  const config = {
+    type: 'scatter',
+    data: chartData,
+    options: buildOptions(),
+    plugins: [createCompactResizePlugin(measureCompact, compact, (next, chart) => {
+      compact = next;
+      chart.options = buildOptions();
+    }), mekkoRectsPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {

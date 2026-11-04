@@ -24,6 +24,7 @@
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
@@ -133,8 +134,12 @@
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Incidents';
 
     // Carte étroite (< 420 px) : libellés abrégés, titres d'axes retirés, polices réduites.
-    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
-    const narrow = cw > 0 && cw < 420;
+    // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+    const measureNarrow = () => {
+      const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+      return cw > 0 ? cw < 420 : null;
+    };
+    let narrow = measureNarrow() === true;
     const shortLabel = (l) => { const t = String(l); return t.length > 13 ? t.slice(0, 12).trimEnd() + '…' : t; };
     const pareto = computeParetoCumsum(inputLabels, inputValues);
     const gini = computeGini(pareto.values);
@@ -213,6 +218,110 @@
     };
 
     const defaultOpts = getChartDefaultOptions(tokens);
+    // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+    const buildOptions = () => ({
+      ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        ...defaultOpts.plugins,
+        datalabels: getDataLabelOptions(tokens, {
+          display: showDataLabels,
+          formatter: (v, ctx) => {
+            if (ctx && ctx.dataset && ctx.dataset.type === 'line') {
+              return `${v}%`;
+            }
+            return formatLabelValue(v);
+          }
+        }),
+        legend: {
+          display: true,
+          position: 'top',
+          align: narrow ? 'start' : 'end',
+          labels: {
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+            usePointStyle: true,
+            boxWidth: narrow ? 8 : 10,
+            padding: narrow ? 8 : 10
+          }
+        },
+        tooltip: {
+          ...defaultOpts.plugins.tooltip,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (ctx) => {
+              const idx = ctx.dataIndex;
+              if (ctx.dataset.type === 'bar') {
+                const pctIndiv = ((pareto.values[idx] / pareto.total) * 100).toFixed(1);
+                return `Effectif : ${ctx.parsed.y} (${pctIndiv}% du total)`;
+              }
+              return `Cumul : ${ctx.parsed.y}% (Gini = ${gini})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ...defaultOpts.scales.x,
+          grid: { display: false },
+          ticks: {
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 11 },
+            maxRotation: narrow ? 90 : 30,
+            minRotation: narrow ? 90 : 0,
+            autoSkip: false,
+            callback: function(value) { const l = this.getLabelForValue(value); return narrow ? shortLabel(l) : l; }
+          }
+        },
+        y: {
+          type: 'linear',
+          position: 'left',
+          beginAtZero: true,
+          min: 0,
+          max: pareto.total, // le sommet de l'axe gauche = total : 100% du cumul y est aligné
+          grid: { color: tokens.gridColor },
+          ticks: {
+            color: tokens.textSecondary,
+            font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
+            includeBounds: false,
+            maxTicksLimit: narrow ? 4 : undefined
+          },
+          title: {
+            display: !narrow,
+            text: "Nombre d'occurrences",
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          }
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          beginAtZero: true,
+          min: 0,
+          max: 100,
+          grid: { display: false },
+          ticks: {
+            stepSize: narrow ? 25 : 20,
+            color: lineColor,
+            font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
+            callback: (val) => `${val}%`
+          },
+          title: {
+            display: !narrow,
+            text: `Pourcentage cumulé (Gini = ${gini})`,
+            color: lineColor,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          }
+        }
+      }
+    });
+
     const config = {
       type: 'bar',
       data: {
@@ -258,109 +367,12 @@
           }
         ]
       },
-      options: {
-        ...defaultOpts,
-        _kitChartsTokens: tokens,
-        showDataLabels: showDataLabels,
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        plugins: {
-          ...defaultOpts.plugins,
-          datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
-            formatter: (v, ctx) => {
-              if (ctx && ctx.dataset && ctx.dataset.type === 'line') {
-                return `${v}%`;
-              }
-              return formatLabelValue(v);
-            }
-          }),
-          legend: {
-            display: true,
-            position: 'top',
-            align: narrow ? 'start' : 'end',
-            labels: {
-              color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
-              usePointStyle: true,
-              boxWidth: narrow ? 8 : 10,
-              padding: narrow ? 8 : 10
-            }
-          },
-          tooltip: {
-            ...defaultOpts.plugins.tooltip,
-            callbacks: {
-              title: (items) => items[0].label,
-              label: (ctx) => {
-                const idx = ctx.dataIndex;
-                if (ctx.dataset.type === 'bar') {
-                  const pctIndiv = ((pareto.values[idx] / pareto.total) * 100).toFixed(1);
-                  return `Effectif : ${ctx.parsed.y} (${pctIndiv}% du total)`;
-                }
-                return `Cumul : ${ctx.parsed.y}% (Gini = ${gini})`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            ...defaultOpts.scales.x,
-            grid: { display: false },
-            ticks: {
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 11 },
-              maxRotation: narrow ? 90 : 30,
-              minRotation: narrow ? 90 : 0,
-              autoSkip: false,
-              callback: function(value) { const l = this.getLabelForValue(value); return narrow ? shortLabel(l) : l; }
-            }
-          },
-          y: {
-            type: 'linear',
-            position: 'left',
-            beginAtZero: true,
-            min: 0,
-            max: pareto.total, // le sommet de l'axe gauche = total : 100% du cumul y est aligné
-            grid: { color: tokens.gridColor },
-            ticks: {
-              color: tokens.textSecondary,
-              font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
-              includeBounds: false,
-              maxTicksLimit: narrow ? 4 : undefined
-            },
-            title: {
-              display: !narrow,
-              text: "Nombre d'occurrences",
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
-            }
-          },
-          y1: {
-            type: 'linear',
-            position: 'right',
-            beginAtZero: true,
-            min: 0,
-            max: 100,
-            grid: { display: false },
-            ticks: {
-              stepSize: narrow ? 25 : 20,
-              color: lineColor,
-              font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
-              callback: (val) => `${val}%`
-            },
-            title: {
-              display: !narrow,
-              text: `Pourcentage cumulé (Gini = ${gini})`,
-              color: lineColor,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
-            }
-          }
-        }
-      },
-      plugins: [pareto80LinePlugin, paretoBarLabelsPlugin]
+      options: buildOptions(),
+      plugins: [createCompactResizePlugin(measureNarrow, narrow, (next, chart) => {
+        narrow = next;
+        chart.options = buildOptions();
+        chart.data.datasets.forEach((d) => { if (d.type === 'line' && d.datalabels) d.datalabels.display = showDataLabels && !narrow; });
+      }), pareto80LinePlugin, paretoBarLabelsPlugin]
     };
 
     if (typeof Chart === 'undefined') return Object.assign(config, { pareto, gini, computeParetoCumsum, computeGini });

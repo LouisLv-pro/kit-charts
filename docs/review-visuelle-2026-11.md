@@ -46,7 +46,12 @@ index.html :
 
 Validation : `npm test` 85/85, snapshots régénérés (diff relu : aucun `beginAtZero:false`, aucune échelle log ; seuls les axes fantômes du sunburst perdent leur `beginAtZero`), `npm run test:render` 73/73.
 
-Restes mineurs connus : étiquette de valeur du bullet-chart parfois au contact du trait de cible ; Londres et Paris se touchent sur la carte à bulles ; mode compact des tableaux et des cascades évalué à la création, pas au redimensionnement.
+Restes mineurs (corrigés en novembre 2026, vérifiés sur captures en clair et en sombre, à 380 px puis 1200 px) :
+- `bullet-chart` : l'étiquette de valeur ne touche plus le trait de cible. Elle est posée par le template : à droite de la barre, ou de l'autre côté du trait quand l'écart entre la valeur et la cible est faible ; faute de place à droite, elle rentre dans la barre, avant la cible.
+- `bubble-map` : Londres et Paris restent distinguables. Les petites bulles sont dessinées au-dessus des grandes, le remplissage est translucide, chaque cercle garde un contour entier (trait sombre bordé de la couleur du fond, dessiné au-dessus de toutes les bulles) et un point au centre marque le lieu. Les rayons ne changent pas : la surface reste proportionnelle à la valeur.
+- Mode compact recalculé quand le conteneur change de largeur, dans les deux sens. Tableaux (`table-*`) : un ResizeObserver par conteneur, libéré au destroy, remplacé si le tableau est recréé (changement de thème) ; le re-rendu n'a lieu que si l'état compact bascule. Graphiques Chart.js (`waterfall-cumulative-line`, `bar-target-overlay`, `pareto-chart`, `stacked-total-line`, `sunburst`, `marimekko-chart`, `sankey-diagram`) : options reconstruites via le cycle de redimensionnement de Chart.js, qui observe déjà le conteneur et se libère au destroy. Aucune écoute de window.resize. `waterfall-chart` était déjà dynamique (largeur lue à chaque calcul des graduations).
+
+Encore visible à 380 px, hors de ce lot : libellés d'axe serrés sur `waterfall-cumulative-line` (mots abrégés qui se touchent), tableaux `table-financial-variance` et `table-heatmap-matrix` plus larges que la carte (défilement horizontal).
 
 ## Détail par template (constats initiaux)
 

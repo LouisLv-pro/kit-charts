@@ -155,7 +155,7 @@
             "anchor": "end",
             "clip": false,
             "color": "#0F172A",
-            "display": true,
+            "display": false,
             "font": {
               "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
               "size": 11,
@@ -265,6 +265,12 @@
         },
         "themeName": "viridis-perceptual"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "bulletValueLabels"
+        }
+      ],
       "type": "bar"
     },
     "kind": "chart-config"

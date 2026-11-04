@@ -23,6 +23,7 @@
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
@@ -120,8 +121,12 @@
     const analysis = computeWaterfallBalances(steps);
 
     // Mode compact : largeur disponible sous ~420 px (carte d'aperçu) ; libellés abrégés sur 2 lignes, légende réduite
-    const availW = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
-    const compact = availW > 0 && availW < 460;
+    // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+    const measureCompact = () => {
+      const w = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+    let compact = measureCompact() === true;
     // Retour à la ligne des libellés d'axe : 2 lignes de `max` caractères (abrégé en carte étroite)
     const wrapTick = (text, max, abbreviate) => {
       const src = abbreviate ? String(text).replace(/\s*\(.*?\)\s*/g, ' ').trim() : String(text);
@@ -180,9 +185,96 @@
       }
     };
 
+    // Options reconstruites à chaque bascule du mode compact (polices, légende, grace, ticks)
+    const buildOptions = () => ({
+      ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      layout: {
+        padding: {
+          top: 16
+        }
+      },
+      animation: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        ...defaultOpts.plugins,
+        datalabels: { display: false },
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          onClick: null,
+          labels: {
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: compact ? 10 : 12 },
+            boxWidth: compact ? 10 : 40,
+            boxHeight: compact ? 10 : 12,
+            padding: compact ? 8 : 10,
+            generateLabels: () => [
+              { text: 'Hausse', fillStyle: posColor, strokeStyle: posColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+              { text: 'Baisse', fillStyle: negColor, strokeStyle: negColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+              { text: compact ? 'Initial / final' : 'Solde initial / final', fillStyle: totalColor, strokeStyle: totalColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+              { text: compact ? 'Cumulé' : 'Solde cumulé', fillStyle: lineColor, strokeStyle: lineColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 2, hidden: false }
+            ]
+          }
+        },
+        tooltip: {
+          ...defaultOpts.plugins.tooltip,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (ctx) => {
+              const idx = ctx.dataIndex;
+              const s = steps[idx];
+              const bal = analysis.balances[idx];
+              if (ctx.dataset.type === 'bar') {
+                const valStr = s.isTotal ? `${bal} k€ (Total)` : `${s.value >= 0 ? '+' : ''}${s.value} k€`;
+                return `Impact : ${valStr}`;
+              }
+              return `Solde Cumulé : ${bal.toLocaleString('fr-FR')} k€`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ...defaultOpts.scales.x,
+          grid: { display: false },
+          ticks: {
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: compact ? 10 : 11 },
+            maxRotation: 0, autoSkip: false,
+            callback: function(val) {
+              const t = this.getLabelForValue(val);
+              return compact ? wrapTick(t, 7, true).slice(0, 2) : wrapTick(t, 16, false);
+            }
+          }
+        },
+        y: {
+          ...defaultOpts.scales.y,
+          beginAtZero: true,
+          ticks: { ...((defaultOpts.scales.y && defaultOpts.scales.y.ticks) || {}), font: { family: tokens.fontMono || tokens.fontFamily, size: compact ? 10 : 11 }, padding: compact ? 4 : 6, maxTicksLimit: compact ? 5 : 8 },
+          grace: compact ? '18%' : '12%',
+          grid: { color: tokens.gridColor },
+          title: {
+            display: true,
+            text: 'Solde Net (k€)',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: compact ? 10 : 12, weight: '500' }, padding: compact ? 2 : 4
+          }
+        }
+      }
+    });
+
     const config = {
       type: 'bar',
-      plugins: [labelsPlugin],
+      plugins: [labelsPlugin, createCompactResizePlugin(measureCompact, compact, (next, chart) => {
+        compact = next;
+        chart.options = buildOptions();
+      })],
       data: {
         labels,
         datasets: [
@@ -214,88 +306,7 @@
           }
         ]
       },
-      options: {
-        ...defaultOpts,
-        _kitChartsTokens: tokens,
-        showDataLabels: showDataLabels,
-        layout: {
-          padding: {
-            top: 16
-          }
-        },
-        animation: false,
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        plugins: {
-          ...defaultOpts.plugins,
-          datalabels: { display: false },
-          legend: {
-            display: true,
-            position: 'top',
-            align: 'end',
-            onClick: null,
-            labels: {
-              color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: compact ? 10 : 12 },
-              boxWidth: compact ? 10 : 40,
-              boxHeight: compact ? 10 : 12,
-              padding: compact ? 8 : 10,
-              generateLabels: () => [
-                { text: 'Hausse', fillStyle: posColor, strokeStyle: posColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
-                { text: 'Baisse', fillStyle: negColor, strokeStyle: negColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
-                { text: compact ? 'Initial / final' : 'Solde initial / final', fillStyle: totalColor, strokeStyle: totalColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
-                { text: compact ? 'Cumulé' : 'Solde cumulé', fillStyle: lineColor, strokeStyle: lineColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 2, hidden: false }
-              ]
-            }
-          },
-          tooltip: {
-            ...defaultOpts.plugins.tooltip,
-            callbacks: {
-              title: (items) => items[0].label,
-              label: (ctx) => {
-                const idx = ctx.dataIndex;
-                const s = steps[idx];
-                const bal = analysis.balances[idx];
-                if (ctx.dataset.type === 'bar') {
-                  const valStr = s.isTotal ? `${bal} k€ (Total)` : `${s.value >= 0 ? '+' : ''}${s.value} k€`;
-                  return `Impact : ${valStr}`;
-                }
-                return `Solde Cumulé : ${bal.toLocaleString('fr-FR')} k€`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            ...defaultOpts.scales.x,
-            grid: { display: false },
-            ticks: {
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: compact ? 10 : 11 },
-              maxRotation: 0, autoSkip: false,
-              callback: function(val) {
-                const t = this.getLabelForValue(val);
-                return compact ? wrapTick(t, 7, true).slice(0, 2) : wrapTick(t, 16, false);
-              }
-            }
-          },
-          y: {
-            ...defaultOpts.scales.y,
-            beginAtZero: true,
-            ticks: { ...((defaultOpts.scales.y && defaultOpts.scales.y.ticks) || {}), font: { family: tokens.fontMono || tokens.fontFamily, size: compact ? 10 : 11 }, padding: compact ? 4 : 6, maxTicksLimit: compact ? 5 : 8 },
-            grace: compact ? '18%' : '12%',
-            grid: { color: tokens.gridColor },
-            title: {
-              display: true,
-              text: 'Solde Net (k€)',
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: compact ? 10 : 12, weight: '500' }, padding: compact ? 2 : 4
-            }
-          }
-        }
-      }
+      options: buildOptions()
     };
 
     if (typeof Chart === 'undefined') return { config, analysis, computeWaterfallBalances };

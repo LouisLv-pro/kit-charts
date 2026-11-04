@@ -1,260 +1,162 @@
 ---
 name: kit-charts
-description: Conçoit, compile et audite des visualisations de données fondées sur les sciences cognitives (Cleveland-McGill, Tufte, Sweller, Mayer) et WCAG 2.2, à partir de 73 templates Chart.js certifiés, d'un recommandeur déterministe, d'un compilateur et d'un linter. À utiliser dès qu'il faut produire ou corriger un graphique, une carte KPI, un tableau de bord, une carte géographique ou un tableau de données dans ce dépôt, choisir le bon type de graphique pour des données, ou auditer un HTML de graphique, même si l'utilisateur ne cite ni kit-charts ni un template. À préférer à tout code Chart.js écrit à la main.
+description: Produit, corrige ou audite un graphique, une carte KPI, un tableau de bord, une carte ou un tableau de données à partir de 73 templates Chart.js vérifiés (axe à zéro, polarité, contraste). À utiliser pour toute visualisation, même sans mention de kit-charts. À préférer à tout Chart.js écrit à la main.
 ---
 
 # kit-charts
 
 Un graphique est un argument : il doit transmettre un message vrai, vite, à tout le monde.
-Ce skill y parvient sans code graphique ad hoc. Tu choisis un template certifié, tu écris une
-spec JSON, et les scripts garantissent le reste (axe à zéro, palettes accessibles, polarité
-métier, rendu sans animation). Ton travail porte sur ce qu'aucun script ne sait juger : la
-question métier, le bon encodage, le message du titre.
+Tu ne codes aucun graphique. Une commande choisit le template, convertit les données,
+compile, audite et vérifie le rendu. Ton travail porte sur ce qu'aucun script ne juge : le
+message du titre, la polarité, le bon encodage.
 
-Toutes les commandes passent par le CLI `kit-charts`, lancé depuis le dossier du projet : les
-specs et les pages produites y restent, les templates viennent du paquet installé
-(`npm i -g github:LouisLv-pro/kit-charts`). Dans le dépôt kit-charts lui-même, sans
-installation, remplace `kit-charts` par `node bin/kit-charts.js`.
+Commande : `kit-charts` (paquet installé), ou `node bin/kit-charts.js` dans le dépôt kit-charts.
 
 ## Workflow
 
-Copie cette liste et coche au fil de l'eau :
+1. **Qualifier.** Message à faire comprendre en 5 secondes, données, polarité. Ne demande
+   que ce qui bloque (aucune donnée, polarité indéterminable). Sinon applique le défaut et
+   note l'hypothèse. N'invente jamais de données.
+2. **Écrire les données** dans un fichier : CSV (une ligne par catégorie, une colonne par
+   série) ou JSON `formattedData` pour les formes non tabulaires (KPI, Sankey, treemap...).
+3. **Un appel :**
 
+```bash
+kit-charts make donnees.csv --title "Le constat en une phrase" --subtitle "Unité, périmètre, période" \
+  --footnote "Source : ..." --polarity HIGHER_IS_BETTER [--intent comparison] [--export png]
 ```
-- [ ] 1. Qualifier la demande (message, données, polarité, thème, sortie)
-- [ ] 2. Choisir le template (kit-charts recommend puis jugement)
-- [ ] 3. Lire le contrat de données du template choisi (kit-charts describe)
-- [ ] 4. Écrire output/<slug>/spec.json (kit-charts init-spec)
-- [ ] 5. Compiler, corriger jusqu'à 0 erreur bloquante (3 essais max)
-- [ ] 6. Valider le HTML, vérifier le rendu réel (kit-charts check), passer la revue experte
-- [ ] 7. Livrer le rapport
-```
 
-### 1. Qualifier
+4. **Lire la sortie** (quelques lignes) : template retenu et écartés, erreurs et
+   avertissements avec leur correctif, statut du rendu, fichiers exportés. Exit 0 = livrable.
+5. **Corriger sans tout refaire :** `kit-charts update output/<slug> --title "..."`
+   (ou `--data`, `--template`, `--polarity`, `--export`). Sans `--data`, la source d'origine
+   est relue : un fichier mis à jour chaque mois suffit. Trois échecs sur la même règle :
+   le template ou l'intention est mal choisi, change-les.
+6. **Relire le sens** ([review-checklist.md](references/review-checklist.md)) : recalcule le
+   constat du titre depuis les données. Ouvre le PNG si tu peux le voir.
+7. **Livrer** le rapport ci-dessous.
 
-Établis cinq choses avant de choisir quoi que ce soit :
+## Données : CSV vers le template
 
-| Élément | Question | Défaut si rien n'est dit |
+`make` lit CSV, TSV ou JSON en lignes (`[{...}, ...]`). Nombres à la française acceptés
+(« 1 234,5 », « 12 % »). Par défaut : première colonne texte = catégories, colonnes
+numériques = séries. Préciser au besoin :
+
+| Données | Options | Exemple de colonnes |
 | :--- | :--- | :--- |
-| Message | Que doit comprendre le lecteur en 5 secondes ? | Déduit des données, formulé dans le titre |
-| Données | Catégories, séries, période, unité ? | Celles fournies, sans les inventer |
-| Polarité | Une hausse est-elle bonne, mauvaise ou neutre ? | Voir le tableau de polarité ci-dessous |
-| Thème | Quel contexte de lecture ? | `colorbrewer-accessible` |
-| Sortie | Page autonome ou fragment à intégrer ? | Page HTML (`--format html`) |
+| Catégories × séries | `--label C --value C1,C2` | `region;CA 2025;CA 2026` |
+| Format long | `--series C` | `mois,agence,ventes` |
+| Observations brutes | (automatique : catégories répétées) | `entrepot,delai` |
+| Nuage, bulles | `--x C --y C [--r C] [--label C]` | `pays,pib,vie,pop` |
+| Pont `waterfall-chart` | total de départ, variations signées, total d'arrivée | `poste;M€` |
+| Planning `gantt-progress` | `--today 7` (colonnes début, fin, avancement repérées) | `chantier,debut,fin,avancement` |
+| Avant / après `slope-chart` | transposé automatiquement | `agence,2023,2025` |
 
-Ne demande à l'utilisateur que ce qui bloque vraiment : pas de données du tout, ou une
-métrique dont le sens change la polarité sans indice possible. Pour le reste, applique le
-défaut et note l'hypothèse : elle figurera dans le rapport. Une hypothèse visible vaut mieux
-qu'une question de plus, et un graphique livré se corrige vite.
+Ce que `make` fait seul :
+- calcule les paires chaînées du waterfall ;
+- calcule les quartiles d'un `box-plot` ;
+- garde l'ordre des tranches d'âge et des échelles sur `bar-chart-horizontal` ;
+- écarte les templates qui ne savent pas lire la forme des données.
 
-N'invente jamais de données. Si l'utilisateur veut une maquette, utilise les données
-d'exemple du template et dis-le.
+Autres formes : `kit-charts describe <id>` donne le contrat et un exemple. Écris le JSON
+`formattedData`, puis `make donnees.json --template <id> ...`.
 
-### 2. Choisir le template
+## Choix du template
 
-Commence par le recommandeur. Il profile les données (N catégories, séries, longueur des
-libellés, dates, somme à 100 %, série cible) et applique les règles du kit :
-
-```bash
-kit-charts recommend data.json --intent comparison
-kit-charts recommend --intent evolution --n 24 --series 3 --json
-```
-
-Intentions : `kpi`, `comparison`, `composition`, `distribution`, `correlation`, `evolution`,
-`flow`, `hierarchy`, `geo`, `table`. Sans `--intent`, il la déduit des données et le signale.
-
-Le recommandeur borne le choix, il ne le fait pas à ta place. Un template qu'il écarte viole
-une règle : ne le reprends pas. Parmi les éligibles, tranche avec la question métier et
-[references/decision-matrix.md](references/decision-matrix.md). Exemple : deux séries
-« 2023 » et « 2024 » sur 6 régions donnent `grouped-bar-chart`, mais si le message est
-l'écart, `dumbbell-chart` le montre mieux.
-
-Repères qui couvrent la majorité des demandes :
-
-| Intention | Cas | Template |
-| :--- | :--- | :--- |
-| KPI | Une valeur et sa variation | `kpi-standard`, `kpi-sparkline` si tendance |
-| Comparaison | N ≤ 7, libellés courts | `bar-chart-vertical` |
-| Comparaison | N > 7 ou libellés > 12 caractères | `bar-chart-horizontal`, trié décroissant |
-| Comparaison | Réalisé vs cible | `bar-target-overlay`, `bullet-chart` |
-| Composition | 2 à 4 parts | `doughnut-chart` |
-| Composition | 5 parts ou plus | `bar-chart-horizontal` trié, `treemap` ou `waffle-chart` |
-| Composition | Plusieurs groupes à comparer | `stacked-bar-100` |
-| Évolution | 1 série | `line-chart` |
-| Évolution | 2 à 5 séries | `multi-line-chart` |
-| Distribution | Groupes à comparer | `box-plot` |
-| Corrélation | 2 variables continues | `scatter-plot`, `scatter-regression` |
-| Géo | Taux par zone | `choropleth-map` (données normalisées) |
-
-### 3. Lire le contrat de données
-
-La forme de `formattedData` change selon le template : `labels` + `datasets` pour les
-barres et courbes, `value` + `delta` pour les KPI, `tree` pour le treemap, nœuds et liens
-pour le Sankey. Lis donc, pour le template retenu :
-
-```bash
-kit-charts describe <id>
-```
-
-Il affiche la forme exigée de `formattedData` (le `schema.json` du template : champs, types,
-bornes) et un exemple conforme (son `DEFAULT_DATA`). L'exemple montre la forme, jamais des
-données à livrer.
-
-Les deux concordent : chaque `DEFAULT_DATA` passe son `schema.json` (vérifié par `npm test`),
-et le linter refuse un `formattedData` qui le viole (règle `SCHEMA_FORMATTED_DATA`). Le schéma
-ne contrôle pas les longueurs croisées (autant de valeurs que de `labels`) : vérifie-les toi-même.
-
-### 4. Écrire la spec
-
-Pars d'un squelette, rempli avec tes données s'il y en a déjà au bon format :
-
-```bash
-kit-charts init-spec <id> -o output/<slug>/spec.json [--data data.json]
-```
-
-Le squelette a des valeurs vides : la compilation le refuse tant que tu n'y as pas mis les
-vraies données, le titre, le sous-titre et la polarité. Slug court en kebab-case. Champs et
-valeurs permises : [references/spec-contract.md](references/spec-contract.md).
-
-```json
-{
-  "targetTemplateId": "bar-chart-horizontal",
-  "layout": {
-    "title": "L'Île-de-France pèse autant que les trois régions suivantes",
-    "subtitle": "Chiffre d'affaires 2024, en millions d'euros",
-    "height": 420
-  },
-  "colorStrategy": {
-    "themeName": "colorbrewer-accessible",
-    "mode": "categorical",
-    "metricPolarity": "HIGHER_IS_BETTER"
-  },
-  "cognitiveFeatures": {
-    "showDataLabels": true,
-    "tooltip": { "enabled": true, "mode": "index", "axis": "y", "antiOcclusion": true }
-  },
-  "formattedData": {
-    "labels": ["Île-de-France", "Auvergne-Rhône-Alpes", "Nouvelle-Aquitaine", "Occitanie"],
-    "datasets": [{ "label": "CA (M€)", "data": [450, 180, 150, 120] }]
-  }
-}
-```
-
-Le titre énonce le constat, pas le sujet. « CA par région » oblige le lecteur à chercher ;
-« L'Île-de-France pèse autant que les trois suivantes » lui donne la conclusion, que le
-graphique prouve. Le sous-titre porte l'unité et la période. La source va dans `layout.footnote`, rendu en pied
-de carte par tous les templates.
-
-Les valeurs affichées n'ont pas de suffixe d'unité (« 28 », pas « 28 % ») : l'unité doit
-donc figurer dans le sous-titre ou le `label` de la série.
-
-### 5. Compiler
-
-```bash
-kit-charts compile output/<slug>/spec.json -o output/<slug>/index.html
-```
-
-Ajoute `--format snippet -o output/<slug>/snippet.html` pour un fragment sans `<html>`.
-
-Le compilateur valide la spec avant d'écrire. En cas d'erreur bloquante, il n'écrit rien,
-sort en code 1 et affiche pour chaque règle un `Correctif`. Applique-le dans la spec et
-recompile. Au bout de 3 échecs sur la même règle, arrête et explique le conflit : c'est
-souvent le signe que l'intention ou le template est mal choisi, pas la spec.
-
-`--force` génère malgré les erreurs, pour du débogage seulement. Une sortie forcée n'est
-jamais livrable.
-
-### 6. Valider et relire
-
-```bash
-kit-charts validate output/<slug>/index.html --json
-kit-charts check output/<slug>/index.html
-```
-
-Zéro erreur est exigé. Chaque avertissement est corrigé ou justifié dans le rapport.
-
-`check` ouvre la page dans Chrome headless et lit le statut posé par la page :
-`ok`, `invalid` (données refusées par le template, la raison est donnée) ou `error`
-(script ou CDN en échec, rendu vide). Le linter lit la spec, `check` lit le rendu : les deux
-sont exigés. Sans Chrome (exit 2), dis-le dans le rapport. Si un outil de capture d'écran
-est disponible, regarde aussi la page : un rendu `ok` peut encore avoir un titre tronqué ou
-des étiquettes qui se chevauchent.
-
-Le linter ne voit pas tout : il ignore si le titre dit vrai, si l'unité manque, si les
-barres sont triées ou si la polarité correspond au sens réel de la métrique. Passe la
-[revue experte](references/review-checklist.md) avant de livrer. Elle prend deux minutes et
-attrape les erreurs qui trompent le lecteur sans casser aucune règle.
-
-### 7. Livrer
-
-Réponds avec ce gabarit, sans rien ajouter :
-
-```markdown
-**Graphique** : output/<slug>/index.html
-**Template** : <id>, choisi parce que <raison en une phrase>
-**Écartés** : <template> (<règle>), ...
-**Hypothèses** : <défauts appliqués, ou « aucune »>
-**Audit** : validate <0 erreur, N avertissement(s)> ; check <ok, ou raison> ; revue experte <OK ou points ouverts>
-```
+`make` recommande parmi les templates éligibles et écarte ceux qui violent une règle (ne
+les reprends pas). Oriente avec `--intent` : `kpi`, `comparison`, `composition`,
+`distribution`, `correlation`, `evolution`, `flow`, `hierarchy`, `geo`, `table`. Impose
+avec `--template` quand la question métier tranche. Exemple : deux années sur 7 agences
+donnent des barres groupées, mais si le message est le changement de rang, `slope-chart`
+le montre mieux. Arbre complet : [decision-matrix.md](references/decision-matrix.md).
 
 ## Polarité métier
-
-La couleur porte un jugement. Se tromper de polarité affiche en vert une hausse des coûts.
-Raisonne sur le sens de la métrique, pas sur son signe :
 
 | Polarité | Exemples | Hausse affichée en |
 | :--- | :--- | :--- |
 | `HIGHER_IS_BETTER` | CA, marge, rétention, NPS, conversion | vert |
 | `LOWER_IS_BETTER` | coûts, churn, latence, pannes, délais, émissions | rouge |
-| `TARGET_BASED` | SLA, température, budget, stock | vert dans la cible, orange en tolérance, rouge hors cible |
-| `NEUTRAL_CATEGORICAL` | pays, produits, segments, canaux | aucun jugement, palette catégorielle |
+| `TARGET_BASED` | SLA, température, budget, stock, planning | vert dans la cible, orange en tolérance, rouge hors cible |
+| `NEUTRAL_CATEGORICAL` | pays, produits, segments, canaux | aucun jugement |
 
-En cas de doute réel (« effectifs », « volume d'appels »), choisis `NEUTRAL_CATEGORICAL` et
-signale-le : une couleur neutre ne trompe personne, une couleur fausse si.
+En cas de doute réel (« effectifs », « volume d'appels »), `NEUTRAL_CATEGORICAL`, signalé.
 
-## Règles bloquantes et correctifs
+## Titre
 
-Le linter applique ces règles. Les connaître évite des allers-retours de compilation.
+Le titre énonce le constat, pas le sujet. « CA par région » oblige à chercher ;
+« L'Île-de-France pèse autant que les trois suivantes » donne la conclusion que le graphique
+prouve. Unité et période vont dans `--subtitle`, la source dans `--footnote`. Les valeurs
+affichées n'ont pas de suffixe : l'unité doit être dans le sous-titre ou le nom de la série.
 
-| Règle | Déclencheur | Correctif |
-| :--- | :--- | :--- |
-| `CLEVELAND_Y_ZERO` | `beginAtZero: false` sur un encodage par longueur | Retirer l'option : la longueur doit être proportionnelle à la valeur |
-| `NO_LOG_ON_LENGTH` | Échelle log sur des barres | Échelle linéaire, ou `scatter-plot` si le log est indispensable |
-| `VERTICAL_BAR_MAX_CATEGORIES` | Plus de 7 colonnes | `bar-chart-horizontal`, ou top 6 + « Autres » |
-| `MULTI_LINE_MAX_SERIES` | Plus de 5 courbes | Top 4 + « Autres », ou plusieurs `line-chart` |
-| `PIE_DONUT_MAX_SLICES` | Plus de 7 tranches | `bar-chart-horizontal` trié ou `treemap` |
-| `DATALABELS_OVERCROWDING` | Étiquettes avec N > 12 | `showDataLabels: false`, détail dans l'infobulle |
-| `INVALID_METRIC_POLARITY` | Polarité inconnue | Une des 4 valeurs ci-dessus |
-| `VALENCE_POLARITY_MISMATCH` | Couleur contraire à la polarité | Corriger `metricPolarity`, jamais les couleurs à la main |
-| `WCAG_CONTRAST_*` | Contraste texte insuffisant | Changer de thème, ne pas surcharger les couleurs |
-| `SCHEMA_FORMATTED_DATA` | `formattedData` hors du `schema.json` du template (type, champ requis, bornes, nombre d'éléments) | Reprendre la forme du schéma ; le message donne le chemin fautif, par exemple `formattedData.datasets[0].data[2]` |
-| `UNKNOWN_FIELD` (avertissement) | Champ que ni le compilateur ni le template ne lisent : faute de frappe ou mauvais niveau | Corriger le nom ou le déplacer (par exemple la source va dans `layout.footnote`) |
-| `DATA_LENGTH_MISMATCH` (avertissement) | Un dataset n'a pas une valeur par label | Une valeur par label, `null` pour une valeur manquante |
-| `WATERFALL_STEP_AS_TOTAL` (avertissement) | Étape intermédiaire d'un `waterfall-chart` en nombre seul : dessinée comme un total depuis 0 | Paire chaînée `[cumul avant, cumul après]` |
+## Pages à plusieurs graphiques, export, hors ligne
 
-Le registre est plus strict que le linter et c'est lui qui fait foi : `pie-chart` 3 parts au
-plus, `doughnut-chart` 4 au plus. Le recommandeur applique déjà ces plafonds.
+- **Page** (tableau de bord, rapport) : crée chaque graphique avec `make`, puis écris
+  `output/<page>/page.json` et compile-le avec `kit-charts compile output/<page>/page.json`.
 
-## Ce qu'il ne faut pas faire, et pourquoi
+```json
+{ "layout": { "title": "Le message d'ensemble", "subtitle": "...", "columns": 2 },
+  "colorStrategy": { "themeName": "colorbrewer-accessible" },
+  "charts": ["../ventes/spec.json", "../couts/spec.json"] }
+```
 
-- Écrire du Chart.js à la main ou modifier un `template.js` pour un cas précis : les
-  garanties du kit disparaissent, et les tests ne couvrent plus le rendu.
-- Mettre des couleurs hexadécimales dans la spec : le thème gère contraste, daltonisme et
-  polarité. Une couleur en dur casse les trois.
+  - 6 graphiques au plus, de 1 à 3 colonnes ;
+  - un seul thème, celui de la page ;
+  - `layout.span: 2` dans la spec d'un graphique l'élargit.
+- **Export** : `--export png,svg,pdf` sur `make` et `update`, ou
+  `kit-charts export page.html --format png,svg,pdf`.
+  - PNG : densité 2.
+  - SVG : vectoriel.
+  - PDF : une page aux dimensions du contenu.
+  - L'export refuse une page dont le rendu est en erreur.
+- **Hors ligne** : `--offline` inclut Chart.js et ses plugins (copies vérifiées) dans la
+  page, qui s'ouvre sans réseau.
+
+## Règles et correctifs
+
+| Règle | Correctif |
+| :--- | :--- |
+| `CLEVELAND_Y_ZERO` axe tronqué sur barres | Garder l'axe à zéro ; petits écarts : `dumbbell-chart`, `slope-chart`, `line-chart` |
+| `NO_LOG_ON_LENGTH` log sur barres | Échelle linéaire, ou `scatter-plot` |
+| `VERTICAL_BAR_MAX_CATEGORIES` plus de 7 colonnes | `bar-chart-horizontal`, ou top 6 + « Autres » |
+| `MULTI_LINE_MAX_SERIES` plus de 5 courbes | Top 4 + « Autres », ou plusieurs `line-chart` |
+| `PIE_DONUT_MAX_SLICES` trop de tranches (registre : pie 3, doughnut 4) | `bar-chart-horizontal` trié ou `treemap` |
+| `DATALABELS_OVERCROWDING` étiquettes avec N > 12 | `--no-labels`, détail dans l'infobulle |
+| `VALENCE_POLARITY_MISMATCH` | Corriger `--polarity`, jamais les couleurs à la main |
+| `WCAG_CONTRAST_*` | Changer de thème (`--theme`) |
+| `SCHEMA_FORMATTED_DATA` | Reprendre la forme de `kit-charts describe <id>` ; le message donne le chemin fautif |
+| `DATA_LENGTH_MISMATCH` | Une valeur par catégorie, `null` si manquante |
+| `PAGE_TOO_MANY_CHARTS`, `PAGE_COLUMNS` | 6 graphiques au plus, 1 à 3 colonnes |
+| Avertissement `TITLE_IS_TOPIC` | Phrase avec verbe, chiffre ou comparaison |
+| Avertissement `MISSING_UNIT` | Unité dans `--subtitle` ou dans le nom de la colonne |
+| Avertissement `UNSORTED_BARS`, `ORDINAL_ORDER_LOST` | Trier par valeur, sauf ordre naturel à garder (et à dire) |
+| Avertissement `WATERFALL_STEP_AS_TOTAL` | Paires chaînées (`make` les calcule depuis un CSV) |
+| Avertissement `UNKNOWN_FIELD` | Champ mal nommé ou au mauvais niveau |
+
+Un avertissement se corrige ou se justifie dans le rapport.
+
+## Ne pas faire
+
+- Écrire du Chart.js ou modifier un `template.js` pour un cas : les garanties disparaissent.
+- Mettre des couleurs dans la spec : le thème gère contraste, daltonisme et polarité.
 - Tronquer l'axe pour « voir les écarts » : si les écarts sont petits, c'est le message.
-  Montre plutôt la variation (`dumbbell-chart`, `slope-chart`) ou un `line-chart`.
-- Activer une animation : le mode cognitif rend en 0 ms, sans saut ni latence.
-- Représenter des totaux bruts sur une `choropleth-map` : les grandes zones dominent
-  visuellement. Normalise (par habitant, par km², en taux) ou prends `bubble-map`.
+- Livrer une sortie `--force`.
+- Totaux bruts sur une `choropleth-map` : normaliser (par habitant, en taux) ou `bubble-map`.
 
-## Références
+## Rapport
 
-Lis seulement celle dont tu as besoin :
+```markdown
+**Graphique** : output/<slug>/index.html (+ exports)
+**Template** : <id>, choisi parce que <raison en une phrase>
+**Écartés** : <template> (<règle>), ...
+**Hypothèses** : <défauts appliqués, ou « aucune »>
+**Audit** : <0 erreur, N avertissement(s)> ; rendu <ok, ou raison> ; revue du sens <OK ou points ouverts>
+```
 
-- [references/decision-matrix.md](references/decision-matrix.md) : arbre complet des 73 templates et limites par template. Pour départager des éligibles.
-- [references/spec-contract.md](references/spec-contract.md) : tous les champs de la spec, valeurs permises, choix du thème et du mode couleur.
-- [references/review-checklist.md](references/review-checklist.md) : revue experte avant livraison.
-- [references/interaction-tooltips-animations.md](references/interaction-tooltips-animations.md) : étiquettes, infobulles, légendes.
-- [references/color-semantics.md](references/color-semantics.md) : polarités et 8 thèmes.
-- [references/cognitive-rules.md](references/cognitive-rules.md) : fondements scientifiques, pour justifier un choix.
-- `kit-charts list` et `kit-charts describe <id> --json` : métadonnées machine des 73 templates (`dataRequirements`, schéma, exemple).
+## Pas à pas (rarement utile)
+
+`recommend`, `describe`, `init-spec`, `compile`, `validate`, `check` restent disponibles pour
+un cas que `make` ne couvre pas. Champs de la spec : [spec-contract.md](references/spec-contract.md).
+Autres références, à lire seulement au besoin :
+- [interaction-tooltips-animations.md](references/interaction-tooltips-animations.md) ;
+- [color-semantics.md](references/color-semantics.md) ;
+- [cognitive-rules.md](references/cognitive-rules.md).

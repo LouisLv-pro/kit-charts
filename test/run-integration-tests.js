@@ -752,7 +752,7 @@ const breakout = compileChart({ targetTemplateId: 'bar-chart-vertical', layout: 
 const initBlock = breakout.slice(breakout.indexOf('<script>') + 8);
 assert(!initBlock.slice(0, initBlock.lastIndexOf('</script>')).includes('</script>'), 'Aucune sortie du bloc <script> via les données ou le titre (</script> neutralisé)');
 
-// 12.5 Champs inconnus et longueurs croisées : avertissements, pas d'erreur.
+// 12.5 Champs inconnus : avertissements. Longueurs croisées sur données indexées par label : erreur (Bloc 14).
 const typoReport = validateChartSpec({
   targetTemplateId: 'bar-chart-vertical',
   layot: {},
@@ -762,16 +762,16 @@ const typoReport = validateChartSpec({
 const typoIds = typoReport.warnings.filter(w => w.ruleId === 'UNKNOWN_FIELD').map(w => w.message.match(/'([^']+)'/)[1]).sort();
 assert(typoIds.join(',') === 'formattedData.sousTitre,layot,layout.titre',
   `UNKNOWN_FIELD signale les 3 fautes (racine, layout, formattedData) : ${typoIds.join(', ') || 'aucune'}`);
-assert(typoReport.warnings.some(w => w.ruleId === 'DATA_LENGTH_MISMATCH' && w.message.includes('2 valeur(s) pour 3 label(s)')),
-  'DATA_LENGTH_MISMATCH : 2 valeurs pour 3 labels signalé');
+assert(typoReport.errors.some(e => e.ruleId === 'DATA_LENGTH_MISMATCH' && e.message.includes('2 valeur(s) pour 3 label(s)')),
+  'DATA_LENGTH_MISMATCH : 2 valeurs pour 3 labels signalé en erreur bloquante');
 const sunburstMismatch = validateChartSpec({ targetTemplateId: 'sunburst', formattedData: require(path.resolve(__dirname, '..', registry.templates.find(t => t.id === 'sunburst').paths.js)).DEFAULT_DATA });
 const waterfallDeltas = validateChartSpec({ targetTemplateId: 'waterfall-chart', formattedData: { labels: ['N-1', 'Prix', 'Coûts', 'N'], datasets: [{ data: [100, 4.2, -2.7, 101.5] }] } });
 assert(waterfallDeltas.warnings.some(w => w.ruleId === 'WATERFALL_STEP_AS_TOTAL' && w.message.includes('index 1, 2')),
   'WATERFALL_STEP_AS_TOTAL : deltas signés seuls repérés aux index 1 et 2');
-assert(!sunburstMismatch.warnings.some(w => w.ruleId === 'DATA_LENGTH_MISMATCH'), 'Pas de DATA_LENGTH_MISMATCH sur sunburst (un dataset par anneau, dataPerLabel: false)');
+assert(![...sunburstMismatch.errors, ...sunburstMismatch.warnings].some(w => w.ruleId === 'DATA_LENGTH_MISMATCH'), 'Pas de DATA_LENGTH_MISMATCH sur sunburst (un dataset par anneau, dataPerLabel: false)');
 const noisyDefaults = registry.templates.filter(t => {
   const r = validateChartSpec({ targetTemplateId: t.id, formattedData: require(path.resolve(__dirname, '..', t.paths.js)).DEFAULT_DATA });
-  return r.warnings.some(w => w.ruleId === 'UNKNOWN_FIELD' || w.ruleId === 'DATA_LENGTH_MISMATCH');
+  return [...r.errors, ...r.warnings].some(w => w.ruleId === 'UNKNOWN_FIELD' || w.ruleId === 'DATA_LENGTH_MISMATCH');
 }).map(t => t.id);
 assert(noisyDefaults.length === 0, `Aucun DEFAULT_DATA ne déclenche UNKNOWN_FIELD ni DATA_LENGTH_MISMATCH${noisyDefaults.length ? ' | ' + noisyDefaults.join(', ') : ''}`);
 
@@ -833,13 +833,89 @@ assert(kcDescribe.status === 0 && JSON.parse(kcDescribe.stdout).formattedDataSch
 fs.rmSync(cliProject, { recursive: true, force: true });
 
 // ----------------------------------------------------------------------------
+// BLOC 14 : Règles de sens passées au linter (review-checklist.md)
+// DATA_LENGTH_MISMATCH bloquant, UNSORTED_BARS, MISSING_UNIT, TITLE_IS_TOPIC.
+// Un cas fautif et un cas sain par règle, exécutés par validateChartSpec ; fautifs nommés.
+// ----------------------------------------------------------------------------
+console.log('\n🔹 Bloc 14 : Règles de sens (longueurs, tri, unité, titre-constat)');
+const ruleHits = (spec, ruleId, level) => validateChartSpec(spec)[level].some(x => x.ruleId === ruleId);
+const withUnit = { subtitle: 'En k€, 2024' };
+const vbar = (formattedData, layout = withUnit) => ({ targetTemplateId: 'bar-chart-vertical', layout, formattedData });
+const bars = (tpl, labels, data, extra = {}) => ({ targetTemplateId: tpl, layout: withUnit, formattedData: { labels, datasets: [Object.assign({ label: 'CA', data }, extra)] } });
+const CITIES = ['Lyon', 'Paris', 'Lille', 'Nice', 'Brest'];
+const titled = (title, tpl = 'line-chart') => ({ targetTemplateId: tpl, layout: { title } });
+// [nom du cas, règle, niveau attendu, spec, doit se déclencher]
+const meaningCases = [
+  ['3 labels pour 2 valeurs', 'DATA_LENGTH_MISMATCH', 'errors', vbar({ labels: ['A', 'B', 'C'], datasets: [{ label: 'CA', data: [1, 2] }] }), true],
+  ['une valeur par label', 'DATA_LENGTH_MISMATCH', 'errors', vbar({ labels: ['A', 'B', 'C'], datasets: [{ label: 'CA', data: [1, 2, 3] }] }), false],
+  ['points {x, y} qui portent leur position', 'DATA_LENGTH_MISMATCH', 'errors', { targetTemplateId: 'scatter-plot', formattedData: { labels: ['a'], datasets: [{ data: [{ x: 1, y: 2 }, { x: 2, y: 3 }] }] } }, false],
+  ['lollipop dans un ordre quelconque', 'UNSORTED_BARS', 'warnings', bars('lollipop-chart', CITIES, [3, 9, 1, 5, 2]), true],
+  ['lollipop trié décroissant', 'UNSORTED_BARS', 'warnings', bars('lollipop-chart', ['Paris', 'Nice', 'Lyon', 'Brest', 'Lille'], [9, 5, 3, 2, 1]), false],
+  ['lollipop trié, « Autres » en dernier', 'UNSORTED_BARS', 'warnings', bars('lollipop-chart', ['Paris', 'Nice', 'Lyon', 'Brest', 'Autres'], [9, 5, 3, 2, 7]), false],
+  ['tranches d\'âge (ordre naturel)', 'UNSORTED_BARS', 'warnings', bars('lollipop-chart', ['18-24', '25-34', '35-49', '50-64', '65+'], [3, 9, 1, 5, 2]), false],
+  ['mois (ordre temporel)', 'UNSORTED_BARS', 'warnings', bars('lollipop-chart', ['Jan', 'Fév', 'Mar', 'Avr', 'Mai'], [3, 9, 1, 5, 2]), false],
+  ['horizontal avec "sorted": false', 'UNSORTED_BARS', 'warnings', bars('bar-chart-horizontal', CITIES, [3, 9, 1, 5, 2], { sorted: false }), true],
+  ['horizontal trié par le template', 'UNSORTED_BARS', 'warnings', bars('bar-chart-horizontal', CITIES, [3, 9, 1, 5, 2]), false],
+  ['ni sous-titre ni label avec unité', 'MISSING_UNIT', 'warnings', vbar({ labels: ['A', 'B'], datasets: [{ label: 'CA', data: [1, 2] }] }, { subtitle: 'Par région, 2024' }), true],
+  ['unité dans le sous-titre', 'MISSING_UNIT', 'warnings', vbar({ labels: ['A', 'B'], datasets: [{ label: 'CA', data: [1, 2] }] }, { subtitle: 'En M€, 2024' }), false],
+  ['unité entre parenthèses dans le label', 'MISSING_UNIT', 'warnings', vbar({ labels: ['A', 'B'], datasets: [{ label: 'Clients actifs (milliers)', data: [1, 2] }] }, {}), false],
+  ['KPI sans formattedData.unit', 'MISSING_UNIT', 'warnings', { targetTemplateId: 'kpi-standard', formattedData: { title: 'MRR', value: 148500 } }, true],
+  ['KPI avec formattedData.unit', 'MISSING_UNIT', 'warnings', { targetTemplateId: 'kpi-standard', formattedData: { title: 'MRR', value: 148500, unit: '€' } }, false],
+  ['« CA par région »', 'TITLE_IS_TOPIC', 'warnings', titled('CA par région'), true],
+  ['« Évolution du churn »', 'TITLE_IS_TOPIC', 'warnings', titled('Évolution du churn'), true],
+  ['« Ventes 2024 » (une année n\'est pas un constat)', 'TITLE_IS_TOPIC', 'warnings', titled('Ventes 2024'), true],
+  ['verbe conjugué', 'TITLE_IS_TOPIC', 'warnings', titled('Le churn recule depuis mars'), false],
+  ['chiffre de constat', 'TITLE_IS_TOPIC', 'warnings', titled('CA : +12 % sur un an'), false],
+  ['comparatif plus … que', 'TITLE_IS_TOPIC', 'warnings', titled('Ventes en ligne plus fortes que les magasins'), false],
+  ['titre de carte KPI (nom de métrique)', 'TITLE_IS_TOPIC', 'warnings', titled('MRR de novembre', 'kpi-standard'), false]
+];
+const meaningWrong = meaningCases
+  .filter(([, ruleId, level, spec, expected]) => ruleHits(spec, ruleId, level) !== expected)
+  .map(([name, ruleId, , , expected]) => `${ruleId} ${expected ? 'muet' : 'déclenché à tort'} : ${name}`);
+assert(meaningWrong.length === 0,
+  `${meaningCases.length} cas fautifs et sains des 4 règles de sens au bon verdict${meaningWrong.length ? ' | ' + meaningWrong.join(' | ') : ''}`);
+
+// 14.2 Aucun DEFAULT_DATA du registre ne déclenche d'erreur, nouvelles règles comprises.
+const defaultErrors = registry.templates.map(t => {
+  const errs = validateChartSpec({ targetTemplateId: t.id, formattedData: require(path.resolve(__dirname, '..', t.paths.js)).DEFAULT_DATA }).errors;
+  return errs.length ? `${t.id} (${errs.map(e => e.ruleId).join(', ')})` : null;
+}).filter(Boolean);
+assert(defaultErrors.length === 0,
+  `Aucune erreur sur le DEFAULT_DATA des ${registry.templates.length} templates${defaultErrors.length ? ' | ' + defaultErrors.join(' | ') : ''}`);
+
+// 14.3 Formes attendues par les evals où une donnée n'est pas « un nombre par label » : zéro erreur.
+const evalShapes = [
+  ['slope-chart 2 labels x 7 agences', { targetTemplateId: 'slope-chart', layout: { title: 'Lille passe de la 6e à la 1re place', subtitle: 'Clients satisfaits, en %' },
+    formattedData: { labels: ['2023', '2025'], datasets: [[68, 84], [72, 81], [70, 79], [77, 78], [79, 76], [65, 73], [74, 70]].map((data, i) => ({ label: `Agence ${i + 1}`, data })) } }],
+  ['violin-plot, un tableau brut par label', { targetTemplateId: 'violin-plot', layout: { title: 'Saint-Priest livre à deux vitesses', subtitle: 'Délai, en heures' },
+    formattedData: { labels: ['Gonesse', 'Saint-Priest'], datasets: [{ label: 'Délai (h)', data: [[22, 24, 25, 27, 30], [21, 23, 49, 51, 55]] }] } }],
+  ['waterfall-chart en paires chaînées', { targetTemplateId: 'waterfall-chart', layout: { title: "L'EBIT recule de 1,2 M€", subtitle: 'En M€' },
+    formattedData: { labels: ['EBIT 2024', 'Volume', 'Salaires', 'EBIT 2025'], datasets: [{ label: 'EBIT (M€)', data: [18.6, [18.6, 22.8], [22.8, 17.4], 17.4] }] } }],
+  ['gantt-progress, tâches sans data', { targetTemplateId: 'gantt-progress', layout: { title: 'Le paramétrage est en retard' },
+    formattedData: { labels: ['Cadrage', 'Paramétrage', 'Formation'], datasets: [{ label: 'Planning', todayWeek: 7, tasks: [{ label: 'Cadrage', start: 1, end: 3, progress: 100 }, { label: 'Paramétrage', start: 4, end: 9, progress: 45 }, { label: 'Formation', start: 9, end: 11, progress: 0 }] }] } }]
+];
+const evalShapeErrors = evalShapes.map(([name, spec]) => {
+  const errs = validateChartSpec(spec).errors;
+  return errs.length ? `${name} (${errs.map(e => e.ruleId).join(', ')})` : null;
+}).filter(Boolean);
+assert(evalShapeErrors.length === 0, `Formes des evals (slope, violin, waterfall, gantt) sans erreur${evalShapeErrors.length ? ' | ' + evalShapeErrors.join(' | ') : ''}`);
+
+// 14.4 Page compilée : le linter relit titre et sous-titre sérialisés dans les options.
+const meaningRes = compileChart({ targetTemplateId: 'line-chart', layout: { title: 'Facture cloud 2024', subtitle: 'Facture mensuelle, en k€' },
+  formattedData: { labels: ['Jan', 'Fév', 'Mar', 'Avr'], datasets: [{ label: 'Facture', data: [42, 44, 47, 51] }] } }, { output: path.join(OUTPUT_DIR, 'e2e-meaning', 'index.html') });
+const meaningAudit = validateChartFile(meaningRes.outputPath);
+const meaningIds = meaningAudit.warnings.map(w => w.ruleId);
+assert(meaningIds.includes('TITLE_IS_TOPIC') && !meaningIds.includes('MISSING_UNIT'),
+  `HTML compilé : TITLE_IS_TOPIC lu dans layout.title, unité lue dans layout.subtitle (avertissements : ${meaningIds.join(', ') || 'aucun'})`);
+
+// ----------------------------------------------------------------------------
 // BLOC 8 : Nettoyage Déterministe des Artefacts de Test
 // ----------------------------------------------------------------------------
 try {
   const testSubdirs = [
     'e2e-kpi-standard', 'e2e-bar-vertical', 'e2e-box-plot',
     'e2e-bullet', 'e2e-multi-line', 'e2e-bar-horiz',
-    'e2e-choropleth', 'e2e-treemap', 'e2e-cli', 'e2e-schema'
+    'e2e-choropleth', 'e2e-treemap', 'e2e-cli', 'e2e-schema', 'e2e-meaning'
   ];
   testSubdirs.forEach(sub => {
     const subPath = path.join(OUTPUT_DIR, sub);

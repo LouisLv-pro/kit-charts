@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const observeCompactWidth = (KitChartsTheme && KitChartsTheme.observeCompactWidth) || (typeof window !== 'undefined' && window.observeCompactWidth) || function() { return function() {}; };
   const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
@@ -161,11 +162,16 @@
 
     let data = JSON.parse(JSON.stringify(customData || DEFAULT_DATA));
 
+    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
+    const measureCompact = () => {
+      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+
     function render() {
       if (!container) return;
       // Mode compact (zone < 460 px) : mois en initiales, régions en code, totaux et moyennes masqués
-      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      const compact = hostW > 0 && hostW < 460;
+      const compact = measureCompact() === true;
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
       const bgHeader = isDark ? '#1F232B' : (isTufte ? '#FFFFFF' : '#F8FAFC');
@@ -468,6 +474,8 @@
     }
 
     render();
+    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
 
     return {
       container,
@@ -476,6 +484,7 @@
       options: options || {},
       theme: themeName,
       destroy: () => {
+        stopObserving();
         if (container) container.innerHTML = '';
         if (canvasElement) canvasElement.style.display = '';
       },

@@ -295,4 +295,4 @@ Options:
   }
 }
 
-module.exports = { profileData, recommendTemplates, inferIntent, INTENTS, INTENT_ORDER };
+module.exports = { profileData, recommendTemplates, inferIntent, isTemporalLabel, INTENTS, INTENT_ORDER };

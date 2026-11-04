@@ -47,17 +47,27 @@ function findChrome() {
 }
 
 /**
- * Extrait le statut de rendu du DOM sérialisé.
+ * Extrait le statut de rendu du DOM sérialisé. Une page à plusieurs graphiques porte un statut
+ * par graphique : le pire l'emporte (error > invalid > ok), avec la raison du premier fautif.
  * @param {string} dom
- * @returns {{status: string, reason: string}}
+ * @returns {{status: string, reason: string, charts: number}}
  */
 function parseRenderStatus(dom) {
-  const tag = dom.match(/<[^>]*\bdata-kc-render="([^"]*)"[^>]*>/);
-  if (!tag) {
-    return { status: 'error', reason: 'aucun statut data-kc-render : le script d\'initialisation ne s\'est pas exécuté' };
+  const tags = [...dom.matchAll(/<[^>]*\bdata-kc-render="([^"]*)"[^>]*>/g)];
+  if (!tags.length) {
+    return { status: 'error', reason: 'aucun statut data-kc-render : le script d\'initialisation ne s\'est pas exécuté', charts: 0 };
   }
-  const reason = (tag[0].match(/\bdata-kc-error="([^"]*)"/) || [])[1] || '';
-  return { status: tag[1], reason: reason.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>') };
+  const decode = r => r.replace(/&quot;/g, '"').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>');
+  const rank = { ok: 0, invalid: 1, error: 2 };
+  let worst = tags[0];
+  tags.forEach(t => { if ((rank[t[1]] ?? 2) > (rank[worst[1]] ?? 2)) worst = t; });
+  const reason = (worst[0].match(/\bdata-kc-error="([^"]*)"/) || [])[1] || '';
+  const expected = Number((dom.match(/\bdata-kc-page="(\d+)"/) || [])[1] || tags.length);
+  if (expected > tags.length && worst[1] === 'ok') {
+    return { status: 'error', reason: `${expected - tags.length} graphique(s) de la page sans statut de rendu`, charts: tags.length };
+  }
+  const prefix = tags.length > 1 && worst[1] !== 'ok' ? `graphique ${tags.indexOf(worst) + 1}/${tags.length} : ` : '';
+  return { status: worst[1], reason: reason ? prefix + decode(reason) : '', charts: tags.length };
 }
 
 /**
