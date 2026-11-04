@@ -28,7 +28,14 @@
     "compile": "node .agents/skills/kit-charts/scripts/compile-chart.js",
     "validate": "node .agents/skills/kit-charts/scripts/validate-chart.js",
     "recommend": "node .agents/skills/kit-charts/scripts/recommend-template.js",
-    "lint": "node .agents/skills/kit-charts/scripts/validate-chart.js",
+    "lint:chart": "node .agents/skills/kit-charts/scripts/validate-chart.js",
+    "lint": "eslint . && stylelint \"**/*.css\" --allow-empty-input",
+    "lint:fix": "eslint . --fix && stylelint \"**/*.css\" --fix --allow-empty-input",
+    "lint:prune": "eslint . --prune-suppressions",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -p jsconfig.json",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test",
     "test": "node test/run-integration-tests.js && node test/snapshot-configs.js --check",
     "snapshots": "node test/snapshot-configs.js",
     "test:render": "node .agents/skills/kit-charts/scripts/render-check.js --all-templates",
@@ -51,5 +58,16 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/LouisLv-pro/kit-charts.git"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.6",
+    "eslint": "^10.14.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.14.0",
+    "prettier": "^3.9.10",
+    "stylelint": "^18.0.0",
+    "stylelint-config-standard": "^41.0.0",
+    "typescript": "^6.0.3"
   }
 }

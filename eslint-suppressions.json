@@ -1,0 +1,146 @@
+{
+  ".agents/skills/kit-charts/scripts/validate-chart.js": {
+    "no-constant-binary-expression": {
+      "count": 1
+    },
+    "no-empty": {
+      "count": 2
+    },
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  ".agents/skills/kit-charts/scripts/validate-hook.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/00-kpi-card/kpi-bullet/template.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/00-kpi-card/kpi-comparative/template.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/00-kpi-card/kpi-sparkline/template.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "template/00-kpi-card/kpi-status-alert/template.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/01-comparaison/bar-chart-vertical/template.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/01-comparaison/bar-target-overlay/template.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "template/01-comparaison/grouped-bar-chart/template.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/03-distribution/density-plot/template.js": {
+    "no-useless-assignment": {
+      "count": 2
+    }
+  },
+  "template/03-distribution/histogramme/template.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "template/04-correlation-relation/bubble-chart/template.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "template/04-correlation-relation/scatter-plot/template.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/05-evolution-temporelle/stacked-area-chart/template.js": {
+    "no-constant-binary-expression": {
+      "count": 1
+    }
+  },
+  "template/05-evolution-temporelle/streamgraph/template.js": {
+    "no-constant-binary-expression": {
+      "count": 1
+    }
+  },
+  "template/06-flux-processus/sankey-diagram/template.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/07-hierarchie-reseau/arc-diagram/template.js": {
+    "no-dupe-keys": {
+      "count": 1
+    }
+  },
+  "template/07-hierarchie-reseau/dendrogram/template.js": {
+    "no-dupe-keys": {
+      "count": 1
+    }
+  },
+  "template/07-hierarchie-reseau/node-link-network/template.js": {
+    "no-dupe-keys": {
+      "count": 1
+    }
+  },
+  "template/08-geospatial-cartes/bubble-map/template.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/08-geospatial-cartes/choropleth-map/template.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "template/09-tableaux-dataviz/table-kpi-scorecard/template.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "template/09-tableaux-dataviz/table-ranking-leaderboard/template.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "test/run-integration-tests.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "test/snapshot-configs.js": {
+    "no-useless-assignment": {
+      "count": 1
+    }
+  },
+  "themes/stat-helpers.js": {
+    "no-empty": {
+      "count": 1
+    }
+  },
+  "themes/theme-tokens.js": {
+    "no-empty": {
+      "count": 6
+    },
+    "no-useless-assignment": {
+      "count": 15
+    }
+  }
+}

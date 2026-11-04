@@ -1,0 +1,32 @@
+# Générés ou vendus : jamais formatés.
+node_modules/
+output/
+vendor/
+.playwright-cli/
+.claude/worktrees/
+package-lock.json
+eslint-suppressions.json
+catalog-bundle.js
+test/__snapshots__/
+.agents/skills/kit-charts/registry.json
+themes/world-atlas-110m.json
+
+# Code existant pas encore au format Prettier (299 fichiers sur 349 au 2026-11-04).
+# Migration dossier par dossier, chacun dans un commit dédié sans autre changement, après la
+# fusion des branches en cours (docs/decisions/0001-outillage-dev.md). Retirer la ligne du
+# dossier migré, lancer `npm run format`, relancer `npm test` (snapshots identiques).
+template/
+themes/
+index.html
+bin/
+test/*.js
+.agents/skills/kit-charts/scripts/
+.agents/skills/kit-charts/references/
+.agents/skills/kit-charts/SKILL.md
+.agents/skills/kit-charts/evals/
+.agents/agents/
+.agents/rules/
+AGENTS.md
+README.md
+docs/banniere.html
+docs/review-visuelle-*.md

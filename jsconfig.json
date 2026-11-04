@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "node16",
+    "moduleResolution": "node16",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "types": ["node"],
+    "allowJs": true,
+    "checkJs": false,
+    "strict": false,
+    "noEmit": true,
+    "skipLibCheck": true
+  },
+  "include": [
+    "bin/**/*.js",
+    "themes/*.js",
+    "template/**/*.js",
+    "test/*.js",
+    ".agents/skills/kit-charts/scripts/*.js",
+    ".claude/hooks/*.js"
+  ],
+  "exclude": ["node_modules", "output", "vendor", "catalog-bundle.js", ".claude/worktrees"]
+}
