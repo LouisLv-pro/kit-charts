@@ -1,0 +1,339 @@
+{
+  "_meta": {
+    "family": "05-evolution-temporelle",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "candlestick-volume",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(68, 1, 84, 0.35)",
+              "rgba(68, 1, 84, 0.35)",
+              "rgba(68, 1, 84, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(68, 1, 84, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(68, 1, 84, 0.35)",
+              "rgba(68, 1, 84, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)",
+              "rgba(34, 168, 132, 0.35)"
+            ],
+            "borderColor": [
+              "#22A884",
+              "#22A884",
+              "#440154",
+              "#440154",
+              "#440154",
+              "#22A884",
+              "#22A884",
+              "#22A884",
+              "#22A884",
+              "#440154",
+              "#22A884",
+              "#22A884",
+              "#22A884",
+              "#22A884",
+              "#440154",
+              "#440154",
+              "#22A884",
+              "#22A884",
+              "#22A884",
+              "#22A884"
+            ],
+            "borderRadius": 2,
+            "borderWidth": 1,
+            "data": [
+              12000,
+              14500,
+              11000,
+              18000,
+              19500,
+              13000,
+              16000,
+              22000,
+              21000,
+              14000,
+              12500,
+              24000,
+              27000,
+              23000,
+              17000,
+              18500,
+              15000,
+              26000,
+              29000,
+              31000
+            ],
+            "label": "Volume",
+            "order": 3,
+            "type": "bar",
+            "yAxisID": "yVolume"
+          },
+          {
+            "borderColor": "#26828E",
+            "borderWidth": 1.5,
+            "data": [
+              12000,
+              13250,
+              12500,
+              13875,
+              15000,
+              15200,
+              15500,
+              17700,
+              18300,
+              17200,
+              17100,
+              18700,
+              19700,
+              20100,
+              20700,
+              21900,
+              20100,
+              19900,
+              21100,
+              23900
+            ],
+            "label": "Volume MA (5j)",
+            "order": 2,
+            "pointRadius": 0,
+            "tension": 0.3,
+            "type": "line",
+            "yAxisID": "yVolume"
+          },
+          {
+            "borderColor": "transparent",
+            "data": [
+              154,
+              157,
+              156,
+              151,
+              148,
+              151,
+              155,
+              161,
+              163,
+              159,
+              161,
+              166,
+              169,
+              171,
+              168,
+              164,
+              167,
+              173,
+              176,
+              179
+            ],
+            "label": "Prix Clôture",
+            "order": 1,
+            "pointRadius": 0,
+            "type": "line",
+            "yAxisID": "yPrice"
+          }
+        ],
+        "labels": [
+          "01 Jan",
+          "02 Jan",
+          "03 Jan",
+          "04 Jan",
+          "05 Jan",
+          "08 Jan",
+          "09 Jan",
+          "10 Jan",
+          "11 Jan",
+          "12 Jan",
+          "15 Jan",
+          "16 Jan",
+          "17 Jan",
+          "18 Jan",
+          "19 Jan",
+          "22 Jan",
+          "23 Jan",
+          "24 Jan",
+          "25 Jan",
+          "26 Jan"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "color": "#0F172A",
+              "filter": "[Function:filter]",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12
+              }
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#475569",
+              "width": 1
+            },
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)"
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "yPrice": {
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)"
+            },
+            "max": 182,
+            "min": 144,
+            "position": "left",
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace"
+              }
+            },
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Cours (€)"
+            },
+            "type": "linear",
+            "weight": 2
+          },
+          "yVolume": {
+            "beginAtZero": true,
+            "grid": {
+              "display": false
+            },
+            "max": 108500,
+            "position": "right",
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#64748B",
+              "font": {
+                "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 10
+              }
+            },
+            "title": {
+              "color": "#64748B",
+              "display": true,
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "text": "Volume"
+            },
+            "type": "linear",
+            "weight": 1
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsCandlestickVolumePainter"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

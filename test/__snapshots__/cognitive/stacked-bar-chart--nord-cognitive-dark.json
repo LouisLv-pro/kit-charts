@@ -1,0 +1,292 @@
+{
+  "_meta": {
+    "family": "01-comparaison",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "stacked-bar-chart",
+    "themeName": "nord-cognitive-dark"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#88C0D0",
+            "barPercentage": 0.85,
+            "borderColor": "#88C0D0",
+            "borderRadius": 0,
+            "borderSkipped": false,
+            "borderWidth": 0,
+            "categoryPercentage": 0.75,
+            "data": [
+              120,
+              145,
+              160,
+              190
+            ],
+            "label": "E-commerce"
+          },
+          {
+            "backgroundColor": "#81A1C1",
+            "barPercentage": 0.85,
+            "borderColor": "#81A1C1",
+            "borderRadius": 0,
+            "borderSkipped": false,
+            "borderWidth": 0,
+            "categoryPercentage": 0.75,
+            "data": [
+              85,
+              90,
+              95,
+              110
+            ],
+            "label": "Boutiques Physiques"
+          },
+          {
+            "backgroundColor": "#5E81AC",
+            "barPercentage": 0.85,
+            "borderColor": "#5E81AC",
+            "borderRadius": 3,
+            "borderSkipped": false,
+            "borderWidth": 0,
+            "categoryPercentage": 0.75,
+            "data": [
+              55,
+              60,
+              75,
+              95
+            ],
+            "label": "Grands Comptes / B2B"
+          }
+        ],
+        "labels": [
+          "T1",
+          "T2",
+          "T3",
+          "T4"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#4C566A",
+          "bg": "#2E3440",
+          "border": "#4C566A",
+          "borderStrong": "#616E85",
+          "divergent": {
+            "mid": "#4C566A",
+            "neg": "#BF616A",
+            "pos": "#88C0D0"
+          },
+          "emphasis": {
+            "anomaly": "#BF616A",
+            "benchmark": "#ECEFF4",
+            "context": "#4C566A",
+            "focal": "#88C0D0",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'JetBrains Mono', monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+          "gridColor": "rgba(236, 239, 244, 0.06)",
+          "id": "07-nord-cognitive-dark",
+          "isDark": true,
+          "label": "Nord Cognitive Dark",
+          "name": "nord-cognitive-dark",
+          "palette": [
+            "#88C0D0",
+            "#81A1C1",
+            "#5E81AC",
+            "#A3BE8C",
+            "#EBCB8B",
+            "#D08770",
+            "#BF616A",
+            "#B48EAD"
+          ],
+          "semantic": {
+            "info": "#88C0D0",
+            "negative": "#BF616A",
+            "neutral": "#D8DEE9",
+            "positive": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "sequential": [
+            "#3B4252",
+            "#4C566A",
+            "#5E81AC",
+            "#81A1C1",
+            "#88C0D0",
+            "#ECEFF4"
+          ],
+          "status": {
+            "danger": "#BF616A",
+            "info": "#88C0D0",
+            "neutral": "#D8DEE9",
+            "success": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "surface": "#3B4252",
+          "surfaceRaised": "#434C5E",
+          "textMuted": "#9EABC0",
+          "textPrimary": "#ECEFF4",
+          "textSecondary": "#D8DEE9",
+          "tooltipBg": "#434C5E",
+          "tooltipText": "#ECEFF4",
+          "zeroLine": "#88C0D0"
+        },
+        "animation": false,
+        "barPercentage": 0.85,
+        "categoryPercentage": 0.75,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#ECEFF4",
+            "display": true,
+            "font": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "#434C5E",
+            "bodyColor": "#ECEFF4",
+            "bodyFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#616E85",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "footer": "[Function:footer]",
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "footerFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "600"
+            },
+            "intersect": false,
+            "mode": "index",
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#ECEFF4",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "stacked": true,
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grace": "10%",
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "stacked": true,
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'JetBrains Mono', monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        },
+        "showDataLabels": true
+      },
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

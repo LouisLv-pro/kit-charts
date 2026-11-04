@@ -1,0 +1,54 @@
+{
+  "_meta": {
+    "family": "08-geospatial-cartes",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "bubble-map",
+    "themeName": "paul-tol-scientific"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "data": []
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "enabled": false
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "display": false,
+            "grid": {
+              "display": false
+            }
+          },
+          "y": {
+            "display": false,
+            "grid": {
+              "display": false
+            }
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDraw": "[Function:afterDraw]",
+          "id": "bubbleVectorMap_dopf7"
+        }
+      ],
+      "type": "scatter"
+    },
+    "kind": "chart-config"
+  }
+}

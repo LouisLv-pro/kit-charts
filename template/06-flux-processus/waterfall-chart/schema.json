@@ -24,6 +24,10 @@
           "minimum": 100,
           "maximum": 2000,
           "default": 400
+        },
+        "footnote": {
+          "type": "string",
+          "description": "Source ou note de lecture, rendue en pied de carte"
         }
       }
     },
@@ -110,10 +114,15 @@
                 "type": "array",
                 "items": {
                   "type": [
+                    "array",
                     "number",
-                    "null",
-                    "object"
-                  ]
+                    "null"
+                  ],
+                  "items": {
+                    "type": "number"
+                  },
+                  "minItems": 2,
+                  "maxItems": 2
                 }
               }
             },
@@ -123,6 +132,9 @@
           },
           "minItems": 1,
           "maxItems": 1
+        },
+        "showDataLabels": {
+          "type": "boolean"
         }
       },
       "required": [

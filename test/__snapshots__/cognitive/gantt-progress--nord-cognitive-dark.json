@@ -1,0 +1,279 @@
+{
+  "_meta": {
+    "family": "06-flux-processus",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "gantt-progress",
+    "themeName": "nord-cognitive-dark"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "rgba(136, 192, 208, 0.3)",
+              "rgba(136, 192, 208, 0.3)",
+              "rgba(129, 161, 193, 0.3)",
+              "rgba(129, 161, 193, 0.3)",
+              "rgba(94, 129, 172, 0.3)",
+              "rgba(94, 129, 172, 0.3)"
+            ],
+            "borderColor": [
+              "#88C0D0",
+              "#88C0D0",
+              "#81A1C1",
+              "#81A1C1",
+              "#5E81AC",
+              "#5E81AC"
+            ],
+            "borderRadius": 4,
+            "borderWidth": 1.5,
+            "data": [
+              [
+                1,
+                4
+              ],
+              [
+                3,
+                6
+              ],
+              [
+                5,
+                9
+              ],
+              [
+                6,
+                11
+              ],
+              [
+                9,
+                12
+              ],
+              [
+                11,
+                13
+              ]
+            ],
+            "datalabels": false,
+            "displayDataLabels": false,
+            "label": "Durée Prévue"
+          }
+        ],
+        "labels": [
+          "1. Spécifications & Cadrage",
+          "2. Architecture & Schéma DB",
+          "3. Développement API Core",
+          "4. Intégration Frontend UI",
+          "5. Tests E2E & Recette",
+          "6. Déploiement Production"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#4C566A",
+          "bg": "#2E3440",
+          "border": "#4C566A",
+          "borderStrong": "#616E85",
+          "divergent": {
+            "mid": "#4C566A",
+            "neg": "#BF616A",
+            "pos": "#88C0D0"
+          },
+          "emphasis": {
+            "anomaly": "#BF616A",
+            "benchmark": "#ECEFF4",
+            "context": "#4C566A",
+            "focal": "#88C0D0",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'JetBrains Mono', monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+          "gridColor": "rgba(236, 239, 244, 0.06)",
+          "id": "07-nord-cognitive-dark",
+          "isDark": true,
+          "label": "Nord Cognitive Dark",
+          "name": "nord-cognitive-dark",
+          "palette": [
+            "#88C0D0",
+            "#81A1C1",
+            "#5E81AC",
+            "#A3BE8C",
+            "#EBCB8B",
+            "#D08770",
+            "#BF616A",
+            "#B48EAD"
+          ],
+          "semantic": {
+            "info": "#88C0D0",
+            "negative": "#BF616A",
+            "neutral": "#D8DEE9",
+            "positive": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "sequential": [
+            "#3B4252",
+            "#4C566A",
+            "#5E81AC",
+            "#81A1C1",
+            "#88C0D0",
+            "#ECEFF4"
+          ],
+          "status": {
+            "danger": "#BF616A",
+            "info": "#88C0D0",
+            "neutral": "#D8DEE9",
+            "success": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "surface": "#3B4252",
+          "surfaceRaised": "#434C5E",
+          "textMuted": "#9EABC0",
+          "textPrimary": "#ECEFF4",
+          "textSecondary": "#D8DEE9",
+          "tooltipBg": "#434C5E",
+          "tooltipText": "#ECEFF4",
+          "zeroLine": "#88C0D0"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "indexAxis": "y",
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "right": 30,
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#ECEFF4",
+            "display": true,
+            "font": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:anonymous]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "#434C5E",
+            "bodyColor": "#ECEFF4",
+            "bodyFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#616E85",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#ECEFF4",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#88C0D0",
+              "width": 1
+            },
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)"
+            },
+            "max": 15,
+            "min": 0,
+            "ticks": {
+              "callback": "[Function:callback]",
+              "stepSize": 1
+            },
+            "title": {
+              "color": "#D8DEE9",
+              "display": true,
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Calendrier (Semaines)"
+            },
+            "type": "linear"
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false
+            },
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'JetBrains Mono', monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        },
+        "showDataLabels": true
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsGanttPainter"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

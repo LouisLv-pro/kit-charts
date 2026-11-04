@@ -1,0 +1,227 @@
+{
+  "_meta": {
+    "family": "05-evolution-temporelle",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "multi-line-chart",
+    "themeName": "tufte-minimalist-executive"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#1D4ED8",
+            "borderColor": "#1D4ED8",
+            "borderDash": [],
+            "borderWidth": 1.5,
+            "data": [
+              42,
+              58,
+              78,
+              105,
+              140,
+              185,
+              230,
+              290
+            ],
+            "fill": false,
+            "label": "Produit Cloud Platform (Hero)",
+            "pointBackgroundColor": "#1D4ED8",
+            "pointBorderColor": "#FFFFFF",
+            "pointBorderWidth": 1.5,
+            "pointHoverRadius": 6,
+            "pointRadius": 4,
+            "pointStyle": "circle",
+            "tension": 0.25
+          },
+          {
+            "backgroundColor": "#111111",
+            "borderColor": "#525252",
+            "borderDash": [
+              4,
+              4
+            ],
+            "borderWidth": 1.5,
+            "data": [
+              130,
+              145,
+              155,
+              168,
+              180,
+              192,
+              205,
+              218
+            ],
+            "fill": false,
+            "label": "Produit Core Enterprise (Benchmark)",
+            "pointBackgroundColor": "#111111",
+            "pointBorderColor": "#FFFFFF",
+            "pointBorderWidth": 1.5,
+            "pointHoverRadius": 6,
+            "pointRadius": 4,
+            "pointStyle": "rectRot",
+            "tension": 0.25
+          },
+          {
+            "backgroundColor": "rgba(212, 212, 212, 0.4)",
+            "borderColor": "#737373",
+            "borderDash": [],
+            "borderWidth": 1.5,
+            "data": [
+              95,
+              90,
+              84,
+              76,
+              68,
+              58,
+              48,
+              38
+            ],
+            "fill": false,
+            "label": "Produit Legacy Desktop (Context)",
+            "pointBackgroundColor": "#D4D4D4",
+            "pointBorderColor": "#D4D4D4",
+            "pointBorderWidth": 1.5,
+            "pointHoverRadius": 6,
+            "pointRadius": 2,
+            "pointStyle": "circle",
+            "tension": 0.25
+          }
+        ],
+        "labels": [
+          "T1-23",
+          "T2-23",
+          "T3-23",
+          "T4-23",
+          "T1-24",
+          "T2-24",
+          "T3-24",
+          "T4-24"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "x",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "line": {
+            "borderWidth": 1.5,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 12,
+            "hoverRadius": 6,
+            "radius": 3
+          }
+        },
+        "hitRadius": 12,
+        "hover": {
+          "animationDuration": 0,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "hoverRadius": 6,
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 12,
+            "left": 12,
+            "right": 16,
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "index",
+        "plugins": {
+          "legend": {
+            "align": "end",
+            "display": false,
+            "labels": {
+              "boxHeight": 8,
+              "boxWidth": 8,
+              "color": "#111111",
+              "font": {
+                "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 14,
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "backgroundColor": "#111111",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "500"
+            },
+            "borderColor": "#D5D1C8",
+            "borderWidth": 1,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "padding": 10,
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+              "size": 12,
+              "weight": "600"
+            }
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#333333",
+              "font": {
+                "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(0, 0, 0, 0.04)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#333333",
+              "font": {
+                "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "line"
+    },
+    "kind": "chart-config"
+  }
+}

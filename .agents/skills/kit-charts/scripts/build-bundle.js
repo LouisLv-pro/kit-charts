@@ -1,7 +1,7 @@
 /**
  * @file .agents/skills/kit-charts/scripts/build-bundle.js
  * @description Générateur déterministe du bundle universel catalog-bundle.js pour kit-charts.
- * Compile les 95 templates de visualisations en un seul artefact UMD autonome zéro-CORS.
+ * Compile les templates du registre et les démonstrateurs du catalogue en un seul artefact UMD autonome zéro-CORS.
  * @version 1.0.0
  * @license MIT
  */
@@ -13,6 +13,12 @@ const ROOT_DIR = path.resolve(__dirname, '../../../..');
 const REGISTRY_PATH = path.join(ROOT_DIR, '.agents/skills/kit-charts/registry.json');
 const OUTPUT_BUNDLE_PATH = path.join(ROOT_DIR, 'catalog-bundle.js');
 
+// Démonstrateurs hors registre (pas des templates ciblables par une spec) que le catalogue
+// index.html rend malgré tout via KitCharts[id]. Voir NON_TEMPLATE_DIRS dans generate-triplets-and-registry.js.
+const SHOWCASE_MODULES = [
+  { id: 'tooltip', paths: { js: 'template/tooltip/template.js' } }
+];
+
 function buildBundle() {
   console.log('📦 Génération de catalog-bundle.js en cours...');
 
@@ -21,12 +27,12 @@ function buildBundle() {
   }
 
   const registry = JSON.parse(fs.readFileSync(REGISTRY_PATH, 'utf8'));
-  const templates = registry.templates || [];
+  const templates = (registry.templates || []).concat(SHOWCASE_MODULES);
 
   let bundleContent = `/**
  * @file catalog-bundle.js
  * @description All kit-charts template generators pre-bundled for instant zero-CORS execution.
- * Allows index.html and npm consumers to render all 95 charts immediately on file://, http://, and Node.js.
+ * Allows index.html and npm consumers to render every catalog chart immediately on file://, http://, and Node.js.
  * @version 1.0.0
  * @generated ${new Date().toISOString()}
  */
@@ -88,7 +94,7 @@ function buildBundle() {
 
   fs.writeFileSync(OUTPUT_BUNDLE_PATH, bundleContent, 'utf8');
   console.log(`✅ Bundle généré avec succès : ${OUTPUT_BUNDLE_PATH}`);
-  console.log(`📊 Total des templates compilés : ${count}/${templates.length} (${(bundleContent.length / 1024).toFixed(1)} Ko)`);
+  console.log(`📊 Modules compilés : ${count}/${templates.length}, dont ${SHOWCASE_MODULES.length} démonstrateur(s) hors registre (${(bundleContent.length / 1024).toFixed(1)} Ko)`);
 
   return { success: true, count, size: bundleContent.length };
 }

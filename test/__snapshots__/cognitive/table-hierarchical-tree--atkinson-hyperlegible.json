@@ -1,0 +1,277 @@
+{
+  "_meta": {
+    "family": "09-tableaux-dataviz",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "table-hierarchical-tree",
+    "themeName": "atkinson-hyperlegible"
+  },
+  "payload": {
+    "kind": "control-object",
+    "result": {
+      "container": {
+        "addEventListener": "[Function:addEventListener]",
+        "clientHeight": 0,
+        "clientWidth": 0,
+        "dataset": {},
+        "getAttribute": "[Function:getAttribute]",
+        "getBoundingClientRect": "[Function:getBoundingClientRect]",
+        "getContext": "[Function:getContext]",
+        "height": 600,
+        "innerHTML": "\n        <div class=\"kc-dataviz-tree-container\" style=\"\n          width: 100%;\n          overflow-x: auto;\n          background: #F4F4F5;\n          border: 1px solid #D4D4D8;\n          border-radius: 10px;\n          box-shadow: 0 2px 8px rgba(15,23,42,0.04);\n          font-family: 'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;\n          color: #000000;\n          box-sizing: border-box;\n        \">\n          <table style=\"\n            width: 100%;\n            border-collapse: collapse;\n            border-spacing: 0;\n            font-size: 0.8125rem;\n            line-height: 1.45;\n            font-variant-numeric: tabular-nums lining-nums;\n            font-feature-settings: 'tnum' 1, 'lnum' 1;\n          \">\n            <thead>\n              <tr style=\"\n                background: #F8FAFC;\n                border-bottom: 1.5px solid #71717A;\n              \">\n      \n          <th style=\"\n            padding: 10px 14px;\n            text-align: left;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #18181B;\n            border: none;\n            white-space: nowrap;\n          \">\n            Département / Équipe\n          </th>\n        \n          <th style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #18181B;\n            border: none;\n            white-space: nowrap;\n          \">\n            Effectifs (ETP)\n          </th>\n        \n          <th style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #18181B;\n            border: none;\n            white-space: nowrap;\n          \">\n            Budget Alloué\n          </th>\n        \n          <th style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #18181B;\n            border: none;\n            white-space: nowrap;\n          \">\n            Dépenses Réalisées\n          </th>\n        \n          <th style=\"\n            padding: 10px 14px;\n            text-align: right;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #18181B;\n            border: none;\n            white-space: nowrap;\n          \">\n            Taux d&#39;Exécution\n          </th>\n        \n          <th style=\"\n            padding: 10px 14px;\n            text-align: center;\n            font-weight: 600;\n            font-size: 0.725rem;\n            text-transform: uppercase;\n            letter-spacing: 0.05em;\n            color: #18181B;\n            border: none;\n            white-space: nowrap;\n          \">\n            Statut Budget\n          </th>\n        \n              </tr>\n            </thead>\n            <tbody>\n      \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.03);\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 700;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 0px; display: flex; align-items: center;\">\n                <span class=\"kc-tree-toggle\" data-node-id=\"eng\" style=\"\n              display: inline-block;\n              width: 16px;\n              height: 16px;\n              line-height: 16px;\n              text-align: center;\n              font-size: 0.65rem;\n              margin-right: 6px;\n              cursor: pointer;\n              user-select: none;\n              color: #005AB5;\n              font-weight: 700;\n            \">▼</span>\n                <span style=\"color: #000000;\">Ingénierie &amp; R&amp;D</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              85 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              9.50 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              8.90 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 700;\n                color: #2E7D32;\n              \">\n                93.7%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(46, 125, 50, 0.12);\n                color: #2E7D32;\n                border: none;\n                white-space: nowrap;\n              \">Maîtrisé</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.01);\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 600;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 22px; display: flex; align-items: center;\">\n                <span class=\"kc-tree-toggle\" data-node-id=\"eng-core\" style=\"\n              display: inline-block;\n              width: 16px;\n              height: 16px;\n              line-height: 16px;\n              text-align: center;\n              font-size: 0.65rem;\n              margin-right: 6px;\n              cursor: pointer;\n              user-select: none;\n              color: #005AB5;\n              font-weight: 700;\n            \">▼</span>\n                <span style=\"color: #000000;\">Core Platform &amp; Infrastructure</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              32 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              3.80 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              3.65 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #D97706;\n              \">\n                96.1%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(239, 108, 0, 0.12);\n                color: #D97706;\n                border: none;\n                white-space: nowrap;\n              \">Sous tension</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 400;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 44px; display: flex; align-items: center;\">\n                <span style=\"display: inline-block; width: 22px;\"></span>\n                <span style=\"color: #18181B;\">Cloud Architecture &amp; SRE</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              14 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              1.80 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              1.75 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #D97706;\n              \">\n                97.2%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(239, 108, 0, 0.12);\n                color: #D97706;\n                border: none;\n                white-space: nowrap;\n              \">Sous tension</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 400;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 44px; display: flex; align-items: center;\">\n                <span style=\"display: inline-block; width: 22px;\"></span>\n                <span style=\"color: #18181B;\">Security &amp; Compliance</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              8 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              1.10 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              1.05 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #D97706;\n              \">\n                95.5%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(239, 108, 0, 0.12);\n                color: #D97706;\n                border: none;\n                white-space: nowrap;\n              \">Sous tension</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 400;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 44px; display: flex; align-items: center;\">\n                <span style=\"display: inline-block; width: 22px;\"></span>\n                <span style=\"color: #18181B;\">Data Pipeline &amp; Storage</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              10 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              0.90 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              0.85 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #2E7D32;\n              \">\n                94.4%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(46, 125, 50, 0.12);\n                color: #2E7D32;\n                border: none;\n                white-space: nowrap;\n              \">Maîtrisé</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.01);\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 600;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 22px; display: flex; align-items: center;\">\n                <span class=\"kc-tree-toggle\" data-node-id=\"eng-app\" style=\"\n              display: inline-block;\n              width: 16px;\n              height: 16px;\n              line-height: 16px;\n              text-align: center;\n              font-size: 0.65rem;\n              margin-right: 6px;\n              cursor: pointer;\n              user-select: none;\n              color: #005AB5;\n              font-weight: 700;\n            \">▼</span>\n                <span style=\"color: #000000;\">Applications &amp; Produits Web</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              38 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              4.20 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              3.95 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #2E7D32;\n              \">\n                94.0%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(46, 125, 50, 0.12);\n                color: #2E7D32;\n                border: none;\n                white-space: nowrap;\n              \">Maîtrisé</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 400;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 44px; display: flex; align-items: center;\">\n                <span style=\"display: inline-block; width: 22px;\"></span>\n                <span style=\"color: #18181B;\">Frontend &amp; Design System</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              18 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              2.00 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              1.90 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #D97706;\n              \">\n                95.0%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(239, 108, 0, 0.12);\n                color: #D97706;\n                border: none;\n                white-space: nowrap;\n              \">Sous tension</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: transparent;\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 400;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 44px; display: flex; align-items: center;\">\n                <span style=\"display: inline-block; width: 22px;\"></span>\n                <span style=\"color: #18181B;\">Microservices &amp; API Gateway</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              20 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              2.20 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #18181B; vertical-align: middle;\">\n              2.05 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #2E7D32;\n              \">\n                93.2%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(46, 125, 50, 0.12);\n                color: #2E7D32;\n                border: none;\n                white-space: nowrap;\n              \">Maîtrisé</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.01);\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 600;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 22px; display: flex; align-items: center;\">\n                <span class=\"kc-tree-toggle\" data-node-id=\"eng-ai\" style=\"\n              display: inline-block;\n              width: 16px;\n              height: 16px;\n              line-height: 16px;\n              text-align: center;\n              font-size: 0.65rem;\n              margin-right: 6px;\n              cursor: pointer;\n              user-select: none;\n              color: #005AB5;\n              font-weight: 700;\n            \">▶</span>\n                <span style=\"color: #000000;\">Intelligence Artificielle &amp; ML</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              15 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              1.50 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              1.30 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #2E7D32;\n              \">\n                86.7%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(46, 125, 50, 0.12);\n                color: #2E7D32;\n                border: none;\n                white-space: nowrap;\n              \">Maîtrisé</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.03);\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 700;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 0px; display: flex; align-items: center;\">\n                <span class=\"kc-tree-toggle\" data-node-id=\"sales\" style=\"\n              display: inline-block;\n              width: 16px;\n              height: 16px;\n              line-height: 16px;\n              text-align: center;\n              font-size: 0.65rem;\n              margin-right: 6px;\n              cursor: pointer;\n              user-select: none;\n              color: #005AB5;\n              font-weight: 700;\n            \">▼</span>\n                <span style=\"color: #000000;\">Ventes &amp; Développement Commercial</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              54 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              6.80 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              6.65 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 700;\n                color: #D97706;\n              \">\n                97.8%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(239, 108, 0, 0.12);\n                color: #D97706;\n                border: none;\n                white-space: nowrap;\n              \">Sous tension</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.01);\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 600;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 22px; display: flex; align-items: center;\">\n                <span class=\"kc-tree-toggle\" data-node-id=\"sales-ent\" style=\"\n              display: inline-block;\n              width: 16px;\n              height: 16px;\n              line-height: 16px;\n              text-align: center;\n              font-size: 0.65rem;\n              margin-right: 6px;\n              cursor: pointer;\n              user-select: none;\n              color: #005AB5;\n              font-weight: 700;\n            \">▶</span>\n                <span style=\"color: #000000;\">Grands Comptes (Enterprise)</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              28 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              3.90 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              3.85 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #D97706;\n              \">\n                98.7%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(239, 108, 0, 0.12);\n                color: #D97706;\n                border: none;\n                white-space: nowrap;\n              \">Sous tension</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.01);\n            border-bottom: 1px solid #D4D4D8;\n            font-weight: 600;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 22px; display: flex; align-items: center;\">\n                <span class=\"kc-tree-toggle\" data-node-id=\"sales-mid\" style=\"\n              display: inline-block;\n              width: 16px;\n              height: 16px;\n              line-height: 16px;\n              text-align: center;\n              font-size: 0.65rem;\n              margin-right: 6px;\n              cursor: pointer;\n              user-select: none;\n              color: #005AB5;\n              font-weight: 700;\n            \">▶</span>\n                <span style=\"color: #000000;\">Mid-Market &amp; SMB</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              26 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              2.90 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              2.80 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 600;\n                color: #D97706;\n              \">\n                96.6%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(239, 108, 0, 0.12);\n                color: #D97706;\n                border: none;\n                white-space: nowrap;\n              \">Sous tension</span>\n            </td>\n          </tr>\n        \n          <tr class=\"kc-table-row\" style=\"\n            background: rgba(15,23,42,0.03);\n            border-bottom: none;\n            font-weight: 700;\n            transition: background 0.15s ease;\n          \">\n            <td style=\"padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;\">\n              <div style=\"padding-left: 0px; display: flex; align-items: center;\">\n                <span class=\"kc-tree-toggle\" data-node-id=\"mkt\" style=\"\n              display: inline-block;\n              width: 16px;\n              height: 16px;\n              line-height: 16px;\n              text-align: center;\n              font-size: 0.65rem;\n              margin-right: 6px;\n              cursor: pointer;\n              user-select: none;\n              color: #005AB5;\n              font-weight: 700;\n            \">▶</span>\n                <span style=\"color: #000000;\">Marketing &amp; Communication</span>\n              </div>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              22 ETP\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              3.20 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000; vertical-align: middle;\">\n              3.10 M€\n            </td>\n            <td style=\"padding: 9px 14px; text-align: right; vertical-align: middle;\">\n              <span style=\"\n                font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace;\n                font-weight: 700;\n                color: #D97706;\n              \">\n                96.9%\n              </span>\n            </td>\n            <td style=\"padding: 9px 14px; text-align: center; vertical-align: middle;\">\n              <span style=\"\n                display: inline-block;\n                padding: 2px 7px;\n                border-radius: 4px;\n                font-size: 0.7rem;\n                font-weight: 600;\n                background: rgba(239, 108, 0, 0.12);\n                color: #D97706;\n                border: none;\n                white-space: nowrap;\n              \">Sous tension</span>\n            </td>\n          </tr>\n        \n              <tr style=\"\n                border-top: 2px solid #71717A;\n                background: #F8FAFC;\n                font-weight: 700;\n              \">\n                <td style=\"padding: 11px 14px; text-align: left; color: #000000;\">\n                  TOTAL ORGANISATION\n                </td>\n                <td style=\"padding: 11px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000;\">\n                  161 ETP\n                </td>\n                <td style=\"padding: 11px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000;\">\n                  19.50 M€\n                </td>\n                <td style=\"padding: 11px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #000000;\">\n                  18.65 M€\n                </td>\n                <td style=\"padding: 11px 14px; text-align: right; font-family: 'Fira Code', 'JetBrains Mono', Menlo, monospace; color: #009E73;\">\n                  95.6%\n                </td>\n                <td style=\"padding: 11px 14px; text-align: center; color: #000000; font-size: 0.725rem;\">\n                  100% Alloué\n                </td>\n              </tr>\n            </tbody>\n          </table>\n        </div>\n      ",
+        "parentElement": {
+          "appendChild": "[Function:appendChild]",
+          "querySelector": "[Function:querySelector]"
+        },
+        "querySelector": "[Function:querySelector]",
+        "querySelectorAll": "[Function:querySelectorAll]",
+        "removeEventListener": "[Function:removeEventListener]",
+        "setAttribute": "[Function:setAttribute]",
+        "style": {},
+        "tagName": "DIV",
+        "width": 800
+      },
+      "data": {
+        "columns": [
+          {
+            "align": "left",
+            "key": "name",
+            "label": "Département / Équipe"
+          },
+          {
+            "align": "right",
+            "format": "number",
+            "key": "headcount",
+            "label": "Effectifs (ETP)"
+          },
+          {
+            "align": "right",
+            "format": "currency",
+            "key": "budget",
+            "label": "Budget Alloué"
+          },
+          {
+            "align": "right",
+            "format": "currency",
+            "key": "spent",
+            "label": "Dépenses Réalisées"
+          },
+          {
+            "align": "right",
+            "format": "percent",
+            "key": "burnRate",
+            "label": "Taux d'Exécution"
+          },
+          {
+            "align": "center",
+            "format": "badge",
+            "key": "status",
+            "label": "Statut Budget"
+          }
+        ],
+        "items": [
+          {
+            "budget": 9500000,
+            "children": [
+              {
+                "budget": 3800000,
+                "children": [
+                  {
+                    "budget": 1800000,
+                    "headcount": 14,
+                    "id": "eng-core-cloud",
+                    "level": 2,
+                    "name": "Cloud Architecture & SRE",
+                    "spent": 1750000
+                  },
+                  {
+                    "budget": 1100000,
+                    "headcount": 8,
+                    "id": "eng-core-sec",
+                    "level": 2,
+                    "name": "Security & Compliance",
+                    "spent": 1050000
+                  },
+                  {
+                    "budget": 900000,
+                    "headcount": 10,
+                    "id": "eng-core-db",
+                    "level": 2,
+                    "name": "Data Pipeline & Storage",
+                    "spent": 850000
+                  }
+                ],
+                "expanded": true,
+                "headcount": 32,
+                "id": "eng-core",
+                "level": 1,
+                "name": "Core Platform & Infrastructure",
+                "spent": 3650000
+              },
+              {
+                "budget": 4200000,
+                "children": [
+                  {
+                    "budget": 2000000,
+                    "headcount": 18,
+                    "id": "eng-app-front",
+                    "level": 2,
+                    "name": "Frontend & Design System",
+                    "spent": 1900000
+                  },
+                  {
+                    "budget": 2200000,
+                    "headcount": 20,
+                    "id": "eng-app-api",
+                    "level": 2,
+                    "name": "Microservices & API Gateway",
+                    "spent": 2050000
+                  }
+                ],
+                "expanded": true,
+                "headcount": 38,
+                "id": "eng-app",
+                "level": 1,
+                "name": "Applications & Produits Web",
+                "spent": 3950000
+              },
+              {
+                "budget": 1500000,
+                "children": [
+                  {
+                    "budget": 950000,
+                    "headcount": 9,
+                    "id": "eng-ai-models",
+                    "level": 2,
+                    "name": "LLM Fine-tuning & Agents",
+                    "spent": 820000
+                  },
+                  {
+                    "budget": 550000,
+                    "headcount": 6,
+                    "id": "eng-ai-ops",
+                    "level": 2,
+                    "name": "MLOps & Inference Cluster",
+                    "spent": 480000
+                  }
+                ],
+                "expanded": false,
+                "headcount": 15,
+                "id": "eng-ai",
+                "level": 1,
+                "name": "Intelligence Artificielle & ML",
+                "spent": 1300000
+              }
+            ],
+            "expanded": true,
+            "headcount": 85,
+            "id": "eng",
+            "level": 0,
+            "name": "Ingénierie & R&D",
+            "spent": 8900000
+          },
+          {
+            "budget": 6800000,
+            "children": [
+              {
+                "budget": 3900000,
+                "children": [
+                  {
+                    "budget": 2300000,
+                    "headcount": 16,
+                    "id": "sales-ent-emea",
+                    "level": 2,
+                    "name": "EMEA Enterprise",
+                    "spent": 2280000
+                  },
+                  {
+                    "budget": 1600000,
+                    "headcount": 12,
+                    "id": "sales-ent-us",
+                    "level": 2,
+                    "name": "North America Enterprise",
+                    "spent": 1570000
+                  }
+                ],
+                "expanded": false,
+                "headcount": 28,
+                "id": "sales-ent",
+                "level": 1,
+                "name": "Grands Comptes (Enterprise)",
+                "spent": 3850000
+              },
+              {
+                "budget": 2900000,
+                "children": [
+                  {
+                    "budget": 1500000,
+                    "headcount": 14,
+                    "id": "sales-mid-inbound",
+                    "level": 2,
+                    "name": "Inbound Sales",
+                    "spent": 1460000
+                  },
+                  {
+                    "budget": 1400000,
+                    "headcount": 12,
+                    "id": "sales-mid-outbound",
+                    "level": 2,
+                    "name": "Outbound SDRs",
+                    "spent": 1340000
+                  }
+                ],
+                "expanded": false,
+                "headcount": 26,
+                "id": "sales-mid",
+                "level": 1,
+                "name": "Mid-Market & SMB",
+                "spent": 2800000
+              }
+            ],
+            "expanded": true,
+            "headcount": 54,
+            "id": "sales",
+            "level": 0,
+            "name": "Ventes & Développement Commercial",
+            "spent": 6650000
+          },
+          {
+            "budget": 3200000,
+            "children": [
+              {
+                "budget": 1900000,
+                "headcount": 12,
+                "id": "mkt-growth",
+                "level": 1,
+                "name": "Growth & Acquisition Numérique",
+                "spent": 1850000
+              },
+              {
+                "budget": 1300000,
+                "headcount": 10,
+                "id": "mkt-brand",
+                "level": 1,
+                "name": "Marque, Événements & RP",
+                "spent": 1250000
+              }
+            ],
+            "expanded": false,
+            "headcount": 22,
+            "id": "mkt",
+            "level": 0,
+            "name": "Marketing & Communication",
+            "spent": 3100000
+          }
+        ],
+        "subtitle": "Arborescence interactive multi-niveaux avec sous-totaux et taux d'exécution",
+        "title": "Budget Opérationnel & Allocation des Ressources par Organisation"
+      },
+      "destroy": "[Function:destroy]",
+      "exportCSV": "[Function:exportCSV]",
+      "options": {},
+      "setTheme": "[Function:setTheme]",
+      "theme": "atkinson-hyperlegible",
+      "toggleAll": "[Function:toggleAll]",
+      "update": "[Function:update]"
+    }
+  }
+}

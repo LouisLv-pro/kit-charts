@@ -1,0 +1,667 @@
+{
+  "_meta": {
+    "family": "03-distribution",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "beeswarm-plot",
+    "themeName": "nord-cognitive-dark"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#88C0D0",
+            "borderColor": "#88C0D0",
+            "borderWidth": 1,
+            "data": [
+              {
+                "x": 1,
+                "y": 32
+              },
+              {
+                "x": 1.035,
+                "y": 33
+              },
+              {
+                "x": 1,
+                "y": 33.6
+              },
+              {
+                "x": 1.035,
+                "y": 34.7
+              },
+              {
+                "x": 1,
+                "y": 35.1
+              },
+              {
+                "x": 0.965,
+                "y": 35.9
+              },
+              {
+                "x": 1.035,
+                "y": 36.5
+              },
+              {
+                "x": 1,
+                "y": 37.7
+              },
+              {
+                "x": 1.035,
+                "y": 38.4
+              },
+              {
+                "x": 0.965,
+                "y": 39.1
+              },
+              {
+                "x": 1,
+                "y": 39.2
+              },
+              {
+                "x": 1.07,
+                "y": 39.2
+              },
+              {
+                "x": 0.9299999999999999,
+                "y": 39.3
+              },
+              {
+                "x": 1.105,
+                "y": 39.4
+              },
+              {
+                "x": 0.895,
+                "y": 39.7
+              },
+              {
+                "x": 1.035,
+                "y": 40
+              },
+              {
+                "x": 1,
+                "y": 40.9
+              },
+              {
+                "x": 0.965,
+                "y": 41.4
+              },
+              {
+                "x": 1.035,
+                "y": 41.8
+              },
+              {
+                "x": 1.07,
+                "y": 42.1
+              },
+              {
+                "x": 1,
+                "y": 42.5
+              },
+              {
+                "x": 0.965,
+                "y": 43
+              },
+              {
+                "x": 1.035,
+                "y": 43.6
+              },
+              {
+                "x": 1,
+                "y": 44
+              },
+              {
+                "x": 1.07,
+                "y": 44
+              },
+              {
+                "x": 0.9299999999999999,
+                "y": 44.1
+              },
+              {
+                "x": 1.105,
+                "y": 44.3
+              },
+              {
+                "x": 1.035,
+                "y": 45.2
+              },
+              {
+                "x": 1,
+                "y": 45.6
+              },
+              {
+                "x": 0.965,
+                "y": 45.9
+              },
+              {
+                "x": 1.07,
+                "y": 46.1
+              },
+              {
+                "x": 0.9299999999999999,
+                "y": 46.4
+              },
+              {
+                "x": 1.105,
+                "y": 46.6
+              },
+              {
+                "x": 1,
+                "y": 47.6
+              },
+              {
+                "x": 1.035,
+                "y": 48.3
+              },
+              {
+                "x": 0.965,
+                "y": 48.3
+              },
+              {
+                "x": 1.07,
+                "y": 48.6
+              },
+              {
+                "x": 0.9299999999999999,
+                "y": 48.9
+              },
+              {
+                "x": 1,
+                "y": 52.8
+              },
+              {
+                "x": 1.035,
+                "y": 53.4
+              }
+            ],
+            "label": "Design Système A",
+            "pointHitRadius": 14,
+            "pointHoverRadius": 7,
+            "pointRadius": 4.5,
+            "pointStyle": "circle"
+          },
+          {
+            "backgroundColor": "#81A1C1",
+            "borderColor": "#81A1C1",
+            "borderWidth": 1,
+            "data": [
+              {
+                "x": 2,
+                "y": 56.1
+              },
+              {
+                "x": 2.035,
+                "y": 57.2
+              },
+              {
+                "x": 2,
+                "y": 58
+              },
+              {
+                "x": 2.035,
+                "y": 59.2
+              },
+              {
+                "x": 2,
+                "y": 59.7
+              },
+              {
+                "x": 2.035,
+                "y": 60.7
+              },
+              {
+                "x": 2,
+                "y": 61.4
+              },
+              {
+                "x": 2.035,
+                "y": 62.8
+              },
+              {
+                "x": 2,
+                "y": 63.7
+              },
+              {
+                "x": 2.035,
+                "y": 64.6
+              },
+              {
+                "x": 1.965,
+                "y": 64.6
+              },
+              {
+                "x": 1.93,
+                "y": 64.6
+              },
+              {
+                "x": 2.07,
+                "y": 64.7
+              },
+              {
+                "x": 2.105,
+                "y": 64.9
+              },
+              {
+                "x": 2,
+                "y": 65.2
+              },
+              {
+                "x": 1.895,
+                "y": 65.6
+              },
+              {
+                "x": 2.035,
+                "y": 66.6
+              },
+              {
+                "x": 2,
+                "y": 67.2
+              },
+              {
+                "x": 1.965,
+                "y": 67.7
+              },
+              {
+                "x": 2.035,
+                "y": 68.1
+              },
+              {
+                "x": 2.07,
+                "y": 68.6
+              },
+              {
+                "x": 2,
+                "y": 69.2
+              },
+              {
+                "x": 2.035,
+                "y": 69.9
+              },
+              {
+                "x": 1.965,
+                "y": 70.4
+              },
+              {
+                "x": 2.07,
+                "y": 70.4
+              },
+              {
+                "x": 1.93,
+                "y": 70.6
+              },
+              {
+                "x": 2,
+                "y": 70.7
+              },
+              {
+                "x": 2.035,
+                "y": 71.8
+              },
+              {
+                "x": 2,
+                "y": 72.4
+              },
+              {
+                "x": 1.965,
+                "y": 72.7
+              },
+              {
+                "x": 2.07,
+                "y": 72.9
+              },
+              {
+                "x": 2.035,
+                "y": 73.3
+              },
+              {
+                "x": 1.93,
+                "y": 73.5
+              },
+              {
+                "x": 2,
+                "y": 74.8
+              },
+              {
+                "x": 2.035,
+                "y": 75.5
+              },
+              {
+                "x": 1.965,
+                "y": 75.6
+              },
+              {
+                "x": 2.07,
+                "y": 75.9
+              },
+              {
+                "x": 2,
+                "y": 76.3
+              },
+              {
+                "x": 2,
+                "y": 80.9
+              },
+              {
+                "x": 2.035,
+                "y": 81.7
+              }
+            ],
+            "label": "Design Système B",
+            "pointHitRadius": 14,
+            "pointHoverRadius": 7,
+            "pointRadius": 4.5,
+            "pointStyle": "circle"
+          },
+          {
+            "backgroundColor": "#5E81AC",
+            "borderColor": "#5E81AC",
+            "borderWidth": 1,
+            "data": [
+              {
+                "x": 3,
+                "y": 44.4
+              },
+              {
+                "x": 3.035,
+                "y": 45.4
+              },
+              {
+                "x": 3,
+                "y": 46.1
+              },
+              {
+                "x": 3.035,
+                "y": 47.2
+              },
+              {
+                "x": 3,
+                "y": 47.7
+              },
+              {
+                "x": 2.965,
+                "y": 48.5
+              },
+              {
+                "x": 3.035,
+                "y": 49.1
+              },
+              {
+                "x": 3,
+                "y": 50.4
+              },
+              {
+                "x": 3.035,
+                "y": 51.2
+              },
+              {
+                "x": 3,
+                "y": 52
+              },
+              {
+                "x": 2.965,
+                "y": 52
+              },
+              {
+                "x": 3.07,
+                "y": 52
+              },
+              {
+                "x": 2.93,
+                "y": 52.1
+              },
+              {
+                "x": 3.105,
+                "y": 52.3
+              },
+              {
+                "x": 2.895,
+                "y": 52.5
+              },
+              {
+                "x": 3.035,
+                "y": 52.9
+              },
+              {
+                "x": 3,
+                "y": 53.8
+              },
+              {
+                "x": 2.965,
+                "y": 54.3
+              },
+              {
+                "x": 3.035,
+                "y": 54.7
+              },
+              {
+                "x": 3.07,
+                "y": 55.1
+              },
+              {
+                "x": 3,
+                "y": 55.5
+              },
+              {
+                "x": 2.965,
+                "y": 56.1
+              },
+              {
+                "x": 3.035,
+                "y": 56.7
+              },
+              {
+                "x": 3,
+                "y": 57.1
+              },
+              {
+                "x": 3.07,
+                "y": 57.2
+              },
+              {
+                "x": 2.93,
+                "y": 57.3
+              },
+              {
+                "x": 3.105,
+                "y": 57.4
+              },
+              {
+                "x": 3.035,
+                "y": 58.4
+              },
+              {
+                "x": 3,
+                "y": 58.9
+              },
+              {
+                "x": 2.965,
+                "y": 59.2
+              },
+              {
+                "x": 3.07,
+                "y": 59.4
+              },
+              {
+                "x": 2.93,
+                "y": 59.7
+              },
+              {
+                "x": 3.035,
+                "y": 59.9
+              },
+              {
+                "x": 3,
+                "y": 61
+              },
+              {
+                "x": 3.035,
+                "y": 61.7
+              },
+              {
+                "x": 2.965,
+                "y": 61.7
+              },
+              {
+                "x": 3.07,
+                "y": 62
+              },
+              {
+                "x": 2.93,
+                "y": 62.4
+              },
+              {
+                "x": 3,
+                "y": 66.5
+              },
+              {
+                "x": 3.035,
+                "y": 67.2
+              }
+            ],
+            "label": "Design Système C",
+            "pointHitRadius": 14,
+            "pointHoverRadius": 7,
+            "pointRadius": 4.5,
+            "pointStyle": "circle"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "xy",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "point": {
+            "hitRadius": 14,
+            "hoverBorderWidth": 2,
+            "hoverRadius": 7,
+            "radius": 4
+          }
+        },
+        "hitRadius": 14,
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "hoverRadius": 7,
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "nearest",
+        "plugins": {
+          "legend": {
+            "align": "start",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "#434C5E",
+            "bodyColor": "#ECEFF4",
+            "bodyFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#616E85",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#ECEFF4",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "max": 3.6,
+            "min": 0.4,
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "600"
+              },
+              "padding": 8,
+              "stepSize": 1
+            },
+            "type": "linear"
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "scatter"
+    },
+    "kind": "chart-config"
+  }
+}

@@ -1,0 +1,224 @@
+{
+  "_meta": {
+    "family": "05-evolution-temporelle",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "candlestick-ohlc",
+    "themeName": "tableau-stone-categorical"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#4E79A7",
+            "borderColor": {
+              "down": "#E15759",
+              "unchanged": "#BAB0AC",
+              "up": "#59A14F"
+            },
+            "color": {
+              "down": "#E15759",
+              "unchanged": "#BAB0AC",
+              "up": "#59A14F"
+            },
+            "data": [
+              {
+                "c": 155.6,
+                "h": 156.8,
+                "l": 151.2,
+                "o": 152.4,
+                "x": 1735776000000
+              },
+              {
+                "c": 159.8,
+                "h": 161,
+                "l": 154.5,
+                "o": 155.6,
+                "x": 1735862400000
+              },
+              {
+                "c": 158.2,
+                "h": 162.5,
+                "l": 157,
+                "o": 160,
+                "x": 1736121600000
+              },
+              {
+                "c": 154.5,
+                "h": 159.4,
+                "l": 153,
+                "o": 157.8,
+                "x": 1736208000000
+              },
+              {
+                "c": 157.1,
+                "h": 158,
+                "l": 153.5,
+                "o": 154.2,
+                "x": 1736294400000
+              },
+              {
+                "c": 163.5,
+                "h": 164.2,
+                "l": 156.8,
+                "o": 157,
+                "x": 1736380800000
+              },
+              {
+                "c": 166.4,
+                "h": 167,
+                "l": 162,
+                "o": 163.8,
+                "x": 1736467200000
+              },
+              {
+                "c": 164,
+                "h": 168.5,
+                "l": 163.2,
+                "o": 166,
+                "x": 1736726400000
+              },
+              {
+                "c": 160.2,
+                "h": 165.5,
+                "l": 159,
+                "o": 164,
+                "x": 1736812800000
+              },
+              {
+                "c": 162.9,
+                "h": 163.8,
+                "l": 158.5,
+                "o": 160.5,
+                "x": 1736899200000
+              }
+            ],
+            "label": "Action TECH EUR (OHLC)"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "x",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 12,
+            "hoverRadius": 6,
+            "radius": 3
+          }
+        },
+        "hitRadius": 12,
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "hoverRadius": 6,
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "index",
+        "plugins": {
+          "legend": {
+            "align": "end",
+            "display": false,
+            "labels": {
+              "boxHeight": 8,
+              "boxWidth": 8,
+              "color": "#1E293B",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 14,
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "500"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 1,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "padding": 10,
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+              "size": 12,
+              "weight": "600"
+            }
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            },
+            "type": "timeseries"
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "candlestick"
+    },
+    "kind": "chart-config"
+  }
+}

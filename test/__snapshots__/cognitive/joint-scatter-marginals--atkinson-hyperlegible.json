@@ -1,0 +1,347 @@
+{
+  "_meta": {
+    "family": "04-correlation-relation",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "joint-scatter-marginals",
+    "themeName": "atkinson-hyperlegible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "rgba(0, 90, 181, 0.75)",
+            "borderColor": "#005AB5",
+            "borderWidth": 1.5,
+            "data": [
+              {
+                "x": 4.2,
+                "y": 92
+              },
+              {
+                "x": 5.8,
+                "y": 86
+              },
+              {
+                "x": 6.5,
+                "y": 95
+              },
+              {
+                "x": 7.8,
+                "y": 81
+              },
+              {
+                "x": 8.4,
+                "y": 89
+              },
+              {
+                "x": 9.6,
+                "y": 77
+              },
+              {
+                "x": 10.5,
+                "y": 85
+              },
+              {
+                "x": 11.8,
+                "y": 73
+              },
+              {
+                "x": 12.4,
+                "y": 82
+              },
+              {
+                "x": 13.9,
+                "y": 70
+              },
+              {
+                "x": 15.1,
+                "y": 78
+              },
+              {
+                "x": 15.8,
+                "y": 64
+              },
+              {
+                "x": 16.9,
+                "y": 75
+              },
+              {
+                "x": 17.5,
+                "y": 62
+              },
+              {
+                "x": 18.9,
+                "y": 69
+              },
+              {
+                "x": 19.4,
+                "y": 58
+              },
+              {
+                "x": 20.8,
+                "y": 67
+              },
+              {
+                "x": 21.5,
+                "y": 53
+              },
+              {
+                "x": 22.9,
+                "y": 63
+              },
+              {
+                "x": 23.4,
+                "y": 48
+              },
+              {
+                "x": 24.8,
+                "y": 59
+              },
+              {
+                "x": 25.5,
+                "y": 45
+              },
+              {
+                "x": 26.9,
+                "y": 55
+              },
+              {
+                "x": 27.8,
+                "y": 42
+              },
+              {
+                "x": 28.5,
+                "y": 51
+              },
+              {
+                "x": 29.8,
+                "y": 39
+              },
+              {
+                "x": 31.2,
+                "y": 46
+              },
+              {
+                "x": 32.5,
+                "y": 35
+              },
+              {
+                "x": 33.8,
+                "y": 41
+              },
+              {
+                "x": 35,
+                "y": 32
+              },
+              {
+                "x": 11.2,
+                "y": 90
+              },
+              {
+                "x": 14,
+                "y": 65
+              },
+              {
+                "x": 18,
+                "y": 79
+              },
+              {
+                "x": 22,
+                "y": 47
+              },
+              {
+                "x": 27,
+                "y": 38
+              }
+            ],
+            "label": "Temps d'attente (min) vs Satisfaction (0-100) (N = 35)",
+            "order": 2,
+            "pointHoverRadius": 8,
+            "pointRadius": 5.5,
+            "type": "scatter"
+          },
+          {
+            "borderColor": "rgba(24, 24, 27, 0.85)",
+            "borderDash": [
+              5,
+              4
+            ],
+            "borderWidth": 2,
+            "data": [
+              {
+                "x": 4,
+                "y": 93.6
+              },
+              {
+                "x": 35,
+                "y": 32.6
+              }
+            ],
+            "fill": false,
+            "label": "Régression OLS (r = -0.933)",
+            "order": 3,
+            "pointHoverRadius": 0,
+            "pointRadius": 0,
+            "tension": 0,
+            "type": "line"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 8,
+            "left": 6,
+            "right": 64,
+            "top": 54
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "align": "center",
+            "display": true,
+            "labels": {
+              "boxWidth": 8,
+              "color": "#000000",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12
+              },
+              "padding": 16,
+              "usePointStyle": true
+            },
+            "position": "bottom"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(0, 0, 0, 0.95)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#71717A",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#18181B",
+              "width": 1
+            },
+            "grid": {
+              "color": "rgba(0, 0, 0, 0.12)"
+            },
+            "ticks": {
+              "color": "#18181B",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            },
+            "title": {
+              "color": "#18181B",
+              "display": true,
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "600"
+              },
+              "text": "Temps d'attente au support (min)"
+            },
+            "type": "linear"
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(0, 0, 0, 0.12)"
+            },
+            "ticks": {
+              "color": "#18181B",
+              "font": {
+                "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+                "size": 11
+              },
+              "padding": 8
+            },
+            "title": {
+              "color": "#18181B",
+              "display": true,
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "600"
+              },
+              "text": "Score de satisfaction client CSAT (0-100)"
+            },
+            "type": "linear"
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDraw": "[Function:afterDraw]",
+          "beforeDatasetsDraw": "[Function:beforeDatasetsDraw]",
+          "id": "kitChartsJointMarginalsPainter"
+        }
+      ],
+      "type": "scatter"
+    },
+    "kind": "chart-config"
+  }
+}

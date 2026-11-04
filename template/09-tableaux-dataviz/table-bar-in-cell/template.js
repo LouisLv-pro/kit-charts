@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -85,8 +86,8 @@
     const bg3 = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.12)';
 
     return `
-      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="display:inline-block; vertical-align:middle;" aria-label="Réalisé: ${actual}%, Cible: ${target}%">
-        <title>Réalisé: ${actual}%, Cible: ${target}%</title>
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="display:inline-block; vertical-align:middle;" aria-label="Réalisé: ${escapeHtml(actual)}%, Cible: ${escapeHtml(target)}%">
+        <title>Réalisé: ${escapeHtml(actual)}%, Cible: ${escapeHtml(target)}%</title>
         <!-- Plages de fond Stephen Few -->
         <rect x="0" y="2" width="${width}" height="${height - 4}" fill="${bg1}" rx="${isTufte ? 0 : 2}" />
         <rect x="0" y="2" width="${satisfactoryW.toFixed(1)}" height="${height - 4}" fill="${bg2}" />
@@ -221,9 +222,9 @@
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
-          <th data-key="${col.key}" style="
+          <th data-key="${escapeHtml(col.key)}" style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -233,7 +234,7 @@
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${col.label}${sortIcon}
+            ${escapeHtml(col.label)}${sortIcon}
           </th>
         `;
       });
@@ -262,7 +263,7 @@
             transition: background 0.15s ease;
           ">
             <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
-              <div style="font-weight: 600; color: ${textPrimary};">${row.product}</div>
+              <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.product)}</div>
             </td>
             <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
               <span style="
@@ -273,7 +274,7 @@
                 font-weight: 500;
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
-              ">${row.category}</span>
+              ">${escapeHtml(row.category)}</span>
             </td>
             <td style="padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;">
               <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
@@ -284,13 +285,13 @@
               </div>
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
-              ${row.volume.toLocaleString('fr-FR')}
+              ${escapeHtml(row.volume.toLocaleString('fr-FR'))}
             </td>
             <td style="padding: 10px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
               <div style="display: flex; align-items: center; gap: 8px;">
                 ${generateBulletGraphSVG(row.actualRate, row.targetRate, 110, 16, bulletColor, isDark, isTufte)}
                 <span style="font-size: 0.7rem; color: ${textMuted}; font-family: ${fontMono};">
-                  Cible: ${row.targetRate}%
+                  Cible: ${escapeHtml(row.targetRate)}%
                 </span>
               </div>
             </td>
@@ -301,7 +302,7 @@
                 font-size: 0.8125rem;
                 color: ${bulletColor};
               ">
-                ${row.actualRate}%
+                ${escapeHtml(row.actualRate)}%
               </span>
             </td>
           </tr>

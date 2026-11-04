@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: classement-satisfaction-agences-2023-2025
+expected_outcome: |
+  Le template est slope-chart avec labels exactement ["2023", "2025"] et 7 datasets, un par agence, chacun avec data [valeur 2023, valeur 2025]. validate-chart.js ne rapporte aucune erreur, et la réponse ou le titre relève un changement de rang exact (Lille de la 6e à la 1re place, Nantes de la 1re à la 5e ou Marseille de la 3e à la 7e).

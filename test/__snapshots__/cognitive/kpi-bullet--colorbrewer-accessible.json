@@ -1,0 +1,104 @@
+{
+  "_meta": {
+    "family": "00-kpi-card",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "kpi-bullet",
+    "themeName": "colorbrewer-accessible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#2B8CBE",
+            "barThickness": 12,
+            "borderRadius": 4,
+            "data": [
+              460000
+            ],
+            "label": "Réalisé",
+            "order": 1,
+            "zIndex": 10
+          },
+          {
+            "backgroundColor": "rgba(15, 23, 42, 0.08)",
+            "barThickness": 24,
+            "borderRadius": 4,
+            "data": [
+              300000
+            ],
+            "grouped": false,
+            "label": "Plage Insatisfaisant",
+            "order": 4
+          },
+          {
+            "backgroundColor": "rgba(15, 23, 42, 0.05)",
+            "barThickness": 24,
+            "borderRadius": 4,
+            "data": [
+              425000
+            ],
+            "grouped": false,
+            "label": "Plage Satisfaisant",
+            "order": 3
+          },
+          {
+            "backgroundColor": "rgba(15, 23, 42, 0.03)",
+            "barThickness": 24,
+            "borderRadius": 4,
+            "data": [
+              550000
+            ],
+            "grouped": false,
+            "label": "Plage Optimale",
+            "order": 2
+          }
+        ],
+        "labels": [
+          "Performance"
+        ]
+      },
+      "options": {
+        "animation": {
+          "duration": 400,
+          "easing": "easeOutQuart"
+        },
+        "indexAxis": "y",
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "enabled": true,
+            "filter": "[Function:filter]"
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "display": false,
+            "max": 550000,
+            "min": 0
+          },
+          "y": {
+            "display": false,
+            "stacked": false
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "bulletTargetMarker"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

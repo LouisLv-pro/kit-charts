@@ -3,12 +3,36 @@
   "version": "1.0.0",
   "description": "Bibliothèque de datavisualisation agent-native pour Chart.js, fondée sur les sciences cognitives et WCAG 2.2.",
   "main": "catalog-bundle.js",
+  "bin": {
+    "kit-charts": "bin/kit-charts.js"
+  },
+  "files": [
+    "bin/",
+    "template/",
+    "themes/",
+    ".agents/skills/kit-charts/SKILL.md",
+    ".agents/skills/kit-charts/registry.json",
+    ".agents/skills/kit-charts/references/",
+    ".agents/skills/kit-charts/scripts/",
+    ".agents/agents/dataviz.md",
+    "catalog-bundle.js",
+    "index.html",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "node .agents/skills/kit-charts/scripts/build-bundle.js",
     "compile": "node .agents/skills/kit-charts/scripts/compile-chart.js",
     "validate": "node .agents/skills/kit-charts/scripts/validate-chart.js",
+    "recommend": "node .agents/skills/kit-charts/scripts/recommend-template.js",
     "lint": "node .agents/skills/kit-charts/scripts/validate-chart.js",
-    "test": "node test/run-integration-tests.js"
+    "test": "node test/run-integration-tests.js && node test/snapshot-configs.js --check",
+    "snapshots": "node test/snapshot-configs.js",
+    "test:render": "node .agents/skills/kit-charts/scripts/render-check.js --all-templates",
+    "test:cli": "node test/cli-smoke.js"
   },
   "keywords": [
     "dataviz",

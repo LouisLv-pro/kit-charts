@@ -1,0 +1,153 @@
+{
+  "_meta": {
+    "family": "02-composition-part-to-whole",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "doughnut-chart",
+    "themeName": "nord-cognitive-dark"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "#88C0D0",
+              "#81A1C1",
+              "#5E81AC",
+              "#A3BE8C"
+            ],
+            "borderColor": "#2E3440",
+            "borderWidth": 2,
+            "data": [
+              42,
+              28,
+              18,
+              12
+            ],
+            "label": "Revenus (M€)"
+          }
+        ],
+        "labels": [
+          "Abonnements SaaS",
+          "Licences Enterprise",
+          "Services Pro",
+          "Usage API"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "cutout": "65%",
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 120,
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "axis": "xy",
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#ECEFF4",
+            "display": true,
+            "font": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "display": true,
+            "labels": {
+              "boxWidth": 12,
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 12,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "right"
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "#434C5E",
+            "bodyColor": "#ECEFF4",
+            "bodyFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#616E85",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#ECEFF4",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "rotation": -90,
+        "scales": {}
+      },
+      "plugins": [
+        {
+          "beforeDraw": "[Function:beforeDraw]",
+          "id": "doughnutCenterKpi_dopf7"
+        }
+      ],
+      "type": "doughnut"
+    },
+    "kind": "chart-config"
+  }
+}

@@ -1,0 +1,149 @@
+{
+  "_meta": {
+    "family": "03-distribution",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "raincloud-plot",
+    "themeName": "tableau-stone-categorical"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "transparent",
+            "borderColor": "transparent",
+            "borderWidth": 0,
+            "data": [
+              [
+                35,
+                70
+              ],
+              [
+                48,
+                92
+              ],
+              [
+                25,
+                96
+              ]
+            ],
+            "label": "Engagement Score (0-100)"
+          }
+        ],
+        "labels": [
+          "Cohorte Contrôle",
+          "Cohorte Variante A",
+          "Cohorte Variante B"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "enabled": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#475569",
+              "width": 1
+            },
+            "grid": {
+              "display": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)",
+              "display": true,
+              "drawBorder": false
+            },
+            "max": 142,
+            "min": -21,
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            },
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Engagement Score (0-100)"
+            }
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsRaincloudPainter"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

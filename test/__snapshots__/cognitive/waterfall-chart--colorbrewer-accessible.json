@@ -1,0 +1,191 @@
+{
+  "_meta": {
+    "family": "06-flux-processus",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "waterfall-chart",
+    "themeName": "colorbrewer-accessible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "#475569",
+              "#2E7D32",
+              "#2E7D32",
+              "#C62828",
+              "#C62828",
+              "#475569"
+            ],
+            "barPercentage": 0.85,
+            "borderColor": "#FFFFFF",
+            "borderRadius": 4,
+            "borderWidth": 1,
+            "categoryPercentage": 0.8,
+            "data": [
+              [
+                0,
+                100
+              ],
+              [
+                100,
+                135
+              ],
+              [
+                135,
+                155
+              ],
+              [
+                155,
+                125
+              ],
+              [
+                125,
+                110
+              ],
+              [
+                0,
+                110
+              ]
+            ],
+            "label": "Pont Financier EBITDA (M€)"
+          }
+        ],
+        "labels": [
+          "EBITDA 2023 Initial",
+          "+ Volume Ventes",
+          "+ Mix Prix / Produits",
+          "- Coûts Matières Premières",
+          "- Frais R&D & Recrutement",
+          "EBITDA 2024 Final"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.85,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "align": "top",
+            "anchor": "end",
+            "color": "#0F172A",
+            "display": true,
+            "font": {
+              "family": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            }
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grace": "10%",
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

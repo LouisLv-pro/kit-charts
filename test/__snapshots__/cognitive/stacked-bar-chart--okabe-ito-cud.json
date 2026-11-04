@@ -1,0 +1,291 @@
+{
+  "_meta": {
+    "family": "01-comparaison",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "stacked-bar-chart",
+    "themeName": "okabe-ito-cud"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#0072B2",
+            "barPercentage": 0.85,
+            "borderColor": "#0072B2",
+            "borderRadius": 0,
+            "borderSkipped": false,
+            "borderWidth": 0,
+            "categoryPercentage": 0.75,
+            "data": [
+              120,
+              145,
+              160,
+              190
+            ],
+            "label": "E-commerce"
+          },
+          {
+            "backgroundColor": "#D55E00",
+            "barPercentage": 0.85,
+            "borderColor": "#D55E00",
+            "borderRadius": 0,
+            "borderSkipped": false,
+            "borderWidth": 0,
+            "categoryPercentage": 0.75,
+            "data": [
+              85,
+              90,
+              95,
+              110
+            ],
+            "label": "Boutiques Physiques"
+          },
+          {
+            "backgroundColor": "#009E73",
+            "barPercentage": 0.85,
+            "borderColor": "#009E73",
+            "borderRadius": 3,
+            "borderSkipped": false,
+            "borderWidth": 0,
+            "categoryPercentage": 0.75,
+            "data": [
+              55,
+              60,
+              75,
+              95
+            ],
+            "label": "Grands Comptes / B2B"
+          }
+        ],
+        "labels": [
+          "T1",
+          "T2",
+          "T3",
+          "T4"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#94A3B8",
+          "bg": "#FFFFFF",
+          "border": "#E2E8F0",
+          "borderStrong": "#CBD5E1",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#D55E00",
+            "pos": "#0072B2"
+          },
+          "emphasis": {
+            "anomaly": "#D55E00",
+            "benchmark": "#475569",
+            "context": "#CBD5E1",
+            "focal": "#0072B2",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap",
+          "gridColor": "rgba(30, 41, 59, 0.06)",
+          "id": "05-okabe-ito-cud",
+          "isDark": false,
+          "label": "Okabe-Ito CUD",
+          "name": "okabe-ito-cud",
+          "palette": [
+            "#0072B2",
+            "#D55E00",
+            "#009E73",
+            "#E69F00",
+            "#56B4E9",
+            "#F0E442",
+            "#CC79A7",
+            "#595959"
+          ],
+          "semantic": {
+            "info": "#0072B2",
+            "negative": "#D55E00",
+            "neutral": "#999999",
+            "positive": "#009E73",
+            "warning": "#E69F00"
+          },
+          "sequential": [
+            "#E6F2F8",
+            "#B3DAEE",
+            "#56B4E9",
+            "#0072B2",
+            "#004C77"
+          ],
+          "status": {
+            "danger": "#D55E00",
+            "info": "#56B4E9",
+            "neutral": "#999999",
+            "success": "#009E73",
+            "warning": "#E69F00"
+          },
+          "surface": "#F8FAFC",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#64748B",
+          "textPrimary": "#1E293B",
+          "textSecondary": "#334155",
+          "tooltipBg": "rgba(30, 41, 59, 0.92)",
+          "tooltipText": "#FFFFFF",
+          "zeroLine": "#475569"
+        },
+        "animation": false,
+        "barPercentage": 0.85,
+        "categoryPercentage": 0.75,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#1E293B",
+            "display": true,
+            "font": {
+              "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#1E293B",
+              "font": {
+                "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "footer": "[Function:footer]",
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "footerFont": {
+              "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "600"
+            },
+            "intersect": false,
+            "mode": "index",
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "stacked": true,
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grace": "10%",
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "stacked": true,
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#334155",
+              "font": {
+                "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        },
+        "showDataLabels": true
+      },
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

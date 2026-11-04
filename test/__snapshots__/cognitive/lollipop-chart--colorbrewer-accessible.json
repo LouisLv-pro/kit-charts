@@ -1,0 +1,273 @@
+{
+  "_meta": {
+    "family": "01-comparaison",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "lollipop-chart",
+    "themeName": "colorbrewer-accessible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#2B8CBE",
+            "barPercentage": 0.9,
+            "barThickness": 3,
+            "borderColor": "#2B8CBE",
+            "borderRadius": 0,
+            "borderWidth": 0,
+            "categoryPercentage": 0.8,
+            "data": [
+              88.5,
+              82.4,
+              76.1,
+              68.9,
+              64.2,
+              58,
+              52.3
+            ],
+            "datalabels": false,
+            "displayDataLabels": false,
+            "headRadius": 6,
+            "label": "Popularité Index (%)",
+            "maxBarThickness": 4
+          }
+        ],
+        "labels": [
+          "Python",
+          "JavaScript",
+          "TypeScript",
+          "Rust",
+          "Go",
+          "Java",
+          "C++"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#94A3B8",
+          "bg": "#FFFFFF",
+          "border": "#E2E8F0",
+          "borderStrong": "#CBD5E1",
+          "divergent": {
+            "center": "#F7F7F7",
+            "mid": "#FFFFFF",
+            "neg": "#CA0020",
+            "neg1": "#FDDBC7",
+            "neg2": "#F4A582",
+            "neg3": "#CA0020",
+            "pos": "#0571B0",
+            "pos1": "#D1E5F0",
+            "pos2": "#67A9CF",
+            "pos3": "#0571B0"
+          },
+          "emphasis": {
+            "anomaly": "#D01C8B",
+            "benchmark": "#475569",
+            "context": "#CBD5E1",
+            "focal": "#2B8CBE",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+          "gridColor": "rgba(15, 23, 42, 0.06)",
+          "id": "01-colorbrewer-accessible",
+          "isDark": false,
+          "label": "ColorBrewer Accessible",
+          "name": "colorbrewer-accessible",
+          "palette": [
+            "#2B8CBE",
+            "#E66101",
+            "#5E3C99",
+            "#4DAC26",
+            "#D01C8B",
+            "#FDB863",
+            "#B8E186",
+            "#999999"
+          ],
+          "semantic": {
+            "info": "#1565C0",
+            "negative": "#C62828",
+            "neutral": "#999999",
+            "positive": "#2E7D32",
+            "warning": "#EF6C00"
+          },
+          "sequential": [
+            "#EFF3FF",
+            "#C6DBEF",
+            "#9ECAE1",
+            "#6BAED6",
+            "#3182BD",
+            "#08519C"
+          ],
+          "status": {
+            "danger": "#C62828",
+            "info": "#1565C0",
+            "neutral": "#94A3B8",
+            "success": "#2E7D32",
+            "warning": "#EF6C00"
+          },
+          "surface": "#F8FAFC",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#64748B",
+          "textPrimary": "#0F172A",
+          "textSecondary": "#334155",
+          "tooltipBg": "rgba(15, 23, 42, 0.92)",
+          "tooltipText": "#F8FAFC",
+          "zeroLine": "#475569"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "top": 18
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#0F172A",
+            "display": true,
+            "font": {
+              "family": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "start",
+            "display": false,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#0F172A",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grace": "12%",
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#334155",
+              "font": {
+                "family": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        },
+        "showDataLabels": true
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "lollipopHeadPlugin"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

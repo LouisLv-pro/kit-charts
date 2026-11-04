@@ -1,9 +1,9 @@
 /**
  * @file catalog-bundle.js
  * @description All kit-charts template generators pre-bundled for instant zero-CORS execution.
- * Allows index.html and npm consumers to render all 95 charts immediately on file://, http://, and Node.js.
+ * Allows index.html and npm consumers to render every catalog chart immediately on file://, http://, and Node.js.
  * @version 1.0.0
- * @generated 2026-08-30T22:09:50.827Z
+ * @generated 2026-11-04T14:56:30.409Z
  */
 
 (function(global) {
@@ -24,6 +24,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
@@ -40,6 +43,26 @@
     metricType: 'gain',
     footnote: 'Écart restant : -40 000 € • 18 jours ouvrés restants'
   };
+
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    if (!isNum(d.target) || d.target <= 0) return `formattedData.target attendu en nombre strictement positif, reçu ${isNum(d.target) ? d.target : kindOf(d.target)}`;
+    if (d.ranges !== undefined && d.ranges !== null && !(Array.isArray(d.ranges) && d.ranges.length >= 3 && d.ranges.slice(0, 3).every(isNum))) {
+      return 'formattedData.ranges attendu en tableau de 3 nombres [bas, moyen, plafond]';
+    }
+    return null;
+  }
 
   /**
    * Crée et initialise un micro-bullet graph dans le canvas.
@@ -58,12 +81,14 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
 
     let actual = data.value;
     let target = data.target;
-    let ranges = data.ranges || [target * 0.6, target * 0.85, target * 1.15];
+    let ranges = Array.isArray(data.ranges) ? data.ranges : null;
 
     let resolvedProvenance = null;
     if (resolveThresholds) {
@@ -75,14 +100,14 @@
         } catch (e) {}
       } else if (options.autoThreshold !== false && data.autoThreshold !== false && historyData && historyData.length >= 5) {
         resolvedProvenance = resolveThresholds(historyData, null, { polarity: data.metricType });
-        if (resolvedProvenance && resolvedProvenance.target !== null) {
-          target = resolvedProvenance.target;
+        if (resolvedProvenance && resolvedProvenance.warning !== null && resolvedProvenance.danger !== null) {
           ranges = [resolvedProvenance.danger, resolvedProvenance.warning, target * 1.15];
         }
       }
     }
 
-    const maxScale = Math.max(ranges[2] || target * 1.15, actual * 1.05, target * 1.05);
+    const maxScale = Math.max((ranges && ranges[2]) || target * 1.15, actual * 1.05, target * 1.05);
+    const unitSuffix = data.unit ? ' ' + data.unit : '';
 
 
     const attainment = Math.round((actual / target) * 100);
@@ -136,7 +161,7 @@
             zIndex: 10
           },
           // 2. Plage Qualificative 1 (Bas / Insatisfaisant)
-          {
+          ranges && {
             label: 'Plage Insatisfaisant',
             data: [ranges[0]],
             backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.08)',
@@ -146,7 +171,7 @@
             grouped: false
           },
           // 3. Plage Qualificative 2 (Moyen / Satisfaisant)
-          {
+          ranges && {
             label: 'Plage Satisfaisant',
             data: [ranges[1]],
             backgroundColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(15, 23, 42, 0.05)',
@@ -156,7 +181,7 @@
             grouped: false
           },
           // 4. Plage Qualificative 3 (Optimal / Plafond)
-          {
+          ranges && {
             label: 'Plage Optimale',
             data: [ranges[2]],
             backgroundColor: isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(15, 23, 42, 0.03)',
@@ -165,7 +190,7 @@
             order: 2,
             grouped: false
           }
-        ]
+        ].filter(Boolean)
       },
       options: {
         indexAxis: 'y',
@@ -179,7 +204,7 @@
             filter: (item) => item.datasetIndex === 0,
             callbacks: {
               title: () => data.title,
-              label: (ctx) => `Réalisé : ${actual.toLocaleString('fr-FR')} ${data.unit} (${attainment}% de l'objectif de ${target.toLocaleString('fr-FR')} ${data.unit})${resolvedProvenance ? ' • ' + resolvedProvenance.badge : ''}`
+              label: (ctx) => `Réalisé : ${actual.toLocaleString('fr-FR')}${unitSuffix} (${attainment}% de l'objectif de ${target.toLocaleString('fr-FR')}${unitSuffix})${resolvedProvenance ? ' • ' + resolvedProvenance.badge : ''}`
             }
           }
         },
@@ -212,7 +237,9 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const canvasId = 'kpi-bullet-canvas-' + Math.random().toString(36).substr(2, 9);
 
     const actual = data.value;
@@ -251,7 +278,7 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
+          ">${escapeHtml(data.title)}</span>
           <span style="
             display: inline-flex;
             flex-direction: column;
@@ -284,10 +311,10 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${actual.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${actual.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
           <div style="font-size: 0.78125rem; font-weight: 600; color: ${tokens.textMuted}; text-align: right;">
-            Cible : ${target.toLocaleString('fr-FR')} ${data.unit || ''}
+            Cible : ${target.toLocaleString('fr-FR')} ${escapeHtml(data.unit || '')}
           </div>
         </div>
 
@@ -303,7 +330,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;
@@ -336,6 +363,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
@@ -362,6 +392,40 @@
     footnote: 'Audit semestriel consolidé • Normes IFRS'
   };
 
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    for (const key of ['historical', 'budget']) {
+      const ref = d[key];
+      if (!ref || typeof ref !== 'object' || Array.isArray(ref)) return `formattedData.${key} attendu en objet { value, label?, deltaAbs?, deltaPct? }, reçu ${kindOf(ref)}`;
+      if (!isNum(ref.value)) return `formattedData.${key}.value attendu en nombre, reçu ${kindOf(ref.value)}`;
+      for (const f of ['deltaAbs', 'deltaPct']) {
+        if (ref[f] !== undefined && ref[f] !== null && !isNum(ref[f])) return `formattedData.${key}.${f} attendu en nombre, reçu ${kindOf(ref[f])}`;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Repère comparatif complet : écarts fournis, sinon calculés depuis les valeurs fournies.
+   * deltaPct reste null si la référence vaut 0 (pourcentage non défini).
+   */
+  function withDeltas(ref, slotLabel, current) {
+    const deltaAbs = isNum(ref.deltaAbs) ? ref.deltaAbs : Math.round((current - ref.value) * 100) / 100;
+    const deltaPct = isNum(ref.deltaPct) ? ref.deltaPct : (ref.value !== 0 ? Math.round((deltaAbs / Math.abs(ref.value)) * 1000) / 10 : null);
+    return { label: typeof ref.label === 'string' && ref.label ? ref.label : slotLabel, value: ref.value, deltaAbs, deltaPct };
+  }
+
   /**
    * Crée et initialise un micro-graphique comparatif 3 barres (N, N-1, Budget) dans le canvas.
    */
@@ -379,12 +443,14 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
 
     const currentVal = data.value;
-    let histVal = data.historical ? data.historical.value : currentVal;
-    let budgetVal = data.budget ? data.budget.value : currentVal;
+    const histVal = data.historical.value;
+    const budgetVal = data.budget.value;
 
     let resolvedProvenance = null;
     if (resolveThresholds) {
@@ -396,9 +462,6 @@
         } catch (e) {}
       } else if (options.autoThreshold !== false && data.autoThreshold !== false && historyData && historyData.length >= 5) {
         resolvedProvenance = resolveThresholds(historyData, null, { polarity: data.metricType });
-        if (resolvedProvenance && resolvedProvenance.target !== null) {
-          budgetVal = resolvedProvenance.target;
-        }
       }
     }
 
@@ -468,11 +531,13 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
 
-    const hist = data.historical || { label: 'vs N-1', value: 0, deltaAbs: 0, deltaPct: 0 };
-    const bud = data.budget || { label: 'vs Budget', value: 0, deltaAbs: 0, deltaPct: 0 };
+    const hist = withDeltas(data.historical, 'vs N-1', data.value);
+    const bud = withDeltas(data.budget, 'vs Budget', data.value);
 
     const histValence = hist.deltaAbs >= 0 ? 1 : -1;
     const histColor = getValenceColor(tokens, histValence, data.metricType || 'gain');
@@ -492,6 +557,10 @@
         return `${label} (${formattedVal}${unit ? ' ' + unit : ''})`;
       }
       return label;
+    }
+
+    function formatDeltaPct(deltaPct) {
+      return isNum(deltaPct) ? ` (${deltaPct >= 0 ? '+' : ''}${deltaPct}%)` : '';
     }
 
     function formatDeltaAbs(deltaAbs, unit) {
@@ -527,7 +596,7 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
+          ">${escapeHtml(data.title)}</span>
           <span style="font-size: 0.725rem; color: ${tokens.textMuted}; font-weight: 500; white-space: nowrap; flex-shrink: 0;">Période Active N</span>
         </div>
 
@@ -540,25 +609,28 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
         </div>
 
-        <!-- Double Repère Comparatif (Grid 2 Colonnes) -->
+        <!-- Double Repere Comparatif : grille 2x2 (labels ligne 1, pastilles ligne 2).
+             Les pastilles restent alignees quelle que soit la hauteur des labels. -->
         <div style="
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          padding: 8px 10px;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          gap: 4px 6px;
+          padding: 8px 6px;
           background: ${tokens.gridColor || (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.03)')};
           border-radius: 8px;
           margin-bottom: 0.5rem;
         ">
-          <!-- Colonne Historique -->
-          <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-            <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: nowrap;">
-              ${formatBenchmarkLabel(hist.label, hist.value, data.unit)}
-            </div>
+          <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: normal; overflow-wrap: break-word; max-width: 100%; min-width: 0;">
+            ${escapeHtml(formatBenchmarkLabel(hist.label, hist.value, data.unit))}
+          </div>
+          <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: normal; overflow-wrap: break-word; max-width: 100%; min-width: 0;">
+            ${escapeHtml(formatBenchmarkLabel(bud.label, bud.value, data.unit))}
+          </div>
+          <div style="display: flex; justify-content: center; min-width: 0;">
             <div style="
               display: inline-flex;
               align-items: center;
@@ -577,15 +649,11 @@
               border: 1px solid ${histBorder};
             ">
               <span style="font-size: 0.65rem;">${hist.deltaAbs >= 0 ? '▲' : '▼'}</span>
-              <span>${formatDeltaAbs(hist.deltaAbs, data.unit)} (${hist.deltaPct >= 0 ? '+' : ''}${hist.deltaPct}%)</span>
+              <span>${escapeHtml(formatDeltaAbs(hist.deltaAbs, data.unit))}${formatDeltaPct(hist.deltaPct)}</span>
             </div>
           </div>
 
-          <!-- Colonne Budget -->
-          <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-            <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: nowrap;">
-              ${formatBenchmarkLabel(bud.label, bud.value, data.unit)}
-            </div>
+          <div style="display: flex; justify-content: center; min-width: 0;">
             <div style="
               display: inline-flex;
               align-items: center;
@@ -604,7 +672,7 @@
               border: 1px solid ${budBorder};
             ">
               <span style="font-size: 0.65rem;">${bud.deltaAbs >= 0 ? '▲' : '▼'}</span>
-              <span>${formatDeltaAbs(bud.deltaAbs, data.unit)} (${bud.deltaPct >= 0 ? '+' : ''}${bud.deltaPct}%)</span>
+              <span>${escapeHtml(formatDeltaAbs(bud.deltaAbs, data.unit))}${formatDeltaPct(bud.deltaPct)}</span>
             </div>
           </div>
         </div>
@@ -616,7 +684,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;
@@ -645,6 +713,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
@@ -665,6 +736,32 @@
     footnote: 'Équation : CA = Commandes × Panier Moyen'
   };
 
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    const arrayReason = checkRequiredArrays(d, ['drivers']);
+    if (arrayReason) return arrayReason;
+    if (d.drivers.length === 0) return 'formattedData.drivers attendu non vide';
+    for (let i = 0; i < d.drivers.length; i++) {
+      const drv = d.drivers[i];
+      if (!drv || typeof drv !== 'object') return `formattedData.drivers[${i}] attendu en objet { label, value, delta }`;
+      if (typeof drv.label !== 'string' || !drv.label) return `formattedData.drivers[${i}].label attendu en texte non vide, reçu ${kindOf(drv.label)}`;
+      if (!isNum(drv.value) && !(typeof drv.value === 'string' && drv.value)) return `formattedData.drivers[${i}].value attendu en nombre, reçu ${kindOf(drv.value)}`;
+      if (!isNum(drv.delta)) return `formattedData.drivers[${i}].delta attendu en nombre, reçu ${kindOf(drv.delta)}`;
+    }
+    return null;
+  }
+
   /**
    * Crée et initialise un micro-bar Chart.js pour visualiser les 3 drivers.
    */
@@ -682,8 +779,10 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const drivers = data.drivers || DEFAULT_DATA.drivers;
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const drivers = data.drivers;
 
     const bgColors = drivers.map(d => {
       const isPos = d.delta >= 0;
@@ -744,10 +843,13 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const drivers = data.drivers || DEFAULT_DATA.drivers;
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const drivers = data.drivers;
     const isDark = Boolean(tokens.isDark);
 
+    const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -762,13 +864,13 @@
       return `
         <div style="display: flex; flex-direction: column; gap: 2px;">
           <span style="font-size: 0.6875rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase;">
-            ${drv.label}
+            ${escapeHtml(drv.label)}
           </span>
           <span style="font-size: 1.05rem; font-weight: 700; color: ${tokens.textPrimary}; font-variant-numeric: tabular-nums;">
-            ${valStr} <span style="font-size: 0.75rem; font-weight: 500; color: ${tokens.textMuted};">${drv.unit || ''}</span>
+            ${escapeHtml(valStr)} <span style="font-size: 0.75rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(drv.unit || '')}</span>
           </span>
           <span style="font-size: 0.7rem; font-weight: 700; color: ${drvColor}; font-variant-numeric: tabular-nums;">
-            ${drvPos ? '▲ +' : '▼ '}${drv.delta}${drv.deltaUnit || '%'}
+            ${drvPos ? '▲ +' : '▼ '}${drv.delta}${escapeHtml(drv.deltaUnit || '%')}
           </span>
         </div>
       `;
@@ -798,8 +900,8 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
-          <span style="
+          ">${escapeHtml(data.title)}</span>
+          ${hasDelta ? `<span style="
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -814,7 +916,7 @@
           ">
             <span>${isPositive ? '▲' : '▼'}</span>
             <span>${isPositive ? '+' : ''}${data.delta}%</span>
-          </span>
+          </span>` : ''}
         </div>
 
         <!-- Valeur Hero -->
@@ -827,11 +929,11 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="font-size: 0.75rem; color: ${tokens.textMuted}; margin-top: 2px;">
-            ${data.deltaLabel}
-          </div>
+          ${data.deltaLabel ? `<div style="font-size: 0.75rem; color: ${tokens.textMuted}; margin-top: 2px;">
+            ${escapeHtml(data.deltaLabel)}
+          </div>` : ''}
         </div>
 
         <!-- Séparateur Subtil -->
@@ -859,7 +961,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;
@@ -888,6 +990,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
@@ -909,6 +1014,31 @@
     footnote: 'Canaux d\'acquisition qualifiés • GA4 Analytics'
   };
 
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    const arrayReason = checkRequiredArrays(d, ['segments']);
+    if (arrayReason) return arrayReason;
+    if (d.segments.length === 0) return 'formattedData.segments attendu non vide';
+    for (let i = 0; i < d.segments.length; i++) {
+      const seg = d.segments[i];
+      if (!seg || typeof seg !== 'object') return `formattedData.segments[${i}] attendu en objet { label, pct, value? }`;
+      if (typeof seg.label !== 'string' || !seg.label) return `formattedData.segments[${i}].label attendu en texte non vide, reçu ${kindOf(seg.label)}`;
+      if (!isNum(seg.pct) || seg.pct < 0) return `formattedData.segments[${i}].pct attendu en nombre positif, reçu ${kindOf(seg.pct)}`;
+    }
+    return null;
+  }
+
   /**
    * Crée et initialise un micro-stacked bar Chart.js dans le canvas.
    */
@@ -926,8 +1056,10 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const segments = data.segments || DEFAULT_DATA.segments;
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const segments = data.segments;
 
     const datasets = segments.map((seg, idx) => ({
       label: seg.label,
@@ -955,7 +1087,10 @@
           tooltip: {
             enabled: true,
             callbacks: {
-              label: (ctx) => `${ctx.dataset.label} : ${ctx.parsed.x}% (${(segments[ctx.datasetIndex]?.value || 0).toLocaleString('fr-FR')})`
+              label: (ctx) => {
+                const segValue = segments[ctx.datasetIndex] && segments[ctx.datasetIndex].value;
+                return `${ctx.dataset.label} : ${ctx.parsed.x}%${isNum(segValue) ? ` (${segValue.toLocaleString('fr-FR')})` : ''}`;
+              }
             }
           }
         },
@@ -987,10 +1122,13 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const segments = data.segments || DEFAULT_DATA.segments;
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const segments = data.segments;
     const isDark = Boolean(tokens.isDark);
 
+    const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -1000,11 +1138,10 @@
     // Construction de la barre segmentée HTML pure (ultra-rapide, zéro-latence)
     const barSegmentsHtml = segments.map((seg, idx) => {
       const color = getColor(tokens, idx);
-      return `<div style="
+      return `<div title="${escapeHtml(seg.label)} (${seg.pct}%)" style="
         width: ${seg.pct}%;
         height: 100%;
         background-color: ${color};
-        title: ${seg.label} (${seg.pct}%);
       "></div>`;
     }).join('');
 
@@ -1014,7 +1151,7 @@
       return `
         <div style="display: flex; align-items: center; gap: 6px;">
           <span style="width: 8px; height: 8px; border-radius: 2px; background-color: ${color}; flex-shrink: 0;"></span>
-          <span style="font-size: 0.725rem; color: ${tokens.textSecondary}; font-weight: 500;">${seg.label}:</span>
+          <span style="font-size: 0.725rem; color: ${tokens.textSecondary}; font-weight: 500;">${escapeHtml(seg.label)}:</span>
           <span style="font-size: 0.725rem; font-weight: 700; color: ${tokens.textPrimary}; font-variant-numeric: tabular-nums;">${seg.pct}%</span>
         </div>
       `;
@@ -1043,8 +1180,8 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
-          <span style="
+          ">${escapeHtml(data.title)}</span>
+          ${hasDelta ? `<span style="
             display: inline-flex;
             align-items: center;
             gap: 4px;
@@ -1059,7 +1196,7 @@
           ">
             <span>${isPositive ? '▲' : '▼'}</span>
             <span>${isPositive ? '+' : ''}${data.delta}%</span>
-          </span>
+          </span>` : ''}
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
@@ -1071,11 +1208,11 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="font-size: 0.75rem; color: ${tokens.textMuted};">
-            ${data.deltaLabel}
-          </div>
+          ${data.deltaLabel ? `<div style="font-size: 0.75rem; color: ${tokens.textMuted};">
+            ${escapeHtml(data.deltaLabel)}
+          </div>` : ''}
         </div>
 
         <!-- Barre Segmentée 100% -->
@@ -1108,7 +1245,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;
@@ -1137,6 +1274,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
@@ -1153,6 +1293,26 @@
     labels: ['J-11', 'J-10', 'J-9', 'J-8', 'J-7', 'J-6', 'J-5', 'J-4', 'J-3', 'J-2', 'J-1', 'Aujourd\'hui'],
     footnote: 'Historique continu sur 12 jours • Min: 2.90% | Max: 3.90%'
   };
+
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    const arrayReason = checkRequiredArrays(d, ['history']);
+    if (arrayReason) return arrayReason;
+    if (d.history.length === 0) return 'formattedData.history attendu non vide';
+    if (!d.history.every(isNum)) return 'formattedData.history attendu en tableau de nombres';
+    return null;
+  }
 
   /**
    * Crée et initialise la sparkline Chart.js dans le canvas.
@@ -1171,9 +1331,11 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const history = data.history || DEFAULT_DATA.history;
-    const labels = data.labels || history.map((_, i) => `Point ${i + 1}`);
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const history = data.history;
+    const labels = Array.isArray(data.labels) ? data.labels : history.map((_, i) => `Point ${i + 1}`);
 
     const valence = data.delta > 0 ? 1 : (data.delta < 0 ? -1 : 0);
     const strokeColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -1272,9 +1434,12 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const canvasId = 'kpi-sparkline-canvas-' + Math.random().toString(36).substr(2, 9);
 
+    const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -1306,8 +1471,8 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
-          <span style="
+          ">${escapeHtml(data.title)}</span>
+          ${hasDelta ? `<span style="
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -1326,7 +1491,7 @@
           ">
             <span>${arrowGlyph}</span>
             <span>${deltaSign}${data.delta}%</span>
-          </span>
+          </span>` : ''}
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
@@ -1338,11 +1503,11 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="font-size: 0.75rem; color: ${tokens.textMuted}; text-align: right;">
-            ${data.deltaLabel}
-          </div>
+          ${data.deltaLabel ? `<div style="font-size: 0.75rem; color: ${tokens.textMuted}; text-align: right;">
+            ${escapeHtml(data.deltaLabel)}
+          </div>` : ''}
         </div>
 
         <!-- Zone Micro-Canvas Sparkline -->
@@ -1357,7 +1522,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;
@@ -1390,6 +1555,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
@@ -1410,6 +1578,22 @@
     benchmark: 125080,
     history: [118000, 121500, 120200, 124000, 122800, 125080, 142850]
   };
+
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    return null;
+  }
 
   /**
    * Formate une valeur numérique avec séparateurs de milliers et chiffres tabulaires.
@@ -1438,7 +1622,9 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
 
     const valence = data.delta > 0 ? 1 : (data.delta < 0 ? -1 : 0);
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -1447,7 +1633,8 @@
     // Dessin d'une micro-visualisation en anneau avec Chart.js
     if (typeof Chart === 'undefined') return null;
 
-    const progressRatio = data.benchmark ? Math.min(100, Math.round((data.value / data.benchmark) * 100)) : 100;
+    const hasBenchmark = isNum(data.benchmark) && data.benchmark !== 0;
+    const progressRatio = hasBenchmark ? Math.max(0, Math.min(100, Math.round((data.value / data.benchmark) * 100))) : 0;
     const isDark = Boolean(tokens.isDark);
 
     const chart = new Chart(canvas, {
@@ -1475,7 +1662,9 @@
           tooltip: {
             enabled: true,
             callbacks: {
-              label: (ctx) => `Atteinte : ${progressRatio}% (${formatValue(data.value, data.format, data.unit)})`
+              label: (ctx) => hasBenchmark
+                ? `Atteinte : ${progressRatio}% (${formatValue(data.value, data.format, data.unit)})`
+                : `Valeur : ${formatValue(data.value, data.format, data.unit)} (aucune référence)`
             }
           }
         }
@@ -1496,8 +1685,11 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
 
+    const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -1529,8 +1721,8 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
-          <span style="
+          ">${escapeHtml(data.title)}</span>
+          ${hasDelta ? `<span style="
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -1549,7 +1741,7 @@
           ">
             <span>${arrowGlyph}</span>
             <span>${deltaSign}${data.delta}%</span>
-          </span>
+          </span>` : ''}
         </div>
 
         <div style="margin-bottom: 0.75rem;">
@@ -1561,15 +1753,15 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="
+          ${data.deltaLabel ? `<div style="
             font-size: 0.8125rem;
             color: ${tokens.textMuted};
             margin-top: 0.35rem;
           ">
-            ${data.deltaLabel}
-          </div>
+            ${escapeHtml(data.deltaLabel)}
+          </div>` : ''}
         </div>
 
         ${data.footnote ? `
@@ -1579,7 +1771,7 @@
           font-size: 0.725rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;
@@ -1608,6 +1800,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function(t, s) { return '#999999'; };
   const getThresholdStatus = (KitChartsTheme && KitChartsTheme.getThresholdStatus) || (typeof window !== 'undefined' && window.getThresholdStatus) || function(v, tr, th, p, t) {
@@ -1632,6 +1827,32 @@
     footnote: 'Seuil critique : > 150 ms • Action : Vérifier pool DB'
   };
 
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    if (d.polarity !== 'lower-is-better' && d.polarity !== 'higher-is-better') {
+      return `formattedData.polarity attendu 'lower-is-better' ou 'higher-is-better', reçu ${typeof d.polarity === 'string' ? d.polarity : kindOf(d.polarity)}`;
+    }
+    const th = d.thresholds;
+    if (!th || typeof th !== 'object' || Array.isArray(th)) return `formattedData.thresholds attendu en objet { nominal, critical }, reçu ${kindOf(th)}`;
+    if (!isNum(th.nominal)) return `formattedData.thresholds.nominal attendu en nombre, reçu ${kindOf(th.nominal)}`;
+    if (!isNum(th.critical)) return `formattedData.thresholds.critical attendu en nombre, reçu ${kindOf(th.critical)}`;
+    if (d.polarity === 'lower-is-better' && !(th.nominal < th.critical)) return 'formattedData.thresholds : nominal doit être inférieur à critical (lower-is-better)';
+    if (d.polarity === 'higher-is-better' && !(th.critical < th.nominal)) return 'formattedData.thresholds : critical doit être inférieur à nominal (higher-is-better)';
+    if (d.maxScale !== undefined && d.maxScale !== null && !(isNum(d.maxScale) && d.maxScale > 0)) return `formattedData.maxScale attendu en nombre positif, reçu ${kindOf(d.maxScale)}`;
+    return null;
+  }
+
   /**
    * Crée et initialise la jauge de seuil linéaire dans le canvas.
    */
@@ -1649,18 +1870,23 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
 
     const val = data.value;
-    const maxVal = data.maxScale || 200;
-    let tNominal = (data.thresholds && data.thresholds.nominal !== undefined) ? data.thresholds.nominal : 100;
-    let tCritical = (data.thresholds && data.thresholds.critical !== undefined) ? data.thresholds.critical : 150;
+    let tNominal = data.thresholds.nominal;
+    let tCritical = data.thresholds.critical;
+    // Échelle : fournie, sinon déduite des valeurs fournies (jamais un plafond d'exemple)
+    const maxVal = isNum(data.maxScale) ? Math.max(data.maxScale, tNominal, tCritical) : Math.max(val, tNominal, tCritical) * 1.2;
+    const isHigherBetter = data.polarity === 'higher-is-better';
+    const unitStr = data.unit || '';
 
     let resolvedProvenance = null;
     if (resolveThresholds) {
       const historyData = data.history || (Array.isArray(data.data) ? data.data : null);
-      const explicitThresh = data.thresholds && data.thresholds.optimal !== undefined ? { target: data.target || data.thresholds.optimal, warning: data.thresholds.nominal, danger: data.thresholds.critical, polarity: data.polarity } : null;
+      const explicitThresh = data.thresholds ? { target: data.target || data.thresholds.optimal, warning: data.thresholds.nominal, danger: data.thresholds.critical, polarity: data.polarity } : null;
       if (explicitThresh) {
         try {
           resolvedProvenance = resolveThresholds(historyData, explicitThresh, { polarity: data.polarity });
@@ -1716,22 +1942,43 @@
       type: 'bar',
       data: {
         labels: ['Seuils'],
-        datasets: [
+        datasets: isHigherBetter ? [
           {
-            label: 'Normal (<100ms)',
+            label: `Critique (<${tCritical}${unitStr})`,
+            data: [tCritical],
+            backgroundColor: hexToRgba(dangerColor, isDark ? 0.35 : 0.25),
+            barThickness: 16,
+            borderRadius: { topLeft: 4, bottomLeft: 4 }
+          },
+          {
+            label: `Attention (${tCritical}-${tNominal}${unitStr})`,
+            data: [tNominal - tCritical],
+            backgroundColor: hexToRgba(warningColor, isDark ? 0.35 : 0.25),
+            barThickness: 16
+          },
+          {
+            label: `Normal (>${tNominal}${unitStr})`,
+            data: [maxVal - tNominal],
+            backgroundColor: hexToRgba(normalColor, isDark ? 0.35 : 0.25),
+            barThickness: 16,
+            borderRadius: { topRight: 4, bottomRight: 4 }
+          }
+        ] : [
+          {
+            label: `Normal (<${tNominal}${unitStr})`,
             data: [tNominal],
             backgroundColor: hexToRgba(normalColor, isDark ? 0.35 : 0.25),
             barThickness: 16,
             borderRadius: { topLeft: 4, bottomLeft: 4 }
           },
           {
-            label: 'Attention (100-150ms)',
+            label: `Attention (${tNominal}-${tCritical}${unitStr})`,
             data: [tCritical - tNominal],
             backgroundColor: hexToRgba(warningColor, isDark ? 0.35 : 0.25),
             barThickness: 16
           },
           {
-            label: 'Critique (>150ms)',
+            label: `Critique (>${tCritical}${unitStr})`,
             data: [maxVal - tCritical],
             backgroundColor: hexToRgba(dangerColor, isDark ? 0.35 : 0.25),
             barThickness: 16,
@@ -1749,7 +1996,7 @@
           tooltip: {
             enabled: true,
             callbacks: {
-              label: () => `Valeur courante : ${val} ${data.unit} (Seuil Nominal: ${tNominal}${data.unit}, Critique: ${tCritical}${data.unit})${resolvedProvenance ? ' • ' + resolvedProvenance.badge : ''}`
+              label: () => `Valeur courante : ${val}${unitStr ? ' ' + unitStr : ''} (Seuil Nominal: ${tNominal}${unitStr}, Critique: ${tCritical}${unitStr})${resolvedProvenance ? ' • ' + resolvedProvenance.badge : ''}`
             }
           }
         },
@@ -1782,13 +2029,16 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
     const canvasId = 'kpi-status-canvas-' + Math.random().toString(36).substr(2, 9);
 
     const val = data.value;
-    const tNominal = data.thresholds.nominal || 100;
-    const tCritical = data.thresholds.critical || 150;
+    const tNominal = data.thresholds.nominal;
+    const tCritical = data.thresholds.critical;
+    const isHigherBetter = data.polarity === 'higher-is-better';
 
     let statusKey = 'success';
     let statusLabel = 'Optimal';
@@ -1802,6 +2052,23 @@
         statusIcon = '⛔';
         statusColor = tokens.status?.danger || tokens.semantic?.negative || '#C62828';
       } else if (val >= tNominal) {
+        statusKey = 'warning';
+        statusLabel = 'Attention';
+        statusIcon = '⚠️';
+        statusColor = tokens.status?.warning || tokens.semantic?.warning || '#EF6C00';
+      } else {
+        statusKey = 'success';
+        statusLabel = 'Nominal';
+        statusIcon = '✓';
+        statusColor = tokens.status?.success || tokens.semantic?.positive || '#2E7D32';
+      }
+    } else if (isHigherBetter) {
+      if (val <= tCritical) {
+        statusKey = 'danger';
+        statusLabel = 'Critique';
+        statusIcon = '⛔';
+        statusColor = tokens.status?.danger || tokens.semantic?.negative || '#C62828';
+      } else if (val <= tNominal) {
         statusKey = 'warning';
         statusLabel = 'Attention';
         statusIcon = '⚠️';
@@ -1840,7 +2107,7 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
+          ">${escapeHtml(data.title)}</span>
           <span style="
             display: inline-flex;
             align-items: center;
@@ -1872,10 +2139,10 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${val.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${val.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
           <div style="font-size: 0.75rem; color: ${tokens.textMuted}; font-weight: 500;">
-            Plage nominale : &lt; ${tNominal} ${data.unit}
+            Plage nominale : ${isHigherBetter ? '&gt;' : '&lt;'} ${tNominal} ${escapeHtml(data.unit || '')}
           </div>
         </div>
 
@@ -1892,7 +2159,7 @@
           color: ${statusKey === 'danger' ? statusColor : tokens.textMuted};
           font-weight: ${statusKey === 'danger' ? '600' : 'normal'};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;
@@ -2601,6 +2868,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
@@ -2664,9 +2933,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
     const rawData = customData || DEFAULT_DATA;
-    const labels = rawData.labels || DEFAULT_DATA.labels;
-    const actuals = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
-    const targets = (rawData.datasets && rawData.datasets[1] && rawData.datasets[1].data) || DEFAULT_DATA.datasets[1].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['labels', 'datasets[0].data', 'datasets[1].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const labels = rawData.labels;
+    const actuals = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
+    const targets = (rawData.datasets && rawData.datasets[1] && rawData.datasets[1].data);
 
     const analysis = computeVarianceDeltas(actuals, targets);
 
@@ -5618,6 +5890,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
@@ -5716,8 +5990,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
     const rawData = customData || DEFAULT_DATA;
-    const inputLabels = rawData.labels || DEFAULT_DATA.labels;
-    const inputValues = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['labels', 'datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const inputLabels = rawData.labels;
+    const inputValues = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Incidents';
 
     const pareto = computeParetoCumsum(inputLabels, inputValues);
@@ -6410,6 +6687,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
@@ -6478,8 +6757,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
     const rawData = customData || DEFAULT_DATA;
-    const labels = rawData.labels || DEFAULT_DATA.labels;
-    const rawDatasets = rawData.datasets || DEFAULT_DATA.datasets;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['labels', 'datasets']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const labels = rawData.labels;
+    const rawDatasets = rawData.datasets;
 
     const totals = computeStackedTotals(rawDatasets);
     const totalColor = tokens.emphasis?.focal || (isDark ? '#ECEFF4' : '#0F172A');
@@ -8094,6 +8376,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
@@ -8194,8 +8478,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const isDark = Boolean(tokens.isDark);
 
     const rawData = customData || DEFAULT_DATA;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
     const labels = rawData.labels || ['Groupe 1', 'Groupe 2', 'Groupe 3'];
-    const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
 
     const groupStats = groups.map((g, i) => {
       const rawPoints = Array.isArray(g) ? g : [];
@@ -9423,6 +9710,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
@@ -9572,7 +9861,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
     const rawData = customData || DEFAULT_DATA;
-    const seriesData = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const seriesData = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Distribution';
 
     const binAnalysis = computeFreedmanDiaconisBins(seriesData);
@@ -9734,6 +10026,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
@@ -9854,8 +10148,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const isDark = Boolean(tokens.isDark);
 
     const rawData = customData || DEFAULT_DATA;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
     const labels = rawData.labels || ['Groupe 1', 'Groupe 2', 'Groupe 3'];
-    const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
 
     const analysis = groups.map((g, i) => {
       const rawPoints = Array.isArray(g) ? g : [];
@@ -10394,6 +10691,8 @@ var factory = function(KitChartsTheme) {
       'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
@@ -10535,8 +10834,11 @@ var factory = function(KitChartsTheme) {
     const isTufte = tokens.name === 'tufte-minimalist-executive';
 
     const rawData = customData || DEFAULT_DATA;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
     const labels = rawData.labels || ['Groupe 1', 'Groupe 2', 'Groupe 3'];
-    const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
 
     const showInnerBox = options.showInnerBox !== undefined ? options.showInnerBox : true;
     const showRawPoints = options.showRawPoints !== undefined ? options.showRawPoints : (groups.some(g => Array.isArray(g) && g.length <= 30));
@@ -11404,6 +11706,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
@@ -11545,7 +11849,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const isTufte = tokens.name === 'tufte-minimalist-executive';
 
     const rawData = customData || DEFAULT_DATA;
-    const rawPoints = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const rawPoints = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Densité Spatiale 2D';
 
     const hexResult = computeHexBins(rawPoints);
@@ -11825,6 +12132,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
@@ -11994,7 +12303,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const isDark = Boolean(tokens.isDark);
 
     const rawData = customData || DEFAULT_DATA;
-    const points = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const points = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Observations';
 
     const marginals = computeMarginalKDEs(points, 64);
@@ -13083,6 +13395,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSpatialInteractionOptions = (KitChartsTheme && KitChartsTheme.getSpatialInteractionOptions) || (typeof window !== 'undefined' && window.getSpatialInteractionOptions) || function(t, o) { return o || {}; };
@@ -13221,7 +13535,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const isDark = Boolean(tokens.isDark);
 
     const rawData = customData || DEFAULT_DATA;
-    const points = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const points = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Observations';
 
     const reg = computeLinearRegression(points);
@@ -13881,6 +14198,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
@@ -13962,8 +14281,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const isDark = Boolean(tokens.isDark);
 
     const rawData = customData || DEFAULT_DATA;
-    const labels = rawData.labels || DEFAULT_DATA.labels;
-    const ohlcList = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['labels', 'datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const labels = rawData.labels;
+    const ohlcList = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
 
     const candleStats = computeCandleStats(ohlcList);
     const volumeList = ohlcList.map(d => d.v || 0);
@@ -14188,6 +14510,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getTemporalInteractionOptions = (KitChartsTheme && KitChartsTheme.getTemporalInteractionOptions) || (typeof window !== 'undefined' && window.getTemporalInteractionOptions) || function(t, o) { return o || {}; };
@@ -14264,9 +14588,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
     const rawData = customData || DEFAULT_DATA;
-    const labels = rawData.labels || DEFAULT_DATA.labels;
-    const s1 = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
-    const s2 = (rawData.datasets && rawData.datasets[1] && rawData.datasets[1].data) || DEFAULT_DATA.datasets[1].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['labels', 'datasets[0].data', 'datasets[1].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const labels = rawData.labels;
+    const s1 = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
+    const s2 = (rawData.datasets && rawData.datasets[1] && rawData.datasets[1].data);
     const label1 = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Série 1';
     const label2 = (rawData.datasets && rawData.datasets[1] && rawData.datasets[1].label) || 'Série 2';
 
@@ -15032,6 +15359,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getTemporalInteractionOptions = (KitChartsTheme && KitChartsTheme.getTemporalInteractionOptions) || (typeof window !== 'undefined' && window.getTemporalInteractionOptions) || function(t, o) { return o || {}; };
@@ -15114,8 +15443,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const isDark = Boolean(tokens.isDark);
 
     const rawData = customData || DEFAULT_DATA;
-    const labels = rawData.labels || DEFAULT_DATA.labels;
-    const prices = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['labels', 'datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const labels = rawData.labels;
+    const prices = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Prix Clôture';
 
     const bollinger = computeBollingerBands(prices, 10, 2);
@@ -16775,6 +17107,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
@@ -16867,8 +17201,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
     const rawData = customData || DEFAULT_DATA;
-    const labels = rawData.labels || DEFAULT_DATA.labels;
-    const rawTasks = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].tasks) || DEFAULT_DATA.datasets[0].tasks;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['labels', 'datasets[0].tasks']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const labels = rawData.labels;
+    const rawTasks = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].tasks);
     const todayWeek = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].todayWeek) || 6.5;
 
     const schedule = computeGanttSchedule(rawTasks, todayWeek);
@@ -17093,7 +17430,7 @@ const DEFAULT_DATA = {
  * @param {string} [themeName='colorbrewer-accessible'] - Theme identifier
  * @returns {Object} Initialized Chart.js instance or mock instance
  */
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string' && typeof document !== 'undefined'
     ? document.getElementById(canvasTarget)
     : canvasTarget;
@@ -17112,6 +17449,54 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
   const rawData = customData || DEFAULT_DATA;
   const rawDatasets = rawData.datasets || [];
+
+  // Sankey mobile : à viewport étroit (<= 480 px), les
+  // libellés longs des nœuds (dessinés par chartjs-chart-sankey depuis
+  // `dataset.labels` avec la police `dataset.font`) se chevauchent. En mode
+  // compact on réduit la police et on abrège les libellés ; le détail
+  // complet reste accessible en infobulle. Desktop et snapshots Node
+  // (faux canvas sans largeur : `isNarrowViewport === false`) inchangés.
+  // Forçage possible via `options.compactLabels` (booléen).
+  const NARROW_BREAKPOINT = 480;
+  const isNarrowViewport = (() => {
+    if (options && typeof options.compactLabels === 'boolean') return options.compactLabels;
+    try {
+      if (container && typeof container.clientWidth === 'number' && container.clientWidth > 0) {
+        return container.clientWidth <= NARROW_BREAKPOINT;
+      }
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        return window.matchMedia(`(max-width: ${NARROW_BREAKPOINT}px)`).matches;
+      }
+    } catch (e) {}
+    return false;
+  })();
+  const SHORT_LABELS = {
+    'Renouvelable (Éolien/Solaire)': 'Renouvelables',
+    'Électricité Réseau': 'Élec. Réseau',
+    'Chaleur Industrielle': 'Chaleur Ind.',
+    'Secteur Résidentiel': 'Résidentiel',
+    'Industrie Électrifiée': 'Industrie',
+    'Pertes Réseau & Transport': 'Pertes Réseau',
+    'Transformation & Chimie': 'Transfo. & Chimie',
+    'Pertes Thermiques': 'Pertes Therm.'
+  };
+  const shortenNodeLabel = (name) => {
+    if (typeof name !== 'string') return name;
+    if (Object.prototype.hasOwnProperty.call(SHORT_LABELS, name)) return SHORT_LABELS[name];
+    const max = 16;
+    if (name.length <= max) return name;
+    const cut = name.slice(0, max - 1);
+    const sp = cut.lastIndexOf(' ');
+    return (sp > 6 ? cut.slice(0, sp) : cut) + '…';
+  };
+  const buildShortLabels = (flowData) => {
+    const map = {};
+    flowData.forEach((item) => {
+      if (item && typeof item.from === 'string') map[item.from] = shortenNodeLabel(item.from);
+      if (item && typeof item.to === 'string') map[item.to] = shortenNodeLabel(item.to);
+    });
+    return map;
+  };
 
   const datasets = rawDatasets.map((ds, dsIdx) => {
     const flowData = Array.isArray(ds.data) ? ds.data : [];
@@ -17150,7 +17535,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       colorMode: ds.colorMode || 'gradient',
       borderWidth: ds.borderWidth ?? 0,
       nodeWidth: ds.nodeWidth ?? 14,
-      nodePadding: ds.nodePadding ?? 16,
+      nodePadding: ds.nodePadding ?? (isNarrowViewport ? 10 : 16),
+      // Mode compact (viewport étroit uniquement) : police réduite + libellés
+      // abrégés lus par chartjs-chart-sankey à chaque `draw()`. Absent sinon.
+      ...(isNarrowViewport ? { font: { size: 10 }, labels: buildShortLabels(flowData) } : {}),
       backgroundColor: ds.backgroundColor || getColor(tokens, dsIdx)
     };
   });
@@ -17566,6 +17954,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
@@ -17652,8 +18042,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
     const rawData = customData || DEFAULT_DATA;
-    const labels = rawData.labels || DEFAULT_DATA.labels;
-    const steps = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || DEFAULT_DATA.datasets[0].data;
+    // Données fournies mais incomplètes : refus visible, jamais de repli sur l'exemple DEFAULT_DATA.
+    const invalidReason = customData ? checkRequiredArrays(rawData, ['labels', 'datasets[0].data']) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const labels = rawData.labels;
+    const steps = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
 
     const analysis = computeWaterfallBalances(steps);
 
@@ -20358,6 +20751,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -20421,8 +20815,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const bg3 = isDark ? 'rgba(255,255,255,0.12)' : 'rgba(15,23,42,0.12)';
 
     return `
-      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="display:inline-block; vertical-align:middle;" aria-label="Réalisé: ${actual}%, Cible: ${target}%">
-        <title>Réalisé: ${actual}%, Cible: ${target}%</title>
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="display:inline-block; vertical-align:middle;" aria-label="Réalisé: ${escapeHtml(actual)}%, Cible: ${escapeHtml(target)}%">
+        <title>Réalisé: ${escapeHtml(actual)}%, Cible: ${escapeHtml(target)}%</title>
         <!-- Plages de fond Stephen Few -->
         <rect x="0" y="2" width="${width}" height="${height - 4}" fill="${bg1}" rx="${isTufte ? 0 : 2}" />
         <rect x="0" y="2" width="${satisfactoryW.toFixed(1)}" height="${height - 4}" fill="${bg2}" />
@@ -20557,9 +20951,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
-          <th data-key="${col.key}" style="
+          <th data-key="${escapeHtml(col.key)}" style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -20569,7 +20963,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${col.label}${sortIcon}
+            ${escapeHtml(col.label)}${sortIcon}
           </th>
         `;
       });
@@ -20598,7 +20992,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             transition: background 0.15s ease;
           ">
             <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
-              <div style="font-weight: 600; color: ${textPrimary};">${row.product}</div>
+              <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.product)}</div>
             </td>
             <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
               <span style="
@@ -20609,7 +21003,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 font-weight: 500;
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
-              ">${row.category}</span>
+              ">${escapeHtml(row.category)}</span>
             </td>
             <td style="padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;">
               <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
@@ -20620,13 +21014,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               </div>
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
-              ${row.volume.toLocaleString('fr-FR')}
+              ${escapeHtml(row.volume.toLocaleString('fr-FR'))}
             </td>
             <td style="padding: 10px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
               <div style="display: flex; align-items: center; gap: 8px;">
                 ${generateBulletGraphSVG(row.actualRate, row.targetRate, 110, 16, bulletColor, isDark, isTufte)}
                 <span style="font-size: 0.7rem; color: ${textMuted}; font-family: ${fontMono};">
-                  Cible: ${row.targetRate}%
+                  Cible: ${escapeHtml(row.targetRate)}%
                 </span>
               </div>
             </td>
@@ -20637,7 +21031,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 font-size: 0.8125rem;
                 color: ${bulletColor};
               ">
-                ${row.actualRate}%
+                ${escapeHtml(row.actualRate)}%
               </span>
             </td>
           </tr>
@@ -20742,6 +21136,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -20918,7 +21313,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         html += `
           <th style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -20927,7 +21322,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             border: none;
             white-space: nowrap;
           ">
-            ${col.label}
+            ${escapeHtml(col.label)}
           </th>
         `;
       });
@@ -20977,17 +21372,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           ">
             <td style="padding: 8px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
               <span style="padding-left: ${indentPx}px; color: ${textColor};">
-                ${row.item}
+                ${escapeHtml(row.item)}
               </span>
             </td>
             <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
-              ${formatAccounting(row.actual)}
+              ${escapeHtml(formatAccounting(row.actual))}
             </td>
             <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
-              ${formatAccounting(row.budget)}
+              ${escapeHtml(formatAccounting(row.budget))}
             </td>
             <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textMuted}; vertical-align: middle;">
-              ${formatAccounting(row.priorYear)}
+              ${escapeHtml(formatAccounting(row.priorYear))}
             </td>
             <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaAbs.toLocaleString('fr-FR')} k€
@@ -21074,6 +21469,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   /**
@@ -21273,11 +21669,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             gap: 8px;
           ">
             <div>
-              <div style="font-weight: 600; font-size: 0.8125rem; color: ${textPrimary};">${data.title || 'Tableau Heatmap'}</div>
-              ${data.subtitle ? `<div style="font-size: 0.7rem; color: ${textMuted};">${data.subtitle}</div>` : ''}
+              <div style="font-weight: 600; font-size: 0.8125rem; color: ${textPrimary};">${escapeHtml(data.title || 'Tableau Heatmap')}</div>
+              ${data.subtitle ? `<div style="font-size: 0.7rem; color: ${textMuted};">${escapeHtml(data.subtitle)}</div>` : ''}
             </div>
             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.725rem; color: ${textSecondary};">
-              <span style="font-family: ${fontMono}; font-weight: 600;">Min (${globalMin}${data.unit || ''})</span>
+              <span style="font-family: ${fontMono}; font-weight: 600;">Min (${escapeHtml(globalMin)}${escapeHtml(data.unit || '')})</span>
               <div style="
                 width: 120px;
                 height: 10px;
@@ -21285,7 +21681,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 background: linear-gradient(to right, ${sequentialPalette[0] || '#EFF3FF'}, ${sequentialPalette[sequentialPalette.length - 1] || '#08519C'});
                 border: 1px solid ${borderCol};
               "></div>
-              <span style="font-family: ${fontMono}; font-weight: 600;">Max (${globalMax}${data.unit || ''})</span>
+              <span style="font-family: ${fontMono}; font-weight: 600;">Max (${escapeHtml(globalMax)}${escapeHtml(data.unit || '')})</span>
             </div>
           </div>
 
@@ -21332,7 +21728,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             border-bottom: 1.5px solid ${borderStrong};
             min-width: 44px;
           ">
-            ${col}
+            ${escapeHtml(col)}
           </th>
         `;
       });
@@ -21382,7 +21778,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               z-index: 1;
               white-space: nowrap;
             ">
-              ${row.label}
+              ${escapeHtml(row.label)}
             </td>
         `;
 
@@ -21406,8 +21802,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               border-radius: 3px;
               transition: transform 0.1s ease, box-shadow 0.1s ease;
               cursor: default;
-            " title="${row.label} - ${val}${data.unit || ''}">
-              ${val}
+            " title="${escapeHtml(row.label)} - ${escapeHtml(val)}${escapeHtml(data.unit || '')}">
+              ${escapeHtml(val)}
             </td>
           `;
         });
@@ -21423,7 +21819,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               border-bottom: 1px solid ${borderCol};
               background: ${isDark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.02)'};
             ">
-              ${stats.sum.toLocaleString('fr-FR')}
+              ${escapeHtml(stats.sum.toLocaleString('fr-FR'))}
             </td>
             <td style="
               padding: 7px 10px;
@@ -21470,7 +21866,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             color: ${textPrimary};
             background: ${bgHeader};
           ">
-            ${cSum.toLocaleString('fr-FR')}
+            ${escapeHtml(cSum.toLocaleString('fr-FR'))}
           </td>
         `;
       });
@@ -21484,7 +21880,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                   color: ${textPrimary};
                   background: ${bgHeader};
                 ">
-                  ${grandTotal.toLocaleString('fr-FR')}
+                  ${escapeHtml(grandTotal.toLocaleString('fr-FR'))}
                 </td>
                 <td style="
                   padding: 9px 10px;
@@ -21568,6 +21964,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
@@ -21831,7 +22228,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         html += `
           <th style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -21840,7 +22237,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             border: none;
             white-space: nowrap;
           ">
-            ${col.label}
+            ${escapeHtml(col.label)}
           </th>
         `;
       });
@@ -21886,7 +22283,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         }
 
         const chevron = row.hasChildren
-          ? `<span class="kc-tree-toggle" data-node-id="${row.id}" style="
+          ? `<span class="kc-tree-toggle" data-node-id="${escapeHtml(row.id)}" style="
               display: inline-block;
               width: 16px;
               height: 16px;
@@ -21911,11 +22308,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             <td style="padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
               <div style="padding-left: ${indentPx}px; display: flex; align-items: center;">
                 ${chevron}
-                <span style="color: ${textColor};">${row.name}</span>
+                <span style="color: ${textColor};">${escapeHtml(row.name)}</span>
               </div>
             </td>
             <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
-              ${row.headcount} ETP
+              ${escapeHtml(row.headcount)} ETP
             </td>
             <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
               ${(row.budget / 1000000).toFixed(2)} M€
@@ -21960,7 +22357,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                   TOTAL ORGANISATION
                 </td>
                 <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
-                  ${totalHeadcount} ETP
+                  ${escapeHtml(totalHeadcount)} ETP
                 </td>
                 <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
                   ${(totalBudget / 1000000).toFixed(2)} M€
@@ -22063,6 +22460,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) {
     const isCost = ['cost', 'churn', 'risk', 'loss', 'latency', 'cac', 'expense', 'debt', 'defect'].includes(String(m || 'revenue').toLowerCase().trim());
@@ -22237,12 +22635,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const titleText = `Tendance: Début ${values[0]} → Fin ${values[lastIdx]} (Min: ${min}, Max: ${max})`;
 
     return `
-      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow:visible; display:block; margin:0 auto;" aria-label="${titleText}">
-        <title>${titleText}</title>
+      <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow:visible; display:block; margin:0 auto;" aria-label="${escapeHtml(titleText)}">
+        <title>${escapeHtml(titleText)}</title>
         <polyline fill="none" stroke="${strokeColor}" stroke-width="${isTufte ? '1.25' : '1.75'}" stroke-linecap="round" stroke-linejoin="round" points="${points.join(' ')}" />
-        ${!isTufte ? `<circle cx="${minX}" cy="${minY}" r="2" fill="#C62828" opacity="0.85"><title>Min: ${min}</title></circle>` : ''}
-        ${!isTufte ? `<circle cx="${maxX}" cy="${maxY}" r="2" fill="#2E7D32" opacity="0.85"><title>Max: ${max}</title></circle>` : ''}
-        <circle cx="${lastX}" cy="${lastY}" r="${isTufte ? '2' : '2.5'}" fill="${strokeColor}"><title>Dernier: ${values[lastIdx]}</title></circle>
+        ${!isTufte ? `<circle cx="${minX}" cy="${minY}" r="2" fill="#C62828" opacity="0.85"><title>Min: ${escapeHtml(min)}</title></circle>` : ''}
+        ${!isTufte ? `<circle cx="${maxX}" cy="${maxY}" r="2" fill="#2E7D32" opacity="0.85"><title>Max: ${escapeHtml(max)}</title></circle>` : ''}
+        <circle cx="${lastX}" cy="${lastY}" r="${isTufte ? '2' : '2.5'}" fill="${strokeColor}"><title>Dernier: ${escapeHtml(values[lastIdx])}</title></circle>
       </svg>
     `;
   }
@@ -22368,9 +22766,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
-          <th data-key="${col.key}" style="
+          <th data-key="${escapeHtml(col.key)}" style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -22380,7 +22778,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${col.label}${sortIcon}
+            ${escapeHtml(col.label)}${sortIcon}
           </th>
         `;
       });
@@ -22435,8 +22833,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             transition: background 0.15s ease;
           ">
             <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
-              <div style="font-weight: 600; color: ${textPrimary};">${row.kpi}</div>
-              ${row.desc ? `<div style="font-size: 0.7rem; color: ${textMuted}; margin-top: 1px;">${row.desc}</div>` : ''}
+              <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.kpi)}</div>
+              ${row.desc ? `<div style="font-size: 0.7rem; color: ${textMuted}; margin-top: 1px;">${escapeHtml(row.desc)}</div>` : ''}
             </td>
             <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
               <span style="
@@ -22447,13 +22845,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 font-weight: 500;
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
-              ">${row.category}</span>
+              ">${escapeHtml(row.category)}</span>
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; font-weight: 600; color: ${textPrimary}; vertical-align: middle;">
-              ${formatNumber(row.actual, row.unit || '')}
+              ${escapeHtml(formatNumber(row.actual, row.unit || ''))}
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
-              ${formatNumber(row.target, row.unit || '')}
+              ${escapeHtml(formatNumber(row.target, row.unit || ''))}
             </td>
             <td style="padding: 10px 14px; text-align: right; vertical-align: middle;">
               <span style="
@@ -22487,7 +22885,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 white-space: nowrap;
               ">
                 <span aria-hidden="true" style="font-size: 0.65rem;">${statusSymbol}</span>
-                <span>${row.statusText || row.status}</span>
+                <span>${escapeHtml(row.statusText || row.status)}</span>
               </span>
             </td>
           </tr>
@@ -22594,6 +22992,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
@@ -22658,7 +23057,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       const x = idx * (barWidth + gap);
       const y = height - h;
       const color = isLast ? focalColor : baseColor;
-      return `<rect x="${x}" y="${y.toFixed(1)}" width="${barWidth}" height="${h.toFixed(1)}" rx="${isTufte ? 0 : 1.5}" fill="${color}" opacity="${isLast ? '1' : '0.65'}"><title>Mois ${idx + 1}: ${val}</title></rect>`;
+      return `<rect x="${x}" y="${y.toFixed(1)}" width="${barWidth}" height="${h.toFixed(1)}" rx="${isTufte ? 0 : 1.5}" fill="${color}" opacity="${isLast ? '1' : '0.65'}"><title>Mois ${idx + 1}: ${escapeHtml(val)}</title></rect>`;
     });
 
     return `
@@ -22787,9 +23186,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
-          <th data-key="${col.key}" style="
+          <th data-key="${escapeHtml(col.key)}" style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -22799,7 +23198,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${col.label}${sortIcon}
+            ${escapeHtml(col.label)}${sortIcon}
           </th>
         `;
       });
@@ -22838,7 +23237,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             background: #FFEDD5; color: #9A3412; font-weight: 700; font-size: 0.75rem;
           ">3</span>`;
         } else {
-          rankBadge = `<span style="font-family: ${fontMono}; font-weight: 600; color: ${textMuted};">${row.rank}</span>`;
+          rankBadge = `<span style="font-family: ${fontMono}; font-weight: 600; color: ${textMuted};">${escapeHtml(row.rank)}</span>`;
         }
 
         // Évolution de position
@@ -22863,8 +23262,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               ${trendHtml}
             </td>
             <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
-              <div style="font-weight: 600; color: ${textPrimary};">${row.team}</div>
-              ${row.leader ? `<div style="font-size: 0.7rem; color: ${textMuted};">Lead: ${row.leader}</div>` : ''}
+              <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.team)}</div>
+              ${row.leader ? `<div style="font-size: 0.7rem; color: ${textMuted};">Lead: ${escapeHtml(row.leader)}</div>` : ''}
             </td>
             <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
               <span style="
@@ -22875,7 +23274,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 font-weight: 500;
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
-              ">${row.region}</span>
+              ">${escapeHtml(row.region)}</span>
             </td>
             <td style="padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;">
               <div style="display: flex; align-items: center; justify-content: flex-end;">
@@ -22886,7 +23285,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               </div>
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary}; vertical-align: middle;">
-              ${row.deals}
+              ${escapeHtml(row.deals)}
             </td>
             <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${row.conversion.toFixed(1)}%

@@ -1,0 +1,241 @@
+{
+  "_meta": {
+    "family": "04-correlation-relation",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "bubble-chart",
+    "themeName": "colorbrewer-accessible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "rgba(43, 140, 190, 0.6)",
+            "borderColor": "#2B8CBE",
+            "borderWidth": 1.5,
+            "data": [
+              {
+                "label": "Inde",
+                "r": 28,
+                "x": 12.5,
+                "y": 72.1,
+                "z": 1420
+              },
+              {
+                "label": "Chine",
+                "r": 27.9,
+                "x": 21.4,
+                "y": 77.4,
+                "z": 1410
+              },
+              {
+                "label": "États-Unis",
+                "r": 15.3,
+                "x": 76.3,
+                "y": 79.2,
+                "z": 335
+              },
+              {
+                "label": "Brésil",
+                "r": 12.8,
+                "x": 17.8,
+                "y": 75.8,
+                "z": 215
+              },
+              {
+                "label": "Japon",
+                "r": 10.4,
+                "x": 44.2,
+                "y": 82.5,
+                "z": 125
+              },
+              {
+                "label": "Allemagne",
+                "r": 8.9,
+                "x": 54.1,
+                "y": 81.3,
+                "z": 84
+              },
+              {
+                "label": "France",
+                "r": 8.2,
+                "x": 48.6,
+                "y": 83,
+                "z": 68
+              },
+              {
+                "label": "Royaume-Uni",
+                "r": 8.1,
+                "x": 51.2,
+                "y": 81.8,
+                "z": 67
+              },
+              {
+                "label": "Italie",
+                "r": 7.7,
+                "x": 38.9,
+                "y": 83.2,
+                "z": 59
+              },
+              {
+                "label": "Espagne",
+                "r": 7,
+                "x": 34.5,
+                "y": 83.6,
+                "z": 48
+              },
+              {
+                "label": "Canada",
+                "r": 6.2,
+                "x": 62.4,
+                "y": 82.1,
+                "z": 38
+              },
+              {
+                "label": "Australie",
+                "r": 4,
+                "x": 65.8,
+                "y": 83.3,
+                "z": 26
+              }
+            ],
+            "hoverBorderWidth": 2.5,
+            "label": "Marchés Mondiaux (N=12)",
+            "type": "bubble"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "xy",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "point": {
+            "hitRadius": 14,
+            "hoverBorderWidth": 2,
+            "hoverRadius": 7,
+            "radius": 4
+          }
+        },
+        "hitRadius": 14,
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "hoverRadius": 7,
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "nearest",
+        "plugins": {
+          "legend": {
+            "align": "start",
+            "display": false,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#0F172A",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'JetBrains Mono', SFMono-Regular, Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            },
+            "type": "linear"
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            },
+            "type": "linear"
+          }
+        }
+      },
+      "type": "bubble"
+    },
+    "kind": "chart-config"
+  }
+}

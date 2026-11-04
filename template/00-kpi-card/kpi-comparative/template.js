@@ -22,6 +22,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
@@ -48,6 +51,40 @@
     footnote: 'Audit semestriel consolidé • Normes IFRS'
   };
 
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    for (const key of ['historical', 'budget']) {
+      const ref = d[key];
+      if (!ref || typeof ref !== 'object' || Array.isArray(ref)) return `formattedData.${key} attendu en objet { value, label?, deltaAbs?, deltaPct? }, reçu ${kindOf(ref)}`;
+      if (!isNum(ref.value)) return `formattedData.${key}.value attendu en nombre, reçu ${kindOf(ref.value)}`;
+      for (const f of ['deltaAbs', 'deltaPct']) {
+        if (ref[f] !== undefined && ref[f] !== null && !isNum(ref[f])) return `formattedData.${key}.${f} attendu en nombre, reçu ${kindOf(ref[f])}`;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Repère comparatif complet : écarts fournis, sinon calculés depuis les valeurs fournies.
+   * deltaPct reste null si la référence vaut 0 (pourcentage non défini).
+   */
+  function withDeltas(ref, slotLabel, current) {
+    const deltaAbs = isNum(ref.deltaAbs) ? ref.deltaAbs : Math.round((current - ref.value) * 100) / 100;
+    const deltaPct = isNum(ref.deltaPct) ? ref.deltaPct : (ref.value !== 0 ? Math.round((deltaAbs / Math.abs(ref.value)) * 1000) / 10 : null);
+    return { label: typeof ref.label === 'string' && ref.label ? ref.label : slotLabel, value: ref.value, deltaAbs, deltaPct };
+  }
+
   /**
    * Crée et initialise un micro-graphique comparatif 3 barres (N, N-1, Budget) dans le canvas.
    */
@@ -65,12 +102,14 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
 
     const currentVal = data.value;
-    let histVal = data.historical ? data.historical.value : currentVal;
-    let budgetVal = data.budget ? data.budget.value : currentVal;
+    const histVal = data.historical.value;
+    const budgetVal = data.budget.value;
 
     let resolvedProvenance = null;
     if (resolveThresholds) {
@@ -82,9 +121,6 @@
         } catch (e) {}
       } else if (options.autoThreshold !== false && data.autoThreshold !== false && historyData && historyData.length >= 5) {
         resolvedProvenance = resolveThresholds(historyData, null, { polarity: data.metricType });
-        if (resolvedProvenance && resolvedProvenance.target !== null) {
-          budgetVal = resolvedProvenance.target;
-        }
       }
     }
 
@@ -154,11 +190,13 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
 
-    const hist = data.historical || { label: 'vs N-1', value: 0, deltaAbs: 0, deltaPct: 0 };
-    const bud = data.budget || { label: 'vs Budget', value: 0, deltaAbs: 0, deltaPct: 0 };
+    const hist = withDeltas(data.historical, 'vs N-1', data.value);
+    const bud = withDeltas(data.budget, 'vs Budget', data.value);
 
     const histValence = hist.deltaAbs >= 0 ? 1 : -1;
     const histColor = getValenceColor(tokens, histValence, data.metricType || 'gain');
@@ -178,6 +216,10 @@
         return `${label} (${formattedVal}${unit ? ' ' + unit : ''})`;
       }
       return label;
+    }
+
+    function formatDeltaPct(deltaPct) {
+      return isNum(deltaPct) ? ` (${deltaPct >= 0 ? '+' : ''}${deltaPct}%)` : '';
     }
 
     function formatDeltaAbs(deltaAbs, unit) {
@@ -213,7 +255,7 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
+          ">${escapeHtml(data.title)}</span>
           <span style="font-size: 0.725rem; color: ${tokens.textMuted}; font-weight: 500; white-space: nowrap; flex-shrink: 0;">Période Active N</span>
         </div>
 
@@ -226,25 +268,28 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
         </div>
 
-        <!-- Double Repère Comparatif (Grid 2 Colonnes) -->
+        <!-- Double Repere Comparatif : grille 2x2 (labels ligne 1, pastilles ligne 2).
+             Les pastilles restent alignees quelle que soit la hauteur des labels. -->
         <div style="
           display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 10px;
-          padding: 8px 10px;
+          grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+          gap: 4px 6px;
+          padding: 8px 6px;
           background: ${tokens.gridColor || (isDark ? 'rgba(255,255,255,0.03)' : 'rgba(15,23,42,0.03)')};
           border-radius: 8px;
           margin-bottom: 0.5rem;
         ">
-          <!-- Colonne Historique -->
-          <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-            <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: nowrap;">
-              ${formatBenchmarkLabel(hist.label, hist.value, data.unit)}
-            </div>
+          <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: normal; overflow-wrap: break-word; max-width: 100%; min-width: 0;">
+            ${escapeHtml(formatBenchmarkLabel(hist.label, hist.value, data.unit))}
+          </div>
+          <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: normal; overflow-wrap: break-word; max-width: 100%; min-width: 0;">
+            ${escapeHtml(formatBenchmarkLabel(bud.label, bud.value, data.unit))}
+          </div>
+          <div style="display: flex; justify-content: center; min-width: 0;">
             <div style="
               display: inline-flex;
               align-items: center;
@@ -263,15 +308,11 @@
               border: 1px solid ${histBorder};
             ">
               <span style="font-size: 0.65rem;">${hist.deltaAbs >= 0 ? '▲' : '▼'}</span>
-              <span>${formatDeltaAbs(hist.deltaAbs, data.unit)} (${hist.deltaPct >= 0 ? '+' : ''}${hist.deltaPct}%)</span>
+              <span>${escapeHtml(formatDeltaAbs(hist.deltaAbs, data.unit))}${formatDeltaPct(hist.deltaPct)}</span>
             </div>
           </div>
 
-          <!-- Colonne Budget -->
-          <div style="display: flex; flex-direction: column; align-items: center; text-align: center;">
-            <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: nowrap;">
-              ${formatBenchmarkLabel(bud.label, bud.value, data.unit)}
-            </div>
+          <div style="display: flex; justify-content: center; min-width: 0;">
             <div style="
               display: inline-flex;
               align-items: center;
@@ -290,7 +331,7 @@
               border: 1px solid ${budBorder};
             ">
               <span style="font-size: 0.65rem;">${bud.deltaAbs >= 0 ? '▲' : '▼'}</span>
-              <span>${formatDeltaAbs(bud.deltaAbs, data.unit)} (${bud.deltaPct >= 0 ? '+' : ''}${bud.deltaPct}%)</span>
+              <span>${escapeHtml(formatDeltaAbs(bud.deltaAbs, data.unit))}${formatDeltaPct(bud.deltaPct)}</span>
             </div>
           </div>
         </div>
@@ -302,7 +343,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;

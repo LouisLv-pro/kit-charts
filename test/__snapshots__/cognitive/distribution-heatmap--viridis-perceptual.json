@@ -1,0 +1,461 @@
+{
+  "_meta": {
+    "family": "03-distribution",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "distribution-heatmap",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "[Function:backgroundColor]",
+            "borderColor": "[Function:borderColor]",
+            "borderRadius": 4,
+            "borderWidth": "[Function:borderWidth]",
+            "data": [
+              {
+                "day": "Lun",
+                "hour": "00-04h",
+                "v": 30,
+                "x": "Lun",
+                "y": "00-04h"
+              },
+              {
+                "day": "Lun",
+                "hour": "04-08h",
+                "v": 25,
+                "x": "Lun",
+                "y": "04-08h"
+              },
+              {
+                "day": "Lun",
+                "hour": "08-12h",
+                "v": 79,
+                "x": "Lun",
+                "y": "08-12h"
+              },
+              {
+                "day": "Lun",
+                "hour": "12-16h",
+                "v": 97,
+                "x": "Lun",
+                "y": "12-16h"
+              },
+              {
+                "day": "Lun",
+                "hour": "16-20h",
+                "v": 87,
+                "x": "Lun",
+                "y": "16-20h"
+              },
+              {
+                "day": "Lun",
+                "hour": "20-24h",
+                "v": 29,
+                "x": "Lun",
+                "y": "20-24h"
+              },
+              {
+                "day": "Mar",
+                "hour": "00-04h",
+                "v": 31,
+                "x": "Mar",
+                "y": "00-04h"
+              },
+              {
+                "day": "Mar",
+                "hour": "04-08h",
+                "v": 35,
+                "x": "Mar",
+                "y": "04-08h"
+              },
+              {
+                "day": "Mar",
+                "hour": "08-12h",
+                "v": 84,
+                "x": "Mar",
+                "y": "08-12h"
+              },
+              {
+                "day": "Mar",
+                "hour": "12-16h",
+                "v": 90,
+                "x": "Mar",
+                "y": "12-16h"
+              },
+              {
+                "day": "Mar",
+                "hour": "16-20h",
+                "v": 78,
+                "x": "Mar",
+                "y": "16-20h"
+              },
+              {
+                "day": "Mar",
+                "hour": "20-24h",
+                "v": 31,
+                "x": "Mar",
+                "y": "20-24h"
+              },
+              {
+                "day": "Mer",
+                "hour": "00-04h",
+                "v": 29,
+                "x": "Mer",
+                "y": "00-04h"
+              },
+              {
+                "day": "Mer",
+                "hour": "04-08h",
+                "v": 25,
+                "x": "Mer",
+                "y": "04-08h"
+              },
+              {
+                "day": "Mer",
+                "hour": "08-12h",
+                "v": 81,
+                "x": "Mer",
+                "y": "08-12h"
+              },
+              {
+                "day": "Mer",
+                "hour": "12-16h",
+                "v": 98,
+                "x": "Mer",
+                "y": "12-16h"
+              },
+              {
+                "day": "Mer",
+                "hour": "16-20h",
+                "v": 86,
+                "x": "Mer",
+                "y": "16-20h"
+              },
+              {
+                "day": "Mer",
+                "hour": "20-24h",
+                "v": 28,
+                "x": "Mer",
+                "y": "20-24h"
+              },
+              {
+                "day": "Jeu",
+                "hour": "00-04h",
+                "v": 32,
+                "x": "Jeu",
+                "y": "00-04h"
+              },
+              {
+                "day": "Jeu",
+                "hour": "04-08h",
+                "v": 35,
+                "x": "Jeu",
+                "y": "04-08h"
+              },
+              {
+                "day": "Jeu",
+                "hour": "08-12h",
+                "v": 83,
+                "x": "Jeu",
+                "y": "08-12h"
+              },
+              {
+                "day": "Jeu",
+                "hour": "12-16h",
+                "v": 89,
+                "x": "Jeu",
+                "y": "12-16h"
+              },
+              {
+                "day": "Jeu",
+                "hour": "16-20h",
+                "v": 79,
+                "x": "Jeu",
+                "y": "16-20h"
+              },
+              {
+                "day": "Jeu",
+                "hour": "20-24h",
+                "v": 33,
+                "x": "Jeu",
+                "y": "20-24h"
+              },
+              {
+                "day": "Ven",
+                "hour": "00-04h",
+                "v": 27,
+                "x": "Ven",
+                "y": "00-04h"
+              },
+              {
+                "day": "Ven",
+                "hour": "04-08h",
+                "v": 25,
+                "x": "Ven",
+                "y": "04-08h"
+              },
+              {
+                "day": "Ven",
+                "hour": "08-12h",
+                "v": 82,
+                "x": "Ven",
+                "y": "08-12h"
+              },
+              {
+                "day": "Ven",
+                "hour": "12-16h",
+                "v": 99,
+                "x": "Ven",
+                "y": "12-16h"
+              },
+              {
+                "day": "Ven",
+                "hour": "16-20h",
+                "v": 85,
+                "x": "Ven",
+                "y": "16-20h"
+              },
+              {
+                "day": "Ven",
+                "hour": "20-24h",
+                "v": 27,
+                "x": "Ven",
+                "y": "20-24h"
+              },
+              {
+                "day": "Sam",
+                "hour": "00-04h",
+                "v": 18,
+                "x": "Sam",
+                "y": "00-04h"
+              },
+              {
+                "day": "Sam",
+                "hour": "04-08h",
+                "v": 20,
+                "x": "Sam",
+                "y": "04-08h"
+              },
+              {
+                "day": "Sam",
+                "hour": "08-12h",
+                "v": 14,
+                "x": "Sam",
+                "y": "08-12h"
+              },
+              {
+                "day": "Sam",
+                "hour": "12-16h",
+                "v": 10,
+                "x": "Sam",
+                "y": "12-16h"
+              },
+              {
+                "day": "Sam",
+                "hour": "16-20h",
+                "v": 13,
+                "x": "Sam",
+                "y": "16-20h"
+              },
+              {
+                "day": "Sam",
+                "hour": "20-24h",
+                "v": 19,
+                "x": "Sam",
+                "y": "20-24h"
+              },
+              {
+                "day": "Dim",
+                "hour": "00-04h",
+                "v": 11,
+                "x": "Dim",
+                "y": "00-04h"
+              },
+              {
+                "day": "Dim",
+                "hour": "04-08h",
+                "v": 11,
+                "x": "Dim",
+                "y": "04-08h"
+              },
+              {
+                "day": "Dim",
+                "hour": "08-12h",
+                "v": 16,
+                "x": "Dim",
+                "y": "08-12h"
+              },
+              {
+                "day": "Dim",
+                "hour": "12-16h",
+                "v": 20,
+                "x": "Dim",
+                "y": "12-16h"
+              },
+              {
+                "day": "Dim",
+                "hour": "16-20h",
+                "v": 16,
+                "x": "Dim",
+                "y": "16-20h"
+              },
+              {
+                "day": "Dim",
+                "hour": "20-24h",
+                "v": 11,
+                "x": "Dim",
+                "y": "20-24h"
+              }
+            ],
+            "height": "[Function:height]",
+            "label": "Charge Serveur (%)",
+            "width": "[Function:width]"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "xy",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "point": {
+            "hitRadius": 12,
+            "hoverBorderWidth": 2,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hitRadius": 12,
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "hoverRadius": 6,
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 34,
+            "left": 12,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "nearest",
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false
+            },
+            "labels": [
+              "Lun",
+              "Mar",
+              "Mer",
+              "Jeu",
+              "Ven",
+              "Sam",
+              "Dim"
+            ],
+            "position": "bottom",
+            "ticks": {
+              "color": "#0F172A",
+              "display": true,
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "600"
+              },
+              "padding": 12
+            },
+            "type": "category"
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false
+            },
+            "labels": [
+              "00-04h",
+              "04-08h",
+              "08-12h",
+              "12-16h",
+              "16-20h",
+              "20-24h"
+            ],
+            "position": "left",
+            "ticks": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 12
+            },
+            "type": "category"
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsHeatmapValuesPlugin"
+        }
+      ],
+      "type": "matrix"
+    },
+    "kind": "chart-config"
+  }
+}

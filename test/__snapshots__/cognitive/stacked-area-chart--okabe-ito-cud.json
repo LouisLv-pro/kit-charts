@@ -1,0 +1,216 @@
+{
+  "_meta": {
+    "family": "05-evolution-temporelle",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "stacked-area-chart",
+    "themeName": "okabe-ito-cud"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "rgba(0, 114, 178, 0.65)",
+            "borderColor": "#0072B2",
+            "borderDash": [],
+            "borderWidth": 2,
+            "data": [
+              45,
+              55,
+              68,
+              85,
+              105,
+              130
+            ],
+            "fill": true,
+            "label": "Éolien",
+            "pointBackgroundColor": "#0072B2",
+            "pointBorderColor": "#FFFFFF",
+            "pointHoverRadius": 5,
+            "pointRadius": 0,
+            "pointStyle": "circle",
+            "tension": 0.3
+          },
+          {
+            "backgroundColor": "rgba(213, 94, 0, 0.65)",
+            "borderColor": "#D55E00",
+            "borderDash": [],
+            "borderWidth": 2,
+            "data": [
+              25,
+              38,
+              54,
+              75,
+              100,
+              135
+            ],
+            "fill": true,
+            "label": "Solaire",
+            "pointBackgroundColor": "#D55E00",
+            "pointBorderColor": "#FFFFFF",
+            "pointHoverRadius": 5,
+            "pointRadius": 0,
+            "pointStyle": "circle",
+            "tension": 0.3
+          },
+          {
+            "backgroundColor": "rgba(0, 158, 115, 0.65)",
+            "borderColor": "#009E73",
+            "borderDash": [],
+            "borderWidth": 2,
+            "data": [
+              60,
+              62,
+              58,
+              64,
+              60,
+              63
+            ],
+            "fill": true,
+            "label": "Hydroélectrique",
+            "pointBackgroundColor": "#009E73",
+            "pointBorderColor": "#CBD5E1",
+            "pointHoverRadius": 5,
+            "pointRadius": 0,
+            "pointStyle": "circle",
+            "tension": 0.3
+          }
+        ],
+        "labels": [
+          "2019",
+          "2020",
+          "2021",
+          "2022",
+          "2023",
+          "2024"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "x",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 12,
+            "hoverRadius": 6,
+            "radius": 3
+          }
+        },
+        "hitRadius": 12,
+        "hover": {
+          "animationDuration": 100,
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "hoverRadius": 6,
+        "interaction": {
+          "axis": "x",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "index",
+        "plugins": {
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "boxHeight": 8,
+              "boxWidth": 8,
+              "color": "#1E293B",
+              "font": {
+                "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 14,
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "backgroundColor": "rgba(30, 41, 59, 0.92)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "500"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 1,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "padding": 10,
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            }
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "stacked": true,
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(30, 41, 59, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "stacked": true,
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#334155",
+              "font": {
+                "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "line"
+    },
+    "kind": "chart-config"
+  }
+}

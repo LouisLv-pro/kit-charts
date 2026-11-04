@@ -22,6 +22,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
@@ -38,6 +41,26 @@
     metricType: 'gain',
     footnote: 'Écart restant : -40 000 € • 18 jours ouvrés restants'
   };
+
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    if (!isNum(d.target) || d.target <= 0) return `formattedData.target attendu en nombre strictement positif, reçu ${isNum(d.target) ? d.target : kindOf(d.target)}`;
+    if (d.ranges !== undefined && d.ranges !== null && !(Array.isArray(d.ranges) && d.ranges.length >= 3 && d.ranges.slice(0, 3).every(isNum))) {
+      return 'formattedData.ranges attendu en tableau de 3 nombres [bas, moyen, plafond]';
+    }
+    return null;
+  }
 
   /**
    * Crée et initialise un micro-bullet graph dans le canvas.
@@ -56,12 +79,14 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const isDark = Boolean(tokens.isDark);
 
     let actual = data.value;
     let target = data.target;
-    let ranges = data.ranges || [target * 0.6, target * 0.85, target * 1.15];
+    let ranges = Array.isArray(data.ranges) ? data.ranges : null;
 
     let resolvedProvenance = null;
     if (resolveThresholds) {
@@ -73,14 +98,14 @@
         } catch (e) {}
       } else if (options.autoThreshold !== false && data.autoThreshold !== false && historyData && historyData.length >= 5) {
         resolvedProvenance = resolveThresholds(historyData, null, { polarity: data.metricType });
-        if (resolvedProvenance && resolvedProvenance.target !== null) {
-          target = resolvedProvenance.target;
+        if (resolvedProvenance && resolvedProvenance.warning !== null && resolvedProvenance.danger !== null) {
           ranges = [resolvedProvenance.danger, resolvedProvenance.warning, target * 1.15];
         }
       }
     }
 
-    const maxScale = Math.max(ranges[2] || target * 1.15, actual * 1.05, target * 1.05);
+    const maxScale = Math.max((ranges && ranges[2]) || target * 1.15, actual * 1.05, target * 1.05);
+    const unitSuffix = data.unit ? ' ' + data.unit : '';
 
 
     const attainment = Math.round((actual / target) * 100);
@@ -134,7 +159,7 @@
             zIndex: 10
           },
           // 2. Plage Qualificative 1 (Bas / Insatisfaisant)
-          {
+          ranges && {
             label: 'Plage Insatisfaisant',
             data: [ranges[0]],
             backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.08)',
@@ -144,7 +169,7 @@
             grouped: false
           },
           // 3. Plage Qualificative 2 (Moyen / Satisfaisant)
-          {
+          ranges && {
             label: 'Plage Satisfaisant',
             data: [ranges[1]],
             backgroundColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(15, 23, 42, 0.05)',
@@ -154,7 +179,7 @@
             grouped: false
           },
           // 4. Plage Qualificative 3 (Optimal / Plafond)
-          {
+          ranges && {
             label: 'Plage Optimale',
             data: [ranges[2]],
             backgroundColor: isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(15, 23, 42, 0.03)',
@@ -163,7 +188,7 @@
             order: 2,
             grouped: false
           }
-        ]
+        ].filter(Boolean)
       },
       options: {
         indexAxis: 'y',
@@ -177,7 +202,7 @@
             filter: (item) => item.datasetIndex === 0,
             callbacks: {
               title: () => data.title,
-              label: (ctx) => `Réalisé : ${actual.toLocaleString('fr-FR')} ${data.unit} (${attainment}% de l'objectif de ${target.toLocaleString('fr-FR')} ${data.unit})${resolvedProvenance ? ' • ' + resolvedProvenance.badge : ''}`
+              label: (ctx) => `Réalisé : ${actual.toLocaleString('fr-FR')}${unitSuffix} (${attainment}% de l'objectif de ${target.toLocaleString('fr-FR')}${unitSuffix})${resolvedProvenance ? ' • ' + resolvedProvenance.badge : ''}`
             }
           }
         },
@@ -210,7 +235,9 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const canvasId = 'kpi-bullet-canvas-' + Math.random().toString(36).substr(2, 9);
 
     const actual = data.value;
@@ -249,7 +276,7 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
+          ">${escapeHtml(data.title)}</span>
           <span style="
             display: inline-flex;
             flex-direction: column;
@@ -282,10 +309,10 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${actual.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${actual.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
           <div style="font-size: 0.78125rem; font-weight: 600; color: ${tokens.textMuted}; text-align: right;">
-            Cible : ${target.toLocaleString('fr-FR')} ${data.unit || ''}
+            Cible : ${target.toLocaleString('fr-FR')} ${escapeHtml(data.unit || '')}
           </div>
         </div>
 
@@ -301,7 +328,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;

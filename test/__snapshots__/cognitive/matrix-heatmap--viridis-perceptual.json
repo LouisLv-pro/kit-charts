@@ -1,0 +1,337 @@
+{
+  "_meta": {
+    "family": "04-correlation-relation",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "matrix-heatmap",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "[Function:backgroundColor]",
+            "borderColor": "[Function:borderColor]",
+            "borderRadius": 3,
+            "borderWidth": "[Function:borderWidth]",
+            "data": [
+              {
+                "v": 1,
+                "x": "Actions US",
+                "y": "Actions US"
+              },
+              {
+                "v": 0.82,
+                "x": "Actions EU",
+                "y": "Actions US"
+              },
+              {
+                "v": -0.35,
+                "x": "Obligations",
+                "y": "Actions US"
+              },
+              {
+                "v": 0.12,
+                "x": "Or",
+                "y": "Actions US"
+              },
+              {
+                "v": 0.45,
+                "x": "Pétrole",
+                "y": "Actions US"
+              },
+              {
+                "v": 0.64,
+                "x": "Immobilier",
+                "y": "Actions US"
+              },
+              {
+                "v": 0.82,
+                "x": "Actions US",
+                "y": "Actions EU"
+              },
+              {
+                "v": 1,
+                "x": "Actions EU",
+                "y": "Actions EU"
+              },
+              {
+                "v": -0.28,
+                "x": "Obligations",
+                "y": "Actions EU"
+              },
+              {
+                "v": 0.18,
+                "x": "Or",
+                "y": "Actions EU"
+              },
+              {
+                "v": 0.52,
+                "x": "Pétrole",
+                "y": "Actions EU"
+              },
+              {
+                "v": 0.58,
+                "x": "Immobilier",
+                "y": "Actions EU"
+              },
+              {
+                "v": -0.35,
+                "x": "Actions US",
+                "y": "Obligations"
+              },
+              {
+                "v": -0.28,
+                "x": "Actions EU",
+                "y": "Obligations"
+              },
+              {
+                "v": 1,
+                "x": "Obligations",
+                "y": "Obligations"
+              },
+              {
+                "v": 0.42,
+                "x": "Or",
+                "y": "Obligations"
+              },
+              {
+                "v": -0.15,
+                "x": "Pétrole",
+                "y": "Obligations"
+              },
+              {
+                "v": -0.22,
+                "x": "Immobilier",
+                "y": "Obligations"
+              },
+              {
+                "v": 0.12,
+                "x": "Actions US",
+                "y": "Or"
+              },
+              {
+                "v": 0.18,
+                "x": "Actions EU",
+                "y": "Or"
+              },
+              {
+                "v": 0.42,
+                "x": "Obligations",
+                "y": "Or"
+              },
+              {
+                "v": 1,
+                "x": "Or",
+                "y": "Or"
+              },
+              {
+                "v": 0.25,
+                "x": "Pétrole",
+                "y": "Or"
+              },
+              {
+                "v": 0.08,
+                "x": "Immobilier",
+                "y": "Or"
+              },
+              {
+                "v": 0.45,
+                "x": "Actions US",
+                "y": "Pétrole"
+              },
+              {
+                "v": 0.52,
+                "x": "Actions EU",
+                "y": "Pétrole"
+              },
+              {
+                "v": -0.15,
+                "x": "Obligations",
+                "y": "Pétrole"
+              },
+              {
+                "v": 0.25,
+                "x": "Or",
+                "y": "Pétrole"
+              },
+              {
+                "v": 1,
+                "x": "Pétrole",
+                "y": "Pétrole"
+              },
+              {
+                "v": 0.38,
+                "x": "Immobilier",
+                "y": "Pétrole"
+              },
+              {
+                "v": 0.64,
+                "x": "Actions US",
+                "y": "Immobilier"
+              },
+              {
+                "v": 0.58,
+                "x": "Actions EU",
+                "y": "Immobilier"
+              },
+              {
+                "v": -0.22,
+                "x": "Obligations",
+                "y": "Immobilier"
+              },
+              {
+                "v": 0.08,
+                "x": "Or",
+                "y": "Immobilier"
+              },
+              {
+                "v": 0.38,
+                "x": "Pétrole",
+                "y": "Immobilier"
+              },
+              {
+                "v": 1,
+                "x": "Immobilier",
+                "y": "Immobilier"
+              }
+            ],
+            "height": "[Function:height]",
+            "label": "Corrélation Inter-Actifs",
+            "width": "[Function:width]"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "xy",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "point": {
+            "hitRadius": 10,
+            "hoverBorderWidth": 2,
+            "hoverRadius": 5,
+            "radius": 4
+          }
+        },
+        "hitRadius": 10,
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "hoverRadius": 5,
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "nearest",
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false
+            },
+            "labels": [
+              "Actions US",
+              "Actions EU",
+              "Obligations",
+              "Or",
+              "Pétrole",
+              "Immobilier"
+            ],
+            "ticks": {
+              "color": "#0F172A",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "600"
+              },
+              "padding": 6
+            },
+            "type": "category"
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false
+            },
+            "labels": [
+              "Actions US",
+              "Actions EU",
+              "Obligations",
+              "Or",
+              "Pétrole",
+              "Immobilier"
+            ],
+            "ticks": {
+              "color": "#0F172A",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "600"
+              },
+              "padding": 8
+            },
+            "type": "category"
+          }
+        }
+      },
+      "type": "matrix"
+    },
+    "kind": "chart-config"
+  }
+}

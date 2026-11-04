@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -198,7 +199,7 @@
         html += `
           <th style="
             padding: 10px 14px;
-            text-align: ${col.align};
+            text-align: ${escapeHtml(col.align)};
             font-weight: 600;
             font-size: 0.725rem;
             text-transform: uppercase;
@@ -207,7 +208,7 @@
             border: none;
             white-space: nowrap;
           ">
-            ${col.label}
+            ${escapeHtml(col.label)}
           </th>
         `;
       });
@@ -257,17 +258,17 @@
           ">
             <td style="padding: 8px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
               <span style="padding-left: ${indentPx}px; color: ${textColor};">
-                ${row.item}
+                ${escapeHtml(row.item)}
               </span>
             </td>
             <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
-              ${formatAccounting(row.actual)}
+              ${escapeHtml(formatAccounting(row.actual))}
             </td>
             <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
-              ${formatAccounting(row.budget)}
+              ${escapeHtml(formatAccounting(row.budget))}
             </td>
             <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textMuted}; vertical-align: middle;">
-              ${formatAccounting(row.priorYear)}
+              ${escapeHtml(formatAccounting(row.priorYear))}
             </td>
             <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaAbs.toLocaleString('fr-FR')} k€

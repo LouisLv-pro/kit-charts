@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: couts-cloud-polarite-inverse
+expected_outcome: |
+  Le graphique est un line-chart (ou area-chart) avec metricPolarity LOWER_IS_BETTER, car une hausse de coûts est défavorable. Le titre énonce le constat (par exemple une hausse d'environ 76 % sur l'année) plutôt que le seul sujet.

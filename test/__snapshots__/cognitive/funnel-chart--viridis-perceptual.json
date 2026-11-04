@@ -1,0 +1,172 @@
+{
+  "_meta": {
+    "family": "06-flux-processus",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "funnel-chart",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "#26828E",
+              "#1F9E89",
+              "#6DCD59",
+              "#B4DE2C",
+              "#FDE725"
+            ],
+            "barPercentage": 0.85,
+            "borderColor": "#FFFFFF",
+            "borderRadius": 4,
+            "borderWidth": 1,
+            "categoryPercentage": 0.8,
+            "data": [
+              10000,
+              3200,
+              1450,
+              480,
+              390
+            ],
+            "label": "Volume Utilisateurs"
+          }
+        ],
+        "labels": [
+          "1. Visiteurs Uniques",
+          "2. Inscriptions Gratuites",
+          "3. Utilisateurs Actifs (WAU)",
+          "4. Souscriptions Payantes",
+          "5. Renouvellements Annuels"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.85,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "axis": "y",
+          "intersect": false,
+          "mode": "index"
+        },
+        "indexAxis": "y",
+        "interaction": {
+          "axis": "y",
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "right": 28
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "align": "right",
+            "anchor": "end",
+            "color": "#0F172A",
+            "display": true,
+            "font": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            }
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grace": "15%",
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#0F172A",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "500"
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

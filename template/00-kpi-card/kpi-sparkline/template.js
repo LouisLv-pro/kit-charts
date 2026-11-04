@@ -22,6 +22,9 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
+  const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
+  const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
@@ -38,6 +41,26 @@
     labels: ['J-11', 'J-10', 'J-9', 'J-8', 'J-7', 'J-6', 'J-5', 'J-4', 'J-3', 'J-2', 'J-1', 'Aujourd\'hui'],
     footnote: 'Historique continu sur 12 jours • Min: 2.90% | Max: 3.90%'
   };
+
+  const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
+  const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  /**
+   * Contrôle les champs indispensables quand des données sont fournies.
+   * Aucun champ manquant n'est repris de DEFAULT_DATA : la carte passe en état invalide.
+   * @param {Object} d - customData
+   * @returns {string|null} Raison lisible, ou null si les données sont exploitables
+   */
+  function validateData(d) {
+    if (!d || typeof d !== 'object' || Array.isArray(d)) return 'formattedData doit être un objet';
+    if (typeof d.title !== 'string' || !d.title.trim()) return `formattedData.title attendu en texte non vide, reçu ${kindOf(d.title)}`;
+    if (!isNum(d.value)) return `formattedData.value attendu en nombre, reçu ${kindOf(d.value)}`;
+    const arrayReason = checkRequiredArrays(d, ['history']);
+    if (arrayReason) return arrayReason;
+    if (d.history.length === 0) return 'formattedData.history attendu non vide';
+    if (!d.history.every(isNum)) return 'formattedData.history attendu en tableau de nombres';
+    return null;
+  }
 
   /**
    * Crée et initialise la sparkline Chart.js dans le canvas.
@@ -56,9 +79,11 @@
 
     const container = canvas.parentElement || (typeof document !== 'undefined' ? document.body : null);
     const tokens = getThemeTokens(themeName, container);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
-    const history = data.history || DEFAULT_DATA.history;
-    const labels = data.labels || history.map((_, i) => `Point ${i + 1}`);
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(canvas, invalidReason);
+    const data = customData || DEFAULT_DATA;
+    const history = data.history;
+    const labels = Array.isArray(data.labels) ? data.labels : history.map((_, i) => `Point ${i + 1}`);
 
     const valence = data.delta > 0 ? 1 : (data.delta < 0 ? -1 : 0);
     const strokeColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -157,9 +182,12 @@
     if (!el) return null;
 
     const tokens = getThemeTokens(themeName, el);
-    const data = Object.assign({}, DEFAULT_DATA, customData || {});
+    const invalidReason = customData ? validateData(customData) : null;
+    if (invalidReason) return renderInvalidData(el, invalidReason);
+    const data = customData || DEFAULT_DATA;
     const canvasId = 'kpi-sparkline-canvas-' + Math.random().toString(36).substr(2, 9);
 
+    const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
     const valenceColor = getValenceColor(tokens, valence, data.metricType || 'gain');
@@ -191,8 +219,8 @@
             color: ${tokens.textSecondary};
             text-transform: uppercase;
             letter-spacing: 0.04em;
-          ">${data.title}</span>
-          <span style="
+          ">${escapeHtml(data.title)}</span>
+          ${hasDelta ? `<span style="
             display: inline-flex;
             align-items: center;
             justify-content: center;
@@ -211,7 +239,7 @@
           ">
             <span>${arrowGlyph}</span>
             <span>${deltaSign}${data.delta}%</span>
-          </span>
+          </span>` : ''}
         </div>
 
         <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
@@ -223,11 +251,11 @@
             color: ${tokens.textPrimary};
             font-variant-numeric: tabular-nums;
           ">
-            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${data.unit || ''}</span>
+            ${data.value.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="font-size: 0.75rem; color: ${tokens.textMuted}; text-align: right;">
-            ${data.deltaLabel}
-          </div>
+          ${data.deltaLabel ? `<div style="font-size: 0.75rem; color: ${tokens.textMuted}; text-align: right;">
+            ${escapeHtml(data.deltaLabel)}
+          </div>` : ''}
         </div>
 
         <!-- Zone Micro-Canvas Sparkline -->
@@ -242,7 +270,7 @@
           font-size: 0.7rem;
           color: ${tokens.textMuted};
         ">
-          ${data.footnote}
+          ${escapeHtml(data.footnote)}
         </div>` : ''}
       </div>
     `;

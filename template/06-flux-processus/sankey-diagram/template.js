@@ -73,7 +73,7 @@ const DEFAULT_DATA = {
  * @param {string} [themeName='colorbrewer-accessible'] - Theme identifier
  * @returns {Object} Initialized Chart.js instance or mock instance
  */
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string' && typeof document !== 'undefined'
     ? document.getElementById(canvasTarget)
     : canvasTarget;
@@ -92,6 +92,54 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
   const rawData = customData || DEFAULT_DATA;
   const rawDatasets = rawData.datasets || [];
+
+  // Sankey mobile : à viewport étroit (<= 480 px), les
+  // libellés longs des nœuds (dessinés par chartjs-chart-sankey depuis
+  // `dataset.labels` avec la police `dataset.font`) se chevauchent. En mode
+  // compact on réduit la police et on abrège les libellés ; le détail
+  // complet reste accessible en infobulle. Desktop et snapshots Node
+  // (faux canvas sans largeur : `isNarrowViewport === false`) inchangés.
+  // Forçage possible via `options.compactLabels` (booléen).
+  const NARROW_BREAKPOINT = 480;
+  const isNarrowViewport = (() => {
+    if (options && typeof options.compactLabels === 'boolean') return options.compactLabels;
+    try {
+      if (container && typeof container.clientWidth === 'number' && container.clientWidth > 0) {
+        return container.clientWidth <= NARROW_BREAKPOINT;
+      }
+      if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
+        return window.matchMedia(`(max-width: ${NARROW_BREAKPOINT}px)`).matches;
+      }
+    } catch (e) {}
+    return false;
+  })();
+  const SHORT_LABELS = {
+    'Renouvelable (Éolien/Solaire)': 'Renouvelables',
+    'Électricité Réseau': 'Élec. Réseau',
+    'Chaleur Industrielle': 'Chaleur Ind.',
+    'Secteur Résidentiel': 'Résidentiel',
+    'Industrie Électrifiée': 'Industrie',
+    'Pertes Réseau & Transport': 'Pertes Réseau',
+    'Transformation & Chimie': 'Transfo. & Chimie',
+    'Pertes Thermiques': 'Pertes Therm.'
+  };
+  const shortenNodeLabel = (name) => {
+    if (typeof name !== 'string') return name;
+    if (Object.prototype.hasOwnProperty.call(SHORT_LABELS, name)) return SHORT_LABELS[name];
+    const max = 16;
+    if (name.length <= max) return name;
+    const cut = name.slice(0, max - 1);
+    const sp = cut.lastIndexOf(' ');
+    return (sp > 6 ? cut.slice(0, sp) : cut) + '…';
+  };
+  const buildShortLabels = (flowData) => {
+    const map = {};
+    flowData.forEach((item) => {
+      if (item && typeof item.from === 'string') map[item.from] = shortenNodeLabel(item.from);
+      if (item && typeof item.to === 'string') map[item.to] = shortenNodeLabel(item.to);
+    });
+    return map;
+  };
 
   const datasets = rawDatasets.map((ds, dsIdx) => {
     const flowData = Array.isArray(ds.data) ? ds.data : [];
@@ -130,7 +178,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       colorMode: ds.colorMode || 'gradient',
       borderWidth: ds.borderWidth ?? 0,
       nodeWidth: ds.nodeWidth ?? 14,
-      nodePadding: ds.nodePadding ?? 16,
+      nodePadding: ds.nodePadding ?? (isNarrowViewport ? 10 : 16),
+      // Mode compact (viewport étroit uniquement) : police réduite + libellés
+      // abrégés lus par chartjs-chart-sankey à chaque `draw()`. Absent sinon.
+      ...(isNarrowViewport ? { font: { size: 10 }, labels: buildShortLabels(flowData) } : {}),
       backgroundColor: ds.backgroundColor || getColor(tokens, dsIdx)
     };
   });

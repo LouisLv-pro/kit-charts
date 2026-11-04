@@ -4,39 +4,17 @@ Bienvenue sur le référentiel **kit-charts**. Ce fichier définit les règles f
 
 ---
 
-## 🏛️ Rôles des Agents Spécialisés
+## 🏛️ Agent Unique : `dataviz`
 
-Pour garantir zéro hallucination et un respect absolu des sciences cognitives, toute tâche de datavisualisation doit être exécutée selon une répartition stricte des rôles :
+Toute tâche de datavisualisation est confiée à un seul agent, [`dataviz`](.agents/agents/dataviz.md),
+qui enchaîne trois postures sans relais :
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│ 1. DATAVIZ-ARCHITECT (L'Architecte Décideur)                │
-│    Analyse l'intention, choisit le template dans le         │
-│    registre (74 templates), qualifie le thème et la         │
-│    polarité métier, calibre infobulles/étiquettes/légendes, │
-│    et produit le contrat dataviz-spec.json.                 │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ Contrat dataviz-spec.json
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 2. DATAVIZ-BUILDER (Le Constructeur / Exécuteur)            │
-│    Consomme la spec, déclenche le skill kit-charts et       │
-│    compile le template standardisé sans coder ad-hoc.       │
-└──────────────────────────────┬──────────────────────────────┘
-                               │ Fichier généré HTML / JS
-                               ▼
-┌─────────────────────────────────────────────────────────────┐
-│ 3. DATAVIZ-REVIEWER (L'Auditeur Qualité & Linter)           │
-│    Audite en 4 niveaux (validate-chart.js, sciences         │
-│    cognitives, valence, WCAG 2.2) et émet un rapport formel │
-│    avec grille d'audit et correctif actionnable.            │
-└─────────────────────────────────────────────────────────────┘
-```
+1. **Qualifier** : question métier, données, polarité, thème, sortie. Hypothèses notées, pas d'interrogatoire.
+2. **Construire** : `recommend-template.js` borne le choix, la spec est écrite dans `output/<slug>/spec.json`, `compile-chart.js` refuse toute spec non conforme (exit 1).
+3. **Auditer** : `validate-chart.js` à zéro erreur, puis revue experte du sens ([`review-checklist.md`](.agents/skills/kit-charts/references/review-checklist.md)).
 
-Les spécifications détaillées et prompts de chaque agent sont disponibles dans :
-* [`.agents/agents/dataviz-architect.md`](.agents/agents/dataviz-architect.md)
-* [`.agents/agents/dataviz-builder.md`](.agents/agents/dataviz-builder.md)
-* [`.agents/agents/dataviz-reviewer.md`](.agents/agents/dataviz-reviewer.md)
+Le workflow complet, les commandes et le format du rapport sont dans le skill
+[`.agents/skills/kit-charts/SKILL.md`](.agents/skills/kit-charts/SKILL.md).
 
 ---
 
@@ -69,25 +47,77 @@ Ne jamais supposer qu'une hausse est toujours verte ou qu'une baisse est toujour
 
 ## 🛠️ Outillage Déterministe
 
-Tout agent peut utiliser les scripts CLI situés dans `.agents/skills/kit-charts/scripts/` :
+Point d'entrée unique : le CLI `kit-charts` (`bin/kit-charts.js`, sans installation dans le dépôt :
+`node bin/kit-charts.js`). Il délègue aux scripts de `.agents/skills/kit-charts/scripts/`.
 
 ```bash
-# 1. Compilation d'une spécification vers HTML autonome (dans un sous-dossier propre)
-node .agents/skills/kit-charts/scripts/compile-chart.js dataviz-spec.json -o output/mon-graphique/index.html
+# 1. Recommandation de template à partir des données (profil + règles cognitives)
+kit-charts recommend data.json --intent comparison
 
-# 2. Audit et linting cognitif / WCAG
-node .agents/skills/kit-charts/scripts/validate-chart.js output/mon-graphique/index.html --json
+# 2. Contrat de données du template (schema.json + exemple), puis spec squelette sans données d'exemple
+kit-charts describe <id>
+kit-charts init-spec <id> -o output/<slug>/spec.json
 
-# 3. Lancer la suite de tests complète
+# 3. Compilation vers HTML autonome (exit 1 si erreur bloquante, --force pour déboguer)
+kit-charts compile output/<slug>/spec.json -o output/<slug>/index.html
+
+# 4. Audit cognitif / WCAG / contrat, puis rendu réel (Chrome headless, data-kc-render)
+kit-charts validate output/<slug>/index.html --json
+kit-charts check output/<slug>/index.html
+
+# 5. Suite complète : intégration + filet snapshots (--check).
+#    Rendu réel des 73 templates (Chrome + réseau) : npm run test:render. CLI installé : npm run test:cli.
+#    Toute modification d'un template DOIT passer cette porte (voir § Discipline).
 npm test
+
+# 6. Régénérer les snapshots APRÈS modification intentionnelle d'un template.
+#    Relire le diff avant de commiter : jamais de régénération aveugle pour verdir un rouge.
+npm run snapshots
+node test/snapshot-configs.js --check
 ```
+
+---
+
+## 🧪 Discipline des Tests (Anti-Bruit)
+
+Tout agent qui ajoute ou modifie un test **doit** respecter ces règles :
+
+1. **Un test doit pouvoir échouer.** Exhiber la mutation du code de production qui le ferait
+   rougir. Interdits : `fs.existsSync()` du fichier que le code sous test vient d'écrire ;
+   constante comparée à son propre littéral ; disjonctions `a || b || c` où un membre passe
+   pour une mauvaise raison (ex. un mot présent en commentaire).
+2. **Tester le comportement observable, jamais le source.** Interdit d'asserter
+   `codeSource.includes('...')` comme preuve. Exécuter le script et asserter ses sorties
+   réelles : `compile-chart.js` sort en `1`, n'écrit rien et cite la règle sur une spec non
+   conforme (Bloc 10).
+3. **Un bug = un FAIL lisible.** Ne pas tripler statut + `ruleId` + catégorie sur le même
+   objet d'erreur. Regrouper les cas en boucle avec les fautifs nommés dans le message
+   (modèle des Blocs 9 et 11).
+4. **Invariants relationnels, pas nombres magiques.** Compter depuis le registre
+   (`registry.templates.length`), jamais `=== 74`. URLs CDN **versionnées** exactes
+   (supply-chain, source unique `scripts/vendor-pins.js`), jamais de sous-chaînes de noms.
+5. **Snapshots : filet, pas routine.** `--check` fige la config Chart émise par template ×
+   thème (PRNG seedé, déterministe). Après modification intentionnelle : régénérer, **relire
+   le diff**, puis `--check`. Un template peut violer `Y=0` en interne tout en passant la
+   validation de spec : seuls les snapshots et le filet du point 6 le détectent.
+6. **Y=0 vérifié à l'émission (Bloc 11).** Chaque template à encodage longueur
+   (`LENGTH_ENCODED_TEMPLATES` de `validate-chart.js`) doit émettre `beginAtZero:true` sur son
+   axe de valeur et jamais `beginAtZero:false`. Exemptions documentées et temporaires :
+   `kpi-bullet`, `kpi-distribution` (gabarits DOM, à statuer). Tout agent modifiant un
+   template longueur préserve cet invariant.
+7. **Calculs en direct.** `themes/stat-helpers.js` (quantile, mean, studentT, ci95) : asserts
+   sur fixtures avec valeurs exactes, jamais sur la présence de chaînes dans le HTML.
 
 ---
 
 ## 📁 Ressources & Références pour Agents
 
-- [`.agents/skills/kit-charts/registry.json`](.agents/skills/kit-charts/registry.json) : Registre machine-readable exhaustif des 74 templates.
-- [`.agents/skills/kit-charts/SKILL.md`](.agents/skills/kit-charts/SKILL.md) : Guide d'utilisation du skill.
+- [`.agents/skills/kit-charts/registry.json`](.agents/skills/kit-charts/registry.json) : Registre machine-readable exhaustif des 73 templates (le démonstrateur `template/tooltip/` n'en fait pas partie).
+- [`.agents/agents/dataviz.md`](.agents/agents/dataviz.md) : Agent unique (qualifier, construire, auditer).
+- [`.agents/skills/kit-charts/SKILL.md`](.agents/skills/kit-charts/SKILL.md) : Workflow du skill, contrat, règles et rapport.
+- [`.agents/skills/kit-charts/references/spec-contract.md`](.agents/skills/kit-charts/references/spec-contract.md) : Champs de la spec et valeurs permises.
+- [`.agents/skills/kit-charts/references/review-checklist.md`](.agents/skills/kit-charts/references/review-checklist.md) : Revue experte avant livraison.
+- [`.agents/skills/kit-charts/evals/`](.agents/skills/kit-charts/evals/) : Cas d'évaluation du skill (format `claude plugin eval`).
 - [`.agents/skills/kit-charts/references/decision-matrix.md`](.agents/skills/kit-charts/references/decision-matrix.md) : Arbre de décision analytique.
 - [`.agents/skills/kit-charts/references/color-semantics.md`](.agents/skills/kit-charts/references/color-semantics.md) : Guide des 8 thèmes et polarités.
 - [`.agents/skills/kit-charts/references/interaction-tooltips-animations.md`](.agents/skills/kit-charts/references/interaction-tooltips-animations.md) : Guide décisionnel infobulles, étiquettes directes et légendes.

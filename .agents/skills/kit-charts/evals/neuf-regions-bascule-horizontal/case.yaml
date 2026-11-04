@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: neuf-regions-bascule-horizontal
+expected_outcome: |
+  Le graphique est compilé avec bar-chart-horizontal et non bar-chart-vertical, car 9 catégories aux libellés longs dépassent la limite de 7 colonnes. Les barres sont triées par valeur décroissante, l'unité M€ figure dans le sous-titre, et la réponse explique la bascule.

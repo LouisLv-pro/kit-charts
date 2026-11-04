@@ -1,0 +1,186 @@
+{
+  "_meta": {
+    "family": "01-comparaison",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "polar-area-chart",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "#3E4A89",
+              "#26828E",
+              "#35B779",
+              "#B4DE2C",
+              "#440154",
+              "#FDE725",
+              "#31688E",
+              "#1F9E89"
+            ],
+            "borderColor": "#FFFFFF",
+            "borderWidth": 2,
+            "data": [
+              42,
+              28,
+              35,
+              18,
+              50,
+              32,
+              45,
+              22
+            ],
+            "label": "Valeur"
+          }
+        ],
+        "labels": [
+          "Nord",
+          "Nord-Est",
+          "Est",
+          "Sud-Est",
+          "Sud",
+          "Sud-Ouest",
+          "Ouest",
+          "Nord-Ouest"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 120,
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "axis": "xy",
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#0F172A",
+            "display": true,
+            "font": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "center",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#0F172A",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "right"
+          },
+          "tooltip": {
+            "animation": {
+              "duration": 150,
+              "easing": "easeOutQuad"
+            },
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "r": {
+            "angleLines": {
+              "color": "rgba(15, 23, 42, 0.06)",
+              "lineWidth": 1
+            },
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)",
+              "lineWidth": 1
+            },
+            "suggestedMin": 0,
+            "ticks": {
+              "backdropColor": "transparent",
+              "color": "#64748B",
+              "font": {
+                "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 10
+              },
+              "showLabelBackdrop": false
+            }
+          },
+          "x": {
+            "display": false
+          },
+          "y": {
+            "display": false
+          }
+        }
+      },
+      "type": "polarArea"
+    },
+    "kind": "chart-config"
+  }
+}

@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: kpi-mrr-avec-reference
+expected_outcome: |
+  Le template est kpi-standard avec value 148500, delta 12.4, une unité en euros et une référence de comparaison explicite (deltaLabel du type « vs octobre » ou « vs M-1 »), polarité HIGHER_IS_BETTER.

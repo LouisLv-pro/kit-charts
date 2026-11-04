@@ -1,0 +1,188 @@
+{
+  "_meta": {
+    "family": "06-flux-processus",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "sankey-diagram",
+    "themeName": "nord-cognitive-dark"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#88C0D0",
+            "borderWidth": 0,
+            "colorFrom": "[Function:defaultColorFrom]",
+            "colorMode": "gradient",
+            "colorTo": "[Function:defaultColorTo]",
+            "data": [
+              {
+                "flow": 68,
+                "from": "Nucléaire",
+                "to": "Électricité Réseau",
+                "valence": "neutral"
+              },
+              {
+                "flow": 32,
+                "from": "Renouvelable (Éolien/Solaire)",
+                "to": "Électricité Réseau",
+                "valence": "positive"
+              },
+              {
+                "flow": 40,
+                "from": "Gaz Naturel",
+                "to": "Chaleur Industrielle",
+                "valence": "neutral"
+              },
+              {
+                "flow": 45,
+                "from": "Électricité Réseau",
+                "to": "Secteur Résidentiel",
+                "valence": "positive"
+              },
+              {
+                "flow": 38,
+                "from": "Électricité Réseau",
+                "to": "Industrie Électrifiée",
+                "valence": "positive"
+              },
+              {
+                "flow": 17,
+                "from": "Électricité Réseau",
+                "to": "Pertes Réseau & Transport",
+                "valence": "negative"
+              },
+              {
+                "flow": 28,
+                "from": "Chaleur Industrielle",
+                "to": "Transformation & Chimie",
+                "valence": "positive"
+              },
+              {
+                "flow": 12,
+                "from": "Chaleur Industrielle",
+                "to": "Pertes Thermiques",
+                "valence": "negative"
+              }
+            ],
+            "label": "Bilan Flux Énergétique National (TWh)",
+            "nodePadding": 16,
+            "nodeWidth": 14
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 16,
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "backgroundColor": "#434C5E",
+            "bodyColor": "#ECEFF4",
+            "bodyFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#616E85",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#ECEFF4",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            }
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#88C0D0",
+              "width": 1
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)",
+              "display": true,
+              "drawBorder": false
+            },
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'JetBrains Mono', monospace",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "sankey"
+    },
+    "kind": "chart-config"
+  }
+}

@@ -1,0 +1,140 @@
+{
+  "_meta": {
+    "family": "02-composition-part-to-whole",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "pie-chart",
+    "themeName": "tufte-minimalist-executive"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "#1D4ED8",
+              "#525252",
+              "#737373"
+            ],
+            "borderColor": "#FCFBF9",
+            "borderWidth": 1,
+            "data": [
+              58,
+              34,
+              8
+            ],
+            "label": "Trafic Web (%)"
+          }
+        ],
+        "labels": [
+          "Mobile",
+          "Desktop",
+          "Tablette"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 0
+          },
+          "line": {
+            "borderWidth": 1.5,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "axis": "xy",
+          "intersect": true,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 12,
+            "left": 12,
+            "right": 16,
+            "top": 16
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#111111",
+            "display": true,
+            "font": {
+              "family": "'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "display": false,
+            "labels": {
+              "boxWidth": 12,
+              "color": "#111111",
+              "font": {
+                "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 12,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "right"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "#111111",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#D5D1C8",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 0,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "rotation": -90,
+        "scales": {}
+      },
+      "type": "pie"
+    },
+    "kind": "chart-config"
+  }
+}

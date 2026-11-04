@@ -1,0 +1,326 @@
+{
+  "_meta": {
+    "family": "02-composition-part-to-whole",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "pareto-chart",
+    "themeName": "nord-cognitive-dark"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "rgba(136, 192, 208, 0.9)",
+              "rgba(136, 192, 208, 0.9)",
+              "rgba(76, 86, 106, 0.5)",
+              "rgba(76, 86, 106, 0.5)",
+              "rgba(76, 86, 106, 0.5)",
+              "rgba(76, 86, 106, 0.5)",
+              "rgba(76, 86, 106, 0.5)"
+            ],
+            "borderColor": "#88C0D0",
+            "borderRadius": 4,
+            "borderWidth": 1.5,
+            "data": [
+              142,
+              89,
+              45,
+              23,
+              14,
+              8,
+              4
+            ],
+            "datalabels": {
+              "color": "#ECEFF4",
+              "display": true
+            },
+            "label": "Occurrences d'Incidents",
+            "order": 2,
+            "type": "bar",
+            "yAxisID": "y"
+          },
+          {
+            "backgroundColor": "rgba(136, 192, 208, 0.1)",
+            "borderColor": "#88C0D0",
+            "borderWidth": 2.5,
+            "data": [
+              43.7,
+              71.1,
+              84.9,
+              92,
+              96.3,
+              98.8,
+              100
+            ],
+            "datalabels": {
+              "align": "top",
+              "anchor": "center",
+              "color": "#88C0D0",
+              "display": true,
+              "font": {
+                "size": 10,
+                "weight": "700"
+              },
+              "formatter": "[Function:formatter]"
+            },
+            "label": "Cumul (%)",
+            "order": 1,
+            "pointBackgroundColor": "#88C0D0",
+            "pointHoverRadius": 6,
+            "pointRadius": 4,
+            "tension": 0.2,
+            "type": "line",
+            "yAxisID": "y1"
+          }
+        ],
+        "labels": [
+          "Erreur d'authentification",
+          "Timeout passerelle SQL",
+          "Fichier payload corrompu",
+          "Certificat SSL expiré",
+          "Quota mémoire dépassé",
+          "Erreur DNS transitoire",
+          "Déconnexion WebSocket"
+        ]
+      },
+      "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#4C566A",
+          "bg": "#2E3440",
+          "border": "#4C566A",
+          "borderStrong": "#616E85",
+          "divergent": {
+            "mid": "#4C566A",
+            "neg": "#BF616A",
+            "pos": "#88C0D0"
+          },
+          "emphasis": {
+            "anomaly": "#BF616A",
+            "benchmark": "#ECEFF4",
+            "context": "#4C566A",
+            "focal": "#88C0D0",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'JetBrains Mono', monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+          "gridColor": "rgba(236, 239, 244, 0.06)",
+          "id": "07-nord-cognitive-dark",
+          "isDark": true,
+          "label": "Nord Cognitive Dark",
+          "name": "nord-cognitive-dark",
+          "palette": [
+            "#88C0D0",
+            "#81A1C1",
+            "#5E81AC",
+            "#A3BE8C",
+            "#EBCB8B",
+            "#D08770",
+            "#BF616A",
+            "#B48EAD"
+          ],
+          "semantic": {
+            "info": "#88C0D0",
+            "negative": "#BF616A",
+            "neutral": "#D8DEE9",
+            "positive": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "sequential": [
+            "#3B4252",
+            "#4C566A",
+            "#5E81AC",
+            "#81A1C1",
+            "#88C0D0",
+            "#ECEFF4"
+          ],
+          "status": {
+            "danger": "#BF616A",
+            "info": "#88C0D0",
+            "neutral": "#D8DEE9",
+            "success": "#A3BE8C",
+            "warning": "#EBCB8B"
+          },
+          "surface": "#3B4252",
+          "surfaceRaised": "#434C5E",
+          "textMuted": "#9EABC0",
+          "textPrimary": "#ECEFF4",
+          "textSecondary": "#D8DEE9",
+          "tooltipBg": "#434C5E",
+          "tooltipText": "#ECEFF4",
+          "zeroLine": "#88C0D0"
+        },
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "datalabels": {
+            "color": "#ECEFF4",
+            "display": true,
+            "font": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 10,
+              "weight": "600"
+            },
+            "formatter": "[Function:formatter]",
+            "padding": 4,
+            "thresholdRatio": 0.05
+          },
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12
+              }
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "#434C5E",
+            "bodyColor": "#ECEFF4",
+            "bodyFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#616E85",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#ECEFF4",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#88C0D0",
+              "width": 1
+            },
+            "grid": {
+              "display": false
+            },
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "maxRotation": 30
+            }
+          },
+          "y": {
+            "beginAtZero": true,
+            "grace": "8%",
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)"
+            },
+            "position": "left",
+            "title": {
+              "color": "#D8DEE9",
+              "display": true,
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Nombre d'occurrences"
+            },
+            "type": "linear"
+          },
+          "y1": {
+            "beginAtZero": true,
+            "grid": {
+              "display": false
+            },
+            "max": 105,
+            "min": 0,
+            "position": "right",
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#88C0D0",
+              "font": {
+                "family": "'JetBrains Mono', monospace",
+                "size": 11
+              }
+            },
+            "title": {
+              "color": "#88C0D0",
+              "display": true,
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Pourcentage cumulé"
+            },
+            "type": "linear"
+          }
+        },
+        "showDataLabels": true
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsPareto80Line"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

@@ -1,0 +1,157 @@
+{
+  "_meta": {
+    "family": "03-distribution",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "box-plot",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "transparent",
+            "borderColor": "transparent",
+            "borderWidth": 0,
+            "data": [
+              [
+                18,
+                31
+              ],
+              [
+                28,
+                44
+              ],
+              [
+                34,
+                50
+              ],
+              [
+                16,
+                29
+              ]
+            ],
+            "label": "IQR [Q1 - Q3]"
+          }
+        ],
+        "labels": [
+          "Contrôle",
+          "Traitement A",
+          "Traitement B",
+          "Placebo"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "xy",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "point": {
+            "hitRadius": 14,
+            "hoverBorderWidth": 2,
+            "hoverRadius": 7,
+            "radius": 4
+          }
+        },
+        "hitRadius": 14,
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "hoverRadius": 7,
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "nearest",
+        "plugins": {
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "grid": {
+              "display": false
+            },
+            "ticks": {
+              "color": "#0F172A",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "600"
+              }
+            }
+          },
+          "y": {
+            "beginAtZero": false,
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)"
+            },
+            "suggestedMax": 73,
+            "suggestedMin": 5,
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              }
+            }
+          }
+        }
+      },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "nativeTukeyPainter_dopf7"
+        }
+      ],
+      "type": "bar"
+    },
+    "kind": "chart-config"
+  }
+}

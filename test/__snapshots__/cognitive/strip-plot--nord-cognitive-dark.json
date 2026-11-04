@@ -1,0 +1,547 @@
+{
+  "_meta": {
+    "family": "03-distribution",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "strip-plot",
+    "themeName": "nord-cognitive-dark"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#88C0D0",
+            "borderColor": "#88C0D0",
+            "borderWidth": 1,
+            "data": [
+              {
+                "x": 0.9469272313592956,
+                "y": 35
+              },
+              {
+                "x": 1.0683005080511794,
+                "y": 43.7
+              },
+              {
+                "x": 1.0713946008635684,
+                "y": 35.5
+              },
+              {
+                "x": 1.1299183616181836,
+                "y": 41.9
+              },
+              {
+                "x": 1.053515592571348,
+                "y": 51.7
+              },
+              {
+                "x": 1.123201537001878,
+                "y": 42
+              },
+              {
+                "x": 0.9766107455966995,
+                "y": 51.1
+              },
+              {
+                "x": 1.0166224884614348,
+                "y": 48.1
+              },
+              {
+                "x": 1.0448795102210715,
+                "y": 45.6
+              },
+              {
+                "x": 1.1188072417257353,
+                "y": 53.3
+              },
+              {
+                "x": 1.002353939395398,
+                "y": 42.6
+              },
+              {
+                "x": 0.8751007903926075,
+                "y": 38.6
+              },
+              {
+                "x": 1.0994833575142549,
+                "y": 28.7
+              },
+              {
+                "x": 0.9658183166384697,
+                "y": 47
+              },
+              {
+                "x": 0.9946697883401066,
+                "y": 46.8
+              },
+              {
+                "x": 1.0563510877173394,
+                "y": 38.2
+              },
+              {
+                "x": 1.0129556940402835,
+                "y": 47.6
+              },
+              {
+                "x": 1.05861519518774,
+                "y": 48.8
+              },
+              {
+                "x": 1.0461968567129225,
+                "y": 33.3
+              },
+              {
+                "x": 1.0297275193454698,
+                "y": 47.7
+              },
+              {
+                "x": 0.9673975837370381,
+                "y": 51.6
+              },
+              {
+                "x": 0.9576038339454681,
+                "y": 54.3
+              },
+              {
+                "x": 0.9240705111343414,
+                "y": 64.4
+              },
+              {
+                "x": 0.9263018730049952,
+                "y": 56.9
+              },
+              {
+                "x": 0.9010408600512891,
+                "y": 53.2
+              },
+              {
+                "x": 1.0048850659932942,
+                "y": 40.3
+              },
+              {
+                "x": 1.0791186657641083,
+                "y": 50.8
+              },
+              {
+                "x": 0.9018055428238585,
+                "y": 56.5
+              },
+              {
+                "x": 1.0622849797224625,
+                "y": 46.4
+              },
+              {
+                "x": 0.9771279185311869,
+                "y": 36.8
+              }
+            ],
+            "label": "Groupe A (Témoin)",
+            "pointHitRadius": 14,
+            "pointHoverRadius": 7,
+            "pointRadius": 4.5,
+            "pointStyle": "circle"
+          },
+          {
+            "backgroundColor": "#81A1C1",
+            "borderColor": "#81A1C1",
+            "borderWidth": 1,
+            "data": [
+              {
+                "x": 2.0985284551745282,
+                "y": 63.6
+              },
+              {
+                "x": 2.1178552989894524,
+                "y": 55.6
+              },
+              {
+                "x": 1.8735348304919899,
+                "y": 62.9
+              },
+              {
+                "x": 1.9050216153077781,
+                "y": 52.8
+              },
+              {
+                "x": 2.020787785677239,
+                "y": 57.3
+              },
+              {
+                "x": 2.09914530263748,
+                "y": 58.5
+              },
+              {
+                "x": 2.078443798329681,
+                "y": 59.2
+              },
+              {
+                "x": 2.087856331402436,
+                "y": 49.9
+              },
+              {
+                "x": 1.8901734456745907,
+                "y": 78
+              },
+              {
+                "x": 1.8970769995963201,
+                "y": 55.7
+              },
+              {
+                "x": 1.9382812492595987,
+                "y": 51.5
+              },
+              {
+                "x": 2.06547162046656,
+                "y": 68.3
+              },
+              {
+                "x": 2.053766726879403,
+                "y": 61.1
+              },
+              {
+                "x": 2.1249034964013847,
+                "y": 54.6
+              },
+              {
+                "x": 1.9492802062956616,
+                "y": 79.1
+              },
+              {
+                "x": 1.997929386002943,
+                "y": 45.8
+              },
+              {
+                "x": 1.9631644711038099,
+                "y": 53.3
+              },
+              {
+                "x": 2.0121090967813506,
+                "y": 68.1
+              },
+              {
+                "x": 1.8767764145275578,
+                "y": 49.1
+              },
+              {
+                "x": 2.0617280822386963,
+                "y": 46.5
+              },
+              {
+                "x": 1.9743364234687761,
+                "y": 71.5
+              },
+              {
+                "x": 1.9360423827450723,
+                "y": 68.7
+              },
+              {
+                "x": 2.003935359274037,
+                "y": 40.7
+              },
+              {
+                "x": 1.895022356682457,
+                "y": 67.5
+              },
+              {
+                "x": 1.9885801032697783,
+                "y": 58.8
+              },
+              {
+                "x": 1.999967978047207,
+                "y": 70.5
+              },
+              {
+                "x": 1.9230463586142286,
+                "y": 35.6
+              },
+              {
+                "x": 2.021915071387775,
+                "y": 59.9
+              },
+              {
+                "x": 1.891318789687939,
+                "y": 51.9
+              },
+              {
+                "x": 1.9587742241704837,
+                "y": 43.8
+              }
+            ],
+            "label": "Groupe B (Traitement 1)",
+            "pointHitRadius": 14,
+            "pointHoverRadius": 7,
+            "pointRadius": 4.5,
+            "pointStyle": "circle"
+          },
+          {
+            "backgroundColor": "#5E81AC",
+            "borderColor": "#5E81AC",
+            "borderWidth": 1,
+            "data": [
+              {
+                "x": 2.8793232448212804,
+                "y": 36.8
+              },
+              {
+                "x": 2.871678837928921,
+                "y": 57.9
+              },
+              {
+                "x": 2.907630093009211,
+                "y": 44.6
+              },
+              {
+                "x": 3.025768020991236,
+                "y": 53.5
+              },
+              {
+                "x": 2.8762694127252324,
+                "y": 49.6
+              },
+              {
+                "x": 2.8835559975076466,
+                "y": 44.9
+              },
+              {
+                "x": 3.10532144935336,
+                "y": 42.1
+              },
+              {
+                "x": 2.8846755852829666,
+                "y": 56.3
+              },
+              {
+                "x": 3.028926252629608,
+                "y": 62.7
+              },
+              {
+                "x": 3.0145867287134753,
+                "y": 73.6
+              },
+              {
+                "x": 3.0723178584501145,
+                "y": 65.7
+              },
+              {
+                "x": 3.0625985952606425,
+                "y": 50.2
+              },
+              {
+                "x": 2.991410693246871,
+                "y": 46.8
+              },
+              {
+                "x": 3.0205497282277793,
+                "y": 54
+              },
+              {
+                "x": 2.9366193226585167,
+                "y": 53.2
+              },
+              {
+                "x": 3.001533712935634,
+                "y": 57.7
+              },
+              {
+                "x": 2.92809513408225,
+                "y": 56.1
+              },
+              {
+                "x": 2.999621000592597,
+                "y": 54.2
+              },
+              {
+                "x": 2.9305715891951696,
+                "y": 48.3
+              },
+              {
+                "x": 3.0140928635792807,
+                "y": 31.6
+              },
+              {
+                "x": 2.9846631227759644,
+                "y": 50
+              },
+              {
+                "x": 3.00203440271318,
+                "y": 54.6
+              },
+              {
+                "x": 3.1181158853229136,
+                "y": 61.5
+              },
+              {
+                "x": 2.941419311100617,
+                "y": 43.7
+              },
+              {
+                "x": 3.0228210564889015,
+                "y": 55.2
+              },
+              {
+                "x": 2.973050712225959,
+                "y": 59.3
+              },
+              {
+                "x": 2.9408106795186177,
+                "y": 55.6
+              },
+              {
+                "x": 3.050688621494919,
+                "y": 60.1
+              },
+              {
+                "x": 2.9508441925421356,
+                "y": 47.9
+              },
+              {
+                "x": 2.9211210251878947,
+                "y": 56.7
+              }
+            ],
+            "label": "Groupe C (Traitement 2)",
+            "pointHitRadius": 14,
+            "pointHoverRadius": 7,
+            "pointRadius": 4.5,
+            "pointStyle": "circle"
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "axis": "xy",
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "point": {
+            "hitRadius": 14,
+            "hoverBorderWidth": 2,
+            "hoverRadius": 7,
+            "radius": 4
+          }
+        },
+        "hitRadius": 14,
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "hoverRadius": 7,
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "mode": "nearest",
+        "plugins": {
+          "legend": {
+            "align": "start",
+            "display": true,
+            "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "padding": 16,
+              "pointStyle": "circle",
+              "usePointStyle": true
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "#434C5E",
+            "bodyColor": "#ECEFF4",
+            "bodyFont": {
+              "family": "'JetBrains Mono', monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#616E85",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#ECEFF4",
+            "titleFont": {
+              "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "max": 3.5,
+            "min": 0.5,
+            "ticks": {
+              "callback": "[Function:callback]",
+              "color": "#ECEFF4",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "600"
+              },
+              "padding": 8,
+              "stepSize": 1
+            },
+            "type": "linear"
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(236, 239, 244, 0.06)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 8
+            }
+          }
+        }
+      },
+      "type": "scatter"
+    },
+    "kind": "chart-config"
+  }
+}

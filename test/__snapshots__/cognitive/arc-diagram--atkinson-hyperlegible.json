@@ -1,0 +1,386 @@
+{
+  "_meta": {
+    "family": "07-hierarchie-reseau",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "arc-diagram",
+    "themeName": "atkinson-hyperlegible"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": [
+              "rgba(161, 161, 170, 0.4)",
+              "rgba(161, 161, 170, 0.4)",
+              "rgba(161, 161, 170, 0.4)",
+              "rgba(161, 161, 170, 0.4)",
+              "rgba(161, 161, 170, 0.4)",
+              "#005AB5",
+              "#DC3220"
+            ],
+            "borderColor": [
+              "#A1A1AA",
+              "#A1A1AA",
+              "#A1A1AA",
+              "#A1A1AA",
+              "#A1A1AA",
+              "#005AB5",
+              "#DC3220"
+            ],
+            "borderWidth": [
+              1,
+              1,
+              1,
+              1,
+              1,
+              2,
+              2
+            ],
+            "data": [
+              {
+                "borderColor": "#A1A1AA",
+                "borderWidth": 1,
+                "color": "rgba(161, 161, 170, 0.4)",
+                "id": "node-0",
+                "label": "1. Ingestion",
+                "r": 6,
+                "role": "context",
+                "x": 1,
+                "y": 0
+              },
+              {
+                "borderColor": "#A1A1AA",
+                "borderWidth": 1,
+                "color": "rgba(161, 161, 170, 0.4)",
+                "id": "node-1",
+                "label": "2. Validation",
+                "r": 6,
+                "role": "context",
+                "x": 2,
+                "y": 0
+              },
+              {
+                "borderColor": "#A1A1AA",
+                "borderWidth": 1,
+                "color": "rgba(161, 161, 170, 0.4)",
+                "id": "node-2",
+                "label": "3. Dédoublonnage",
+                "r": 6,
+                "role": "context",
+                "x": 3,
+                "y": 0
+              },
+              {
+                "borderColor": "#A1A1AA",
+                "borderWidth": 1,
+                "color": "rgba(161, 161, 170, 0.4)",
+                "id": "node-3",
+                "label": "4. Enrichissement",
+                "r": 6,
+                "role": "context",
+                "x": 4,
+                "y": 0
+              },
+              {
+                "borderColor": "#A1A1AA",
+                "borderWidth": 1,
+                "color": "rgba(161, 161, 170, 0.4)",
+                "id": "node-4",
+                "label": "5. Feature Store",
+                "r": 6,
+                "role": "context",
+                "x": 5,
+                "y": 0
+              },
+              {
+                "borderColor": "#005AB5",
+                "borderWidth": 2,
+                "color": "#005AB5",
+                "id": "node-5",
+                "label": "6. Inférence IA",
+                "r": 12,
+                "role": "focal",
+                "x": 6,
+                "y": 0
+              },
+              {
+                "borderColor": "#DC3220",
+                "borderWidth": 2,
+                "color": "#DC3220",
+                "id": "node-6",
+                "label": "7. Alerting / Dispatch",
+                "r": 10,
+                "role": "anomaly",
+                "x": 7,
+                "y": 0
+              }
+            ],
+            "label": "Étapes du Pipeline",
+            "pointHitRadius": 14,
+            "pointHoverRadius": "[Function:pointHoverRadius]",
+            "pointRadius": "[Function:pointRadius]"
+          }
+        ],
+        "links": [
+          {
+            "label": "Flux Brut",
+            "source": 0,
+            "target": 1,
+            "value": 8
+          },
+          {
+            "label": "Données Conformes",
+            "source": 1,
+            "target": 2,
+            "value": 7
+          },
+          {
+            "label": "Rejet / Erreur Schéma",
+            "role": "anomaly",
+            "source": 1,
+            "target": 6,
+            "value": 2
+          },
+          {
+            "label": "Flux Unique",
+            "source": 2,
+            "target": 3,
+            "value": 6
+          },
+          {
+            "label": "Archivage Froid",
+            "source": 0,
+            "target": 4,
+            "value": 4
+          },
+          {
+            "label": "Vecteurs Calculés",
+            "role": "focal",
+            "source": 3,
+            "target": 5,
+            "value": 6
+          },
+          {
+            "label": "Features Historiques",
+            "source": 4,
+            "target": 5,
+            "value": 3
+          },
+          {
+            "label": "Détections Anomalies",
+            "role": "focal",
+            "source": 5,
+            "target": 6,
+            "value": 5
+          }
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 100,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "axis": "xy",
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "arcMeta": {
+            "isDark": false,
+            "palette": [
+              "#005AB5",
+              "#DC3220",
+              "#009E73",
+              "#FE6100",
+              "#785EF0",
+              "#FFB000",
+              "#3F3F46",
+              "#64748B"
+            ],
+            "tokens": {
+              "axisColor": "#71717A",
+              "bg": "#FFFFFF",
+              "border": "#D4D4D8",
+              "borderStrong": "#71717A",
+              "divergent": {
+                "mid": "#FFFFFF",
+                "neg": "#DC3220",
+                "pos": "#005AB5"
+              },
+              "emphasis": {
+                "anomaly": "#DC3220",
+                "benchmark": "#27272A",
+                "context": "#A1A1AA",
+                "focal": "#005AB5",
+                "forecastAlpha": 0.55
+              },
+              "fontFamily": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "fontMono": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;600&display=swap",
+              "gridColor": "rgba(0, 0, 0, 0.12)",
+              "id": "08-atkinson-hyperlegible",
+              "isDark": false,
+              "label": "Atkinson Hyperlegible",
+              "name": "atkinson-hyperlegible",
+              "palette": [
+                "#005AB5",
+                "#DC3220",
+                "#009E73",
+                "#FE6100",
+                "#785EF0",
+                "#FFB000",
+                "#3F3F46",
+                "#64748B"
+              ],
+              "semantic": {
+                "info": "#005AB5",
+                "negative": "#DC3220",
+                "neutral": "#71717A",
+                "positive": "#009E73",
+                "warning": "#FE6100"
+              },
+              "sequential": [
+                "#E6F0FA",
+                "#BDD7F1",
+                "#6BA3DC",
+                "#005AB5",
+                "#003B75"
+              ],
+              "status": {
+                "danger": "#DC3220",
+                "info": "#005AB5",
+                "neutral": "#71717A",
+                "success": "#009E73",
+                "warning": "#FE6100"
+              },
+              "surface": "#F4F4F5",
+              "surfaceRaised": "#FFFFFF",
+              "textMuted": "#3F3F46",
+              "textPrimary": "#000000",
+              "textSecondary": "#18181B",
+              "tooltipBg": "rgba(0, 0, 0, 0.95)",
+              "tooltipText": "#FFFFFF",
+              "zeroLine": "#18181B"
+            }
+          },
+          "legend": {
+            "display": false
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(0, 0, 0, 0.95)",
+            "bodyColor": "#FFFFFF",
+            "bodyFont": {
+              "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#71717A",
+            "borderWidth": 1,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#FFFFFF",
+            "titleFont": {
+              "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "afterBuildTicks": "[Function:afterBuildTicks]",
+            "border": {
+              "color": "#71717A",
+              "width": 1.5
+            },
+            "grid": {
+              "display": false,
+              "drawBorder": false
+            },
+            "max": 7.8,
+            "min": 0.19999999999999996,
+            "ticks": {
+              "autoSkip": false,
+              "callback": "[Function:callback]",
+              "color": "#000000",
+              "font": {
+                "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "600"
+              },
+              "padding": 10,
+              "stepSize": 1
+            }
+          },
+          "y": {
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(0, 0, 0, 0.12)",
+              "drawBorder": false,
+              "lineWidth": 1
+            },
+            "max": 6,
+            "min": -0.5,
+            "ticks": {
+              "color": "#18181B",
+              "display": false
+            }
+          }
+        }
+      },
+      "plugins": [
+        {
+          "beforeDatasetsDraw": "[Function:beforeDatasetsDraw]",
+          "id": "arcDiagramLinksPlugin"
+        }
+      ],
+      "type": "scatter"
+    },
+    "kind": "chart-config"
+  }
+}

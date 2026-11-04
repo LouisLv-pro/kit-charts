@@ -1,0 +1,350 @@
+{
+  "_meta": {
+    "family": "05-evolution-temporelle",
+    "generator": "test/snapshot-configs.js",
+    "templateId": "price-indicator-overlays",
+    "themeName": "viridis-perceptual"
+  },
+  "payload": {
+    "config": {
+      "data": {
+        "datasets": [
+          {
+            "backgroundColor": "#26828E",
+            "borderColor": "#26828E",
+            "borderWidth": 2.5,
+            "data": [
+              100,
+              102,
+              101,
+              104,
+              106,
+              105,
+              108,
+              110,
+              109,
+              112,
+              115,
+              114,
+              116,
+              118,
+              120,
+              119,
+              122,
+              125,
+              124,
+              126,
+              128,
+              127,
+              130,
+              133,
+              132,
+              135,
+              137,
+              136,
+              139,
+              142
+            ],
+            "label": "Indice Synthétique (€)",
+            "order": 1,
+            "pointHoverRadius": 5,
+            "pointRadius": 3,
+            "tension": 0.2
+          },
+          {
+            "borderColor": "#26828E",
+            "borderDash": [
+              3,
+              3
+            ],
+            "borderWidth": 1.5,
+            "data": [
+              100,
+              101,
+              101,
+              101.75,
+              102.6,
+              103,
+              103.71,
+              104.5,
+              105,
+              105.7,
+              107.2,
+              108.4,
+              109.9,
+              111.3,
+              112.7,
+              114.1,
+              115.5,
+              117,
+              118.5,
+              119.9,
+              121.2,
+              122.5,
+              123.9,
+              125.4,
+              126.6,
+              128.2,
+              129.7,
+              130.8,
+              132.3,
+              133.9
+            ],
+            "label": "Moyenne Mobile (SMA 10)",
+            "order": 2,
+            "pointRadius": 0,
+            "tension": 0.3
+          },
+          {
+            "backgroundColor": "rgba(203, 213, 225, 0.1)",
+            "borderColor": "rgba(203, 213, 225, 0.6)",
+            "borderWidth": 1,
+            "data": [
+              100,
+              103,
+              102.63,
+              104.71,
+              106.91,
+              107.32,
+              109.02,
+              110.98,
+              111.73,
+              113.34,
+              115.63,
+              116.94,
+              117.97,
+              119.65,
+              121.69,
+              122.17,
+              123.71,
+              126.08,
+              126.71,
+              127.97,
+              129.86,
+              130.31,
+              131.57,
+              133.7,
+              134.9,
+              136.19,
+              138.09,
+              139.32,
+              140.79,
+              143.04
+            ],
+            "fill": "+1",
+            "label": "Bollinger Supérieure (+2σ)",
+            "order": 3,
+            "pointRadius": 0,
+            "tension": 0.3
+          },
+          {
+            "borderColor": "rgba(203, 213, 225, 0.6)",
+            "borderWidth": 1,
+            "data": [
+              100,
+              99,
+              99.37,
+              98.79,
+              98.29,
+              98.68,
+              98.4,
+              98.02,
+              98.27,
+              98.06,
+              98.77,
+              99.86,
+              101.83,
+              102.95,
+              103.71,
+              106.03,
+              107.29,
+              107.92,
+              110.29,
+              111.83,
+              112.54,
+              114.69,
+              116.23,
+              117.1,
+              118.3,
+              120.21,
+              121.31,
+              122.28,
+              123.81,
+              124.76
+            ],
+            "fill": false,
+            "label": "Bollinger Inférieure (-2σ)",
+            "order": 3,
+            "pointRadius": 0,
+            "tension": 0.3
+          }
+        ],
+        "labels": [
+          "J1",
+          "J2",
+          "J3",
+          "J4",
+          "J5",
+          "J6",
+          "J7",
+          "J8",
+          "J9",
+          "J10",
+          "J11",
+          "J12",
+          "J13",
+          "J14",
+          "J15",
+          "J16",
+          "J17",
+          "J18",
+          "J19",
+          "J20",
+          "J21",
+          "J22",
+          "J23",
+          "J24",
+          "J25",
+          "J26",
+          "J27",
+          "J28",
+          "J29",
+          "J30"
+        ]
+      },
+      "options": {
+        "animation": false,
+        "barPercentage": 0.9,
+        "categoryPercentage": 0.8,
+        "elements": {
+          "bar": {
+            "borderRadius": 4
+          },
+          "line": {
+            "borderWidth": 2,
+            "tension": 0.1
+          },
+          "point": {
+            "hitRadius": 10,
+            "hoverRadius": 6,
+            "radius": 4
+          }
+        },
+        "hover": {
+          "animationDuration": 0,
+          "intersect": false,
+          "mode": "nearest"
+        },
+        "interaction": {
+          "intersect": false,
+          "mode": "index"
+        },
+        "layout": {
+          "padding": {
+            "bottom": 16,
+            "left": 16,
+            "right": 20,
+            "top": 20
+          }
+        },
+        "maintainAspectRatio": false,
+        "plugins": {
+          "legend": {
+            "align": "end",
+            "display": true,
+            "labels": {
+              "color": "#0F172A",
+              "filter": "[Function:filter]",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12
+              }
+            },
+            "position": "top"
+          },
+          "tooltip": {
+            "animation": false,
+            "backgroundColor": "rgba(15, 23, 42, 0.92)",
+            "bodyColor": "#F8FAFC",
+            "bodyFont": {
+              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+              "size": 12,
+              "weight": "400"
+            },
+            "borderColor": "#CBD5E1",
+            "borderWidth": 0,
+            "boxPadding": 6,
+            "callbacks": {
+              "label": "[Function:label]",
+              "title": "[Function:title]"
+            },
+            "cornerRadius": 6,
+            "enabled": true,
+            "padding": {
+              "bottom": 10,
+              "left": 14,
+              "right": 14,
+              "top": 10
+            },
+            "titleColor": "#F8FAFC",
+            "titleFont": {
+              "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "usePointStyle": true
+          }
+        },
+        "responsive": true,
+        "scales": {
+          "x": {
+            "border": {
+              "color": "#475569",
+              "width": 1
+            },
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)"
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "padding": 6
+            }
+          },
+          "y": {
+            "beginAtZero": false,
+            "border": {
+              "display": false
+            },
+            "grid": {
+              "color": "rgba(15, 23, 42, 0.06)"
+            },
+            "ticks": {
+              "color": "#334155",
+              "font": {
+                "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
+                "size": 11
+              },
+              "padding": 8
+            },
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Valeur (€)"
+            }
+          }
+        }
+      },
+      "type": "line"
+    },
+    "kind": "chart-config"
+  }
+}

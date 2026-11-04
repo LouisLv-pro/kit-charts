@@ -1,0 +1,4 @@
+schema_version: "1.1"
+name: parts-de-marche-trop-de-tranches
+expected_outcome: |
+  Le skill n'émet pas de camembert à 11 tranches. Il choisit bar-chart-horizontal trié (ou regroupe les petites parts dans Autres pour revenir à 7 tranches au plus) et explique la règle PIE_DONUT_MAX_SLICES ou la précision supérieure des barres.
