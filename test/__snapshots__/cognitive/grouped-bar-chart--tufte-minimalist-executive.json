@@ -82,7 +82,7 @@
           "emphasis": {
             "anomaly": "#B91C1C",
             "benchmark": "#111111",
-            "context": "#D4D4D4",
+            "context": "#A3A3A3",
             "focal": "#1D4ED8",
             "forecastAlpha": 0.45
           },
@@ -194,7 +194,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -272,7 +271,8 @@
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "tufte-minimalist-executive"
       },
       "plugins": [],
       "type": "bar"

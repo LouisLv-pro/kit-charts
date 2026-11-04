@@ -11,7 +11,17 @@
         "datasets": [
           {
             "backgroundColor": "#3E4A89",
+            "backgroundColors": {
+              "down": "#440154",
+              "unchanged": "#8E9AAF",
+              "up": "rgba(34, 168, 132, 0.18)"
+            },
             "borderColor": {
+              "down": "#440154",
+              "unchanged": "#8E9AAF",
+              "up": "#22A884"
+            },
+            "borderColors": {
               "down": "#440154",
               "unchanged": "#8E9AAF",
               "up": "#22A884"
@@ -138,21 +148,24 @@
         "mode": "index",
         "plugins": {
           "legend": {
-            "align": "end",
-            "display": false,
+            "align": "center",
+            "display": true,
             "labels": {
-              "boxHeight": 8,
-              "boxWidth": 8,
+              "boxHeight": 12,
+              "boxWidth": 12,
               "color": "#0F172A",
               "font": {
                 "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
+                "size": 11,
                 "weight": "500"
               },
-              "padding": 14,
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 12,
+              "pointStyle": "rect",
               "usePointStyle": true
             },
-            "position": "top"
+            "onClick": "[Function:onClick]",
+            "position": "bottom"
           },
           "tooltip": {
             "backgroundColor": "rgba(15, 23, 42, 0.92)",
@@ -215,7 +228,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "viridis-perceptual"
       },
       "type": "candlestick"
     },

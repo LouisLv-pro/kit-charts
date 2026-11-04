@@ -35,7 +35,10 @@
           {
             "backgroundColor": "rgba(213, 94, 0, 0.2)",
             "borderColor": "#D55E00",
-            "borderDash": [],
+            "borderDash": [
+              6,
+              4
+            ],
             "borderWidth": 2,
             "data": [
               70,
@@ -53,7 +56,7 @@
             "pointHitRadius": 10,
             "pointHoverRadius": 7,
             "pointRadius": 4,
-            "pointStyle": "circle"
+            "pointStyle": "rectRot"
           }
         ],
         "labels": [
@@ -66,6 +69,71 @@
         ]
       },
       "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#94A3B8",
+          "bg": "#FFFFFF",
+          "border": "#E2E8F0",
+          "borderStrong": "#CBD5E1",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#D55E00",
+            "pos": "#0072B2"
+          },
+          "emphasis": {
+            "anomaly": "#D55E00",
+            "benchmark": "#475569",
+            "context": "#94A3B8",
+            "focal": "#0072B2",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@400;500;600;700&family=Source+Code+Pro:wght@400;500;600&display=swap",
+          "gridColor": "rgba(30, 41, 59, 0.06)",
+          "id": "05-okabe-ito-cud",
+          "isDark": false,
+          "label": "Okabe-Ito CUD",
+          "name": "okabe-ito-cud",
+          "palette": [
+            "#0072B2",
+            "#D55E00",
+            "#009E73",
+            "#E69F00",
+            "#56B4E9",
+            "#F0E442",
+            "#CC79A7",
+            "#595959"
+          ],
+          "semantic": {
+            "info": "#0072B2",
+            "negative": "#D55E00",
+            "neutral": "#999999",
+            "positive": "#009E73",
+            "warning": "#E69F00"
+          },
+          "sequential": [
+            "#E6F2F8",
+            "#B3DAEE",
+            "#56B4E9",
+            "#0072B2",
+            "#004C77"
+          ],
+          "status": {
+            "danger": "#D55E00",
+            "info": "#56B4E9",
+            "neutral": "#999999",
+            "success": "#009E73",
+            "warning": "#E69F00"
+          },
+          "surface": "#F8FAFC",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#64748B",
+          "textPrimary": "#1E293B",
+          "textSecondary": "#334155",
+          "tooltipBg": "rgba(30, 41, 59, 0.92)",
+          "tooltipText": "#FFFFFF",
+          "zeroLine": "#475569"
+        },
         "animation": false,
         "barPercentage": 0.9,
         "categoryPercentage": 0.8,
@@ -103,45 +171,23 @@
         "maintainAspectRatio": false,
         "plugins": {
           "datalabels": {
-            "align": "[Function:align]",
-            "anchor": "[Function:anchor]",
-            "backgroundColor": "[Function:backgroundColor]",
-            "borderColor": "[Function:borderColor]",
-            "borderRadius": 4,
-            "borderWidth": 1,
-            "color": "[Function:color]",
-            "display": "[Function:display]",
-            "font": {
-              "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
-              "size": 10,
-              "weight": "700"
-            },
-            "formatter": "[Function:formatter]",
-            "offset": 6,
-            "padding": {
-              "bottom": 2,
-              "left": 4,
-              "right": 4,
-              "top": 2
-            }
+            "display": "[Function:display]"
           },
           "legend": {
-            "align": "end",
+            "align": "[Function:align]",
             "display": true,
             "labels": {
-              "boxHeight": 12,
-              "boxWidth": 12,
+              "boxHeight": 10,
+              "boxWidth": 10,
               "color": "#1E293B",
               "font": {
                 "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
-                "weight": "500"
+                "size": 10
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
-            "position": "top"
+            "position": "[Function:position]"
           },
           "tooltip": {
             "animation": {
@@ -189,18 +235,24 @@
               "color": "rgba(30, 41, 59, 0.06)",
               "lineWidth": 1
             },
+            "max": 100,
+            "min": 0,
             "pointLabels": {
               "color": "#1E293B",
-              "font": {
-                "family": "'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 11,
-                "weight": "500"
-              },
-              "padding": 16
+              "font": "[Function:font]",
+              "padding": "[Function:padding]"
             },
             "suggestedMin": 0,
             "ticks": {
-              "display": false
+              "backdropColor": "transparent",
+              "color": "#64748B",
+              "display": false,
+              "font": {
+                "family": "'Source Code Pro', Menlo, Monaco, Consolas, monospace",
+                "size": 9
+              },
+              "showLabelBackdrop": false,
+              "stepSize": 25
             }
           },
           "x": {
@@ -209,8 +261,16 @@
           "y": {
             "display": false
           }
-        }
+        },
+        "showDataLabels": true,
+        "themeName": "okabe-ito-cud"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kcRadarBadges"
+        }
+      ],
       "type": "radar"
     },
     "kind": "chart-config"

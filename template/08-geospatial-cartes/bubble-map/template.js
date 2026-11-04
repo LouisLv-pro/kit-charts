@@ -91,7 +91,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const isTufte = tokens.name === 'tufte-minimalist-executive';
 
   const rawData = customData || DEFAULT_DATA;
-  const bubbles = (rawData && rawData.bubbles) ? rawData.bubbles : DEFAULT_GLOBAL_BUBBLES;
+  const showDataLabels = !(options && options.showDataLabels === false) && !(rawData && rawData.showDataLabels === false);
+  const bubblesRaw = (rawData && rawData.bubbles) ? rawData.bubbles : DEFAULT_GLOBAL_BUBBLES;
+  const valOf = (b) => (b.val !== undefined ? b.val : (b.value !== undefined ? b.value : 0));
+  // Tri décroissant : les grandes bulles sont dessinées d'abord, les petites restent visibles au-dessus.
+  const bubbles = bubblesRaw.slice().sort((a, b) => valOf(b) - valOf(a));
   const unit = rawData.unit || 'Mds $';
   const projectionType = rawData.projection || 'equalEarth';
 
@@ -114,7 +118,102 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     features = EUROPE_DATA.features;
   }
 
+  features = features.filter(f => !(f.properties && f.properties.name === 'Antarctica'));
+
   const defaultBubbleColor = getColor(tokens, 0);
+
+  const labelsPlugin = {
+    id: 'bubbleCityLabels',
+    afterDatasetsDraw(chart) {
+      if (!showDataLabels) return;
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data) return;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.font = `600 11px ${tokens.fontFamily || 'sans-serif'}`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3;
+      const compact = chart.width < 460;
+      ctx.font = `600 ${compact ? 10.5 : 11}px ${tokens.fontFamily || 'sans-serif'}`;
+      const H = compact ? 13 : 14;
+      const items = [];
+      meta.data.forEach((el, i) => {
+        const b = bubbles[i];
+        if (!b || !el || !Number.isFinite(el.x) || !Number.isFinite(el.y)) return;
+        items.push({ b, x: el.x, y: el.y, r: (el.options && el.options.radius) || 8 });
+      });
+      const area = (p, q) => {
+        const w = Math.min(p.x0 + p.w, q.x0 + q.w) - Math.max(p.x0, q.x0);
+        const h = Math.min(p.y0 + p.h, q.y0 + q.h) - Math.max(p.y0, q.y0);
+        return w > 0 && h > 0 ? w * h : 0;
+      };
+      const hitsCircle = (rc, c) => {
+        const cx = Math.max(rc.x0, Math.min(c.x, rc.x0 + rc.w)), cy = Math.max(rc.y0, Math.min(c.y, rc.y0 + rc.h));
+        return Math.hypot(c.x - cx, c.y - cy) < c.r;
+      };
+      const placed = [];
+      // Légende de taille : plus petite et plus grande bulle, avec l'unité (bandeau en bas à gauche)
+      if (items.length > 1) {
+        const byR = items.slice().sort((p, q) => p.r - q.r);
+        const sm = byR[0], lg = byR[byR.length - 1];
+        const fv = (it) => Number(valOf(it.b)).toLocaleString('fr-FR');
+        const fs = compact ? 10.5 : 11;
+        ctx.save();
+        ctx.font = `500 ${fs}px ${tokens.fontFamily || 'sans-serif'}`;
+        const t1 = fv(sm), t2 = fv(lg);
+        const w1 = ctx.measureText(t1).width, w2 = ctx.measureText(t2).width, wu = ctx.measureText(unit).width;
+        const cy = chart.height - lg.r - 4;
+        let x = 8;
+        ctx.fillStyle = tokens.textSecondary || tokens.textPrimary;
+        ctx.strokeStyle = tokens.isDark ? '#ECEFF4' : '#0F172A';
+        ctx.lineWidth = 1;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.beginPath(); ctx.arc(x + sm.r, cy, sm.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillText(t1, x + sm.r * 2 + 4, cy);
+        x += sm.r * 2 + 4 + w1 + 12;
+        ctx.beginPath(); ctx.arc(x + lg.r, cy, lg.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillText(t2, x + lg.r * 2 + 4, cy);
+        x += lg.r * 2 + 4 + w2 + 8;
+        ctx.fillText(unit, x, cy);
+        placed.push({ x0: 4, y0: cy - lg.r - 2, w: x + wu - 4, h: lg.r * 2 + 4 });
+        ctx.restore();
+        ctx.lineWidth = 3;
+      }
+      // Les plus grandes bulles sont étiquetées en premier ; chaque étiquette choisit la position la moins gênante
+      items.forEach((it) => {
+        const text = it.b.city || it.b.name || '';
+        const w = ctx.measureText(text).width + 4;
+        const g = 2;
+        const cands = [
+          { x0: it.x + it.r + g, y0: it.y - H / 2 },
+          { x0: it.x - it.r - g - w, y0: it.y - H / 2 },
+          { x0: it.x - w / 2, y0: it.y - it.r - g - H },
+          { x0: it.x - w / 2, y0: it.y + it.r + g }
+        ];
+        let best = null;
+        cands.forEach((c, ci) => {
+          // Jamais rogné : l'étiquette reste dans le canvas
+          const rc = { x0: Math.max(2, Math.min(c.x0, chart.width - 2 - w)), y0: Math.max(2, Math.min(c.y0, chart.height - 2 - H)), w, h: H };
+          let cost = ci * 0.4 + (Math.abs(rc.x0 - c.x0) + Math.abs(rc.y0 - c.y0)) * 0.6;
+          placed.forEach((p) => { cost += area(rc, p) * 0.6; });
+          items.forEach((o) => { if (o !== it && hitsCircle(rc, o)) cost += 14; });
+          if (hitsCircle(rc, it)) cost += 30;
+          if (!best || cost < best.cost) best = { cost, rc };
+        });
+        placed.push(best.rc);
+        ctx.textAlign = 'left';
+        // Halo de la couleur de surface pour garantir le contraste sur tout fond
+        ctx.strokeStyle = tokens.isDark ? '#2E3440' : '#FFFFFF';
+        ctx.fillStyle = tokens.textPrimary || (tokens.isDark ? '#ECEFF4' : '#0F172A');
+        ctx.strokeText(text, best.rc.x0 + 2, best.rc.y0 + H / 2);
+        ctx.fillText(text, best.rc.x0 + 2, best.rc.y0 + H / 2);
+      });
+      ctx.restore();
+    }
+  };
 
   const hasBubbleMap = typeof Chart !== 'undefined' && (
     (Chart.registry && Chart.registry.controllers && Chart.registry.controllers.get('bubbleMap')) ||
@@ -133,14 +232,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           label: rawData.title || 'Investissements',
           outline: features,
           showOutline: true,
-          outlineBackgroundColor: tokens.isDark ? '#1E293B' : '#F8FAFC',
-          outlineBorderColor: tokens.isDark ? '#475569' : '#CBD5E1',
+          outlineBackgroundColor: tokens.isDark ? '#434C5E' : '#E2E8F0',
+          outlineBorderColor: tokens.isDark ? '#2E3440' : '#FFFFFF',
           outlineBorderWidth: 0.5,
           backgroundColor(context) {
             if (context.dataIndex == null) return defaultBubbleColor;
             const b = context.dataset.data[context.dataIndex];
             if (!b) return defaultBubbleColor;
-            if (b.role === 'focal') return tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB');
+            if (b.role === 'focal') return hexToRgba(tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB'), 0.8);
             if (b.role === 'anomaly') return (tokens.status && tokens.status.danger) || '#DC2626';
             return hexToRgba(defaultBubbleColor, tokens.isDark ? 0.8 : 0.65);
           },
@@ -157,6 +256,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }))
         }]
       },
+      plugins: [labelsPlugin, {
+        id: 'bubbleSizeByWidth',
+        beforeLayout(chart) {
+          // Rayon maximal proportionnel à la largeur : 26 px en grand, ~11 px sur une carte étroite
+          const sc = chart.options.scales && chart.options.scales.size;
+          if (sc) sc.range = [0, Math.max(10, Math.min(26, Math.round(chart.width * 0.042)))];
+        }
+      }],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -194,7 +301,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           },
           size: {
             axis: 'x',
-            range: [5, 26]
+            mode: 'area',
+            range: [0, 26],
+            // Légende de taille dessinée par le plugin d'étiquettes (valeurs min/max + unité)
+            display: false,
+            legend: { display: false }
           }
         }
       }

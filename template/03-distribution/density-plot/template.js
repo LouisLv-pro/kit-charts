@@ -55,7 +55,7 @@
  * @param {number} [bandwidthFactor=1.0] - Facteur d'ajustement du lissage
  * @returns {{ labels: string[], data: number[], points: {x: number, y: number}[], bandwidth: number }}
  */
-function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0) {
+function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0, domain = null) {
   if (!Array.isArray(values) || values.length === 0) {
     return { labels: [], data: [], points: [], bandwidth: 0 };
   }
@@ -76,8 +76,14 @@ function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0) {
   const std = Math.sqrt(variance) || 1.0;
 
   // Calcul IQR
-  const q1 = sorted[Math.floor(n * 0.25)];
-  const q3 = sorted[Math.floor(n * 0.75)];
+  const quant = (p) => {
+    const idx = (n - 1) * p;
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  };
+  const q1 = quant(0.25);
+  const q3 = quant(0.75);
   const iqr = q3 - q1;
 
   // Règle de Silverman: h = 0.9 * min(std, IQR / 1.34) * n^(-1/5)
@@ -86,8 +92,8 @@ function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0) {
   if (h <= 0 || !Number.isFinite(h)) h = 1.0;
 
   // Plage d'évaluation étendue de [min - 3h, max + 3h]
-  const xStart = min - 2.5 * h;
-  const xEnd = max + 2.5 * h;
+  const xStart = domain && Number.isFinite(domain.min) ? domain.min : min - 2.5 * h;
+  const xEnd = domain && Number.isFinite(domain.max) ? domain.max : max + 2.5 * h;
   const step = (xEnd - xStart) / (numPoints - 1);
 
   const SQRT_2PI = Math.sqrt(2 * Math.PI);
@@ -117,20 +123,30 @@ function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0) {
  * Données par défaut représentatives (Score d'évaluation de performance continue, N=200)
  */
 const DEFAULT_DATA = (() => {
-  // Génération synthétique bimodale représentative
-  const points = [];
-  for (let i = 0; i < 50; i++) {
-    const x = i * 2;
-    // Bimodal distribution (mix of 2 Gaussians)
-    const g1 = (0.6 / (12 * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - 40) / 12, 2));
-    const g2 = (0.4 / (10 * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - 70) / 10, 2));
-    points.push({ x: x.toString(), y: g1 + g2 });
-  }
+  // Échantillon déterministe bimodal (N=200 : 120 obs. ~ N(35,9) et 80 obs. ~ N(75,8), PRNG seedé + Box-Muller)
+  let seed = 20240607;
+  const rnd = () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const gauss = (mean, std) => {
+    const u1 = Math.max(1e-9, rnd());
+    const u2 = rnd();
+    return mean + std * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  };
+  const sample = [];
+  for (let i = 0; i < 120; i++) sample.push(gauss(35, 9));
+  for (let i = 0; i < 80; i++) sample.push(gauss(75, 8));
+  // Domaine d'évaluation commun, couvrant les queues du KDE jusqu'à une densité quasi nulle
+  const kde = computeGaussianKDE(sample, 56, 1.0, { min: 0, max: 110 });
   return {
-    labels: points.map(p => p.x),
+    labels: kde.labels.map(l => String(Math.round(parseFloat(l)))),
+    xLabel: "Score d'évaluation de performance",
     datasets: [{
       label: 'Densité de Probabilité (KDE)',
-      data: points.map(p => p.y)
+      data: kde.data.map(v => Math.round(v * 1e6) / 1e6)
     }]
   };
 })();
@@ -207,10 +223,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     }];
   } else {
     chartLabels = rawData.labels ? [...rawData.labels] : [];
+    // Domaine commun à toutes les séries brutes pour aligner les abscisses
+    const allRaw = (rawData.datasets || []).reduce((acc, d) => acc.concat(Array.isArray(d.rawValues) ? d.rawValues.filter(Number.isFinite) : []), []);
+    const commonDomain = allRaw.length ? (() => {
+      const ref = computeGaussianKDE(allRaw, 60, 1.0);
+      return { min: ref.points[0].x, max: ref.points[ref.points.length - 1].x };
+    })() : null;
     chartDatasets = (rawData.datasets || []).map((ds, idx) => {
       const style = resolveDensityDatasetStyle(ds, idx);
       if (Array.isArray(ds.rawValues) && ds.rawValues.length > 0) {
-        const kde = computeGaussianKDE(ds.rawValues);
+        const kde = computeGaussianKDE(ds.rawValues, 60, 1.0, commonDomain);
         chartLabels = kde.labels;
         return {
           label: ds.label || `Densité Série ${idx + 1}`,
@@ -220,7 +242,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           borderWidth: style.borderWidth,
           borderDash: style.borderDash,
           fill: ds.fill !== undefined ? ds.fill : 'origin',
-          tension: 0.35,
+          tension: 0,
           pointRadius: 0,
           pointHoverRadius: 5
         };
@@ -234,7 +256,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         borderWidth: style.borderWidth,
         borderDash: style.borderDash,
         fill: ds.fill !== undefined ? ds.fill : 'origin',
-        tension: 0.35,
+        tension: 0,
         pointRadius: 0,
         pointHoverRadius: 5
       };
@@ -286,6 +308,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       },
       scales: {
         x: {
+          title: {
+            display: !!rawData.xLabel,
+            text: rawData.xLabel || '',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           grid: {
             display: false,
             drawBorder: false
@@ -302,6 +330,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         },
         y: {
+          title: {
+            display: true,
+            text: 'Densité',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           beginAtZero: true,
           grid: {
             color: tokens.gridColor,

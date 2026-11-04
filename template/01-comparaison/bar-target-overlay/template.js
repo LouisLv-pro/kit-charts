@@ -34,6 +34,29 @@
 
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
+
+  function relLum(hex) {
+    const h = String(hex || '').replace('#', '');
+    if (h.length < 6) return 0;
+    const c = [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function contrastRatio(a, b) {
+    const x = relLum(a), y = relLum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  // Ajuste une teinte de texte (assombrie en clair, éclaircie en sombre) jusqu'à 4.5:1 sur le fond.
+  function ensureTextContrast(hex, bg, isDarkTheme) {
+    if (typeof hex !== 'string' || hex.charAt(0) !== '#' || hex.length < 7 || typeof bg !== 'string' || bg.charAt(0) !== '#') return hex;
+    let col = hex;
+    for (let i = 0; i < 12 && contrastRatio(col, bg) < 4.5; i++) {
+      const ch = [1, 3, 5].map(k => parseInt(col.substr(k, 2), 16));
+      const next = ch.map(v => Math.round(isDarkTheme ? v + (255 - v) * 0.15 : v * 0.85));
+      col = '#' + next.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return col;
+  }
+
   function computeVarianceDeltas(actuals, targets) {
     return actuals.map((act, idx) => {
       const tgt = Number(targets[idx]) || 0;
@@ -96,11 +119,17 @@
     const targets = (rawData.datasets && rawData.datasets[1] && rawData.datasets[1].data);
 
     const analysis = computeVarianceDeltas(actuals, targets);
+    // Carte étroite (< 420 px) : polices réduites, étiquettes compactes, légende courte.
+    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+    const narrow = cw > 0 && cw < 420;
 
     const successColor = tokens.semantic?.positive || tokens.status?.success || '#2E7D32';
     const warningColor = tokens.semantic?.warning || tokens.status?.warning || '#EF6C00';
     const dangerColor = tokens.semantic?.negative || tokens.status?.danger || '#C62828';
     const targetMarkerColor = tokens.emphasis?.benchmark || (isDark ? '#ECEFF4' : '#0F172A');
+    const cardBg = tokens.bg || (isDark ? '#2E3440' : '#FFFFFF');
+    const textFor = (c) => ensureTextContrast(c, cardBg, isDark);
+    const haloColor = isDark ? '#2E3440' : '#FFFFFF';
 
     const targetOverlayPlugin = {
       id: 'kitChartsTargetOverlayPainter',
@@ -119,22 +148,25 @@
           const xTarget = x.getPixelForValue(item.target);
 
           // Tracé du trait vertical de cible (Target Tick)
-          ctx.beginPath();
-          ctx.strokeStyle = targetMarkerColor;
-          ctx.lineWidth = 3;
-          ctx.moveTo(xTarget, yCenter - tickHeight / 2);
-          ctx.lineTo(xTarget, yCenter + tickHeight / 2);
-          ctx.stroke();
+          // Liseré de séparation puis trait : lisible même sur une barre de couleur
+          [[haloColor, 6], [targetMarkerColor, 3]].forEach(([col, w]) => {
+            ctx.beginPath();
+            ctx.strokeStyle = col;
+            ctx.lineWidth = w;
+            ctx.moveTo(xTarget, yCenter - tickHeight / 2);
+            ctx.lineTo(xTarget, yCenter + tickHeight / 2);
+            ctx.stroke();
+          });
 
           // Libellé de variance Delta% et valeur affichés si showDataLabels est actif
           if (showLabels) {
             const xActual = x.getPixelForValue(item.actual);
-            ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
-            ctx.fillStyle = item.status === 'success' ? successColor : (item.status === 'warning' ? warningColor : dangerColor);
+            ctx.font = `600 ${narrow ? 10 : 11}px ${tokens.fontMono || 'monospace'}`;
+            ctx.fillStyle = textFor(item.status === 'success' ? successColor : (item.status === 'warning' ? warningColor : dangerColor));
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
             const sign = item.deltaPct >= 0 ? '+' : '';
-            const labelStr = `${item.actual.toLocaleString('fr-FR')} k€ (${sign}${item.deltaPct}%)`;
+            const labelStr = `${item.actual.toLocaleString('fr-FR')}${narrow ? '' : ' k€'} (${sign}${item.deltaPct.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %)`;
             const xPos = Math.max(xActual, xTarget) + 8;
             ctx.fillText(labelStr, xPos, yCenter);
           }
@@ -179,7 +211,7 @@
         showDataLabels: showDataLabels,
         layout: {
           padding: {
-            right: 32
+            right: narrow ? 66 : 120 // place pour l'étiquette valeur + écart de la barre la plus longue
           }
         },
         animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
@@ -192,7 +224,26 @@
           datalabels: getDataLabelOptions(tokens, {
             display: showDataLabels
           }),
-          legend: { display: false },
+          legend: {
+            display: true,
+            position: 'top',
+            align: narrow ? 'start' : 'end',
+            onClick: null,
+            labels: {
+              usePointStyle: true,
+              boxWidth: narrow ? 8 : 12,
+              boxHeight: narrow ? 8 : 12,
+              padding: narrow ? 8 : 10,
+              color: tokens.textPrimary,
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 11, weight: '500' },
+              generateLabels: () => ([
+                { text: 'Objectif', fillStyle: targetMarkerColor, strokeStyle: targetMarkerColor, lineWidth: 3, pointStyle: 'line', rotation: 90, fontColor: tokens.textPrimary, hidden: false },
+                { text: narrow ? 'Atteint' : 'Objectif atteint', fillStyle: successColor, strokeStyle: successColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
+                { text: narrow ? 'Écart ≤ 10 %' : 'Écart jusqu\'à -10 %', fillStyle: warningColor, strokeStyle: warningColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
+                { text: narrow ? 'Écart > 10 %' : 'Écart pire que -10 %', fillStyle: dangerColor, strokeStyle: dangerColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false }
+              ])
+            }
+          },
           tooltip: {
             ...defaultOpts.plugins.tooltip,
             callbacks: {
@@ -216,8 +267,9 @@
             beginAtZero: true,
             grace: '25%',
             grid: { color: tokens.gridColor },
+            ticks: { ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks), maxTicksLimit: narrow ? 5 : 8, font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
             title: {
-              display: true,
+              display: !narrow,
               text: 'Montant (k€)',
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
@@ -225,6 +277,7 @@
           },
           y: {
             ...defaultOpts.scales.y,
+            ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
             grid: { display: false }
           }
         }

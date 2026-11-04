@@ -207,17 +207,22 @@
         "maintainAspectRatio": false,
         "plugins": {
           "legend": {
-            "align": "end",
+            "align": "center",
             "display": true,
             "labels": {
+              "boxHeight": 12,
+              "boxWidth": 12,
               "color": "#000000",
-              "filter": "[Function:filter]",
               "font": {
                 "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12
-              }
+                "size": 11
+              },
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 12,
+              "usePointStyle": true
             },
-            "position": "top"
+            "onClick": "[Function:onClick]",
+            "position": "bottom"
           },
           "tooltip": {
             "animation": false,
@@ -275,14 +280,17 @@
             "grid": {
               "color": "rgba(0, 0, 0, 0.12)"
             },
-            "max": 182,
-            "min": 144,
+            "max": 190,
+            "min": 140,
             "position": "left",
+            "stack": "ohlcv",
+            "stackWeight": 7,
             "ticks": {
               "color": "#18181B",
               "font": {
                 "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace"
-              }
+              },
+              "stepSize": 10
             },
             "title": {
               "color": "#18181B",
@@ -300,31 +308,40 @@
           "yVolume": {
             "beginAtZero": true,
             "grid": {
-              "display": false
+              "color": "rgba(0, 0, 0, 0.12)"
             },
-            "max": 108500,
-            "position": "right",
+            "max": 40000,
+            "min": 0,
+            "offset": false,
+            "position": "left",
+            "stack": "ohlcv",
+            "stackWeight": 3,
             "ticks": {
+              "autoSkip": false,
               "callback": "[Function:callback]",
-              "color": "#3F3F46",
+              "color": "#18181B",
               "font": {
                 "family": "'Fira Code', 'JetBrains Mono', Menlo, monospace",
-                "size": 10
-              }
+                "size": 11
+              },
+              "maxTicksLimit": 6,
+              "stepSize": 10000
             },
             "title": {
-              "color": "#3F3F46",
+              "color": "#18181B",
               "display": true,
               "font": {
                 "family": "'Atkinson Hyperlegible', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 11
+                "size": 12,
+                "weight": "500"
               },
               "text": "Volume"
             },
             "type": "linear",
             "weight": 1
           }
-        }
+        },
+        "themeName": "atkinson-hyperlegible"
       },
       "plugins": [
         {

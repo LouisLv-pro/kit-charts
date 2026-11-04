@@ -11,20 +11,20 @@
         "datasets": [
           {
             "backgroundColor": [
-              "rgba(76, 86, 106, 0.4)",
-              "rgba(76, 86, 106, 0.4)",
-              "rgba(76, 86, 106, 0.4)",
-              "rgba(76, 86, 106, 0.4)",
-              "rgba(76, 86, 106, 0.4)",
+              "rgba(123, 136, 161, 0.4)",
+              "rgba(123, 136, 161, 0.4)",
+              "rgba(123, 136, 161, 0.4)",
+              "rgba(123, 136, 161, 0.4)",
+              "rgba(123, 136, 161, 0.4)",
               "#88C0D0",
               "#BF616A"
             ],
             "borderColor": [
-              "#4C566A",
-              "#4C566A",
-              "#4C566A",
-              "#4C566A",
-              "#4C566A",
+              "#7B88A1",
+              "#7B88A1",
+              "#7B88A1",
+              "#7B88A1",
+              "#7B88A1",
               "#88C0D0",
               "#BF616A"
             ],
@@ -39,56 +39,56 @@
             ],
             "data": [
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "rgba(123, 136, 161, 0.4)",
                 "id": "node-0",
                 "label": "1. Ingestion",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 1,
                 "y": 0
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "rgba(123, 136, 161, 0.4)",
                 "id": "node-1",
                 "label": "2. Validation",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 2,
                 "y": 0
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "rgba(123, 136, 161, 0.4)",
                 "id": "node-2",
                 "label": "3. Dédoublonnage",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 3,
                 "y": 0
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "rgba(123, 136, 161, 0.4)",
                 "id": "node-3",
                 "label": "4. Enrichissement",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 4,
                 "y": 0
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "rgba(123, 136, 161, 0.4)",
                 "id": "node-4",
                 "label": "5. Feature Store",
-                "r": 6,
+                "r": 8,
                 "role": "context",
                 "x": 5,
                 "y": 0
@@ -218,13 +218,13 @@
             "isDark": true,
             "palette": [
               "#88C0D0",
+              "#EBCB8B",
+              "#B48EAD",
+              "#A3BE8C",
+              "#D08770",
               "#81A1C1",
               "#5E81AC",
-              "#A3BE8C",
-              "#EBCB8B",
-              "#D08770",
-              "#BF616A",
-              "#B48EAD"
+              "#BF616A"
             ],
             "tokens": {
               "axisColor": "#4C566A",
@@ -239,7 +239,7 @@
               "emphasis": {
                 "anomaly": "#BF616A",
                 "benchmark": "#ECEFF4",
-                "context": "#4C566A",
+                "context": "#7B88A1",
                 "focal": "#88C0D0",
                 "forecastAlpha": 0.5
               },
@@ -253,13 +253,13 @@
               "name": "nord-cognitive-dark",
               "palette": [
                 "#88C0D0",
+                "#EBCB8B",
+                "#B48EAD",
+                "#A3BE8C",
+                "#D08770",
                 "#81A1C1",
                 "#5E81AC",
-                "#A3BE8C",
-                "#EBCB8B",
-                "#D08770",
-                "#BF616A",
-                "#B48EAD"
+                "#BF616A"
               ],
               "semantic": {
                 "info": "#88C0D0",
@@ -361,9 +361,8 @@
               "display": false
             },
             "grid": {
-              "color": "rgba(236, 239, 244, 0.06)",
-              "drawBorder": false,
-              "lineWidth": 1
+              "display": false,
+              "drawBorder": false
             },
             "max": 6,
             "min": -0.5,
@@ -372,7 +371,8 @@
               "display": false
             }
           }
-        }
+        },
+        "themeName": "nord-cognitive-dark"
       },
       "plugins": [
         {

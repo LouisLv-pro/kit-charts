@@ -10,9 +10,9 @@
       "data": {
         "datasets": [
           {
-            "backgroundColor": "#4E79A7",
+            "backgroundColor": "#59A14F",
             "barPercentage": 0.9,
-            "borderColor": "#4E79A7",
+            "borderColor": "#59A14F",
             "borderRadius": 0,
             "borderSkipped": false,
             "borderWidth": 0,
@@ -23,12 +23,18 @@
               82,
               90
             ],
-            "label": "Succès"
+            "label": "Succès",
+            "rawValues": [
+              75,
+              60,
+              82,
+              90
+            ]
           },
           {
-            "backgroundColor": "#F28E2B",
+            "backgroundColor": "#BAB0AC",
             "barPercentage": 0.9,
-            "borderColor": "#F28E2B",
+            "borderColor": "#BAB0AC",
             "borderRadius": 0,
             "borderSkipped": false,
             "borderWidth": 0,
@@ -39,7 +45,13 @@
               10,
               5
             ],
-            "label": "En cours"
+            "label": "En cours",
+            "rawValues": [
+              15,
+              25,
+              10,
+              5
+            ]
           },
           {
             "backgroundColor": "#E15759",
@@ -55,7 +67,13 @@
               8,
               5
             ],
-            "label": "Échec"
+            "label": "Échec",
+            "rawValues": [
+              10,
+              15,
+              8,
+              5
+            ]
           }
         ],
         "labels": [
@@ -113,6 +131,7 @@
               "weight": "600"
             },
             "formatter": "[Function:formatter]",
+            "isPercent": true,
             "padding": 4,
             "thresholdRatio": 0.05
           },
@@ -129,7 +148,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top",
@@ -214,8 +232,15 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "tableau-stone-categorical"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsSmallSegmentLabels"
+        }
+      ],
       "type": "bar"
     },
     "kind": "chart-config"

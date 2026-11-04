@@ -22,7 +22,7 @@
             "label": "Organique"
           },
           {
-            "backgroundColor": "#81A1C1",
+            "backgroundColor": "#EBCB8B",
             "barThickness": 16,
             "borderRadius": 0,
             "data": [
@@ -31,7 +31,7 @@
             "label": "Direct"
           },
           {
-            "backgroundColor": "#5E81AC",
+            "backgroundColor": "#B48EAD",
             "barThickness": 16,
             "borderRadius": 0,
             "data": [
@@ -57,10 +57,7 @@
         ]
       },
       "options": {
-        "animation": {
-          "duration": 400,
-          "easing": "easeOutQuart"
-        },
+        "animation": false,
         "indexAxis": "y",
         "maintainAspectRatio": false,
         "plugins": {

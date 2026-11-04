@@ -59,15 +59,15 @@
             ],
             "borderWidth": 1.5,
             "data": [
-              100,
-              101,
-              101,
-              101.75,
-              102.6,
-              103,
-              103.71,
-              104.5,
-              105,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
               105.7,
               107.2,
               108.4,
@@ -90,25 +90,26 @@
               132.3,
               133.9
             ],
-            "label": "Moyenne Mobile (SMA 10)",
+            "label": "Moyenne mobile SMA 10",
             "order": 2,
             "pointRadius": 0,
+            "pointStyle": "line",
             "tension": 0.3
           },
           {
-            "backgroundColor": "rgba(212, 212, 212, 0.1)",
-            "borderColor": "rgba(212, 212, 212, 0.6)",
+            "backgroundColor": "rgba(163, 163, 163, 0.18)",
+            "borderColor": "rgba(163, 163, 163, 0.6)",
             "borderWidth": 1,
             "data": [
-              100,
-              103,
-              102.63,
-              104.71,
-              106.91,
-              107.32,
-              109.02,
-              110.98,
-              111.73,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
               113.34,
               115.63,
               116.94,
@@ -132,24 +133,25 @@
               143.04
             ],
             "fill": "+1",
-            "label": "Bollinger Supérieure (+2σ)",
+            "label": "Bollinger ±2σ",
             "order": 3,
             "pointRadius": 0,
+            "pointStyle": "rect",
             "tension": 0.3
           },
           {
-            "borderColor": "rgba(212, 212, 212, 0.6)",
+            "borderColor": "rgba(163, 163, 163, 0.6)",
             "borderWidth": 1,
             "data": [
-              100,
-              99,
-              99.37,
-              98.79,
-              98.29,
-              98.68,
-              98.4,
-              98.02,
-              98.27,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
+              null,
               98.06,
               98.77,
               99.86,
@@ -250,17 +252,21 @@
         "maintainAspectRatio": false,
         "plugins": {
           "legend": {
-            "align": "end",
+            "align": "center",
             "display": true,
             "labels": {
+              "boxHeight": 8,
+              "boxWidth": 22,
               "color": "#111111",
               "filter": "[Function:filter]",
               "font": {
                 "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
-                "size": 12
-              }
+                "size": 11
+              },
+              "padding": 10,
+              "usePointStyle": true
             },
-            "position": "top"
+            "position": "bottom"
           },
           "tooltip": {
             "animation": false,
@@ -299,8 +305,7 @@
         "scales": {
           "x": {
             "border": {
-              "color": "#333333",
-              "width": 1
+              "color": "#E8E5DF"
             },
             "grid": {
               "color": "rgba(0, 0, 0, 0.04)"
@@ -341,7 +346,8 @@
               "text": "Valeur (€)"
             }
           }
-        }
+        },
+        "themeName": "tufte-minimalist-executive"
       },
       "type": "line"
     },

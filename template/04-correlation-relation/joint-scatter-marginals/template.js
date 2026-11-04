@@ -44,7 +44,7 @@
 
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
-  function computeMarginalKDE(values, gridPoints = 64) {
+  function computeMarginalKDE(values, gridPoints = 64, range = null) {
     const clean = Array.isArray(values) ? values.map(Number).filter(v => !isNaN(v)).sort((a, b) => a - b) : [];
     const n = clean.length;
     if (n < 2) return { grid: [], density: [], maxDensity: 0, h: 1, min: 0, max: 0 };
@@ -54,8 +54,8 @@
     const sigma = Math.sqrt(variance) || 1;
     const h = 1.06 * sigma * Math.pow(n, -0.2);
 
-    const min = clean[0] - 1.2 * h;
-    const max = clean[n - 1] + 1.2 * h;
+    const min = (range && Number.isFinite(range[0])) ? range[0] : clean[0] - 1.2 * h;
+    const max = (range && Number.isFinite(range[1])) ? range[1] : clean[n - 1] + 1.2 * h;
     const step = (max - min) / (gridPoints - 1);
 
     const SQRT_2PI = Math.sqrt(2 * Math.PI);
@@ -147,7 +147,7 @@
     return res.ellipsePoints || [];
   }
 
-  function computeMarginalKDEs(points, gridPoints = 64) {
+  function computeMarginalKDEs(points, gridPoints = 64, ranges = null) {
     const clean = points.filter(p => p && !isNaN(p.x) && !isNaN(p.y));
     const n = clean.length;
     if (n < 2) return { n, pearsonR: 0, rSquared: 0, xKde: { grid: [], density: [], maxDensity: 0 }, yKde: { grid: [], density: [], maxDensity: 0 } };
@@ -155,8 +155,8 @@
     const xVals = clean.map(p => p.x);
     const yVals = clean.map(p => p.y);
 
-    const xKde = computeMarginalKDE(xVals, gridPoints);
-    const yKde = computeMarginalKDE(yVals, gridPoints);
+    const xKde = computeMarginalKDE(xVals, gridPoints, ranges && ranges.x);
+    const yKde = computeMarginalKDE(yVals, gridPoints, ranges && ranges.y);
     const pearsonR = computePearsonR(clean);
     const rSquared = Math.round(pearsonR * pearsonR * 1000) / 1000;
 
@@ -207,13 +207,32 @@
     const points = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Observations';
 
-    const marginals = computeMarginalKDEs(points, 64);
+    const finitePts = points.filter(p => p && Number.isFinite(p.x) && Number.isFinite(p.y));
+    const niceMax = (v, q) => Math.ceil(v / q) * q;
+    const niceMin = (v, q) => Math.floor(v / q) * q;
+    const dMinX = Math.min(...finitePts.map(p => p.x));
+    const dMaxX = Math.max(...finitePts.map(p => p.x));
+    const dMinY = Math.min(...finitePts.map(p => p.y));
+    const dMaxY = Math.max(...finitePts.map(p => p.y));
+    const inPercent = dMinY >= 0 && dMaxY <= 100;
+    const ellipseData = computeCovarianceEllipse(points, 0.95, 64);
+    const ellipsePoints = ellipseData.ellipsePoints;
+    const ellX = ellipsePoints.map(p => p.x);
+    const ellY = ellipsePoints.map(p => p.y);
+    const eMinX = ellX.length ? Math.min(...ellX) : dMinX;
+    const eMaxX = ellX.length ? Math.max(...ellX) : dMaxX;
+    const eMinY = ellY.length ? Math.min(...ellY) : dMinY;
+    const eMaxY = ellY.length ? Math.max(...ellY) : dMaxY;
+    // Axes bornés pour contenir données ET ellipse de confiance (aucune coupe par le cadre)
+    const axisX = [Math.max(0, niceMin(Math.min(dMinX - 2, eMinX), 5)), niceMax(Math.max(dMaxX + 2, eMaxX), 5)];
+    const axisY = inPercent
+      ? [Math.min(0, niceMin(eMinY, 10)), Math.max(100, niceMax(eMaxY, 10))]
+      : [niceMin(Math.min(dMinY - 5, eMinY), 10), niceMax(Math.max(dMaxY + 5, eMaxY), 10)];
+    const marginals = computeMarginalKDEs(points, 64, { x: axisX, y: axisY });
     const kdeX = marginals.xKde;
     const kdeY = marginals.yKde;
     const pearsonR = marginals.pearsonR;
     const rSquared = marginals.rSquared;
-    const ellipseData = computeCovarianceEllipse(points, 0.95, 64);
-    const ellipsePoints = ellipseData.ellipsePoints;
 
     const mainColor = getColor(tokens, 0) || '#2B8CBE';
     const accentColor = tokens.emphasis?.focal || getColor(tokens, 1) || '#E66101';
@@ -244,8 +263,27 @@
       { x: Math.ceil(maxX), y: Math.round((intercept + slope * Math.ceil(maxX)) * 10) / 10 }
     ];
 
+    // Géométrie proportionnelle à la zone : marginales plus fines et sans texte en carte étroite
+    const jointGeom = (w, h) => {
+      const narrow = w < 460;
+      const mW = narrow ? Math.max(16, Math.round(w * 0.045)) : Math.max(24, Math.min(38, Math.round(w * 0.035)));
+      const mH = narrow ? Math.max(16, Math.round(h * 0.06)) : Math.max(24, Math.min(38, Math.round(h * 0.09)));
+      return { narrow, mW, mH, labels: !narrow };
+    };
     const jointplotPainterPlugin = {
       id: 'kitChartsJointMarginalsPainter',
+      beforeLayout(chart) {
+        const g = jointGeom(chart.width, chart.height);
+        const want = {
+          top: g.mH + (g.labels ? 18 : 12),
+          right: g.mW + (g.labels ? 28 : 14),
+          bottom: 4,
+          left: 4
+        };
+        const cur = chart.options.layout && chart.options.layout.padding;
+        if (cur && cur.top === want.top && cur.right === want.right) return;
+        chart.options.layout.padding = want;
+      },
       beforeDatasetsDraw(chart) {
         const { ctx, scales: { x, y } } = chart;
         if (!x || !y) return;
@@ -253,6 +291,9 @@
         // 1. Dessin de l'ellipse de confiance bivariée 95%
         if (ellipsePoints && ellipsePoints.length > 2) {
           ctx.save();
+          ctx.beginPath();
+          ctx.rect(chart.chartArea.left, chart.chartArea.top, chart.chartArea.right - chart.chartArea.left, chart.chartArea.bottom - chart.chartArea.top);
+          ctx.clip();
           ctx.beginPath();
           for (let i = 0; i < ellipsePoints.length; i++) {
             const px = x.getPixelForValue(ellipsePoints[i].x);
@@ -269,14 +310,6 @@
           ctx.stroke();
           ctx.setLineDash([]);
 
-          // Centre de gravité bivarié (μx, μy)
-          const cx = x.getPixelForValue(ellipseData.centerX);
-          const cy = y.getPixelForValue(ellipseData.centerY);
-          ctx.fillStyle = accentColor;
-          ctx.beginPath();
-          ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
-          ctx.fill();
-
           ctx.restore();
         }
       },
@@ -290,7 +323,7 @@
         // 2. DISTRIBUTION MARGINALE X (Haut)
         // -------------------------------------------------------------
         if (kdeX.grid.length && kdeX.maxDensity > 0) {
-          const topMarginH = 38;
+          const topMarginH = jointGeom(chart.width, chart.height).mH;
           const baseY = chartArea.top - 8;
 
           // Ligne de base
@@ -323,20 +356,28 @@
 
           ctx.strokeStyle = hexToRgba(mainColor, 0.85);
           ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let j = 0; j < kdeX.grid.length; j++) {
+            const px = Math.max(chartArea.left, Math.min(chartArea.right, x.getPixelForValue(kdeX.grid[j])));
+            const py = baseY - (kdeX.density[j] / kdeX.maxDensity) * topMarginH;
+            if (j === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          }
           ctx.stroke();
 
           // Label indicateur
-          ctx.fillStyle = textMuted;
-          ctx.font = `600 10px ${tokens.fontFamily || 'Inter, sans-serif'}`;
-          ctx.textAlign = 'left';
-          ctx.fillText('▲ DENSITÉ MARGINALE X', chartArea.left + 2, baseY - topMarginH + 2);
+          if (jointGeom(chart.width, chart.height).labels) {
+            ctx.fillStyle = textMuted;
+            ctx.font = `600 10px ${tokens.fontFamily || 'Inter, sans-serif'}`;
+            ctx.textAlign = 'left';
+            ctx.fillText('Densité marginale X', chartArea.left + 2, baseY - topMarginH + 2);
+          }
         }
 
         // -------------------------------------------------------------
         // 3. DISTRIBUTION MARGINALE Y (Droite)
         // -------------------------------------------------------------
         if (kdeY.grid.length && kdeY.maxDensity > 0) {
-          const rightMarginW = 38;
+          const rightMarginW = jointGeom(chart.width, chart.height).mW;
           const baseX = chartArea.right + 8;
 
           // Ligne de base
@@ -369,45 +410,26 @@
 
           ctx.strokeStyle = hexToRgba(mainColor, 0.85);
           ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let j = 0; j < kdeY.grid.length; j++) {
+            const py = Math.max(chartArea.top, Math.min(chartArea.bottom, y.getPixelForValue(kdeY.grid[j])));
+            const px = baseX + (kdeY.density[j] / kdeY.maxDensity) * rightMarginW;
+            if (j === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          }
           ctx.stroke();
 
           // Label indicateur
-          ctx.fillStyle = textMuted;
-          ctx.font = `600 10px ${tokens.fontFamily || 'Inter, sans-serif'}`;
-          ctx.textAlign = 'left';
-          ctx.save();
-          ctx.translate(baseX + rightMarginW + 12, chartArea.bottom);
-          ctx.rotate(-Math.PI / 2);
-          ctx.fillText('▲ DENSITÉ MARGINALE Y', 0, 0);
-          ctx.restore();
+          if (jointGeom(chart.width, chart.height).labels) {
+            ctx.fillStyle = textMuted;
+            ctx.font = `600 10px ${tokens.fontFamily || 'Inter, sans-serif'}`;
+            ctx.textAlign = 'left';
+            ctx.save();
+            ctx.translate(baseX + rightMarginW + 12, chartArea.bottom);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Densité marginale Y', 0, 0);
+            ctx.restore();
+          }
         }
-
-        // -------------------------------------------------------------
-        // 4. BADGE STATISTIQUE DU COIN SUPÉRIEUR DROIT
-        // -------------------------------------------------------------
-        const statText = `r = ${pearsonR} • R² = ${rSquared}`;
-        ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
-        const textMetrics = ctx.measureText(statText);
-        const pillW = textMetrics.width + 16;
-        const pillH = 22;
-        const statX = chartArea.right - pillW;
-        const statY = chartArea.top - 20;
-
-        ctx.fillStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
-        ctx.strokeStyle = gridColor;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(statX, statY - 14, pillW, pillH, 5);
-        } else {
-          ctx.rect(statX, statY - 14, pillW, pillH);
-        }
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = textColor;
-        ctx.textAlign = 'center';
-        ctx.fillText(statText, statX + pillW / 2, statY + 1);
 
         ctx.restore();
       }
@@ -431,11 +453,12 @@
           },
           {
             type: 'line',
-            label: `Régression OLS (r = ${pearsonR})`,
+            label: `Régression OLS (r = ${pearsonR}, R² = ${rSquared})`,
             data: regressionPoints,
             borderColor: hexToRgba(tokens.textSecondary || '#475569', 0.85),
             borderWidth: 2,
             borderDash: [5, 4],
+            pointStyle: 'line',
             pointRadius: 0,
             pointHoverRadius: 0,
             fill: false,
@@ -447,12 +470,7 @@
       options: {
         ...defaultOpts,
         layout: {
-          padding: {
-            top: 54,
-            right: 64,
-            bottom: 8,
-            left: 6
-          }
+          padding: { top: 54, right: 64, bottom: 4, left: 4 }
         },
         animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
         interaction: {
@@ -468,10 +486,10 @@
             align: 'center',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 },
+              font: { family: tokens.fontFamily, size: 11 },
               usePointStyle: true,
               boxWidth: 8,
-              padding: 16
+              padding: 10
             }
           },
           tooltip: {
@@ -490,6 +508,8 @@
           x: {
             type: 'linear',
             ...defaultOpts.scales.x,
+            min: axisX[0],
+            max: axisX[1],
             grid: { color: tokens.gridColor },
             title: {
               display: true,
@@ -501,6 +521,13 @@
           y: {
             type: 'linear',
             ...defaultOpts.scales.y,
+            min: axisY[0],
+            max: axisY[1],
+            ticks: {
+              ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks),
+              // Score borné à 100 : pas de graduation au-delà (l'ellipse peut dépasser)
+              callback: (v) => (inPercent && (v > 100 || v < 0)) ? '' : v
+            },
             grid: { color: tokens.gridColor },
             title: {
               display: true,

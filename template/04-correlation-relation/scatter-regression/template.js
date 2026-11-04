@@ -105,7 +105,10 @@
     const xMax = Math.max(...clean.map(p => p.x));
     const step = numPoints > 1 ? (xMax - xMin) / (numPoints - 1) : 0;
 
-    const tCrit = 1.96; // Approximation asymptotique normale
+    // Quantile de Student bilatéral 95% (ddl = n - 2), table exacte jusqu'à 30 puis développement de Cornish-Fisher
+    const T975 = [0, 12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228, 2.201, 2.179, 2.160, 2.145, 2.131, 2.120, 2.110, 2.101, 2.093, 2.086, 2.080, 2.074, 2.069, 2.064, 2.060, 2.056, 2.052, 2.048, 2.045, 2.042];
+    const df = Math.max(1, reg.n - 2);
+    const tCrit = df <= 30 ? T975[df] : (1.95996 + (Math.pow(1.95996, 3) + 1.95996) / (4 * df) + (5 * Math.pow(1.95996, 5) + 16 * Math.pow(1.95996, 3) + 3 * 1.95996) / (96 * df * df));
     const line = [];
     const upper = [];
     const lower = [];
@@ -116,9 +119,10 @@
       const seFit = reg.se * Math.sqrt((1 / reg.n) + (Math.pow(x - reg.xMean, 2) / (reg.ssx || 1)));
       const margin = tCrit * seFit;
 
-      line.push({ x: Math.round(x * 10) / 10, y: Math.round(yHat * 10) / 10 });
-      upper.push({ x: Math.round(x * 10) / 10, y: Math.round((yHat + margin) * 10) / 10 });
-      lower.push({ x: Math.round(x * 10) / 10, y: Math.round((yHat - margin) * 10) / 10 });
+      const rd = (v) => Math.round(v * 1000) / 1000;
+      line.push({ x: rd(x), y: rd(yHat) });
+      upper.push({ x: rd(x), y: rd(yHat + margin) });
+      lower.push({ x: rd(x), y: rd(yHat - margin) });
     }
 
     return {
@@ -139,11 +143,11 @@
     datasets: [{
       label: "Budget R&D vs Chiffre d'Affaires (M€)",
       data: [
-        { x: 1.2, y: 14.5 }, { x: 1.8, y: 18.2 }, { x: 2.1, y: 19.8 },
-        { x: 2.5, y: 24.1 }, { x: 3.0, y: 28.5 }, { x: 3.4, y: 31.0 },
-        { x: 3.8, y: 33.2 }, { x: 4.2, y: 39.5 }, { x: 4.6, y: 41.8 },
-        { x: 5.0, y: 44.0 }, { x: 5.5, y: 49.2 }, { x: 6.0, y: 53.5 },
-        { x: 6.5, y: 56.8 }, { x: 7.0, y: 62.0 }, { x: 7.5, y: 64.5 }
+        { x: 1.2, y: 17.5 }, { x: 1.8, y: 15.2 }, { x: 2.1, y: 23.8 },
+        { x: 2.5, y: 21.1 }, { x: 3.0, y: 31.5 }, { x: 3.4, y: 27.0 },
+        { x: 3.8, y: 36.2 }, { x: 4.2, y: 35.5 }, { x: 4.6, y: 45.8 },
+        { x: 5.0, y: 40.0 }, { x: 5.5, y: 52.2 }, { x: 6.0, y: 49.5 },
+        { x: 6.5, y: 60.8 }, { x: 7.0, y: 56.0 }, { x: 7.5, y: 66.5 }
       ]
     }]
   };
@@ -175,7 +179,7 @@
     const bands = computeConfidenceBand(points, reg);
 
     const pointColor = getColor(tokens, 0);
-    const regColor = tokens.emphasis?.focal || tokens.palette?.[1] || '#E66101';
+    const regColor = (tokens.emphasis && tokens.emphasis.benchmark && tokens.emphasis.benchmark !== pointColor) ? tokens.emphasis.benchmark : (getColor(tokens, 1) || '#E66101');
 
     const defaultOpts = getChartDefaultOptions(tokens);
     const config = {
@@ -199,6 +203,7 @@
             data: bands.line,
             borderColor: regColor,
             borderWidth: 2.5,
+            pointStyle: 'line',
             pointRadius: 0,
             fill: false,
             tension: 0,
@@ -206,10 +211,13 @@
           },
           {
             type: 'line',
-            label: 'IC 95% Supérieur',
+            label: 'Bande IC 95% (moyenne prédite)',
             data: bands.upper,
-            borderColor: 'transparent',
-            backgroundColor: hexToRgba(regColor, isDark ? 0.20 : 0.12),
+            borderColor: hexToRgba(regColor, 0.55),
+            borderWidth: 1,
+            borderDash: [4, 3],
+            pointStyle: 'rect',
+            backgroundColor: hexToRgba(regColor, isDark ? 0.28 : 0.20),
             pointRadius: 0,
             fill: '+1',
             tension: 0,
@@ -219,7 +227,9 @@
             type: 'line',
             label: 'IC 95% Inférieur',
             data: bands.lower,
-            borderColor: 'transparent',
+            borderColor: hexToRgba(regColor, 0.55),
+            borderWidth: 1,
+            borderDash: [4, 3],
             pointRadius: 0,
             fill: false,
             tension: 0,
@@ -243,8 +253,11 @@
             align: 'end',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 },
-              filter: (item) => !item.text.includes('Inférieur') && !item.text.includes('Supérieur')
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              boxWidth: 20,
+              padding: 8,
+              filter: (item) => !item.text.includes('Inférieur')
             }
           },
           tooltip: {
@@ -269,7 +282,7 @@
             grid: { color: tokens.gridColor },
             title: {
               display: true,
-              text: 'Variable X (Investissement R&D)',
+              text: 'Investissement R&D (M€)',
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }
@@ -280,7 +293,7 @@
             grid: { color: tokens.gridColor },
             title: {
               display: true,
-              text: 'Variable Y (Revenu)',
+              text: 'Chiffre d\'affaires (M€)',
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }

@@ -31,7 +31,7 @@
               "align": "top",
               "anchor": "center",
               "color": "#88C0D0",
-              "display": true,
+              "display": false,
               "font": {
                 "size": 10,
                 "weight": "600"
@@ -44,8 +44,8 @@
             "yAxisID": "y"
           },
           {
-            "backgroundColor": "#81A1C1",
-            "borderColor": "#81A1C1",
+            "backgroundColor": "#EBCB8B",
+            "borderColor": "#EBCB8B",
             "borderWidth": 2.5,
             "data": [
               850,
@@ -64,8 +64,8 @@
             "datalabels": {
               "align": "bottom",
               "anchor": "center",
-              "color": "#81A1C1",
-              "display": true,
+              "color": "#EBCB8B",
+              "display": false,
               "font": {
                 "size": 10,
                 "weight": "600"
@@ -107,7 +107,7 @@
           "emphasis": {
             "anomaly": "#BF616A",
             "benchmark": "#ECEFF4",
-            "context": "#4C566A",
+            "context": "#7B88A1",
             "focal": "#88C0D0",
             "forecastAlpha": 0.5
           },
@@ -121,13 +121,13 @@
           "name": "nord-cognitive-dark",
           "palette": [
             "#88C0D0",
+            "#EBCB8B",
+            "#B48EAD",
+            "#A3BE8C",
+            "#D08770",
             "#81A1C1",
             "#5E81AC",
-            "#A3BE8C",
-            "#EBCB8B",
-            "#D08770",
-            "#BF616A",
-            "#B48EAD"
+            "#BF616A"
           ],
           "semantic": {
             "info": "#88C0D0",
@@ -198,7 +198,7 @@
         "plugins": {
           "datalabels": {
             "color": "#ECEFF4",
-            "display": true,
+            "display": false,
             "font": {
               "family": "'JetBrains Mono', monospace",
               "size": 10,
@@ -209,16 +209,20 @@
             "thresholdRatio": 0.05
           },
           "legend": {
-            "align": "end",
+            "align": "center",
             "display": true,
             "labels": {
+              "boxWidth": 24,
               "color": "#ECEFF4",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12
-              }
+                "size": 11
+              },
+              "padding": 10,
+              "pointStyle": "line",
+              "usePointStyle": true
             },
-            "position": "top"
+            "position": "bottom"
           },
           "tooltip": {
             "animation": false,
@@ -257,8 +261,7 @@
         "scales": {
           "x": {
             "border": {
-              "color": "#88C0D0",
-              "width": 1
+              "color": "#4C566A"
             },
             "grid": {
               "color": "rgba(236, 239, 244, 0.06)"
@@ -273,21 +276,23 @@
             }
           },
           "y": {
+            "beginAtZero": true,
             "grid": {
               "color": "rgba(236, 239, 244, 0.06)"
             },
-            "max": 29,
+            "max": 30,
             "min": 0,
             "position": "left",
             "ticks": {
-              "color": "#88C0D0",
+              "color": "#88c0d0",
               "font": {
                 "family": "'JetBrains Mono', monospace",
                 "weight": "600"
-              }
+              },
+              "stepSize": 5
             },
             "title": {
-              "color": "#88C0D0",
+              "color": "#88c0d0",
               "display": true,
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -299,21 +304,23 @@
             "type": "linear"
           },
           "y1": {
+            "beginAtZero": true,
             "grid": {
               "display": false
             },
-            "max": 1024,
+            "max": 1200,
             "min": 0,
             "position": "right",
             "ticks": {
-              "color": "#81A1C1",
+              "color": "#ebcb8b",
               "font": {
                 "family": "'JetBrains Mono', monospace",
                 "weight": "600"
-              }
+              },
+              "stepSize": 200
             },
             "title": {
-              "color": "#81A1C1",
+              "color": "#ebcb8b",
               "display": true,
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
@@ -325,8 +332,15 @@
             "type": "linear"
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "nord-cognitive-dark"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsDualLastLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

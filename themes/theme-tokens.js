@@ -52,7 +52,7 @@ const THEMES = {
     emphasis: {
       focal: '#2B8CBE',
       benchmark: '#475569',
-      context: '#CBD5E1',
+      context: '#94A3B8',
       anomaly: '#D01C8B',
       forecastAlpha: 0.50
     },
@@ -122,7 +122,7 @@ const THEMES = {
     emphasis: {
       focal: '#26828E',
       benchmark: '#3E4A89',
-      context: '#CBD5E1',
+      context: '#94A3B8',
       anomaly: '#FDE725',
       forecastAlpha: 0.50
     },
@@ -181,7 +181,7 @@ const THEMES = {
     emphasis: {
       focal: '#4477AA',
       benchmark: '#475569',
-      context: '#BBBBBB',
+      context: '#999999',
       anomaly: '#EE6677',
       forecastAlpha: 0.50
     },
@@ -240,7 +240,7 @@ const THEMES = {
     emphasis: {
       focal: '#4E79A7',
       benchmark: '#57606C',
-      context: '#BAB0AC',
+      context: '#9A918C',
       anomaly: '#E15759',
       forecastAlpha: 0.50
     },
@@ -299,7 +299,7 @@ const THEMES = {
     emphasis: {
       focal: '#0072B2',
       benchmark: '#475569',
-      context: '#CBD5E1',
+      context: '#94A3B8',
       anomaly: '#D55E00',
       forecastAlpha: 0.50
     },
@@ -358,7 +358,7 @@ const THEMES = {
     emphasis: {
       focal: '#1D4ED8',
       benchmark: '#111111',
-      context: '#D4D4D4',
+      context: '#A3A3A3',
       anomaly: '#B91C1C',
       forecastAlpha: 0.45
     },
@@ -398,15 +398,17 @@ const THEMES = {
     gridColor: 'rgba(236, 239, 244, 0.06)',
     axisColor: '#4C566A',
     zeroLine: '#88C0D0',
+    // Ordre catégoriel : teintes alternées pour que les séries adjacentes (0, 1, 2) restent
+    // discriminables en sombre ; le rouge Aurora (#BF616A, sémantique négative) en dernier.
     palette: [
       '#88C0D0',
+      '#EBCB8B',
+      '#B48EAD',
+      '#A3BE8C',
+      '#D08770',
       '#81A1C1',
       '#5E81AC',
-      '#A3BE8C',
-      '#EBCB8B',
-      '#D08770',
-      '#BF616A',
-      '#B48EAD'
+      '#BF616A'
     ],
     sequential: ['#3B4252', '#4C566A', '#5E81AC', '#81A1C1', '#88C0D0', '#ECEFF4'],
     divergent: {
@@ -417,7 +419,7 @@ const THEMES = {
     emphasis: {
       focal: '#88C0D0',
       benchmark: '#ECEFF4',
-      context: '#4C566A',
+      context: '#7B88A1',
       anomaly: '#BF616A',
       forecastAlpha: 0.50
     },
@@ -476,7 +478,7 @@ const THEMES = {
     emphasis: {
       focal: '#005AB5',
       benchmark: '#27272A',
-      context: '#A1A1AA',
+      context: '#8E8E96',
       anomaly: '#DC3220',
       forecastAlpha: 0.55
     },
@@ -2396,6 +2398,9 @@ function getChartDefaultOptions(themeTokens) {
   const isTufte = t.name === 'tufte-minimalist-executive';
 
   return {
+    // Nom du thème lu par le plugin d'étiquettes (couleurs de badge, contraste) quand le
+    // template ne transmet pas _kitChartsTokens ; sans lui, le plugin retombait sur le thème clair.
+    themeName: t.name,
     responsive: true,
     maintainAspectRatio: false,
     categoryPercentage: 0.8,
@@ -2445,8 +2450,9 @@ function getChartDefaultOptions(themeTokens) {
           boxWidth: 12,
           boxHeight: 12,
           padding: 16,
-          usePointStyle: true,
-          pointStyle: 'circle'
+          // Pas de pointStyle forcé : chaque entrée reprend la marque de son dataset
+          // (trait pour une tendance, triangle pour un rôle anomalie...).
+          usePointStyle: true
         }
       },
       tooltip: {
@@ -3477,7 +3483,8 @@ function formatLabelValue(val, options = {}) {
     return `${prefix}${formatted}${suffix}`;
   }
 
-  const maxDigits = options.maximumFractionDigits ?? (num % 1 === 0 ? 0 : (Math.abs(num) < 10 ? 1 : 0));
+  // Décimale conservée sous 1000 (21,5 ne devient pas 22) ; au-delà, entier.
+  const maxDigits = options.maximumFractionDigits ?? (num % 1 === 0 ? 0 : (Math.abs(num) < 1000 ? 1 : 0));
   const formatted = new Intl.NumberFormat('fr-FR', {
     maximumFractionDigits: maxDigits
   }).format(num);
@@ -3495,36 +3502,41 @@ function formatLabelValue(val, options = {}) {
  */
 function getContrastingTextColor(backgroundColor, lightText = '#FFFFFF', darkText = '#0F172A') {
   if (!backgroundColor || typeof backgroundColor !== 'string') return darkText;
-  let color = backgroundColor.trim();
-
-  // Parse rgba / rgb
-  if (color.startsWith('rgb')) {
-    const matches = color.match(/[\d.]+/g);
-    if (matches && matches.length >= 3) {
-      const r = Number(matches[0]);
-      const g = Number(matches[1]);
-      const b = Number(matches[2]);
-      const a = matches.length >= 4 ? Number(matches[3]) : 1;
-      if (a < 0.35) return darkText;
-      const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-      return lum > 0.58 ? darkText : lightText;
+  const parse = (c) => {
+    const color = String(c).trim();
+    if (color.startsWith('rgb')) {
+      const m = color.match(/[\d.]+/g);
+      if (m && m.length >= 3) return { r: +m[0], g: +m[1], b: +m[2], a: m.length >= 4 ? +m[3] : 1 };
+      return null;
     }
-  }
-
-  // Parse Hex
-  let hex = color.replace(/^#/, '');
-  if (hex.length === 3) {
-    hex = hex.split('').map(c => c + c).join('');
-  }
-  if (hex.length >= 6) {
-    const r = parseInt(hex.substring(0, 2), 16) || 0;
-    const g = parseInt(hex.substring(2, 4), 16) || 0;
-    const b = parseInt(hex.substring(4, 6), 16) || 0;
-    const lum = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-    return lum > 0.58 ? darkText : lightText;
-  }
-
-  return darkText;
+    let hex = color.replace(/^#/, '');
+    if (hex.length === 3 || hex.length === 4) hex = hex.split('').map(x => x + x).join('');
+    if (hex.length < 6) return null;
+    return {
+      r: parseInt(hex.substring(0, 2), 16) || 0,
+      g: parseInt(hex.substring(2, 4), 16) || 0,
+      b: parseInt(hex.substring(4, 6), 16) || 0,
+      a: hex.length >= 8 ? (parseInt(hex.substring(6, 8), 16) || 0) / 255 : 1
+    };
+  };
+  // Luminance relative WCAG 2.x (sRGB linéarisé).
+  const lum = ({ r, g, b }) => {
+    const ch = [r, g, b].map(v => {
+      const x = v / 255;
+      return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  };
+  const ratio = (l1, l2) => (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+  const bg = parse(backgroundColor);
+  if (!bg) return darkText;
+  // Fond très transparent : le texte se lit sur la surface sous-jacente, inconnue ici.
+  if (bg.a < 0.35) return darkText;
+  const light = parse(lightText) || { r: 255, g: 255, b: 255 };
+  const dark = parse(darkText) || { r: 15, g: 23, b: 42 };
+  const lb = lum(bg);
+  // Choix par ratio de contraste réel (WCAG 1.4.3), et non par seuil de luma.
+  return ratio(lum(light), lb) >= ratio(lum(dark), lb) ? lightText : darkText;
 }
 
 /**
@@ -3568,11 +3580,26 @@ function getDataLabelOptions(themeTokens, options = {}) {
 const kitChartsDataLabelsPlugin = {
   id: 'kitChartsDataLabels',
   afterDatasetsDraw(chart, args, pluginOptions) {
-    const opts = chart.options?.plugins?.datalabels || chart.config?.options?.plugins?.datalabels || pluginOptions;
-    // Strict opt-in: Only draw if plugins.datalabels is explicitly configured and display is true
-    if (!opts || opts.display !== true || chart.options?.showDataLabels === false || chart.config?.options?.showDataLabels === false) {
+    // Config BRUTE d'abord : chart.options est un résolveur Chart.js qui exécute les fonctions
+    // (options « scriptables »). Lu par là, `formatter` arrivait déjà appelé (une chaîne) et
+    // n'était jamais appliqué, et un `display` fonction était perdu.
+    const rawOpts = chart.config?.options?.plugins?.datalabels || chart.options?.plugins?.datalabels || pluginOptions;
+    // Strict opt-in: Only draw if plugins.datalabels is explicitly configured and display is true (ou une fonction)
+    if (!rawOpts || (rawOpts.display !== true && typeof rawOpts.display !== 'function') || chart.options?.showDataLabels === false || chart.config?.options?.showDataLabels === false) {
       return;
     }
+    const userFormatter = typeof rawOpts.formatter === 'function' ? rawOpts.formatter : null;
+    const globalDisplay = typeof rawOpts.display === 'function' ? rawOpts.display : null;
+    const opts = Object.assign({}, rawOpts, {
+      // Formatter normalisé : applique `display` scriptable (global puis par dataset), puis le
+      // formatter du template ; une chaîne vide masque l'étiquette dans toutes les branches.
+      formatter: (v, c) => {
+        if (globalDisplay && !globalDisplay(c)) return '';
+        const dsDisplay = c && c.dataset && c.dataset.datalabels && c.dataset.datalabels.display;
+        if (typeof dsDisplay === 'function' && !dsDisplay(c)) return '';
+        return userFormatter ? userFormatter(v, c) : formatLabelValue(v, rawOpts);
+      }
+    });
 
     const { ctx, chartArea } = chart;
     if (!ctx || !chartArea) return;
@@ -3882,7 +3909,9 @@ const kitChartsDataLabelsPlugin = {
           ctx.fill();
           ctx.stroke();
 
-          ctx.fillStyle = seriesColor;
+          // Le liseré porte la couleur de série (association) ; le texte reste en couleur de
+          // texte du thème, une teinte de série claire tombant sous 4,5:1 sur la surface.
+          ctx.fillStyle = defaultColor;
           ctx.textAlign = 'center';
           ctx.textBaseline = 'middle';
           ctx.fillText(labelText, badgeX, badgeY);

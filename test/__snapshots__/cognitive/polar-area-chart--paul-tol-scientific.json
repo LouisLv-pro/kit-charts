@@ -12,17 +12,28 @@
           {
             "backgroundColor": [
               "#4477AA",
-              "#EE6677",
-              "#228833",
-              "#CCBB44",
-              "#66CCEE",
-              "#AA3377",
-              "#BBBBBB",
-              "#555555"
+              "#4477AA",
+              "#4477AA",
+              "#4477AA",
+              "#4477AA",
+              "#4477AA",
+              "#4477AA",
+              "#4477AA"
             ],
             "borderColor": "#FFFFFF",
             "borderWidth": 2,
             "data": [
+              6.48074069840786,
+              5.291502622129181,
+              5.916079783099616,
+              4.242640687119285,
+              7.0710678118654755,
+              5.656854249492381,
+              6.708203932499369,
+              4.69041575982343
+            ],
+            "label": "Valeur",
+            "rawValues": [
               42,
               28,
               35,
@@ -31,8 +42,7 @@
               32,
               45,
               22
-            ],
-            "label": "Valeur"
+            ]
           }
         ],
         "labels": [
@@ -86,19 +96,19 @@
         "plugins": {
           "datalabels": {
             "color": "#1E293B",
-            "display": true,
+            "display": false,
             "font": {
               "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
               "size": 10,
               "weight": "600"
             },
-            "formatter": "[Function:formatter]",
+            "formatter": "[Function:anonymous]",
             "padding": 4,
             "thresholdRatio": 0.05
           },
           "legend": {
             "align": "center",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 12,
               "boxWidth": 12,
@@ -109,7 +119,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "right"
@@ -152,23 +161,31 @@
         "responsive": true,
         "scales": {
           "r": {
+            "afterBuildTicks": "[Function:afterBuildTicks]",
             "angleLines": {
               "color": "rgba(30, 41, 59, 0.06)",
               "lineWidth": 1
             },
             "grid": {
-              "color": "rgba(30, 41, 59, 0.06)",
+              "color": "#E2E8F0",
               "lineWidth": 1
             },
+            "min": 0,
+            "pointLabels": {
+              "centerPointLabels": true,
+              "color": "#1E293B",
+              "display": true,
+              "font": {
+                "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "500"
+              },
+              "padding": 6
+            },
+            "startAngle": -22.5,
             "suggestedMin": 0,
             "ticks": {
-              "backdropColor": "transparent",
-              "color": "#64748B",
-              "font": {
-                "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
-                "size": 10
-              },
-              "showLabelBackdrop": false
+              "display": false
             }
           },
           "x": {
@@ -177,8 +194,15 @@
           "y": {
             "display": false
           }
-        }
+        },
+        "themeName": "paul-tol-scientific"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kcPolarValueLabels"
+        }
+      ],
       "type": "polarArea"
     },
     "kind": "chart-config"

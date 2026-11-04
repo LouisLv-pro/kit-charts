@@ -29,6 +29,19 @@
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const readableText = (fg, surface, alpha) => {
+    const parse = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim()) || /^#?([0-9a-f]{3})$/i.exec(String(h || '').trim()); if (!m) return null; let x = m[1]; if (x.length === 3) x = x.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16)); };
+    const lum = (c) => { const l = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+    const f = parse(fg), s = parse(surface);
+    if (!f || !s) return fg;
+    const a = alpha == null ? 0.18 : alpha;
+    const bg = s.map((v, i) => Math.round(v * (1 - a) + f[i] * a));
+    const toward = lum(bg) < 0.4 ? 255 : 0;
+    let c = f.slice();
+    for (let t = 0; t <= 1.0001 && ratio(c, bg) < 4.6; t += 0.05) c = f.map(v => Math.round(v + (toward - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   const DEFAULT_DATA = {
@@ -41,6 +54,18 @@
     metricType: 'gain',
     footnote: 'Écart restant : -40 000 € • 18 jours ouvrés restants'
   };
+
+  /**
+   * Statut d'atteinte selon la polarité : 'cost' = LOWER_IS_BETTER (atteint si valeur <= cible).
+   * @returns {{attainment:number, isCost:boolean, success:boolean, near:boolean}}
+   */
+  function resolveAttainment(actual, target, metricType) {
+    const isCost = metricType === 'cost';
+    const attainment = Math.round((actual / target) * 100);
+    const success = isCost ? actual <= target : actual >= target;
+    const near = !success && (isCost ? actual <= target * 1.2 : actual >= target * 0.85);
+    return { attainment, isCost, success, near };
+  }
 
   const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
   const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -108,9 +133,15 @@
     const unitSuffix = data.unit ? ' ' + data.unit : '';
 
 
-    const attainment = Math.round((actual / target) * 100);
-    const valence = attainment >= 100 ? 1 : (attainment >= 85 ? 0 : -1);
-    const barColor = valence >= 1 ? (tokens.semantic?.positive || '#2E7D32') : (tokens.palette[0] || '#2B8CBE');
+    const status = resolveAttainment(actual, target, data.metricType);
+    const attainment = status.attainment;
+    const barColor = status.success
+      ? (tokens.semantic?.positive || '#2E7D32')
+      : (status.near ? (tokens.palette[0] || '#2B8CBE') : (tokens.semantic?.negative || '#C62828'));
+    // Gradation des bandes : la plus foncée = zone la moins bonne (convention Few), identique clair/sombre.
+    const bandAlpha = status.isCost ? [0.05, 0.11, 0.18] : [0.18, 0.11, 0.05];
+    const bandBase = isDark ? '255, 255, 255' : '15, 23, 42';
+    const bandFill = (i) => `rgba(${bandBase}, ${isDark ? bandAlpha[i] * 0.8 : bandAlpha[i]})`;
     const targetMarkerColor = tokens.textPrimary || (isDark ? '#ECEFF4' : '#0F172A');
 
     // Plugin custom pour dessiner le marqueur cible vertical
@@ -132,11 +163,6 @@
         ctx.lineTo(targetX, yBottom);
         ctx.stroke();
 
-        // Petit repère textuel subtil
-        ctx.fillStyle = tokens.textMuted || '#64748B';
-        ctx.font = `600 10px ${tokens.fontMono || 'monospace'}`;
-        ctx.textAlign = 'center';
-        ctx.fillText('▼', targetX, yTop - 2);
         ctx.restore();
       }
     };
@@ -162,7 +188,7 @@
           ranges && {
             label: 'Plage Insatisfaisant',
             data: [ranges[0]],
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.08)',
+            backgroundColor: bandFill(0),
             barThickness: 24,
             borderRadius: 4,
             order: 4,
@@ -172,7 +198,7 @@
           ranges && {
             label: 'Plage Satisfaisant',
             data: [ranges[1]],
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(15, 23, 42, 0.05)',
+            backgroundColor: bandFill(1),
             barThickness: 24,
             borderRadius: 4,
             order: 3,
@@ -182,7 +208,7 @@
           ranges && {
             label: 'Plage Optimale',
             data: [ranges[2]],
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(15, 23, 42, 0.03)',
+            backgroundColor: bandFill(2),
             barThickness: 24,
             borderRadius: 4,
             order: 2,
@@ -194,7 +220,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -242,13 +268,13 @@
 
     const actual = data.value;
     const target = data.target;
-    const attainment = Math.round((actual / target) * 100);
-    const isSuccess = attainment >= 100;
-    const isWarning = attainment >= 80 && attainment < 100;
+    const st = resolveAttainment(actual, target, data.metricType);
+    const attainment = st.attainment;
+    const statusLabel = st.success ? 'Atteint' : (st.isCost ? 'Dépassé' : 'En cours');
 
-    const statusColor = isSuccess
+    const statusColor = st.success
       ? (tokens.semantic?.positive || '#2E7D32')
-      : (isWarning ? (tokens.palette[0] || '#2B8CBE') : (tokens.semantic?.warning || '#EF6C00'));
+      : (st.near ? (tokens.palette[0] || '#2B8CBE') : (tokens.semantic?.negative || '#C62828'));
 
     const badgeBg = hexToRgba(statusColor, tokens.isDark ? 0.18 : 0.10);
     const badgeBorder = hexToRgba(statusColor, tokens.isDark ? 0.35 : 0.25);
@@ -292,11 +318,11 @@
             white-space: nowrap;
             font-variant-numeric: tabular-nums;
             background: ${badgeBg};
-            color: ${statusColor};
+            color: ${readableText(statusColor, (tokens.surfaceRaised || tokens.surface), tokens.isDark ? 0.18 : 0.10)};
             border: 1px solid ${badgeBorder};
           ">
             <span style="display: block; text-align: center;">${attainment}%</span>
-            <span style="display: block; font-size: 0.675rem; font-weight: 600; text-align: center;">Atteint</span>
+            <span style="display: block; font-size: 0.675rem; font-weight: 600; text-align: center;">${statusLabel}</span>
           </span>
         </div>
 

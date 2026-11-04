@@ -35,7 +35,10 @@
           {
             "backgroundColor": "rgba(238, 102, 119, 0.2)",
             "borderColor": "#EE6677",
-            "borderDash": [],
+            "borderDash": [
+              6,
+              4
+            ],
             "borderWidth": 2,
             "data": [
               70,
@@ -53,7 +56,7 @@
             "pointHitRadius": 10,
             "pointHoverRadius": 7,
             "pointRadius": 4,
-            "pointStyle": "circle"
+            "pointStyle": "rectRot"
           }
         ],
         "labels": [
@@ -66,6 +69,75 @@
         ]
       },
       "options": {
+        "_kitChartsTokens": {
+          "axisColor": "#94A3B8",
+          "bg": "#FFFFFF",
+          "border": "#E2E8F0",
+          "borderStrong": "#CBD5E1",
+          "divergent": {
+            "mid": "#FFFFFF",
+            "neg": "#EE6677",
+            "pos": "#4477AA"
+          },
+          "emphasis": {
+            "anomaly": "#EE6677",
+            "benchmark": "#475569",
+            "context": "#999999",
+            "focal": "#4477AA",
+            "forecastAlpha": 0.5
+          },
+          "fontFamily": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          "fontMono": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+          "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Fira+Sans:wght@400;500;600;700&family=Fira+Code:wght@400;500;600&display=swap",
+          "gridColor": "rgba(30, 41, 59, 0.06)",
+          "id": "03-paul-tol-scientific",
+          "isDark": false,
+          "label": "Paul Tol Scientific",
+          "name": "paul-tol-scientific",
+          "palette": [
+            "#4477AA",
+            "#EE6677",
+            "#228833",
+            "#CCBB44",
+            "#66CCEE",
+            "#AA3377",
+            "#BBBBBB",
+            "#555555"
+          ],
+          "semantic": {
+            "info": "#4477AA",
+            "negative": "#EE6677",
+            "neutral": "#BBBBBB",
+            "positive": "#228833",
+            "warning": "#CCBB44"
+          },
+          "sequential": [
+            "#FEFBE9",
+            "#FCF7D5",
+            "#F5EE9E",
+            "#E5D965",
+            "#C9B934",
+            "#A8941C",
+            "#846F11",
+            "#5C4A08",
+            "#332402"
+          ],
+          "status": {
+            "danger": "#EE6677",
+            "info": "#66CCEE",
+            "neutral": "#BBBBBB",
+            "success": "#228833",
+            "warning": "#CCBB44"
+          },
+          "surface": "#F8FAFC",
+          "surfaceRaised": "#FFFFFF",
+          "textMuted": "#64748B",
+          "textPrimary": "#1E293B",
+          "textSecondary": "#334155",
+          "tooltipBg": "rgba(30, 41, 59, 0.92)",
+          "tooltipText": "#FFFFFF",
+          "zeroLine": "#475569"
+        },
         "animation": false,
         "barPercentage": 0.9,
         "categoryPercentage": 0.8,
@@ -103,45 +175,23 @@
         "maintainAspectRatio": false,
         "plugins": {
           "datalabels": {
-            "align": "[Function:align]",
-            "anchor": "[Function:anchor]",
-            "backgroundColor": "[Function:backgroundColor]",
-            "borderColor": "[Function:borderColor]",
-            "borderRadius": 4,
-            "borderWidth": 1,
-            "color": "[Function:color]",
-            "display": "[Function:display]",
-            "font": {
-              "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
-              "size": 10,
-              "weight": "700"
-            },
-            "formatter": "[Function:formatter]",
-            "offset": 6,
-            "padding": {
-              "bottom": 2,
-              "left": 4,
-              "right": 4,
-              "top": 2
-            }
+            "display": "[Function:display]"
           },
           "legend": {
-            "align": "end",
+            "align": "[Function:align]",
             "display": true,
             "labels": {
-              "boxHeight": 12,
-              "boxWidth": 12,
+              "boxHeight": 10,
+              "boxWidth": 10,
               "color": "#1E293B",
               "font": {
                 "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
-                "weight": "500"
+                "size": 10
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
-            "position": "top"
+            "position": "[Function:position]"
           },
           "tooltip": {
             "animation": {
@@ -189,18 +239,24 @@
               "color": "rgba(30, 41, 59, 0.06)",
               "lineWidth": 1
             },
+            "max": 100,
+            "min": 0,
             "pointLabels": {
               "color": "#1E293B",
-              "font": {
-                "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 11,
-                "weight": "500"
-              },
-              "padding": 16
+              "font": "[Function:font]",
+              "padding": "[Function:padding]"
             },
             "suggestedMin": 0,
             "ticks": {
-              "display": false
+              "backdropColor": "transparent",
+              "color": "#64748B",
+              "display": false,
+              "font": {
+                "family": "'Fira Code', Menlo, Monaco, Consolas, monospace",
+                "size": 9
+              },
+              "showLabelBackdrop": false,
+              "stepSize": 25
             }
           },
           "x": {
@@ -209,8 +265,16 @@
           "y": {
             "display": false
           }
-        }
+        },
+        "showDataLabels": true,
+        "themeName": "paul-tol-scientific"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kcRadarBadges"
+        }
+      ],
       "type": "radar"
     },
     "kind": "chart-config"

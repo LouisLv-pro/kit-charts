@@ -82,7 +82,7 @@
           "emphasis": {
             "anomaly": "#D55E00",
             "benchmark": "#475569",
-            "context": "#CBD5E1",
+            "context": "#94A3B8",
             "focal": "#0072B2",
             "forecastAlpha": 0.5
           },
@@ -194,7 +194,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -275,7 +274,8 @@
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "okabe-ito-cud"
       },
       "plugins": [],
       "type": "bar"

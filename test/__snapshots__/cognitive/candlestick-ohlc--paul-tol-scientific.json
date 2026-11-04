@@ -11,7 +11,17 @@
         "datasets": [
           {
             "backgroundColor": "#4477AA",
+            "backgroundColors": {
+              "down": "#EE6677",
+              "unchanged": "#BBBBBB",
+              "up": "rgba(34, 136, 51, 0.18)"
+            },
             "borderColor": {
+              "down": "#EE6677",
+              "unchanged": "#BBBBBB",
+              "up": "#228833"
+            },
+            "borderColors": {
               "down": "#EE6677",
               "unchanged": "#BBBBBB",
               "up": "#228833"
@@ -138,21 +148,24 @@
         "mode": "index",
         "plugins": {
           "legend": {
-            "align": "end",
-            "display": false,
+            "align": "center",
+            "display": true,
             "labels": {
-              "boxHeight": 8,
-              "boxWidth": 8,
+              "boxHeight": 12,
+              "boxWidth": 12,
               "color": "#1E293B",
               "font": {
                 "family": "'Fira Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
-                "size": 12,
+                "size": 11,
                 "weight": "500"
               },
-              "padding": 14,
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 12,
+              "pointStyle": "rect",
               "usePointStyle": true
             },
-            "position": "top"
+            "onClick": "[Function:onClick]",
+            "position": "bottom"
           },
           "tooltip": {
             "backgroundColor": "rgba(30, 41, 59, 0.92)",
@@ -215,7 +228,8 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "paul-tol-scientific"
       },
       "type": "candlestick"
     },

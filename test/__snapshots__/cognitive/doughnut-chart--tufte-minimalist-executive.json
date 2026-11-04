@@ -78,9 +78,10 @@
             "display": true,
             "font": {
               "family": "'Geist Mono', 'JetBrains Mono', Menlo, Monaco, Consolas, monospace",
-              "size": 10,
+              "size": 12,
               "weight": "600"
             },
+            "fontSize": 12,
             "formatter": "[Function:formatter]",
             "padding": 4,
             "thresholdRatio": 0.05
@@ -135,7 +136,8 @@
         },
         "responsive": true,
         "rotation": -90,
-        "scales": {}
+        "scales": {},
+        "themeName": "tufte-minimalist-executive"
       },
       "plugins": [
         {

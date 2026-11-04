@@ -145,7 +145,7 @@
           const xStart = x.getPixelForValue(t.start);
           const xEnd = x.getPixelForValue(t.end);
           const xDone = x.getPixelForValue(t.doneTime);
-          const color = getColor(tokens, t.category || 0);
+          const color = t.status === 'delayed' ? ((tokens.semantic && tokens.semantic.negative) || '#C62828') : getColor(tokens, t.category || 0);
 
           // Barre d'avancement réel (opacité forte)
           if (t.progress > 0) {
@@ -159,7 +159,13 @@
             ctx.fillStyle = isDark ? '#ECEFF4' : '#0F172A';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText(`${t.progress}%`, xEnd + 8, yCenter);
+            const pctTxt = `${t.progress}%`;
+            const pctW = ctx.measureText(pctTxt).width;
+            const xToday0 = x.getPixelForValue(todayWeek);
+            // Évite la collision avec la ligne "Aujourd'hui" : le libellé passe après la ligne
+            let xTxt = xEnd + 8;
+            if (xToday0 > xTxt - 4 && xToday0 < xTxt + pctW + 4) xTxt = xToday0 + 6;
+            ctx.fillText(pctTxt, xTxt, yCenter);
           }
         });
 
@@ -177,7 +183,10 @@
         ctx.font = `600 11px ${tokens.fontFamily}`;
         ctx.fillStyle = todayColor;
         ctx.textAlign = 'center';
-        ctx.fillText("Aujourd'hui (S6.5)", xToday, chartArea.top - 6);
+        const todayTxt = chart.width < 460 ? `Auj. S${todayWeek}` : `Aujourd'hui (S${todayWeek})`;
+        const todayW = ctx.measureText(todayTxt).width;
+        const todayX = Math.min(Math.max(xToday, chartArea.left + todayW / 2), chart.width - todayW / 2 - 2);
+        ctx.fillText(todayTxt, todayX, chartArea.top - 6);
 
         ctx.restore();
       }
@@ -210,7 +219,12 @@
             top: 16
           }
         },
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+        onResize(chart, size) {
+          // Marge droite pour le libellé de pourcentage, proportionnelle à la largeur
+          const pad = chart.options.layout.padding;
+          pad.right = size.width < 460 ? 24 : 30;
+        },
+        animation: false,
         interaction: {
           mode: 'index',
           intersect: false
@@ -245,8 +259,17 @@
             max: 15,
             grid: { color: tokens.gridColor },
             ticks: {
+              color: tokens.textPrimary,
               stepSize: 1,
-              callback: (val) => `S${val}`
+              autoSkip: true,
+              maxRotation: 0,
+              minRotation: 0,
+              font: { size: 11 },
+              callback: function(val) {
+                // Sous ~460 px : une semaine sur deux, sans rotation
+                if (this.chart.width < 460 && val % 2 !== 0) return '';
+                return `S${val}`;
+              }
             },
             title: {
               display: true,
@@ -257,7 +280,19 @@
           },
           y: {
             ...defaultOpts.scales.y,
-            grid: { display: false }
+            grid: { display: false },
+            ticks: {
+              ...((defaultOpts.scales.y && defaultOpts.scales.y.ticks) || {}),
+              color: tokens.textPrimary,
+              font: { family: tokens.fontFamily, size: 11, weight: '500' },
+              callback: function(val) {
+                const t = String(this.getLabelForValue(val));
+                if (this.chart.width >= 460) return t;
+                // Étroit : numéro retiré, libellé abrégé avec ellipse
+                const s = t.replace(/^\d+\.\s*/, '');
+                return s.length > 25 ? s.slice(0, 24).trimEnd() + '…' : s;
+              }
+            }
           }
         }
       },

@@ -12,18 +12,18 @@
           {
             "backgroundColor": "[Function:backgroundColor]",
             "borderColor": [
-              "#4C566A",
-              "#4C566A",
+              "#7B88A1",
+              "#7B88A1",
               "#88C0D0",
-              "#4C566A",
-              "#4C566A",
-              "#4C566A",
-              "#4C566A",
-              "#4C566A",
-              "#4C566A",
+              "#7B88A1",
+              "#7B88A1",
+              "#7B88A1",
+              "#7B88A1",
+              "#7B88A1",
+              "#7B88A1",
               "#88C0D0",
-              "#4C566A",
-              "#4C566A",
+              "#7B88A1",
+              "#7B88A1",
               "#BF616A"
             ],
             "borderWidth": [
@@ -43,8 +43,9 @@
             ],
             "data": [
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#5E81AC",
                 "growth": 4.2,
                 "label": "HDF",
                 "name": "Hauts-de-France",
@@ -54,8 +55,9 @@
                 "y": 1
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#4C566A",
                 "growth": 2.5,
                 "label": "NOR",
                 "name": "Normandie",
@@ -67,6 +69,7 @@
               {
                 "borderColor": "#88C0D0",
                 "borderWidth": 2,
+                "color": "#ECEFF4",
                 "growth": 16.8,
                 "label": "IDF",
                 "name": "Île-de-France",
@@ -76,8 +79,9 @@
                 "y": 2
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#5E81AC",
                 "growth": 5.1,
                 "label": "GES",
                 "name": "Grand Est",
@@ -87,8 +91,9 @@
                 "y": 2
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#81A1C1",
                 "growth": 8.9,
                 "label": "BRE",
                 "name": "Bretagne",
@@ -98,8 +103,9 @@
                 "y": 3
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#81A1C1",
                 "growth": 6.4,
                 "label": "PDL",
                 "name": "Pays de la Loire",
@@ -109,8 +115,9 @@
                 "y": 3
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#3B4252",
                 "growth": 1.8,
                 "label": "CVL",
                 "name": "Centre-Val de Loire",
@@ -120,8 +127,9 @@
                 "y": 3
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#4C566A",
                 "growth": 2,
                 "label": "BFC",
                 "name": "Bourgogne-Franche-Comté",
@@ -131,8 +139,9 @@
                 "y": 3
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#5E81AC",
                 "growth": 7.2,
                 "label": "NAQ",
                 "name": "Nouvelle-Aquitaine",
@@ -144,6 +153,7 @@
               {
                 "borderColor": "#88C0D0",
                 "borderWidth": 2,
+                "color": "#88C0D0",
                 "growth": 12.4,
                 "label": "ARA",
                 "name": "Auvergne-Rhône-Alpes",
@@ -153,8 +163,9 @@
                 "y": 4
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#81A1C1",
                 "growth": 9.1,
                 "label": "OCC",
                 "name": "Occitanie",
@@ -164,8 +175,9 @@
                 "y": 5
               },
               {
-                "borderColor": "#4C566A",
+                "borderColor": "#7B88A1",
                 "borderWidth": 1,
+                "color": "#81A1C1",
                 "growth": 10.5,
                 "label": "PAC",
                 "name": "Provence-Alpes-Côte d'Azur",
@@ -177,6 +189,7 @@
               {
                 "borderColor": "#BF616A",
                 "borderWidth": 2,
+                "color": "#3B4252",
                 "growth": -4.3,
                 "label": "COR",
                 "name": "Corse",
@@ -221,10 +234,7 @@
         },
         "layout": {
           "padding": {
-            "bottom": 16,
-            "left": 16,
-            "right": 20,
-            "top": 20
+            "bottom": 28
           }
         },
         "maintainAspectRatio": false,
@@ -246,7 +256,7 @@
               "emphasis": {
                 "anomaly": "#BF616A",
                 "benchmark": "#ECEFF4",
-                "context": "#4C566A",
+                "context": "#7B88A1",
                 "focal": "#88C0D0",
                 "forecastAlpha": 0.5
               },
@@ -260,13 +270,13 @@
               "name": "nord-cognitive-dark",
               "palette": [
                 "#88C0D0",
+                "#EBCB8B",
+                "#B48EAD",
+                "#A3BE8C",
+                "#D08770",
                 "#81A1C1",
                 "#5E81AC",
-                "#A3BE8C",
-                "#EBCB8B",
-                "#D08770",
-                "#BF616A",
-                "#B48EAD"
+                "#BF616A"
               ],
               "semantic": {
                 "info": "#88C0D0",
@@ -359,17 +369,22 @@
             },
             "max": 6.7,
             "min": 0.30000000000000004,
-            "reverse": false,
+            "reverse": true,
             "ticks": {
               "display": false
             }
           }
-        }
+        },
+        "themeName": "nord-cognitive-dark"
       },
       "plugins": [
         {
           "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
           "id": "tileLabelsPlugin"
+        },
+        {
+          "afterDraw": "[Function:afterDraw]",
+          "id": "tileLegendPlugin"
         }
       ],
       "type": "matrix"

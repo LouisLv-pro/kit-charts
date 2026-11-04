@@ -270,6 +270,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           borderColor: trendColor,
           borderWidth: isTufte ? 1.5 : 2,
           borderDash: [6, 6],
+          pointStyle: 'line',
           pointRadius: 0,
           pointHoverRadius: 0,
           fill: false,
@@ -280,6 +281,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   });
 
   const chartData = { datasets };
+  const xTitleText = (rawData.axes && rawData.axes.x) || 'Dépenses R&D (% du CA)';
+  const yTitleText = (rawData.axes && rawData.axes.y) || 'Croissance annuelle du CA (%)';
+  const axisTitle = (text) => ({ display: true, text, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '600' } });
   const defaultOpts = getChartDefaultOptions(tokens);
   const spatialOpts = getSpatialInteractionOptions(tokens, { mode: 'nearest', axis: 'xy', hitRadius: 14, hoverRadius: 7 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' });
@@ -310,6 +314,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       ...defaultOpts,
       ...spatialOpts,
       animation: animOpts,
+      layout: { padding: { top: 0 } },
       plugins: {
         ...defaultOpts.plugins,
         legend: {
@@ -347,6 +352,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           border: { display: false }
         } : {
           type: 'linear',
+          title: axisTitle(xTitleText),
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -367,6 +373,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           border: { display: false }
         } : {
           type: 'linear',
+          title: axisTitle(yTitleText),
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,

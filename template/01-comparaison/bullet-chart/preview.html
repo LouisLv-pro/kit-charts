@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Graphique à Puces (Bullet Graph) — kit-charts</title>
+  <title>Jauge linéaire (bullet) · Kit-Charts</title>
   <!-- Google Fonts pour tous les thèmes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Chart.js v4.4.7 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <!-- Theme Tokens & Template -->
@@ -265,6 +265,16 @@
       grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
       gap: 1.25rem;
     }
+
+    /* Habillage en thème sombre : updateTheme pose data-kc-dark sur <html>. */
+    html[data-kc-dark] .title-group h1, html[data-kc-dark] .toolbar-theme-label { color: #ECEFF4; }
+    html[data-kc-dark] .breadcrumb, html[data-kc-dark] .title-group p { color: #D8DEE9; }
+    html[data-kc-dark] .breadcrumb a, html[data-kc-dark] .rule-item h3 { color: #88C0D0; }
+    html[data-kc-dark] .header-panel { border-bottom-color: #4C566A; }
+    html[data-kc-dark] .theme-swatches-group { background: #3B4252; border-color: #4C566A; }
+    html[data-kc-dark] .active-theme-name-tag { background: #3B4252; color: #ECEFF4; border-color: #4C566A; }
+    html[data-kc-dark] .rule-item p, html[data-kc-dark] .rule-item strong { color: #D8DEE9; }
+    html[data-kc-dark] .btn-action { background: #3B4252; color: #ECEFF4; border-color: #4C566A; }
   </style>
 </head>
 <body>
@@ -275,8 +285,8 @@
       </div>
       <div class="header-panel">
         <div class="title-group">
-          <h1>Graphique à Puces (Bullet Graph)</h1>
-          <p>Stephen Few (2005) : Barre réelle, marqueur cible et plages qualitatives en niveaux de gris sans encombrement.</p>
+          <h1>Jauge linéaire (bullet)</h1>
+          <p>Montre une valeur sous forme de barre, avec la cible en repère et des zones de performance en fond.</p>
         </div>
         <div class="controls-group">
           <div class="toolbar-theme-label"><span>🎨</span> Thème :</div>
@@ -312,11 +322,11 @@
     <div id="cognitiveRulesCard" class="cognitive-rules-card">
       <div class="rule-item">
         <h3>✅ Quand l'utiliser</h3>
-        <p><strong>Cas d'usage :</strong> Évaluation de la performance d'une métrique par rapport à une cible et des plages qualitatives normées.</p>
+        <p>Suivre plusieurs indicateurs de performance face à leur objectif, dans peu d'espace.</p>
       </div>
       <div class="rule-item">
         <h3>❌ Quand NE PAS l'utiliser</h3>
-        <p><strong>Contre-indications :</strong> Présentation de séries chronologiques ou de flux de données sans objectif fixe.</p>
+        <p>Montrer une évolution dans le temps ou des données sans objectif fixé.</p>
       </div>
     </div>
   </div>
@@ -371,6 +381,7 @@
         }
 
         if (tokens) {
+          document.documentElement.toggleAttribute('data-kc-dark', Boolean(tokens.isDark));
           document.body.style.backgroundColor = tokens.isDark ? '#242933' : '#F8FAFC';
           document.body.style.color = tokens.textPrimary || '#0F172A';
           if (rulesCard) {

@@ -138,17 +138,43 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const chartData = { labels, datasets };
   const baseOptions = getChartDefaultOptions(tokens);
 
+  // Lignes de liaison : niveau atteint par une étape = début de la suivante
+  const connectorPlugin = {
+    id: 'kitChartsWaterfallConnectors',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      const ds = chart.data.datasets[0];
+      const y = chart.scales && chart.scales.y;
+      if (!meta || !meta.data || !y || !ds) return;
+      const { ctx } = chart;
+      ctx.save();
+      ctx.strokeStyle = tokens.textSecondary || '#64748B';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      for (let i = 0; i < meta.data.length - 1; i++) {
+        const v = ds.data[i];
+        if (!Array.isArray(v)) continue;
+        const yy = y.getPixelForValue(v[1]);
+        const a = meta.data[i].getProps(['x', 'width'], true);
+        const b = meta.data[i + 1].getProps(['x', 'width'], true);
+        ctx.beginPath();
+        ctx.moveTo(a.x + a.width / 2, yy);
+        ctx.lineTo(b.x - b.width / 2, yy);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  };
+
   const config = {
     type: 'bar',
+    plugins: [connectorPlugin],
     data: chartData,
     options: {
       ...baseOptions,
       responsive: true,
       maintainAspectRatio: false,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 400,
-        easing: 'easeOutQuart'
-      }),
+      animation: false,
       interaction: {
         mode: 'index',
         intersect: false,
@@ -180,11 +206,27 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               family: tokens.fontFamily,
               size: 11
             },
-            padding: 6
+            padding: 6,
+            callback: function(val) {
+              const t = String(this.getLabelForValue(val));
+              if (this.chart.width >= 460) return t;
+              // Carte étroite : libellé sur 3 lignes maximum, mots abrégés, sans rotation
+              const max = 8;
+              const lines = [];
+              t.replace(/\s*\(.*?\)\s*/g, ' ').trim().split(/\s+/).forEach((w) => {
+                const last = lines[lines.length - 1];
+                if (last && (last + ' ' + w).length <= max) lines[lines.length - 1] = last + ' ' + w;
+                else lines.push(w);
+              });
+              return lines.slice(0, 3).map(w => (w.length > max ? w.slice(0, max - 1) + '.' : w));
+            },
+            maxRotation: 0,
+            autoSkip: false
           }
         },
         y: {
           beginAtZero: true, // Strict psychophysical mandate for waterfall baseline
+          title: { display: true, text: 'M€', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '500' } },
           grace: '10%',
           grid: {
             color: tokens.gridColor,

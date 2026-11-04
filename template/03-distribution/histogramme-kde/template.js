@@ -67,7 +67,9 @@
     }
 
     const span = max - min;
-    const binCount = Math.max(3, Math.min(50, Math.ceil(span / binWidth)));
+    // Nombre de classes : max(Freedman-Diaconis, Sturges) pour ne pas écraser une distribution multimodale
+    const sturges = Math.ceil(Math.log2(n) + 1);
+    const binCount = Math.max(5, Math.min(50, Math.max(Math.ceil(span / binWidth), sturges)));
     const actualWidth = span / binCount;
 
     const bins = [];
@@ -112,7 +114,7 @@
     return (h > 0 && !isNaN(h)) ? h : 1.0;
   }
 
-  function computeGaussianKDE(data, bandwidth = null, gridPoints = 128) {
+  function computeGaussianKDE(data, bandwidth = null, gridPoints = 128, domain = null) {
     const clean = Array.isArray(data) ? data.map(Number).filter(v => !isNaN(v)).sort((a, b) => a - b) : [];
     const n = clean.length;
     if (n === 0) return { grid: [], density: [], maxDensity: 0, h: 1, min: 0, max: 0 };
@@ -120,8 +122,8 @@
     const h = (typeof bandwidth === 'number' && bandwidth > 0) ? bandwidth : computeSilvermanBandwidth(clean);
     const minVal = clean[0];
     const maxVal = clean[clean.length - 1];
-    const spanMin = minVal - 2.5 * h;
-    const spanMax = maxVal + 2.5 * h;
+    const spanMin = domain && Number.isFinite(domain.min) ? domain.min : minVal - 2.5 * h;
+    const spanMax = domain && Number.isFinite(domain.max) ? domain.max : maxVal + 2.5 * h;
     const step = (spanMax - spanMin) / (gridPoints - 1);
 
     const SQRT_2PI = Math.sqrt(2 * Math.PI);
@@ -145,16 +147,26 @@
     return { grid, density, maxDensity, h, min: spanMin, max: spanMax, n };
   }
 
-  const DEFAULT_DATA = {
-    datasets: [{
-      label: 'Temps de Réponse API (ms)',
-      data: [
-        42, 45, 48, 50, 52, 53, 55, 56, 58, 59, 60, 61, 62, 63, 65, 66,
-        68, 70, 71, 72, 73, 75, 76, 78, 80, 82, 85, 88, 92, 95, 110, 115,
-        120, 125, 130, 132, 135, 138, 140, 142, 145, 148, 150, 155, 160, 175
-      ]
-    }]
-  };
+  const DEFAULT_DATA = (() => {
+    // Temps de réponse API (ms), N=60 : cache chaud (~N(55,9)) et cache froid (~N(140,15)), PRNG seedé déterministe
+    let seed = 7321;
+    const rnd = () => {
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const gauss = (m, sd) => m + sd * Math.sqrt(-2 * Math.log(Math.max(1e-9, rnd()))) * Math.cos(2 * Math.PI * rnd());
+    const values = [];
+    for (let i = 0; i < 40; i++) values.push(Math.round(gauss(55, 9)));
+    for (let i = 0; i < 20; i++) values.push(Math.round(gauss(140, 15)));
+    return {
+      datasets: [{
+        label: 'Temps de Réponse API (ms)',
+        data: values.sort((a, b) => a - b)
+      }]
+    };
+  })();
 
   function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
     const canvas = typeof canvasTarget === 'string'
@@ -183,59 +195,101 @@
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Distribution';
 
     const binAnalysis = computeFreedmanDiaconisBins(seriesData);
-    const kdeAnalysis = computeGaussianKDE(seriesData);
+    const kdeAnalysis = computeGaussianKDE(seriesData, null, 160, { min: binAnalysis.min, max: binAnalysis.max });
 
     const mainColor = getColor(tokens, 0);
     const kdeColor = tokens.emphasis?.focal || tokens.palette[1] || '#E66101';
 
     const countScaleFactor = binAnalysis.n * binAnalysis.binWidth;
     const kdePoints = kdeAnalysis.grid.map((x, idx) => ({
-      x: Math.round(x * 10) / 10,
+      x: x,
       y: kdeAnalysis.density[idx] * countScaleFactor
     }));
 
     const barLabels = binAnalysis.bins.map(b => `${Math.round(b.min)}–${Math.round(b.max)}`);
     const barData = binAnalysis.bins.map(b => b.count);
 
+    // Étiquettes d'effectif locales : au-dessus de la barre, ou dans la barre si la courbe KDE traverse l'emplacement.
+    const barLabelsPlugin = {
+      id: 'kitChartsHistKdeBarLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const { ctx, chartArea, scales } = chart;
+        const yS = scales.y;
+        const xK = scales.xKde;
+        const barMeta = chart.getDatasetMeta(0);
+        if (!yS || !xK || !barMeta) return;
+        const curve = kdePoints.map(p => ({ px: xK.getPixelForValue(p.x), py: yS.getPixelForValue(p.y) }));
+        const fs = chart.width < 460 ? 10 : 11;
+        ctx.save();
+        ctx.font = `600 ${fs}px ${tokens.fontMono || 'monospace'}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const hits = (r) => {
+          for (let i = 1; i < curve.length; i++) {
+            const a = curve[i - 1], b = curve[i];
+            if (Math.max(a.px, b.px) < r.x0 || Math.min(a.px, b.px) > r.x1) continue;
+            // échantillonnage du segment : tout point dans le rectangle compte
+            for (let k = 0; k <= 4; k++) {
+              const px = a.px + (b.px - a.px) * k / 4;
+              const py = a.py + (b.py - a.py) * k / 4;
+              if (px >= r.x0 && px <= r.x1 && py >= r.y0 && py <= r.y1) return true;
+            }
+          }
+          return false;
+        };
+        barMeta.data.forEach((el, i) => {
+          const v = barData[i];
+          if (!el || !(v > 0)) return;
+          const text = String(v);
+          const w = ctx.measureText(text).width + 4;
+          const h = fs + 2;
+          const above = { x0: el.x - w / 2, x1: el.x + w / 2, y0: el.y - 3 - h, y1: el.y - 3 };
+          const barH = el.base - el.y;
+          const inside = { x0: el.x - w / 2, x1: el.x + w / 2, y0: el.y + 4, y1: el.y + 4 + h };
+          let r = null;
+          if (above.y0 >= chartArea.top - 2 && !hits(above)) r = above;
+          else if (barH >= h + 8 && !hits(inside)) r = inside;
+          else if (above.y0 >= chartArea.top - 2) r = null; // aucune place libre : valeur lisible dans l'infobulle
+          if (!r) return;
+          ctx.fillStyle = tokens.textPrimary;
+          ctx.fillText(text, el.x, (r.y0 + r.y1) / 2);
+        });
+        ctx.restore();
+      }
+    };
+
     const defaultOpts = getChartDefaultOptions(tokens);
     const config = {
+      plugins: [barLabelsPlugin],
       type: 'bar',
       data: {
         labels: barLabels,
         datasets: [
           {
             type: 'bar',
+            xAxisID: 'x',
             label: `Histogramme (${seriesLabel})`,
             data: barData,
             backgroundColor: hexToRgba(mainColor, isDark ? 0.40 : 0.30),
             borderColor: mainColor,
-            borderWidth: 1.5,
-            borderRadius: 3,
-            datalabels: {
-              display: showDataLabels
-            },
+            borderWidth: 1,
+            borderRadius: 0,
+            categoryPercentage: 1.0,
+            barPercentage: 1.0,
+            datalabels: { display: false },
             order: 2
           },
           {
             type: 'line',
             label: `Densité KDE (Silverman h=${kdeAnalysis.h.toFixed(1)})`,
-            data: binAnalysis.bins.map(b => {
-              let bestY = 0;
-              let minDiff = Infinity;
-              kdePoints.forEach(p => {
-                const diff = Math.abs(p.x - b.mid);
-                if (diff < minDiff) {
-                  minDiff = diff;
-                  bestY = p.y;
-                }
-              });
-              return Math.round(bestY * 100) / 100;
-            }),
+            data: kdePoints.map(p => ({ x: p.x, y: Math.round(p.y * 1000) / 1000 })),
+            xAxisID: 'xKde',
             borderColor: kdeColor,
             borderWidth: 2.5,
             pointRadius: 0,
             pointHoverRadius: 4,
-            tension: 0.35,
+            tension: 0,
             fill: false,
             datalabels: {
               display: false
@@ -256,7 +310,7 @@
         plugins: {
           ...defaultOpts.plugins,
           datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
+            display: false, // étiquettes gérées par le plugin local (évitement de la courbe KDE)
             formatter: (v, ctx) => {
               if (ctx && ctx.dataset && ctx.dataset.type === 'bar' && v > 0) {
                 return String(v);
@@ -266,15 +320,33 @@
           }),
           legend: {
             display: true,
-            position: 'top',
-            align: 'end',
+            position: 'bottom',
+            align: 'center',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              boxWidth: 14,
+              padding: 10,
+              generateLabels: (chart) => {
+                const base = (typeof Chart !== 'undefined' && Chart.defaults && Chart.defaults.plugins.legend.labels.generateLabels)
+                  ? Chart.defaults.plugins.legend.labels.generateLabels(chart) : [];
+                return base.map(item => {
+                  const ds = chart.data.datasets[item.datasetIndex] || {};
+                  const isLine = ds.type === 'line';
+                  return Object.assign(item, {
+                    pointStyle: isLine ? 'line' : 'rect',
+                    fontColor: tokens.textPrimary,
+                    fillStyle: isLine ? 'transparent' : item.fillStyle,
+                    lineWidth: isLine ? 2.5 : 1.5
+                  });
+                });
+              }
             }
           },
           tooltip: {
             ...defaultOpts.plugins.tooltip,
+            filter: (item) => item.dataset.type === 'bar',
             callbacks: {
               title: (items) => `Classe : ${items[0].label} ms`,
               label: (ctx) => {
@@ -288,6 +360,15 @@
           }
         },
         scales: {
+          xKde: {
+            type: 'linear',
+            display: false,
+            offset: false,
+            position: 'bottom',
+            min: binAnalysis.min,
+            max: binAnalysis.max,
+            grid: { display: false }
+          },
           x: {
             ...defaultOpts.scales.x,
             title: {

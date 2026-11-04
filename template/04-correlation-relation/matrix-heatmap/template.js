@@ -54,17 +54,31 @@
 function getDivergentCorrelationColor(r, tokens) {
   const clamped = Math.max(-1, Math.min(1, Number(r) || 0));
   const div = tokens.divergent || { neg: '#CA0020', mid: '#FFFFFF', pos: '#0571B0' };
+  const mid = div.mid || '#FFFFFF';
+  const end = clamped >= 0 ? (div.pos || (tokens.palette && tokens.palette[0]) || '#2B8CBE') : (div.neg || (tokens.semantic && tokens.semantic.negative) || '#CA0020');
+  return mixHex(mid, end, Math.abs(clamped));
+}
 
-  if (clamped >= 0) {
-    const alpha = Math.max(0.08, Math.min(1, clamped));
-    // Extraction ou fallback couleur positive
-    const posHex = div.pos || tokens.palette[0] || '#2B8CBE';
-    return hexToRgba(posHex, alpha);
-  } else {
-    const alpha = Math.max(0.08, Math.min(1, Math.abs(clamped)));
-    const negHex = div.neg || tokens.semantic?.negative || '#CA0020';
-    return hexToRgba(negHex, alpha);
-  }
+/** Interpolation linéaire opaque entre deux couleurs hex (t dans [0,1]). */
+function mixHex(c1, c2, t) {
+  const parse = (c) => {
+    const h = String(c || '#808080').replace('#', '');
+    const f = h.length === 3 ? h.split('').map(x => x + x).join('') : h;
+    const n = parseInt(f.slice(0, 6), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  const A = parse(c1), B = parse(c2);
+  const m = A.map((v, i) => Math.round(v + (B[i] - v) * t));
+  return `rgb(${m[0]}, ${m[1]}, ${m[2]})`;
+}
+
+/** Couleur de texte (blanc ou encre) maximisant le contraste WCAG sur un fond rgb(...). */
+function textColorOn(bg) {
+  const m = /rgba?\(([^)]+)\)/.exec(String(bg));
+  const rgb = m ? m[1].split(',').slice(0, 3).map(Number) : [128, 128, 128];
+  const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]);
+  return (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.0685) ? '#FFFFFF' : '#0F172A';
 }
 
 /**
@@ -223,6 +237,52 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   };
 
   const chartData = { datasets: [dataset] };
+  const showValues = rawPoints.length <= 36;
+  const matrixValuesPlugin = {
+    id: 'kitChartsMatrixValues',
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      const meta = chart.getDatasetMeta(0);
+      ctx.save();
+      if (showValues) {
+        // Corps proportionnel à la largeur de cellule (5 caractères mono ≈ 3 × corps)
+        const cellW = (chartArea.right - chartArea.left) / Math.max(1, xLabels.length) - 3;
+        const vfs = Math.max(8, Math.min(12, Math.floor((cellW - 4) / 3)));
+        ctx.font = `600 ${vfs}px ${tokens.fontMono || 'monospace'}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        meta.data.forEach((el, i) => {
+          const raw = rawPoints[i];
+          const v = raw && (raw.v ?? raw.value);
+          if (typeof v !== 'number') return;
+          const bg = getDivergentCorrelationColor(v, tokens);
+          ctx.fillStyle = textColorOn(bg);
+          const c = (typeof el.getCenterPoint === 'function') ? el.getCenterPoint() : { x: el.x + (el.width || 0) / 2, y: el.y + (el.height || 0) / 2 };
+          ctx.fillText((v > 0 && v < 1 ? '+' : '') + v.toFixed(2), c.x, c.y);
+        });
+      }
+      // Légende : barre divergente -1 / 0 / +1
+      const bx = chartArea.right + 18;
+      const bw = 12;
+      const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      g.addColorStop(0, getDivergentCorrelationColor(1, tokens));
+      g.addColorStop(0.5, getDivergentCorrelationColor(0, tokens));
+      g.addColorStop(1, getDivergentCorrelationColor(-1, tokens));
+      ctx.fillStyle = g;
+      ctx.fillRect(bx, chartArea.top, bw, chartArea.bottom - chartArea.top);
+      ctx.strokeStyle = tokens.gridColor || 'rgba(0,0,0,0.2)';
+      ctx.strokeRect(bx, chartArea.top, bw, chartArea.bottom - chartArea.top);
+      ctx.fillStyle = tokens.textPrimary || '#0F172A';
+      ctx.font = `500 11px ${tokens.fontMono || 'monospace'}`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('+1', bx + bw + 5, chartArea.top + 6);
+      ctx.fillText('0', bx + bw + 5, (chartArea.top + chartArea.bottom) / 2);
+      ctx.fillText('-1', bx + bw + 5, chartArea.bottom - 6);
+      ctx.restore();
+    }
+  };
   const defaultOpts = getChartDefaultOptions(tokens);
   const spatialOpts = getSpatialInteractionOptions(tokens, { mode: 'nearest', axis: 'xy', hitRadius: 10, hoverRadius: 5 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 350, easing: 'easeOutQuad' });
@@ -230,8 +290,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const config = {
     type: 'matrix',
     data: chartData,
+    plugins: [matrixValuesPlugin],
     options: {
       ...defaultOpts,
+      layout: { padding: { right: 48, top: 8 } },
       ...spatialOpts,
       animation: animOpts,
       plugins: {
@@ -261,6 +323,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         x: {
           type: 'category',
           labels: xLabels,
+          offset: true,
           grid: { display: false },
           border: { display: false },
           ticks: {
@@ -276,6 +339,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         y: {
           type: 'category',
           labels: yLabels,
+          offset: true,
+          reverse: false,
           grid: { display: false },
           border: { display: false },
           ticks: {

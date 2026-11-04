@@ -57,7 +57,7 @@
           "emphasis": {
             "anomaly": "#FDE725",
             "benchmark": "#3E4A89",
-            "context": "#CBD5E1",
+            "context": "#94A3B8",
             "focal": "#26828E",
             "forecastAlpha": 0.5
           },
@@ -174,7 +174,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -252,10 +251,21 @@
                 "size": 11
               },
               "padding": 8
+            },
+            "title": {
+              "color": "#334155",
+              "display": true,
+              "font": {
+                "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11,
+                "weight": "500"
+              },
+              "text": "Popularité Index (%)"
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "viridis-perceptual"
       },
       "plugins": [
         {

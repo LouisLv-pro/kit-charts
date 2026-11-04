@@ -101,7 +101,7 @@
     if (typeof Chart === 'undefined') return null;
 
     const hasBenchmark = isNum(data.benchmark) && data.benchmark !== 0;
-    const progressRatio = hasBenchmark ? Math.max(0, Math.min(100, Math.round((data.value / data.benchmark) * 100))) : 0;
+    const progressRatio = hasBenchmark ? Math.max(0, Math.round((data.value / data.benchmark) * 100)) : 0;
     const isDark = Boolean(tokens.isDark);
 
     const chart = new Chart(canvas, {
@@ -109,7 +109,7 @@
       data: {
         labels: ['Réalisé', 'Reste'],
         datasets: [{
-          data: [progressRatio, Math.max(0, 100 - progressRatio)],
+          data: [Math.min(progressRatio, 100), Math.max(0, 100 - progressRatio)],
           backgroundColor: [
             valenceColor,
             isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.06)'
@@ -123,7 +123,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {

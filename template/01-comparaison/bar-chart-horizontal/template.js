@@ -262,6 +262,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         x: {
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage horizontal
+          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1', text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
           grace: '15%',
           grid: {
             color: tokens.gridColor,

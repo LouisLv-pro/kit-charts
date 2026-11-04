@@ -16,6 +16,11 @@
       },
       "options": {
         "animation": false,
+        "layout": {
+          "padding": {
+            "bottom": 0
+          }
+        },
         "maintainAspectRatio": false,
         "plugins": {
           "legend": {
@@ -45,6 +50,11 @@
         {
           "afterDraw": "[Function:afterDraw]",
           "id": "choroplethVectorMap_dopf7"
+        },
+        {
+          "afterDraw": "[Function:afterDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "choroplethClassLegend"
         }
       ],
       "type": "scatter"

@@ -88,6 +88,78 @@ function hexToRgba(hex, alpha = 0.2) {
  * @param {Object} [options={}] - Options additionnelles (ex: showDataLabels)
  * @returns {Object} Instance Chart.js initialisée
  */
+// Carte étroite ou basse (< 420 px de large ou < 300 px de haut) : mise en page compacte.
+function isNarrow(chart) {
+  if (!chart) return false;
+  const w = chart.width || (chart.canvas && chart.canvas.clientWidth) || 0;
+  const h = chart.height || (chart.canvas && chart.canvas.clientHeight) || 0;
+  return (w > 0 && w < 420) || (h > 0 && h < 300);
+}
+
+/**
+ * Badges de valeur du radar, placés radialement par rapport au centre (jamais sur le point).
+ * Large : profil principal vers l'extérieur, second profil vers l'intérieur, badges encadrés.
+ * Étroit : profil principal seul, valeur vers l'intérieur avec halo, sans cadre.
+ */
+const radarBadgesPlugin = {
+  id: 'kcRadarBadges',
+  afterDatasetsDraw(chart) {
+    if (chart.options?.showDataLabels === false) return;
+    const rScale = chart.scales && chart.scales.r;
+    if (!rScale) return;
+    const tokens = chart.options?._kitChartsTokens || {};
+    const ctx = chart.ctx;
+    const narrow = isNarrow(chart);
+    const fontSize = narrow ? 9 : 10;
+    const surface = tokens.surface || (tokens.isDark ? '#242933' : '#FFFFFF');
+    const fmt = (v) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(v);
+    ctx.save();
+    ctx.font = `700 ${fontSize}px ${tokens.fontMono || 'monospace'}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const count = Math.min(chart.data.datasets.length, narrow ? 1 : 2);
+    for (let di = 0; di < count; di++) {
+      const meta = chart.getDatasetMeta(di);
+      const ds = chart.data.datasets[di];
+      if (!meta || meta.hidden) continue;
+      (meta.data || []).forEach((pt, i) => {
+        const v = ds.data[i];
+        if (typeof v !== 'number' || !pt) return;
+        const text = fmt(v);
+        const w = ctx.measureText(text).width + (narrow ? 2 : 8);
+        const h = fontSize + (narrow ? 2 : 4);
+        let ux = pt.x - rScale.xCenter, uy = pt.y - rScale.yCenter;
+        const len = Math.hypot(ux, uy) || 1;
+        ux /= len; uy /= len;
+        // Large : la valeur la plus haute se pose vers l'extérieur, la plus basse vers l'intérieur
+        // (le badge ne recouvre jamais le point de l'autre profil). Étroit : vers l'intérieur.
+        const other = chart.data.datasets[di === 0 ? 1 : 0];
+        const ov = other && other.data ? other.data[i] : undefined;
+        const higher = typeof ov !== 'number' ? di === 0 : (v > ov || (v === ov && di === 0));
+        const dir = narrow ? -1 : (higher ? 1 : -1);
+        const d = 5 + Math.abs(ux) * w / 2 + Math.abs(uy) * h / 2;
+        const bx = pt.x + dir * ux * d, by = pt.y + dir * uy * d;
+        if (narrow) {
+          ctx.lineWidth = 3; ctx.lineJoin = 'round';
+          ctx.strokeStyle = surface;
+          ctx.strokeText(text, bx, by);
+        } else {
+          ctx.fillStyle = surface;
+          ctx.strokeStyle = ds.borderColor || tokens.border;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.rect(bx - w / 2, by - h / 2, w, h);
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.fillStyle = tokens.textPrimary || '#0F172A';
+        ctx.fillText(text, bx, by);
+      });
+    }
+    ctx.restore();
+  }
+};
+
 function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string'
     ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -145,27 +217,33 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       backgroundColor: fillColor,
       borderColor: borderColor,
       borderWidth: borderWidth !== undefined ? borderWidth : (isTufte ? 1.5 : 2),
-      borderDash: borderDash,
+      // Double codage pour ne pas dépendre de la seule teinte : profil secondaire en pointillés
+      borderDash: (Array.isArray(borderDash) && borderDash.length) ? borderDash : (idx > 0 ? [6, 4] : []),
       pointBackgroundColor: borderColor,
       pointBorderColor: tokens.bg,
       pointBorderWidth: 1.5,
       pointRadius: pointRadius,
       pointHoverRadius: pointRadius + 3,
       pointHitRadius: 10,
-      pointStyle: pointStyle,
+      pointStyle: (ds.pointStyle || idx === 0) ? pointStyle : 'rectRot',
       fill: ds.fill !== undefined ? ds.fill : true
     };
   });
 
   const chartData = { labels, datasets };
+  // Axes normés : échelle 0-100 fixe quand toutes les valeurs y tiennent
+  const allWithin100 = datasets.length > 0 && datasets.every(d => d.data.every(v => typeof v === 'number' && v >= 0 && v <= 100));
 
   // Options Chart.js v4+ pour échelle radiale 'r' avec interaction Fitts indexée
   const defaultOpts = getChartDefaultOptions(tokens);
   const config = {
     type: 'radar',
     data: chartData,
+    plugins: [radarBadgesPlugin],
     options: {
       ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
       animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
       interaction: {
         mode: 'index',
@@ -178,36 +256,19 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         ...defaultOpts.plugins,
-        datalabels: {
-          display: (context) => {
-            return showDataLabels && (typeof context === 'object' && context.datasetIndex !== undefined ? context.datasetIndex < 2 : true);
-          },
-          align: (context) => (context && context.datasetIndex === 0) ? 'end' : 'start',
-          anchor: (context) => (context && context.datasetIndex === 0) ? 'end' : 'start',
-          offset: 6,
-          backgroundColor: (context) => hexToRgba(tokens.surface || '#FFFFFF', 0.92),
-          borderColor: (context) => (context && context.dataset && context.dataset.borderColor) || tokens.border,
-          borderWidth: 1,
-          borderRadius: 4,
-          padding: { top: 2, bottom: 2, left: 4, right: 4 },
-          color: (context) => (context && context.dataset && context.dataset.borderColor) || tokens.textPrimary,
-          font: {
-            family: tokens.fontMono || 'monospace',
-            size: 10,
-            weight: '700'
-          },
-          formatter: (val) => {
-            if (typeof val === 'number' && Math.abs(val) >= 1000) {
-              return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-            }
-            return val;
-          }
-        },
+        // Badges dessinés par le plugin local kcRadarBadges (placement radial, adapté à la taille)
+        datalabels: { display: () => false },
         legend: {
           ...defaultOpts.plugins.legend,
           display: !isTufte,
-          position: 'top',
-          align: 'end'
+          position: (context) => (isNarrow(context && context.chart) ? 'right' : 'top'),
+          align: (context) => (isNarrow(context && context.chart) ? 'center' : 'end'),
+          labels: {
+            ...(defaultOpts.plugins.legend && defaultOpts.plugins.legend.labels),
+            boxWidth: 10,
+            boxHeight: 10,
+            font: { family: tokens.fontFamily, size: 10 }
+          }
         },
         tooltip: {
           ...defaultOpts.plugins.tooltip,
@@ -251,16 +312,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           },
           pointLabels: {
             color: tokens.textPrimary,
-            font: {
+            font: (context) => ({
               family: tokens.fontFamily,
-              size: 11,
+              size: isNarrow(context && context.chart) ? 10 : 11,
               weight: '500'
-            },
-            padding: 16
+            }),
+            padding: (context) => (isNarrow(context && context.chart) ? 6 : 20)
           },
           ticks: {
-            display: false
+            display: false, // les valeurs sont lues sur les étiquettes ; anneaux tous les 25 points
+            stepSize: allWithin100 ? 25 : undefined,
+            showLabelBackdrop: false,
+            backdropColor: 'transparent',
+            color: tokens.textMuted,
+            font: { family: tokens.fontMono || tokens.fontFamily, size: 9 }
           },
+          min: 0,
+          max: allWithin100 ? 100 : undefined,
           suggestedMin: 0
         }
       }

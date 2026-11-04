@@ -10,9 +10,9 @@
       "data": {
         "datasets": [
           {
-            "backgroundColor": "#88C0D0",
+            "backgroundColor": "#A3BE8C",
             "barPercentage": 0.9,
-            "borderColor": "#88C0D0",
+            "borderColor": "#A3BE8C",
             "borderRadius": 0,
             "borderSkipped": false,
             "borderWidth": 0,
@@ -23,12 +23,18 @@
               82,
               90
             ],
-            "label": "Succès"
+            "label": "Succès",
+            "rawValues": [
+              75,
+              60,
+              82,
+              90
+            ]
           },
           {
-            "backgroundColor": "#81A1C1",
+            "backgroundColor": "#D8DEE9",
             "barPercentage": 0.9,
-            "borderColor": "#81A1C1",
+            "borderColor": "#D8DEE9",
             "borderRadius": 0,
             "borderSkipped": false,
             "borderWidth": 0,
@@ -39,12 +45,18 @@
               10,
               5
             ],
-            "label": "En cours"
+            "label": "En cours",
+            "rawValues": [
+              15,
+              25,
+              10,
+              5
+            ]
           },
           {
-            "backgroundColor": "#5E81AC",
+            "backgroundColor": "#BF616A",
             "barPercentage": 0.9,
-            "borderColor": "#5E81AC",
+            "borderColor": "#BF616A",
             "borderRadius": 4,
             "borderSkipped": false,
             "borderWidth": 0,
@@ -55,7 +67,13 @@
               8,
               5
             ],
-            "label": "Échec"
+            "label": "Échec",
+            "rawValues": [
+              10,
+              15,
+              8,
+              5
+            ]
           }
         ],
         "labels": [
@@ -113,6 +131,7 @@
               "weight": "600"
             },
             "formatter": "[Function:formatter]",
+            "isPercent": true,
             "padding": 4,
             "thresholdRatio": 0.05
           },
@@ -129,7 +148,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top",
@@ -214,8 +232,15 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "nord-cognitive-dark"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsSmallSegmentLabels"
+        }
+      ],
       "type": "bar"
     },
     "kind": "chart-config"

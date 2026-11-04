@@ -10,7 +10,7 @@
       "data": {
         "datasets": [
           {
-            "backgroundColor": "#81A1C1",
+            "backgroundColor": "#EBCB8B",
             "borderColor": "#2E3440",
             "borderWidth": 2,
             "data": [
@@ -100,7 +100,7 @@
           "emphasis": {
             "anomaly": "#BF616A",
             "benchmark": "#ECEFF4",
-            "context": "#4C566A",
+            "context": "#7B88A1",
             "focal": "#88C0D0",
             "forecastAlpha": 0.5
           },
@@ -114,13 +114,13 @@
           "name": "nord-cognitive-dark",
           "palette": [
             "#88C0D0",
+            "#EBCB8B",
+            "#B48EAD",
+            "#A3BE8C",
+            "#D08770",
             "#81A1C1",
             "#5E81AC",
-            "#A3BE8C",
-            "#EBCB8B",
-            "#D08770",
-            "#BF616A",
-            "#B48EAD"
+            "#BF616A"
           ],
           "semantic": {
             "info": "#88C0D0",
@@ -215,7 +215,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -307,7 +306,8 @@
             "type": "category"
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "nord-cognitive-dark"
       },
       "plugins": [
         {

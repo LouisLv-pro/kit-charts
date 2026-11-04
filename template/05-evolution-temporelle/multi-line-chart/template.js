@@ -148,6 +148,103 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   });
 
   const chartData = { labels, datasets };
+
+  // Texte lisible (WCAG AA 4.5:1) : assombrit/éclaircit la couleur de série jusqu'au contraste requis sur la surface.
+function legibleOn(color, surface) {
+  const hex = (c) => {
+    const m = /^#([0-9a-f]{6})$/i.exec(String(c || '').trim());
+    return m ? [0, 2, 4].map(i => parseInt(m[1].substr(i, 2), 16)) : null;
+  };
+  const lum = (rgb) => {
+    const ch = rgb.map(v => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  };
+  const fg = hex(color);
+  const bg = hex(surface) || [255, 255, 255];
+  if (!fg) return color;
+  const target = lum(bg) > 0.4 ? 0 : 255;
+  let cur = fg;
+  for (let k = 0; k <= 20; k++) {
+    const l1 = lum(cur), l2 = lum(bg);
+    if ((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) >= 4.5) break;
+    cur = fg.map(v => Math.round(v + (target - v) * (k + 1) * 0.05));
+  }
+  return '#' + cur.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+
+  // Étiquettes directes en fin de courbe (plugin local) : remplacent la légende.
+  const directLabels = options.directLabels !== false && datasets.length > 0;
+  // Découpe un libellé en lignes d'au plus maxW pixels (retour à la ligne aux espaces, jamais de rognage).
+  const wrapLabel = (ctx, text, maxW) => {
+    const words = String(text).split(' ');
+    const lines = [];
+    let cur = '';
+    words.forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && ctx.measureText(t).width > maxW) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines;
+  };
+  const labelFont = (chart) => (chart.width < 460 ? 11 : 12);
+  const directLabelPlugin = {
+    id: 'kitChartsDirectLabels',
+    beforeLayout(chart) {
+      if (!directLabels) return;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.font = `600 ${labelFont(chart)}px ${tokens.fontFamily || 'sans-serif'}`;
+      let w = 0;
+      (chart.data.datasets || []).forEach((d) => { w = Math.max(w, ctx.measureText(d.label || '').width); });
+      ctx.restore();
+      // Réservation proportionnelle à la largeur : au plus 36 % du graphique, le reste passe à la ligne.
+      const reserve = Math.ceil(Math.min(w, chart.width * 0.36)) + 16;
+      const pad = chart.options.layout && chart.options.layout.padding;
+      if (pad && typeof pad === 'object' && pad.right === reserve) return;
+      const base = (pad && typeof pad === 'object' && pad.left !== undefined) ? pad : { top: 4, bottom: 4, left: 4, right: 4 };
+      chart.options.layout = { ...(chart.options.layout || {}), padding: { ...base, right: reserve } };
+    },
+    afterDatasetsDraw(chart) {
+      if (!directLabels) return;
+      const { ctx, chartArea } = chart;
+      const fs = labelFont(chart);
+      const lineH = fs + 2;
+      const maxW = Math.max(40, chart.width - chartArea.right - 14);
+      ctx.save();
+      ctx.font = `600 ${fs}px ${tokens.fontFamily || 'sans-serif'}`;
+      const items = [];
+      chart.data.datasets.forEach((d, i) => {
+        if (!chart.isDatasetVisible(i)) return;
+        const meta = chart.getDatasetMeta(i);
+        let last = meta.data.length - 1;
+        while (last >= 0 && (meta.data[last] == null || d.data[last] == null)) last--;
+        if (last < 0) return;
+        const raw = (typeof d.borderColor === 'string' ? d.borderColor : tokens.textPrimary);
+        const lines = wrapLabel(ctx, d.label || '', maxW);
+        items.push({ lines, h: lines.length * lineH, color: legibleOn(raw, tokens.surface), x: meta.data[last].x, y: meta.data[last].y });
+      });
+      items.sort((a, b) => a.y - b.y);
+      // Centres des blocs : posés sur la courbe puis écartés pour ne jamais se chevaucher.
+      items.forEach((it, k) => {
+        it.cy = it.y;
+        if (k > 0) it.cy = Math.max(it.cy, items[k - 1].cy + (items[k - 1].h + it.h) / 2 + 2);
+      });
+      for (let k = items.length - 1; k >= 0; k--) {
+        const maxC = k === items.length - 1 ? chartArea.bottom + 4 - items[k].h / 2 : items[k + 1].cy - (items[k + 1].h + items[k].h) / 2 - 2;
+        if (items[k].cy > maxC) items[k].cy = maxC;
+      }
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      items.forEach((it) => {
+        ctx.fillStyle = it.color;
+        it.lines.forEach((ln, j) => {
+          ctx.fillText(ln, it.x + 10, it.cy - it.h / 2 + lineH * (j + 0.5));
+        });
+      });
+      ctx.restore();
+    }
+  };
   const baseOptions = getChartDefaultOptions(tokens);
   const temporalOpts = getTemporalInteractionOptions(tokens, { mode: 'index', axis: 'x', hitRadius: 12, hoverRadius: 6 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 700, easing: 'easeOutCubic' });
@@ -155,6 +252,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'line',
     data: chartData,
+    plugins: [directLabelPlugin],
     options: {
       ...baseOptions,
       ...temporalOpts,
@@ -202,7 +300,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         legend: {
-          display: !isTufte,
+          display: !isTufte && !directLabels,
           position: 'top',
           align: 'end',
           labels: {
@@ -224,6 +322,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 text: ds.label || ('Série ' + (i + 1)),
                 fillStyle: c,
                 strokeStyle: c,
+                fontColor: tokens.textPrimary,
                 lineWidth: 2,
                 pointStyle: 'line',
                 hidden: !chart.isDatasetVisible(i),

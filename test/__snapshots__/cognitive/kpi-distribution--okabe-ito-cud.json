@@ -57,10 +57,7 @@
         ]
       },
       "options": {
-        "animation": {
-          "duration": 400,
-          "easing": "easeOutQuart"
-        },
+        "animation": false,
         "indexAxis": "y",
         "maintainAspectRatio": false,
         "plugins": {

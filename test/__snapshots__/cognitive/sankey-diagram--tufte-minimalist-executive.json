@@ -12,8 +12,9 @@
           {
             "backgroundColor": "#1D4ED8",
             "borderWidth": 0,
+            "color": "#111111",
             "colorFrom": "[Function:defaultColorFrom]",
-            "colorMode": "gradient",
+            "colorMode": "from",
             "colorTo": "[Function:defaultColorTo]",
             "data": [
               {
@@ -65,7 +66,36 @@
                 "valence": "negative"
               }
             ],
+            "font": {
+              "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+              "size": 12,
+              "weight": "600"
+            },
+            "kcLabels": {
+              "Chaleur Industrielle": "Chaleur Industrielle",
+              "Gaz Naturel": "Gaz Naturel",
+              "Industrie Électrifiée": "Industrie Électrifiée",
+              "Nucléaire": "Nucléaire",
+              "Pertes Réseau & Transport": "Pertes Réseau & Transport",
+              "Pertes Thermiques": "Pertes Thermiques",
+              "Renouvelable (Éolien/Solaire)": "Renouvelable (Éolien/Solaire)",
+              "Secteur Résidentiel": "Secteur Résidentiel",
+              "Transformation & Chimie": "Transformation & Chimie",
+              "Électricité Réseau": "Électricité Réseau"
+            },
             "label": "Bilan Flux Énergétique National (TWh)",
+            "labels": {
+              "Chaleur Industrielle": " ",
+              "Gaz Naturel": " ",
+              "Industrie Électrifiée": " ",
+              "Nucléaire": " ",
+              "Pertes Réseau & Transport": " ",
+              "Pertes Thermiques": " ",
+              "Renouvelable (Éolien/Solaire)": " ",
+              "Secteur Résidentiel": " ",
+              "Transformation & Chimie": " ",
+              "Électricité Réseau": " "
+            },
             "nodePadding": 16,
             "nodeWidth": 14
           }
@@ -179,8 +209,15 @@
               "padding": 8
             }
           }
-        }
+        },
+        "themeName": "tufte-minimalist-executive"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsSankeyNodeLabels"
+        }
+      ],
       "type": "sankey"
     },
     "kind": "chart-config"

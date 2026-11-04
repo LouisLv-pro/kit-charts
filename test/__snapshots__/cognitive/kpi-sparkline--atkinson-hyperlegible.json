@@ -52,10 +52,7 @@
         ]
       },
       "options": {
-        "animation": {
-          "duration": 400,
-          "easing": "easeOutQuart"
-        },
+        "animation": false,
         "maintainAspectRatio": false,
         "plugins": {
           "legend": {

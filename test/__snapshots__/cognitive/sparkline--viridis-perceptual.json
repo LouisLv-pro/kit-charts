@@ -91,10 +91,10 @@
         },
         "layout": {
           "padding": {
-            "bottom": 4,
-            "left": 2,
-            "right": 6,
-            "top": 4
+            "bottom": 18,
+            "left": 18,
+            "right": 30,
+            "top": 18
           }
         },
         "maintainAspectRatio": false,
@@ -143,8 +143,15 @@
               "display": false
             }
           }
-        }
+        },
+        "themeName": "viridis-perceptual"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsSparkExtrema"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

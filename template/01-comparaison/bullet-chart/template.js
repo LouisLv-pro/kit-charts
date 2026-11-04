@@ -126,8 +126,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         borderColor: ds.borderColor || bg,
         borderWidth: 0,
         borderRadius: isTufte ? 0 : 3,
-        barPercentage: 0.45,
-        categoryPercentage: 0.8,
+        grouped: false, // superposition : la mesure se dessine devant les paliers
+        barPercentage: 0.32,
+        categoryPercentage: 0.7,
         order: 1
       };
     }
@@ -153,21 +154,34 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       };
     }
 
-    // 3. Paliers de contexte qualitatif (Bandes de fond)
-    const bandColor = isDark ? '#4C566A' : '#CBD5E1';
-    const alertBorderColor = isDark ? '#4C566A' : '#CBD5E1';
+    // 3. Paliers de contexte qualitatif : bandes superposées, le plus large derrière,
+    // dégradé de gris (le palier le plus bas est le plus sombre, convention Few).
+    const bandIdxs = rawDatasets.map((d, i) => i).filter(i => {
+      const l = (rawDatasets[i].label || '').toLowerCase();
+      return i > 1 && !(l.includes('réalisé') || l.includes('actual') || l.includes('objectif') || l.includes('target') || l.includes('cible') || l.includes('benchmark'));
+    });
+    const bandSum = (i) => (Array.isArray(rawDatasets[i].data) ? rawDatasets[i].data : []).reduce((a, v) => a + (Number(v) || 0), 0);
+    const bandsAsc = bandIdxs.slice().sort((a, b) => bandSum(a) - bandSum(b));
+    const bandRank = Math.max(0, bandsAsc.indexOf(idx));
+    const bandCount = Math.max(1, bandsAsc.length);
+    const lightShades = ['#94A3B8', '#CBD5E1', '#E2E8F0', '#F1F5F9'];
+    const darkShades = ['#8693B0', '#65728F', '#4A566F', '#3E4860']; // le palier le plus large reste nettement plus clair que le fond sombre
+    const shades = isDark ? darkShades : lightShades;
+    const shadeIdx = bandCount === 1 ? 1 : Math.min(shades.length - 1, Math.round(bandRank * (Math.min(3, bandCount) - 1) / (bandCount - 1)));
+    const bandColor = shades[shadeIdx];
 
     return {
       label: ds.label || `Palier ${idx}`,
       type: 'bar',
       data: Array.isArray(ds.data) ? [...ds.data] : [],
       backgroundColor: ds.backgroundColor || bandColor,
-      borderColor: ds.borderColor || alertBorderColor,
+      borderColor: ds.borderColor || bandColor,
       borderWidth: 0,
       borderRadius: 0,
-      barPercentage: 0.85,
-      categoryPercentage: 0.8,
-      order: 10 + idx
+      grouped: false,
+      barPercentage: 1.0,
+      categoryPercentage: 0.7,
+      order: 10 + bandRank // ordre élevé = dessiné en premier : le plus large derrière, le plus petit devant
     };
   });
 
@@ -214,7 +228,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             if (ctx && ctx.datasetIndex !== 0) return null;
             const rawVal = typeof val === 'object' && val !== null ? (val.x ?? val.value ?? 0) : val;
             if (typeof rawVal === 'number') {
-              return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(rawVal) + ' MW';
+              return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(rawVal) ;
             }
             return String(rawVal || '');
           }

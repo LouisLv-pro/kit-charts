@@ -131,7 +131,7 @@ const networkLinksPlugin = {
         continue;
       }
 
-      let strokeColor = isDark ? 'rgba(216, 222, 233, 0.28)' : 'rgba(71, 85, 105, 0.25)';
+      let strokeColor = isDark ? 'rgba(216, 222, 233, 0.5)' : 'rgba(71, 85, 105, 0.45)';
       let strokeWidth = Math.max(1, Math.min(4, link.weight || 1.5));
       let isDashed = false;
 
@@ -157,6 +157,121 @@ const networkLinksPlugin = {
       ctx.stroke();
     }
 
+    ctx.restore();
+  }
+};
+
+/**
+ * Plugin Canvas : libellés des nœuds (N <= 12), halo de la couleur de surface pour le contraste.
+ */
+const networkLabelsPlugin = {
+  id: 'networkLabelsPlugin',
+  afterDatasetsDraw(chart) {
+    const meta = chart.getDatasetMeta(0);
+    const tokens = chart.options?.plugins?.networkMeta?.tokens || {};
+    const isDark = chart.options?.plugins?.networkMeta?.isDark;
+    if (!meta || !meta.data) return;
+    const ctx = chart.ctx;
+    const compact = chart.width < 460;
+    const fontSize = compact ? 10.5 : 11;
+    ctx.save();
+    ctx.font = `600 ${fontSize}px ${tokens.fontFamily || 'sans-serif'}`;
+    ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 3;
+
+    // Nœuds en pixels
+    const nodes = [];
+    meta.data.forEach((el, i) => {
+      const raw = chart.data.datasets[0].data[i];
+      if (!el || !raw || !Number.isFinite(el.x)) return;
+      nodes.push({ i, raw, x: el.x, y: el.y, r: (el.options && el.options.radius) || raw.r || 8 });
+    });
+    // Arêtes en pixels (pour éviter qu'un libellé soit traversé)
+    const xs = chart.scales.x, ys = chart.scales.y;
+    const segs = [];
+    (chart.data.links || []).forEach((l) => {
+      const pick = (k) => (typeof k === 'number' ? chart.data.datasets[0].data[k]
+        : (typeof k === 'string' ? chart.data.datasets[0].data.find(n => n.id === k || n.label === k) : k));
+      const a = pick(l.source), b = pick(l.target);
+      if (!a || !b) return;
+      segs.push([xs.getPixelForValue(a.x), ys.getPixelForValue(a.y), xs.getPixelForValue(b.x), ys.getPixelForValue(b.y)]);
+    });
+
+    const H = fontSize + 4;
+    const rectHitsSeg = (rc, sg) => {
+      const n = Math.max(2, Math.ceil(Math.hypot(sg[2] - sg[0], sg[3] - sg[1]) / 3));
+      let hits = 0;
+      for (let k = 0; k <= n; k++) {
+        const px = sg[0] + (sg[2] - sg[0]) * k / n, py = sg[1] + (sg[3] - sg[1]) * k / n;
+        if (px >= rc.x0 && px <= rc.x0 + rc.w && py >= rc.y0 && py <= rc.y0 + rc.h) hits++;
+      }
+      return hits;
+    };
+    const overlapArea = (p, q) => {
+      const w = Math.min(p.x0 + p.w, q.x0 + q.w) - Math.max(p.x0, q.x0);
+      const h = Math.min(p.y0 + p.h, q.y0 + q.h) - Math.max(p.y0, q.y0);
+      return w > 0 && h > 0 ? w * h : 0;
+    };
+    const rectHitsCircle = (rc, c) => {
+      const cx = Math.max(rc.x0, Math.min(c.x, rc.x0 + rc.w)), cy = Math.max(rc.y0, Math.min(c.y, rc.y0 + rc.h));
+      return Math.hypot(c.x - cx, c.y - cy) < c.r + 1;
+    };
+
+    const placed = [];
+    // Les plus gros nœuds d'abord : ils obtiennent leur meilleure position
+    nodes.slice().sort((p, q) => q.r - p.r).forEach((nd) => {
+      const text = nd.raw.label;
+      if (!text) return;
+      const w = ctx.measureText(text).width + 4;
+      const gap = 3;
+      const cands = [
+        { x0: nd.x - w / 2, y0: nd.y + nd.r + gap },
+        { x0: nd.x - w / 2, y0: nd.y - nd.r - gap - H },
+        { x0: nd.x + nd.r + gap, y0: nd.y - H / 2 },
+        { x0: nd.x - nd.r - gap - w, y0: nd.y - H / 2 }
+      ];
+      let best = null;
+      cands.forEach((c, ci) => {
+        const rc = { x0: Math.max(2, Math.min(c.x0, chart.width - 2 - w)), y0: c.y0, w, h: H };
+        let cost = ci * 0.5;
+        if (rc.y0 < 2 || rc.y0 + H > chart.height - 2) cost += 60;
+        placed.forEach((p) => { cost += overlapArea(rc, p) * 0.5; });
+        segs.forEach((sg) => { cost += rectHitsSeg(rc, sg) * 2.5; });
+        nodes.forEach((o) => { if (rectHitsCircle(rc, o)) cost += 40; });
+        if (!best || cost < best.cost) best = { cost, rc };
+      });
+      placed.push(best.rc);
+      ctx.textAlign = 'left';
+      ctx.strokeStyle = isDark ? (tokens.surface || '#2E3440') : '#FFFFFF';
+      ctx.fillStyle = tokens.textPrimary || (isDark ? '#ECEFF4' : '#0F172A');
+      ctx.strokeText(text, best.rc.x0 + 2, best.rc.y0 + H / 2);
+      ctx.fillText(text, best.rc.x0 + 2, best.rc.y0 + H / 2);
+    });
+
+    // Légende des communautés (couleurs de nœuds), hors carte étroite
+    if (!compact) {
+      const clusters = [];
+      chart.data.datasets[0].data.forEach((d, i) => {
+        if (clusters.findIndex(c => c.cluster === d.cluster) < 0) clusters.push({ cluster: d.cluster, color: d.color });
+      });
+      clusters.sort((a, b) => a.cluster - b.cluster);
+      if (clusters.length > 1) {
+        ctx.font = `500 11px ${tokens.fontFamily || 'sans-serif'}`;
+        ctx.lineWidth = 0;
+        let lx = 8;
+        const ly = chart.height - 10;
+        ctx.textAlign = 'left';
+        clusters.forEach((c) => {
+          const t = `Communauté ${c.cluster + 1}`;
+          ctx.fillStyle = c.color;
+          ctx.beginPath(); ctx.arc(lx + 5, ly, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = tokens.textSecondary || tokens.textPrimary;
+          ctx.fillText(t, lx + 14, ly);
+          lx += 14 + ctx.measureText(t).width + 14;
+        });
+      }
+    }
     ctx.restore();
   }
 };
@@ -202,9 +317,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
     if (node.role) {
       const emp = getEmphasisStyle(tokens, node.role, { radius: nodeRadius });
-      nodeColor = emp.backgroundColor || nodeColor;
-      nodeBorderColor = emp.borderColor || nodeBorderColor;
-      nodeBorderWidth = emp.borderWidth !== undefined ? emp.borderWidth : 2;
+      // La couleur de communauté est conservée ; le rôle ne joue que sur la bordure (focal) ou la couleur d'alerte (anomalie).
+      if (node.role === 'anomaly') nodeColor = emp.backgroundColor || nodeColor;
+      if (node.role === 'focal') {
+        nodeBorderColor = tokens.textPrimary || '#0F172A';
+        nodeBorderWidth = 3;
+      }
     } else if (node.valence !== undefined || node.delta !== undefined) {
       nodeColor = getValenceColor(tokens, node.valence !== undefined ? node.valence : node.delta, node.metricType || 'gain');
     }
@@ -254,6 +372,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     options: {
       scales: {},
       ...defaultOpts,
+      layout: { padding: { top: 8, bottom: 22, left: 6, right: 6 } },
       animation: getAccessibleAnimationOptions(tokens, {
         duration: (isTufte || reduceMotion) ? 0 : 400,
         easing: 'easeOutQuart'
@@ -316,6 +435,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       },
       scales: {
         x: {
+          display: false,
+          min: 0,
+          max: 100,
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -332,6 +454,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         },
         y: {
+          display: false,
+          min: 0,
+          max: 100,
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -349,7 +474,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         }
       }
     },
-    plugins: [networkLinksPlugin]
+    plugins: [networkLinksPlugin, networkLabelsPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {

@@ -130,6 +130,14 @@
         },
         "showDataLabels": {
           "type": "boolean"
+        },
+        "xLabel": {
+          "type": "string",
+          "description": "Titre de l'axe X (variable mesurée, avec unité)."
+        },
+        "yLabel": {
+          "type": "string",
+          "description": "Titre de l'axe Y (effectif)."
         }
       },
       "required": [

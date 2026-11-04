@@ -56,7 +56,7 @@ function generateWaffleData(percentage = 68) {
   const clamped = Math.max(0, Math.min(100, Math.round(percentage)));
   return Array.from({ length: 100 }, (_, i) => ({
     x: (i % 10) + 1,
-    y: Math.floor(i / 10) + 1,
+    y: 10 - Math.floor(i / 10), // remplissage de bas en haut, ligne par ligne
     v: i < clamped ? 1 : 0
   }));
 }
@@ -101,7 +101,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const isTufte = tokens.name === 'tufte-minimalist-executive';
   const showDataLabels = (customData && customData.showDataLabels !== undefined) ? customData.showDataLabels : (options.showDataLabels !== undefined ? options.showDataLabels : true);
   const primaryColor = getColor(tokens, 0);
-  const inactiveColor = isDark ? 'rgba(236, 239, 244, 0.12)' : 'rgba(15, 23, 42, 0.08)';
+  const inactiveColor = isDark ? 'rgba(236, 239, 244, 0.22)' : 'rgba(15, 23, 42, 0.38)'; // cellules vides : >= 2:1 sur fond clair
 
   // Préparation des données avec support d'accentuation et de valence
   const rawData = customData || DEFAULT_DATA;
@@ -128,15 +128,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     return {
       label: ds.label || 'Progression (%)',
       data: data,
+      // Cellules carrées : la zone de tracé est rendue carrée par waffleSquarePlugin
       width: ({ chart }) => {
         const area = chart.chartArea || {};
-        const w = (area.right - area.left) || 300;
-        return Math.max(12, Math.floor(w / 11) - 3);
+        const side = Math.min((area.right - area.left) || 300, (area.bottom - area.top) || 300);
+        return Math.max(8, Math.floor(side / 10) - 3);
       },
       height: ({ chart }) => {
         const area = chart.chartArea || {};
-        const h = (area.bottom - area.top) || 300;
-        return Math.max(12, Math.floor(h / 11) - 3);
+        const side = Math.min((area.right - area.left) || 300, (area.bottom - area.top) || 300);
+        return Math.max(8, Math.floor(side / 10) - 3);
       },
       backgroundColor: (c) => {
         const raw = c.raw || (c.dataset?.data?.[c.dataIndex]);
@@ -150,6 +151,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   });
 
   const chartData = { datasets };
+
+  const bottomReserve = showDataLabels ? 25 : 5;
+  const waffleSquarePlugin = {
+    id: 'waffleSquarePlugin_' + Math.random().toString(36).substring(2, 7),
+    beforeLayout(chart) {
+      const side = Math.max(60, Math.min(chart.width, chart.height - bottomReserve));
+      const padX = Math.max(0, Math.floor((chart.width - side) / 2));
+      const pad = chart.options.layout && chart.options.layout.padding;
+      if (pad && typeof pad === 'object') {
+        pad.left = padX;
+        pad.right = padX;
+      }
+    }
+  };
 
   const waffleSummaryPlugin = {
     id: 'waffleSummaryPlugin_' + Math.random().toString(36).substring(2, 7),
@@ -178,11 +193,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'matrix',
     data: chartData,
-    plugins: [waffleSummaryPlugin],
+    plugins: [waffleSquarePlugin, waffleSummaryPlugin],
     options: {
       ...defaultOpts,
       layout: {
-        padding: { bottom: showDataLabels ? 25 : 5 }
+        padding: { left: 0, right: 0, top: 0, bottom: showDataLabels ? 25 : 5 }
       },
       animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
       interaction: {
@@ -220,11 +235,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       scales: {
         x: {
           display: false,
+          offset: false,
           min: 0.5,
           max: 10.5
         },
         y: {
           display: false,
+          offset: false,
           min: 0.5,
           max: 10.5
         }

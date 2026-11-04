@@ -144,30 +144,28 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const datasets = rawDatasets.map((ds, dsIdx) => {
     const flowData = Array.isArray(ds.data) ? ds.data : [];
 
+    // Couleur par noeud (source unique) : sinon le plugin Sankey colore chaque noeud avec le dernier flux qui le touche.
+    // Noeud puits dont tous les flux entrants sont négatifs (pertes) = rouge sémantique ; autres = palette catégorielle.
+    const nodeOrder = [];
+    const incomingAllNegative = {};
+    flowData.forEach((it) => {
+      [it.from, it.to].forEach((n) => { if (nodeOrder.indexOf(n) < 0) nodeOrder.push(n); });
+      const neg = it.valence === 'negative' || it.valence === 'cost' || it.valence === 'loss';
+      incomingAllNegative[it.to] = incomingAllNegative[it.to] === undefined ? neg : (incomingAllNegative[it.to] && neg);
+    });
+    const negColor = (tokens.semantic && tokens.semantic.negative) || '#C62828';
+    const nodeColor = {};
+    let colorIdx = 0;
+    nodeOrder.forEach((n) => {
+      nodeColor[n] = incomingAllNegative[n] ? negColor : getColor(tokens, colorIdx++);
+    });
     const defaultColorFrom = (ctx) => {
-      const palette = tokens.palette || ['#2B8CBE', '#E66101', '#5E3C99', '#4DAC26'];
       const item = ctx.dataset?.data?.[ctx.dataIndex];
-      if (item && item.valence) {
-        if (item.valence === 'positive' || item.valence === 'gain') return getValenceColor(tokens, 'up', 'gain');
-        if (item.valence === 'negative' || item.valence === 'cost' || item.valence === 'loss') return getValenceColor(tokens, 'up', 'cost');
-      }
-      const fromNode = item?.from || '';
-      let hash = 0;
-      for (let i = 0; i < fromNode.length; i++) hash += fromNode.charCodeAt(i);
-      return palette[Math.abs(hash) % palette.length];
+      return nodeColor[item?.from] || getColor(tokens, 0);
     };
-
     const defaultColorTo = (ctx) => {
-      const palette = tokens.palette || ['#2B8CBE', '#E66101', '#5E3C99', '#4DAC26'];
       const item = ctx.dataset?.data?.[ctx.dataIndex];
-      if (item && item.valence) {
-        if (item.valence === 'positive' || item.valence === 'gain') return getValenceColor(tokens, 'up', 'gain');
-        if (item.valence === 'negative' || item.valence === 'cost' || item.valence === 'loss') return getValenceColor(tokens, 'up', 'cost');
-      }
-      const toNode = item?.to || '';
-      let hash = 0;
-      for (let i = 0; i < toNode.length; i++) hash += toNode.charCodeAt(i);
-      return palette[Math.abs(hash) % palette.length];
+      return nodeColor[item?.to] || getColor(tokens, 0);
     };
 
     return {
@@ -175,16 +173,78 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       data: flowData,
       colorFrom: ds.colorFrom || defaultColorFrom,
       colorTo: ds.colorTo || defaultColorTo,
-      colorMode: ds.colorMode || 'gradient',
+      colorMode: ds.colorMode || 'from',
+      color: tokens.textPrimary,
+      font: isNarrowViewport ? { size: 10 } : { family: tokens.fontFamily, size: 12, weight: '600' },
       borderWidth: ds.borderWidth ?? 0,
       nodeWidth: ds.nodeWidth ?? 14,
       nodePadding: ds.nodePadding ?? (isNarrowViewport ? 10 : 16),
       // Mode compact (viewport étroit uniquement) : police réduite + libellés
       // abrégés lus par chartjs-chart-sankey à chaque `draw()`. Absent sinon.
-      ...(isNarrowViewport ? { font: { size: 10 }, labels: buildShortLabels(flowData) } : {}),
+      ...(() => {
+        const map = isNarrowViewport ? buildShortLabels(flowData) : {};
+        const blank = {};
+        flowData.forEach((it) => { [it.from, it.to].forEach((n) => { blank[n] = ' '; if (map[n] === undefined) map[n] = n; }); });
+        return { labels: blank, kcLabels: map };
+      })(),
       backgroundColor: ds.backgroundColor || getColor(tokens, dsIdx)
     };
   });
+
+  // Libellés de nœuds dessinés ici (et non par chartjs-chart-sankey) : halo de la couleur de fond pour
+  // garantir le contraste sur les rubans, et résolution des chevauchements verticaux par colonne.
+  const nodeLabelPlugin = {
+    id: 'kitChartsSankeyNodeLabels',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      const ctrl = meta && meta.controller;
+      const nodes = ctrl && ctrl._nodes;
+      const xs = meta && meta.xScale, ys = meta && meta.yScale;
+      const ds = chart.data.datasets[0];
+      if (!nodes || !xs || !ys || !ds || !chart.chartArea) return;
+      const { ctx, chartArea } = chart;
+      const size = chart.width < 460 ? 11 : 12;
+      const lineH = size + 3;
+      const nodeW = ds.nodeWidth || 14;
+      const texts = ds.kcLabels || {};
+      const shorts = ds.kcShort || {};
+      const halo = tokens.surfaceRaised || tokens.bg || '#FFFFFF';
+      const groups = {};
+      nodes.forEach((n) => {
+        const px = xs.getPixelForValue(n.x);
+        const top = ys.getPixelForValue(n.y);
+        const h = Math.abs(ys.getPixelForValue(n.y + Math.max(n.in || n.out, n.out || n.in)) - top);
+        const left = px < chartArea.left + (chartArea.right - chartArea.left) / 2;
+        const key = (left ? 'L' : 'R') + Math.round(px);
+        (groups[key] = groups[key] || []).push({
+          text: String(chart.width < 460 && h < 26 && shorts[n.key] !== undefined ? shorts[n.key] : (texts[n.key] !== undefined ? texts[n.key] : n.key)),
+          left, y: top + h / 2, x: left ? px + nodeW + 4 : px - 4
+        });
+      });
+      ctx.save();
+      ctx.font = `600 ${size}px ${tokens.fontFamily}`;
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3;
+      Object.keys(groups).forEach((k) => {
+        const g = groups[k].sort((a, b) => a.y - b.y);
+        for (let i = 1; i < g.length; i++) if (g[i].y < g[i - 1].y + lineH) g[i].y = g[i - 1].y + lineH;
+        const maxY = chartArea.bottom - lineH / 2;
+        if (g.length && g[g.length - 1].y > maxY) {
+          g[g.length - 1].y = maxY;
+          for (let i = g.length - 2; i >= 0; i--) if (g[i].y > g[i + 1].y - lineH) g[i].y = g[i + 1].y - lineH;
+        }
+        g.forEach((it) => {
+          ctx.textAlign = it.left ? 'left' : 'right';
+          ctx.strokeStyle = halo;
+          ctx.strokeText(it.text, it.x, it.y);
+          ctx.fillStyle = tokens.textPrimary;
+          ctx.fillText(it.text, it.x, it.y);
+        });
+      });
+      ctx.restore();
+    }
+  };
 
   const chartData = { datasets };
   const baseOptions = getChartDefaultOptions(tokens);
@@ -197,10 +257,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       ...baseOptions,
       responsive: true,
       maintainAspectRatio: false,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 450,
-        easing: 'easeOutQuart'
-      }),
+      animation: false,
       interaction: {
         mode: 'nearest',
         intersect: true
@@ -247,7 +304,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }
         }
       }
-    }
+    },
+    plugins: [nodeLabelPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {

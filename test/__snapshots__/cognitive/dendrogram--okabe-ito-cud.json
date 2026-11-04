@@ -10,8 +10,8 @@
       "data": {
         "datasets": [
           {
-            "backgroundColor": "#CBD5E1",
-            "borderColor": "#CBD5E1",
+            "backgroundColor": "#334155",
+            "borderColor": "#334155",
             "borderDash": [],
             "borderWidth": 2,
             "data": [
@@ -33,6 +33,10 @@
               },
               {
                 "x": 14,
+                "y": 2
+              },
+              {
+                "x": 14,
                 "y": 1.5
               },
               {
@@ -41,11 +45,11 @@
               },
               {
                 "x": 32,
-                "y": 3
+                "y": 3.5
               },
               {
                 "x": 18,
-                "y": 3
+                "y": 3.5
               },
               {
                 "x": 18,
@@ -53,6 +57,10 @@
               },
               {
                 "x": 0,
+                "y": 3
+              },
+              {
+                "x": 18,
                 "y": 3
               },
               {
@@ -68,9 +76,10 @@
             "label": "Cluster B2C Grand Public",
             "pointHitRadius": 12,
             "pointHoverRadius": 6,
-            "pointRadius": 3,
+            "pointRadius": 0,
             "showLine": true,
-            "stepped": false
+            "stepped": false,
+            "tension": 0
           },
           {
             "backgroundColor": "#0072B2",
@@ -93,44 +102,37 @@
               {
                 "x": 0,
                 "y": 6
-              },
-              {
-                "x": 22,
-                "y": 5.5
-              },
-              {
-                "x": 48,
-                "y": 5.5
               }
             ],
             "fill": false,
             "label": "Cluster B2B Professionnel (Cible Focale)",
             "pointHitRadius": 12,
             "pointHoverRadius": 6,
-            "pointRadius": 3,
+            "pointRadius": 0,
             "showLine": true,
-            "stepped": false
+            "stepped": false,
+            "tension": 0
           },
           {
-            "backgroundColor": "#CBD5E1",
-            "borderColor": "#CBD5E1",
+            "backgroundColor": "#334155",
+            "borderColor": "#334155",
             "borderDash": [],
             "borderWidth": 2,
             "data": [
               {
                 "x": 32,
-                "y": 2.25
+                "y": 2.5
               },
               {
                 "x": 65,
-                "y": 2.25
+                "y": 2.5
               },
               {
                 "x": 65,
                 "y": 5.5
               },
               {
-                "x": 48,
+                "x": 22,
                 "y": 5.5
               }
             ],
@@ -138,9 +140,10 @@
             "label": "Jonction Hiérarchique Principale",
             "pointHitRadius": 12,
             "pointHoverRadius": 6,
-            "pointRadius": 3,
+            "pointRadius": 0,
             "showLine": true,
-            "stepped": false
+            "stepped": false,
+            "tension": 0
           },
           {
             "backgroundColor": "#475569",
@@ -161,12 +164,13 @@
               }
             ],
             "fill": false,
-            "label": "Seuil de Partition (Cutoff Benchmark)",
+            "label": "Seuil de Partition (K=2)",
             "pointHitRadius": 12,
             "pointHoverRadius": 6,
             "pointRadius": 0,
             "showLine": true,
-            "stepped": false
+            "stepped": false,
+            "tension": 0
           }
         ]
       },
@@ -210,7 +214,7 @@
         "plugins": {
           "legend": {
             "align": "end",
-            "display": true,
+            "display": false,
             "labels": {
               "boxWidth": 8,
               "color": "#1E293B",
@@ -258,6 +262,7 @@
         "responsive": true,
         "scales": {
           "x": {
+            "beginAtZero": true,
             "border": {
               "display": false
             },
@@ -266,6 +271,7 @@
               "drawBorder": false,
               "lineWidth": 1
             },
+            "min": 0,
             "ticks": {
               "color": "#334155",
               "font": {
@@ -309,8 +315,15 @@
             },
             "type": "linear"
           }
-        }
+        },
+        "themeName": "okabe-ito-cud"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "dendroCutoffLabel"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

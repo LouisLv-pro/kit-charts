@@ -97,24 +97,66 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   // Préparation des données
   const rawData = customData || DEFAULT_DATA;
+  const firstDs = (rawData.datasets || [])[0] || {};
+  const valueKey = firstDs.key || 'value';
+  const ctx0Total = (firstDs.tree || firstDs.data || []).reduce((a, it) => a + (Number(it && it[valueKey]) || 0), 0);
+  const unitTxt = firstDs.unit ? ` ${firstDs.unit}` : '';
   const datasets = (rawData.datasets || []).map((ds, idx) => {
-    // Détermination de la couleur de fond par élément ou groupe avec support de l'accentuation et de la valence
-    const bgFn = typeof ds.backgroundColor === 'function'
-      ? ds.backgroundColor
-      : (ctx) => {
-          const raw = ctx.raw;
-          const item = raw ? (raw._data || raw) : null;
-          if (item) {
-            if (item.emphasisRole || item.role) {
-              return getEmphasisStyle(tokens, item.emphasisRole || item.role).backgroundColor || getColor(tokens, 0);
-            }
-            if (item.valence !== undefined || item.direction !== undefined) {
-              return getValenceColor(tokens, item.valence !== undefined ? item.valence : item.direction, item.metricType || 'gain');
-            }
-          }
-          const itemIndex = ctx.dataIndex !== undefined ? ctx.dataIndex : 0;
-          return getColor(tokens, itemIndex);
-        };
+    // Couleur par groupe parent (teinte héritée), luminosité variable pour les feuilles
+    const treeItems = ds.tree || ds.data || [];
+    const groupKey = (ds.groups && ds.groups[0]) || 'category';
+    const groupNames = [];
+    treeItems.forEach(it => { if (it && !groupNames.includes(it[groupKey])) groupNames.push(it[groupKey]); });
+    const leafRank = {};
+    const leafCount = {};
+    treeItems.forEach(it => { if (it) leafCount[it[groupKey]] = (leafCount[it[groupKey]] || 0) + 1; });
+    const seenLeaf = {};
+    treeItems.forEach(it => {
+      if (!it) return;
+      const g = it[groupKey];
+      leafRank[g + '\u0000' + (it.name || '')] = seenLeaf[g] || 0;
+      seenLeaf[g] = (seenLeaf[g] || 0) + 1;
+    });
+    const hexToRgb = (hex) => {
+      const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+      if (!m) return null;
+      const n = parseInt(m[1], 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    };
+    const mixHex = (a, b, t) => {
+      const ca = hexToRgb(a), cb = hexToRgb(b);
+      if (!ca || !cb) return a;
+      return '#' + ca.map((v, i) => Math.round(v + (cb[i] - v) * t).toString(16).padStart(2, '0')).join('');
+    };
+    const cellColor = (ctx) => {
+      const raw = ctx.raw;
+      const item = raw ? (raw._data || raw) : null;
+      if (item) {
+        if (item.emphasisRole || item.role) {
+          return getEmphasisStyle(tokens, item.emphasisRole || item.role).backgroundColor || getColor(tokens, 0);
+        }
+        if (item.valence !== undefined || item.direction !== undefined) {
+          return getValenceColor(tokens, item.valence !== undefined ? item.valence : item.direction, item.metricType || 'gain');
+        }
+      }
+      const isLeaf = raw && raw.l !== undefined ? raw.l >= 1 : true;
+      const gName = isLeaf ? (item && item[groupKey]) : (raw && raw.g);
+      let gi = groupNames.indexOf(gName);
+      if (gi < 0) gi = ctx.dataIndex !== undefined ? ctx.dataIndex : 0;
+      const base = getColor(tokens, gi);
+      if (!isLeaf) return base;
+      const n = leafCount[gName] || 1;
+      const k = leafRank[gName + '\u0000' + ((item && item.name) || '')] || 0;
+      const t = n > 1 ? 0.12 + 0.38 * (k / (n - 1)) : 0.2;
+      return mixHex(base, tokens.isDark ? '#000000' : '#FFFFFF', tokens.isDark ? t * 0.7 : t);
+    };
+    const textOn = (bg) => {
+      const f = KitChartsTheme && KitChartsTheme.getContrastingTextColor;
+      if (f) return f(bg, '#FFFFFF', '#0F172A');
+      const c = hexToRgb(bg);
+      return c && (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) < 140 ? '#FFFFFF' : '#0F172A';
+    };
+    const bgFn = typeof ds.backgroundColor === 'function' ? ds.backgroundColor : cellColor;
 
     return {
       tree: ds.tree || ds.data || [],
@@ -137,16 +179,18 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           const val = raw.v !== undefined ? raw.v : (item.value || '');
           return val ? `${name} (${val})` : name;
         },
-        color: (ctx) => {
-          // Contraste de texte adaptatif
-          return tokens.isDark ? '#ECEFF4' : '#FFFFFF';
-        },
+        color: (ctx) => textOn(bgFn(ctx)),
         font: {
           family: tokens.fontFamily,
           size: 11,
           weight: '600'
         },
         padding: 4
+      },
+      captions: {
+        display: true,
+        color: (ctx) => textOn(bgFn(ctx)),
+        font: { family: tokens.fontFamily, size: 12, weight: '700' }
       }
     };
   });
@@ -198,7 +242,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               const formatted = typeof val === 'number'
                 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val)
                 : val;
-              return ` Valeur : ${formatted} Mds €`;
+              const tot = ctx0Total;
+              const part = (typeof val === 'number' && tot > 0) ? ` (${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format((val / tot) * 100)}% du total)` : '';
+              return ` Valeur : ${formatted}${unitTxt}${part}`;
             }
           }
         }

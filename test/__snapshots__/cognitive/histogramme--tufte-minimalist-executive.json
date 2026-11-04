@@ -15,7 +15,7 @@
             "borderColor": "#111111",
             "borderRadius": 0,
             "borderWidth": 1,
-            "categoryPercentage": 0.98,
+            "categoryPercentage": 1,
             "data": [
               14,
               42,
@@ -44,7 +44,7 @@
         "animation": false,
         "axis": "x",
         "barPercentage": 1,
-        "categoryPercentage": 0.98,
+        "categoryPercentage": 1,
         "elements": {
           "point": {
             "hitRadius": 12,
@@ -89,7 +89,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -141,11 +140,21 @@
               "color": "#333333",
               "font": {
                 "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
-                "size": 10
+                "size": 11
               },
               "maxRotation": 45,
               "minRotation": 0,
               "padding": 6
+            },
+            "title": {
+              "color": "#333333",
+              "display": true,
+              "font": {
+                "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Temps de réponse (ms)"
             }
           },
           "y": {
@@ -166,9 +175,20 @@
                 "size": 11
               },
               "padding": 8
+            },
+            "title": {
+              "color": "#333333",
+              "display": true,
+              "font": {
+                "family": "'Geist', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Effectif (requêtes)"
             }
           }
-        }
+        },
+        "themeName": "tufte-minimalist-executive"
       },
       "type": "bar"
     },

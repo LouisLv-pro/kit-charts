@@ -10,24 +10,11 @@
       "data": {
         "datasets": [
           {
-            "backgroundColor": [
-              "#88C0D0",
-              "#88C0D0",
-              "#88C0D0"
-            ],
-            "borderColor": [
-              "#88C0D0",
-              "#88C0D0",
-              "#88C0D0"
-            ],
-            "borderWidth": [
-              2,
-              2,
-              2
-            ],
+            "backgroundColor": "#88C0D0",
+            "borderColor": "#88C0D0",
             "data": [
               {
-                "borderColor": "#88C0D0",
+                "borderColor": "#3B4252",
                 "borderWidth": 2,
                 "col": "SUV (45%)",
                 "colWeightPct": "45.0",
@@ -38,14 +25,19 @@
                 "marketShare": "17.1",
                 "role": "focal",
                 "sub": "Électrique (BEV)",
+                "subIndex": 0,
                 "subSharePct": "38.0",
                 "v": 38,
                 "w": 0.45,
-                "x": 0.225,
-                "y": 0.19
+                "x": 22.5,
+                "x0": 0,
+                "x1": 45,
+                "y": 19,
+                "y0": 0,
+                "y1": 38
               },
               {
-                "borderColor": "#88C0D0",
+                "borderColor": "#3B4252",
                 "borderWidth": 2,
                 "col": "Berlines & Compactes (35%)",
                 "colWeightPct": "35.0",
@@ -56,14 +48,19 @@
                 "marketShare": "15.8",
                 "role": "focal",
                 "sub": "Électrique (BEV)",
+                "subIndex": 0,
                 "subSharePct": "45.0",
                 "v": 45,
                 "w": 0.35,
-                "x": 0.625,
-                "y": 0.225
+                "x": 62.5,
+                "x0": 45,
+                "x1": 80,
+                "y": 22.5,
+                "y0": 0,
+                "y1": 45
               },
               {
-                "borderColor": "#88C0D0",
+                "borderColor": "#3B4252",
                 "borderWidth": 2,
                 "col": "Citadines (20%)",
                 "colWeightPct": "20.0",
@@ -74,171 +71,183 @@
                 "marketShare": "10.0",
                 "role": "focal",
                 "sub": "Électrique (BEV)",
+                "subIndex": 0,
                 "subSharePct": "50.0",
                 "v": 50,
                 "w": 0.2,
-                "x": 0.9,
-                "y": 0.25
+                "x": 90,
+                "x0": 80,
+                "x1": 100,
+                "y": 25,
+                "y0": 0,
+                "y1": 50
               }
             ],
             "label": "Électrique (BEV)",
-            "pointHitRadius": 12,
-            "pointHoverRadius": 10,
-            "pointRadius": "[Function:pointRadius]"
+            "pointHitRadius": 40,
+            "pointHoverRadius": 0,
+            "pointRadius": 0,
+            "pointStyle": "rect"
           },
           {
-            "backgroundColor": [
-              "rgba(76, 86, 106, 0.4)",
-              "rgba(76, 86, 106, 0.4)",
-              "rgba(76, 86, 106, 0.4)"
-            ],
-            "borderColor": [
-              "#4C566A",
-              "#4C566A",
-              "#4C566A"
-            ],
-            "borderWidth": [
-              1,
-              1,
-              1
-            ],
+            "backgroundColor": "#EBCB8B",
+            "borderColor": "#EBCB8B",
             "data": [
               {
-                "borderColor": "#4C566A",
-                "borderWidth": 1,
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
                 "col": "SUV (45%)",
                 "colWeightPct": "45.0",
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "#EBCB8B",
                 "growth": 12,
                 "h": 0.42,
                 "label": "SUV - Hybride",
                 "marketShare": "18.9",
                 "role": "context",
                 "sub": "Hybride (HEV/PHEV)",
+                "subIndex": 1,
                 "subSharePct": "42.0",
                 "v": 42,
                 "w": 0.45,
-                "x": 0.225,
-                "y": 0.59
+                "x": 22.5,
+                "x0": 0,
+                "x1": 45,
+                "y": 59,
+                "y0": 38,
+                "y1": 80
               },
               {
-                "borderColor": "#4C566A",
-                "borderWidth": 1,
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
                 "col": "Berlines & Compactes (35%)",
                 "colWeightPct": "35.0",
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "#EBCB8B",
                 "growth": 8.4,
                 "h": 0.35,
                 "label": "Berlines - Hybride",
                 "marketShare": "12.2",
                 "role": "context",
                 "sub": "Hybride (HEV/PHEV)",
+                "subIndex": 1,
                 "subSharePct": "35.0",
                 "v": 35,
                 "w": 0.35,
-                "x": 0.625,
-                "y": 0.625
+                "x": 62.5,
+                "x0": 45,
+                "x1": 80,
+                "y": 62.5,
+                "y0": 45,
+                "y1": 80
               },
               {
-                "borderColor": "#4C566A",
-                "borderWidth": 1,
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
                 "col": "Citadines (20%)",
                 "colWeightPct": "20.0",
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "#EBCB8B",
                 "growth": 4.1,
                 "h": 0.25,
                 "label": "Citadines - Hybride",
                 "marketShare": "5.0",
                 "role": "context",
                 "sub": "Hybride (HEV/PHEV)",
+                "subIndex": 1,
                 "subSharePct": "25.0",
                 "v": 25,
                 "w": 0.2,
-                "x": 0.9,
-                "y": 0.625
+                "x": 90,
+                "x0": 80,
+                "x1": 100,
+                "y": 62.5,
+                "y0": 50,
+                "y1": 75
               }
             ],
             "label": "Hybride (HEV/PHEV)",
-            "pointHitRadius": 12,
-            "pointHoverRadius": 10,
-            "pointRadius": "[Function:pointRadius]"
+            "pointHitRadius": 40,
+            "pointHoverRadius": 0,
+            "pointRadius": 0,
+            "pointStyle": "rect"
           },
           {
-            "backgroundColor": [
-              "rgba(76, 86, 106, 0.4)",
-              "rgba(76, 86, 106, 0.4)",
-              "#BF616A"
-            ],
-            "borderColor": [
-              "#4C566A",
-              "#4C566A",
-              "#BF616A"
-            ],
-            "borderWidth": [
-              1,
-              1,
-              2
-            ],
+            "backgroundColor": "#B48EAD",
+            "borderColor": "#B48EAD",
             "data": [
               {
-                "borderColor": "#4C566A",
-                "borderWidth": 1,
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
                 "col": "SUV (45%)",
                 "colWeightPct": "45.0",
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "#B48EAD",
                 "growth": -18.5,
                 "h": 0.2,
                 "label": "SUV - Thermique",
                 "marketShare": "9.0",
                 "role": "context",
                 "sub": "Thermique Pur",
+                "subIndex": 2,
                 "subSharePct": "20.0",
                 "v": 20,
                 "w": 0.45,
-                "x": 0.225,
-                "y": 0.9
+                "x": 22.5,
+                "x0": 0,
+                "x1": 45,
+                "y": 90,
+                "y0": 80,
+                "y1": 100
               },
               {
-                "borderColor": "#4C566A",
-                "borderWidth": 1,
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
                 "col": "Berlines & Compactes (35%)",
                 "colWeightPct": "35.0",
-                "color": "rgba(76, 86, 106, 0.4)",
+                "color": "#B48EAD",
                 "growth": -22.1,
                 "h": 0.2,
                 "label": "Berlines - Thermique",
                 "marketShare": "7.0",
                 "role": "context",
                 "sub": "Thermique Pur",
+                "subIndex": 2,
                 "subSharePct": "20.0",
                 "v": 20,
                 "w": 0.35,
-                "x": 0.625,
-                "y": 0.9
+                "x": 62.5,
+                "x0": 45,
+                "x1": 80,
+                "y": 90,
+                "y0": 80,
+                "y1": 100
               },
               {
                 "borderColor": "#BF616A",
-                "borderWidth": 2,
+                "borderWidth": 3,
                 "col": "Citadines (20%)",
                 "colWeightPct": "20.0",
-                "color": "#BF616A",
+                "color": "#B48EAD",
                 "growth": -28,
                 "h": 0.25,
                 "label": "Citadines - Thermique",
                 "marketShare": "5.0",
                 "role": "anomaly",
                 "sub": "Thermique Pur",
+                "subIndex": 2,
                 "subSharePct": "25.0",
                 "v": 25,
                 "w": 0.2,
-                "x": 0.9,
-                "y": 0.875
+                "x": 90,
+                "x0": 80,
+                "x1": 100,
+                "y": 87.5,
+                "y0": 75,
+                "y1": 100
               }
             ],
             "label": "Thermique Pur",
-            "pointHitRadius": 12,
-            "pointHoverRadius": 10,
-            "pointRadius": "[Function:pointRadius]"
+            "pointHitRadius": 40,
+            "pointHoverRadius": 0,
+            "pointRadius": 0,
+            "pointStyle": "rect"
           }
         ]
       },
@@ -261,37 +270,313 @@
           }
         },
         "hover": {
-          "animationDuration": 100,
-          "intersect": true,
+          "animationDuration": 0,
+          "intersect": false,
           "mode": "nearest"
         },
         "interaction": {
-          "intersect": true,
+          "intersect": false,
           "mode": "nearest"
         },
         "layout": {
           "padding": {
-            "bottom": 16,
-            "left": 16,
-            "right": 20,
-            "top": 20
+            "top": 40
           }
         },
         "maintainAspectRatio": false,
         "plugins": {
           "legend": {
-            "align": "end",
             "display": true,
             "labels": {
-              "boxWidth": 8,
+              "boxHeight": 10,
+              "boxWidth": 10,
               "color": "#ECEFF4",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 11
               },
+              "pointStyle": "rect",
               "usePointStyle": true
             },
-            "position": "top"
+            "position": "bottom"
+          },
+          "mekkoMeta": {
+            "items": [
+              {
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
+                "col": "SUV (45%)",
+                "colWeightPct": "45.0",
+                "color": "#88C0D0",
+                "growth": 34.2,
+                "h": 0.38,
+                "label": "SUV - Électrique",
+                "marketShare": "17.1",
+                "role": "focal",
+                "sub": "Électrique (BEV)",
+                "subIndex": 0,
+                "subSharePct": "38.0",
+                "v": 38,
+                "w": 0.45,
+                "x": 22.5,
+                "x0": 0,
+                "x1": 45,
+                "y": 19,
+                "y0": 0,
+                "y1": 38
+              },
+              {
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
+                "col": "SUV (45%)",
+                "colWeightPct": "45.0",
+                "color": "#EBCB8B",
+                "growth": 12,
+                "h": 0.42,
+                "label": "SUV - Hybride",
+                "marketShare": "18.9",
+                "role": "context",
+                "sub": "Hybride (HEV/PHEV)",
+                "subIndex": 1,
+                "subSharePct": "42.0",
+                "v": 42,
+                "w": 0.45,
+                "x": 22.5,
+                "x0": 0,
+                "x1": 45,
+                "y": 59,
+                "y0": 38,
+                "y1": 80
+              },
+              {
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
+                "col": "SUV (45%)",
+                "colWeightPct": "45.0",
+                "color": "#B48EAD",
+                "growth": -18.5,
+                "h": 0.2,
+                "label": "SUV - Thermique",
+                "marketShare": "9.0",
+                "role": "context",
+                "sub": "Thermique Pur",
+                "subIndex": 2,
+                "subSharePct": "20.0",
+                "v": 20,
+                "w": 0.45,
+                "x": 22.5,
+                "x0": 0,
+                "x1": 45,
+                "y": 90,
+                "y0": 80,
+                "y1": 100
+              },
+              {
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
+                "col": "Berlines & Compactes (35%)",
+                "colWeightPct": "35.0",
+                "color": "#88C0D0",
+                "growth": 26.5,
+                "h": 0.45,
+                "label": "Berlines - Électrique",
+                "marketShare": "15.8",
+                "role": "focal",
+                "sub": "Électrique (BEV)",
+                "subIndex": 0,
+                "subSharePct": "45.0",
+                "v": 45,
+                "w": 0.35,
+                "x": 62.5,
+                "x0": 45,
+                "x1": 80,
+                "y": 22.5,
+                "y0": 0,
+                "y1": 45
+              },
+              {
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
+                "col": "Berlines & Compactes (35%)",
+                "colWeightPct": "35.0",
+                "color": "#EBCB8B",
+                "growth": 8.4,
+                "h": 0.35,
+                "label": "Berlines - Hybride",
+                "marketShare": "12.2",
+                "role": "context",
+                "sub": "Hybride (HEV/PHEV)",
+                "subIndex": 1,
+                "subSharePct": "35.0",
+                "v": 35,
+                "w": 0.35,
+                "x": 62.5,
+                "x0": 45,
+                "x1": 80,
+                "y": 62.5,
+                "y0": 45,
+                "y1": 80
+              },
+              {
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
+                "col": "Berlines & Compactes (35%)",
+                "colWeightPct": "35.0",
+                "color": "#B48EAD",
+                "growth": -22.1,
+                "h": 0.2,
+                "label": "Berlines - Thermique",
+                "marketShare": "7.0",
+                "role": "context",
+                "sub": "Thermique Pur",
+                "subIndex": 2,
+                "subSharePct": "20.0",
+                "v": 20,
+                "w": 0.35,
+                "x": 62.5,
+                "x0": 45,
+                "x1": 80,
+                "y": 90,
+                "y0": 80,
+                "y1": 100
+              },
+              {
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
+                "col": "Citadines (20%)",
+                "colWeightPct": "20.0",
+                "color": "#88C0D0",
+                "growth": 41,
+                "h": 0.5,
+                "label": "Citadines - Électrique",
+                "marketShare": "10.0",
+                "role": "focal",
+                "sub": "Électrique (BEV)",
+                "subIndex": 0,
+                "subSharePct": "50.0",
+                "v": 50,
+                "w": 0.2,
+                "x": 90,
+                "x0": 80,
+                "x1": 100,
+                "y": 25,
+                "y0": 0,
+                "y1": 50
+              },
+              {
+                "borderColor": "#3B4252",
+                "borderWidth": 2,
+                "col": "Citadines (20%)",
+                "colWeightPct": "20.0",
+                "color": "#EBCB8B",
+                "growth": 4.1,
+                "h": 0.25,
+                "label": "Citadines - Hybride",
+                "marketShare": "5.0",
+                "role": "context",
+                "sub": "Hybride (HEV/PHEV)",
+                "subIndex": 1,
+                "subSharePct": "25.0",
+                "v": 25,
+                "w": 0.2,
+                "x": 90,
+                "x0": 80,
+                "x1": 100,
+                "y": 62.5,
+                "y0": 50,
+                "y1": 75
+              },
+              {
+                "borderColor": "#BF616A",
+                "borderWidth": 3,
+                "col": "Citadines (20%)",
+                "colWeightPct": "20.0",
+                "color": "#B48EAD",
+                "growth": -28,
+                "h": 0.25,
+                "label": "Citadines - Thermique",
+                "marketShare": "5.0",
+                "role": "anomaly",
+                "sub": "Thermique Pur",
+                "subIndex": 2,
+                "subSharePct": "25.0",
+                "v": 25,
+                "w": 0.2,
+                "x": 90,
+                "x0": 80,
+                "x1": 100,
+                "y": 87.5,
+                "y0": 75,
+                "y1": 100
+              }
+            ],
+            "showLabels": true,
+            "tokens": {
+              "axisColor": "#4C566A",
+              "bg": "#2E3440",
+              "border": "#4C566A",
+              "borderStrong": "#616E85",
+              "divergent": {
+                "mid": "#4C566A",
+                "neg": "#BF616A",
+                "pos": "#88C0D0"
+              },
+              "emphasis": {
+                "anomaly": "#BF616A",
+                "benchmark": "#ECEFF4",
+                "context": "#7B88A1",
+                "focal": "#88C0D0",
+                "forecastAlpha": 0.5
+              },
+              "fontFamily": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+              "fontMono": "'JetBrains Mono', monospace",
+              "googleFontsUrl": "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap",
+              "gridColor": "rgba(236, 239, 244, 0.06)",
+              "id": "07-nord-cognitive-dark",
+              "isDark": true,
+              "label": "Nord Cognitive Dark",
+              "name": "nord-cognitive-dark",
+              "palette": [
+                "#88C0D0",
+                "#EBCB8B",
+                "#B48EAD",
+                "#A3BE8C",
+                "#D08770",
+                "#81A1C1",
+                "#5E81AC",
+                "#BF616A"
+              ],
+              "semantic": {
+                "info": "#88C0D0",
+                "negative": "#BF616A",
+                "neutral": "#D8DEE9",
+                "positive": "#A3BE8C",
+                "warning": "#EBCB8B"
+              },
+              "sequential": [
+                "#3B4252",
+                "#4C566A",
+                "#5E81AC",
+                "#81A1C1",
+                "#88C0D0",
+                "#ECEFF4"
+              ],
+              "status": {
+                "danger": "#BF616A",
+                "info": "#88C0D0",
+                "neutral": "#D8DEE9",
+                "success": "#A3BE8C",
+                "warning": "#EBCB8B"
+              },
+              "surface": "#3B4252",
+              "surfaceRaised": "#434C5E",
+              "textMuted": "#9EABC0",
+              "textPrimary": "#ECEFF4",
+              "textSecondary": "#D8DEE9",
+              "tooltipBg": "#434C5E",
+              "tooltipText": "#ECEFF4",
+              "zeroLine": "#88C0D0"
+            }
           },
           "tooltip": {
             "animation": false,
@@ -330,21 +615,32 @@
         "scales": {
           "x": {
             "border": {
-              "color": "#88C0D0",
-              "width": 1
+              "display": false
             },
             "grid": {
-              "display": false,
-              "drawBorder": false
+              "display": false
             },
+            "max": 100,
+            "min": 0,
             "ticks": {
+              "callback": "[Function:callback]",
               "color": "#D8DEE9",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 11
               },
-              "padding": 6
-            }
+              "stepSize": 25
+            },
+            "title": {
+              "color": "#D8DEE9",
+              "display": true,
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "text": "Part cumulée des segments de marché (largeur)"
+            },
+            "type": "linear"
           },
           "y": {
             "beginAtZero": true,
@@ -352,21 +648,39 @@
               "display": false
             },
             "grid": {
-              "color": "rgba(236, 239, 244, 0.06)",
-              "display": true,
-              "drawBorder": false
+              "display": false
             },
+            "max": 100,
+            "min": 0,
             "ticks": {
+              "callback": "[Function:callback]",
               "color": "#D8DEE9",
               "font": {
-                "family": "'JetBrains Mono', monospace",
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 11
               },
-              "padding": 8
-            }
+              "stepSize": 25
+            },
+            "title": {
+              "color": "#D8DEE9",
+              "display": true,
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 11
+              },
+              "text": "Part de chaque motorisation dans le segment (hauteur)"
+            },
+            "type": "linear"
           }
-        }
+        },
+        "themeName": "nord-cognitive-dark"
       },
+      "plugins": [
+        {
+          "beforeDatasetsDraw": "[Function:beforeDatasetsDraw]",
+          "id": "mekkoRectsPlugin"
+        }
+      ],
       "type": "scatter"
     },
     "kind": "chart-config"

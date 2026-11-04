@@ -59,6 +59,40 @@ const DEFAULT_DATA = {
   ]
 };
 
+
+/**
+ * Total de chaque pile affiché au sommet (lecture du cumul sans addition mentale).
+ */
+const stackTotalsPlugin = {
+  id: 'kcStackTotals',
+  afterDatasetsDraw(chart) {
+    if (chart.options?.showDataLabels === false) return;
+    const tokens = chart.options?._kitChartsTokens || {};
+    const ctx = chart.ctx;
+    const n = (chart.data.labels || []).length;
+    ctx.save();
+    ctx.font = `700 11px ${tokens.fontMono || 'monospace'}`;
+    ctx.fillStyle = tokens.textPrimary || '#0F172A';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    for (let i = 0; i < n; i++) {
+      let total = 0;
+      let top = null;
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        if (!meta || meta.hidden) return;
+        const v = Number(ds.data[i]);
+        if (!isFinite(v)) return;
+        total += v;
+        const el = meta.data[i];
+        if (el && (top === null || el.y < top.y)) top = el;
+      });
+      if (top) ctx.fillText(new Intl.NumberFormat('fr-FR').format(total), top.x, top.y - 4);
+    }
+    ctx.restore();
+  }
+};
+
 /**
  * Crée et initialise un diagramme en barres empilées dans le canvas cible.
  *
@@ -134,6 +168,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'bar',
     data: chartData,
+    plugins: [stackTotalsPlugin],
     options: {
       ...defaultOpts,
       _kitChartsTokens: tokens,

@@ -29,6 +29,19 @@
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const readableText = (fg, surface, alpha) => {
+    const parse = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim()) || /^#?([0-9a-f]{3})$/i.exec(String(h || '').trim()); if (!m) return null; let x = m[1]; if (x.length === 3) x = x.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16)); };
+    const lum = (c) => { const l = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+    const f = parse(fg), s = parse(surface);
+    if (!f || !s) return fg;
+    const a = alpha == null ? 0.18 : alpha;
+    const bg = s.map((v, i) => Math.round(v * (1 - a) + f[i] * a));
+    const toward = lum(bg) < 0.4 ? 255 : 0;
+    let c = f.slice();
+    for (let t = 0; t <= 1.0001 && ratio(c, bg) < 4.6; t += 0.05) c = f.map(v => Math.round(v + (toward - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   const DEFAULT_DATA = {
@@ -146,7 +159,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -208,18 +221,13 @@
     const budBg = hexToRgba(budColor, isDark ? 0.18 : 0.10);
     const budBorder = hexToRgba(budColor, isDark ? 0.35 : 0.25);
 
-    function formatBenchmarkLabel(label, val, unit) {
-      if (!label) return '';
-      if (/\(.*\)/.test(label)) return label;
-      if (val !== undefined && val !== null) {
-        const formattedVal = typeof val === 'number' ? val.toLocaleString('fr-FR') : val;
-        return `${label} (${formattedVal}${unit ? ' ' + unit : ''})`;
-      }
-      return label;
+    function formatRefValue(val, unit) {
+      const formattedVal = typeof val === 'number' ? val.toLocaleString('fr-FR') : String(val);
+      return `${formattedVal}${unit ? ' ' + unit : ''}`;
     }
 
     function formatDeltaPct(deltaPct) {
-      return isNum(deltaPct) ? ` (${deltaPct >= 0 ? '+' : ''}${deltaPct}%)` : '';
+      return isNum(deltaPct) ? ` (${deltaPct >= 0 ? '+' : ''}${deltaPct.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}%)` : '';
     }
 
     function formatDeltaAbs(deltaAbs, unit) {
@@ -284,10 +292,10 @@
           margin-bottom: 0.5rem;
         ">
           <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: normal; overflow-wrap: break-word; max-width: 100%; min-width: 0;">
-            ${escapeHtml(formatBenchmarkLabel(hist.label, hist.value, data.unit))}
+            ${escapeHtml(hist.label)}<br><span style="font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap;">${escapeHtml(formatRefValue(hist.value, data.unit))}</span>
           </div>
           <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: normal; overflow-wrap: break-word; max-width: 100%; min-width: 0;">
-            ${escapeHtml(formatBenchmarkLabel(bud.label, bud.value, data.unit))}
+            ${escapeHtml(bud.label)}<br><span style="font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap;">${escapeHtml(formatRefValue(bud.value, data.unit))}</span>
           </div>
           <div style="display: flex; justify-content: center; min-width: 0;">
             <div style="
@@ -295,16 +303,18 @@
               align-items: center;
               justify-content: center;
               text-align: center;
-              gap: 4px;
+              gap: 2px 4px;
+              flex-wrap: wrap;
+              max-width: 100%;
               margin-top: 4px;
-              padding: 3px 10px;
-              border-radius: 9999px;
-              font-size: 0.725rem;
+              padding: 3px 8px;
+              border-radius: 12px;
+              font-size: 0.7rem;
               font-weight: 700;
-              white-space: nowrap;
+              white-space: normal;
               font-variant-numeric: tabular-nums;
               background: ${histBg};
-              color: ${histColor};
+              color: ${readableText(histColor, (tokens.surfaceRaised || tokens.surface), isDark ? 0.18 : 0.10)};
               border: 1px solid ${histBorder};
             ">
               <span style="font-size: 0.65rem;">${hist.deltaAbs >= 0 ? '▲' : '▼'}</span>
@@ -318,16 +328,18 @@
               align-items: center;
               justify-content: center;
               text-align: center;
-              gap: 4px;
+              gap: 2px 4px;
+              flex-wrap: wrap;
+              max-width: 100%;
               margin-top: 4px;
-              padding: 3px 10px;
-              border-radius: 9999px;
-              font-size: 0.725rem;
+              padding: 3px 8px;
+              border-radius: 12px;
+              font-size: 0.7rem;
               font-weight: 700;
-              white-space: nowrap;
+              white-space: normal;
               font-variant-numeric: tabular-nums;
               background: ${budBg};
-              color: ${budColor};
+              color: ${readableText(budColor, (tokens.surfaceRaised || tokens.surface), isDark ? 0.18 : 0.10)};
               border: 1px solid ${budBorder};
             ">
               <span style="font-size: 0.65rem;">${bud.deltaAbs >= 0 ? '▲' : '▼'}</span>

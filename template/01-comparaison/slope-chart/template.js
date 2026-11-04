@@ -60,6 +60,79 @@ const DEFAULT_DATA = {
   ]
 };
 
+
+/**
+ * Étiquetage direct d'un slopegraph : "Nom  valeur" à gauche, "valeur  Nom" à droite,
+ * avec écartement vertical minimal pour éviter les chevauchements.
+ */
+const slopeDirectLabelsPlugin = {
+  id: 'kcSlopeDirectLabels',
+  // Réserve latérale proportionnelle à la largeur du canvas (carte étroite : colonnes non écrasées).
+  beforeLayout(chart) {
+    const pad = Math.round(Math.min(190, Math.max(70, chart.width * 0.31)));
+    const p = chart.options.layout && chart.options.layout.padding;
+    if (p && typeof p === 'object') { p.left = pad; p.right = pad; }
+  },
+  afterDatasetsDraw(chart) {
+    if (chart.options?.showDataLabels === false) return;
+    const tokens = chart.options?._kitChartsTokens || {};
+    const ctx = chart.ctx;
+    const narrow = chart.width < 420;
+    const fontSize = narrow ? 10 : 11;
+    const lineH = fontSize + 3;
+    const fmt = (v) => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v);
+    const sides = [
+      { idx: 0, align: 'right', dx: -10 },
+      { idx: null, align: 'left', dx: 10 }
+    ];
+    ctx.save();
+    ctx.font = `600 ${fontSize}px ${tokens.fontFamily || 'sans-serif'}`;
+    ctx.fillStyle = tokens.textPrimary || '#0F172A';
+    ctx.textBaseline = 'middle';
+    const padSide = Math.max(0, chart.chartArea.left);
+    const avail = Math.max(40, padSide - 10 - 4);
+    // Découpe le nom en lignes pour tenir dans la réserve latérale (sans jamais rogner) :
+    // la valeur reste collée au mot côté tracé.
+    const wrap = (name, valueText, left) => {
+      const words = String(name).split(/\s+/);
+      if (left) words[words.length - 1] += '  ' + valueText; else words[0] = valueText + '  ' + words[0];
+      const lines = [];
+      let cur = '';
+      words.forEach((w) => {
+        const test = cur ? cur + ' ' + w : w;
+        if (cur && ctx.measureText(test).width > avail) { lines.push(cur); cur = w; } else cur = test;
+      });
+      if (cur) lines.push(cur);
+      return lines;
+    };
+    sides.forEach((side) => {
+      const items = [];
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        if (!meta || meta.hidden || !meta.data.length) return;
+        const i = side.idx === null ? meta.data.length - 1 : side.idx;
+        const pt = meta.data[i];
+        const v = ds.data[i];
+        if (!pt || v === null || v === undefined) return;
+        const valueText = fmt(v);
+        const out = wrap(ds.label, valueText, side.idx === 0);
+        items.push({ out, x: pt.x, y: pt.y, ly: pt.y, h: out.length * lineH });
+      });
+      items.sort((a, b) => a.y - b.y);
+      for (let k = 1; k < items.length; k++) {
+        const need = (items[k - 1].h + items[k].h) / 2;
+        if (items[k].ly - items[k - 1].ly < need) items[k].ly = items[k - 1].ly + need;
+      }
+      ctx.textAlign = side.align;
+      items.forEach((it) => {
+        const top = it.ly - ((it.out.length - 1) * lineH) / 2;
+        it.out.forEach((line, k) => ctx.fillText(line, it.x + side.dx, top + k * lineH));
+      });
+    });
+    ctx.restore();
+  }
+};
+
 /**
  * Crée et initialise un graphique de pente (Slope Chart) dans le canvas cible.
  *
@@ -146,14 +219,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'line',
     data: chartData,
+    plugins: [slopeDirectLabelsPlugin],
     options: {
       ...defaultOpts,
       _kitChartsTokens: tokens,
       showDataLabels: showDataLabels,
       layout: {
         padding: {
-          left: 48,
-          right: 54,
+          left: 120,
+          right: 120,
           top: 16,
           bottom: 16
         }
@@ -172,18 +246,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         ...defaultOpts.plugins,
-        datalabels: getDataLabelOptions(tokens, {
-          display: showDataLabels,
-          formatter: (val) => {
-            if (typeof val === 'number' && Math.abs(val) >= 1000) {
-              return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-            }
-            return val;
-          }
-        }),
+        // Étiquettes directes dessinées par le plugin local (nom + valeur)
+        datalabels: getDataLabelOptions(tokens, { display: false }),
         legend: {
           ...defaultOpts.plugins.legend,
-          display: !isTufte,
+          display: false,
           position: 'top',
           align: 'end'
         },
@@ -233,26 +300,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }
         },
         y: {
-          grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
-            drawBorder: false
-          },
-          border: { display: false },
-          ticks: {
-            color: tokens.textSecondary,
-            font: {
-              family: tokens.fontMono || tokens.fontFamily,
-              size: 11
-            },
-            padding: 8,
-            callback: (val) => {
-              if (typeof val === 'number' && Math.abs(val) >= 1000) {
-                return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-              }
-              return val;
-            }
-          }
+          // Pas d'axe Y : les valeurs sont lues sur les étiquettes directes
+          display: false,
+          grid: { display: false },
+          border: { display: false }
         }
       }
     }

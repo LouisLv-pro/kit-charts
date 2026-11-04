@@ -51,19 +51,20 @@
  * Données par défaut représentatives (Répartition géographique hiérarchique : Régions > Sous-régions)
  */
 const DEFAULT_DATA = {
+  // Niveau 0 (racine, centre) : 4 régions
   labels: ['Europe', 'Amériques', 'Asie-Pacifique', 'Afrique & ME'],
   datasets: [
-    // Anneau intérieur (Niveau 1 : Régions Macro)
     {
       label: 'Régions',
       data: [40, 30, 20, 10],
       weight: 1
     },
-    // Anneau extérieur (Niveau 2 : Sous-régions)
+    // Niveau 1 (anneau extérieur) : sous-régions, regroupées par parent dans l'ordre
     {
       label: 'Sous-Régions',
+      labels: ['Europe de l\'Ouest', 'Europe du Nord', 'Amérique du Nord', 'Amérique latine', 'Asie de l\'Est', 'Asie du Sud-Est', 'Moyen-Orient', 'Afrique'],
       data: [20, 20, 15, 15, 12, 8, 6, 4],
-      weight: 1.8
+      weight: 1.4
     }
   ]
 };
@@ -97,39 +98,159 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const isTufte = tokens.name === 'tufte-minimalist-executive';
   const showDataLabels = (customData && customData.showDataLabels !== undefined) ? customData.showDataLabels : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
-  // Préparation des données avec support d'accentuation
+  // Préparation des données : datasets[0] = racine (centre), datasets[i] = niveau i vers l'extérieur.
+  // Chart.js dessine le dataset 0 le plus à l'extérieur : l'ordre est donc inversé au tracé.
   const rawData = customData || DEFAULT_DATA;
-  const labels = rawData.labels ? [...rawData.labels] : [];
-  const datasets = (rawData.datasets || []).map((ds, levelIdx) => {
-    const dataLen = Array.isArray(ds.data) ? ds.data.length : 1;
-    let bgColors = ds.backgroundColor;
-
-    if (!bgColors || Array.isArray(ds.emphasisRoles) || Array.isArray(ds.roles) || Array.isArray(ds.valences) || ds.focusIndex !== undefined) {
-      if (Array.isArray(ds.emphasisRoles) || Array.isArray(ds.roles)) {
-        const roles = ds.emphasisRoles || ds.roles;
-        bgColors = roles.map((r, i) => getEmphasisStyle(tokens, r).backgroundColor || getColor(tokens, (levelIdx * 4 + i) % tokens.palette.length));
-      } else if (Array.isArray(ds.valences)) {
-        const metricType = ds.metricType || 'gain';
-        bgColors = ds.valences.map(v => getValenceColor(tokens, v, metricType));
-      } else if (ds.focusIndex !== undefined) {
-        bgColors = Array.from({ length: dataLen }, (_, i) =>
-          i === ds.focusIndex ? (tokens.emphasis?.focal || getColor(tokens, 0)) : (tokens.emphasis?.context || tokens.textMuted || '#CBD5E1')
-        );
-      } else if (!Array.isArray(bgColors)) {
-        bgColors = Array.from({ length: dataLen }, (_, i) => getColor(tokens, (levelIdx * 4 + i) % tokens.palette.length));
-      }
-    }
-
-    return {
-      label: ds.label || `Niveau ${levelIdx + 1}`,
-      data: Array.isArray(ds.data) ? [...ds.data] : [],
-      backgroundColor: bgColors,
-      borderColor: tokens.bg,
-      borderWidth: isTufte ? 1 : 2,
-      weight: ds.weight !== undefined ? ds.weight : (levelIdx === 0 ? 1 : 1.5)
-    };
+  const rootLabels = rawData.labels ? [...rawData.labels] : [];
+  const levels = (rawData.datasets || []).map((ds, levelIdx) => {
+    const data = Array.isArray(ds.data) ? ds.data.map(v => (typeof v === 'object' && v !== null ? (v.value ?? v.v ?? 0) : Number(v) || 0)) : [];
+    const lbls = Array.isArray(ds.labels) ? [...ds.labels] : (levelIdx === 0 ? rootLabels : data.map((_, i) => `${ds.label || 'Niveau ' + (levelIdx + 1)} ${i + 1}`));
+    return { ds, data, labels: lbls, levelIdx };
   });
 
+  const hexToRgb = (hex) => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  const mixHex = (a, b, t) => {
+    const ca = hexToRgb(a), cb = hexToRgb(b);
+    if (!ca || !cb) return a;
+    const c = ca.map((v, i) => Math.round(v + (cb[i] - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
+  const contrastText = (bg) => {
+    const f = KitChartsTheme && KitChartsTheme.getContrastingTextColor;
+    if (f) return f(bg, '#FFFFFF', '#0F172A');
+    const c = hexToRgb(bg);
+    if (!c) return '#0F172A';
+    const l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    return l < 140 ? '#FFFFFF' : '#0F172A';
+  };
+
+  // Parent de chaque arc : celui dont l'intervalle angulaire contient le milieu de l'arc.
+  const startsOf = (arr) => { let acc = 0; return arr.map(v => { const s = acc; acc += v; return [s, acc]; }); };
+  const levelColors = [];
+  levels.forEach((lv, levelIdx) => {
+    const { ds, data } = lv;
+    let colors;
+    if (Array.isArray(ds.backgroundColor)) {
+      colors = [...ds.backgroundColor];
+    } else if (levelIdx === 0) {
+      if (Array.isArray(ds.emphasisRoles) || Array.isArray(ds.roles)) {
+        const roles = ds.emphasisRoles || ds.roles;
+        colors = roles.map((r, i) => getEmphasisStyle(tokens, r).backgroundColor || getColor(tokens, i));
+      } else if (Array.isArray(ds.valences)) {
+        const metricType = ds.metricType || 'gain';
+        colors = ds.valences.map(v => getValenceColor(tokens, v, metricType));
+      } else if (ds.focusIndex !== undefined) {
+        colors = data.map((_, i) => i === ds.focusIndex ? (tokens.emphasis?.focal || getColor(tokens, 0)) : (tokens.emphasis?.context || tokens.textMuted || '#CBD5E1'));
+      } else {
+        colors = data.map((_, i) => getColor(tokens, i));
+      }
+    } else {
+      // Teinte héritée du parent, luminosité variable selon le rang parmi les frères.
+      const parentIv = startsOf(levels[levelIdx - 1].data);
+      const iv = startsOf(data);
+      const siblingCount = {};
+      const parentOf = iv.map(([s, e]) => {
+        const mid = (s + e) / 2;
+        const p = parentIv.findIndex(([ps, pe]) => mid >= ps && mid < pe);
+        return p < 0 ? parentIv.length - 1 : p;
+      });
+      parentOf.forEach(p => { siblingCount[p] = (siblingCount[p] || 0) + 1; });
+      const seen = {};
+      colors = parentOf.map((p) => {
+        const base = levelColors[levelIdx - 1][p] || getColor(tokens, p);
+        const k = seen[p] || 0; seen[p] = k + 1;
+        const n = siblingCount[p];
+        const t = n > 1 ? 0.18 + 0.32 * (k / (n - 1)) : 0.25;
+        return mixHex(base, tokens.isDark ? '#000000' : '#FFFFFF', t * (tokens.isDark ? 0.8 : 1));
+      });
+    }
+    levelColors.push(colors);
+  });
+
+  const total = levels[0] ? levels[0].data.reduce((a, b) => a + b, 0) : 0;
+  const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+  const narrow = cw > 0 && cw < 420;
+
+  // Étiquettes d'arcs locales : anneau extérieur = nom (sur 1 ou 2 lignes) + part quand l'arc est
+  // assez grand, sinon la part seule ; anneaux intérieurs = part seule (noms en légende).
+  const sunburstLabelsPlugin = {
+    id: 'kitChartsSunburstLabels',
+    afterDatasetsDraw(chart) {
+      if (!showDataLabels || chart.options?.showDataLabels === false) return;
+      const ctx = chart.ctx;
+      const fs = narrow ? 9 : 11;
+      const lh = fs + 2;
+      const nDs = chart.data.datasets.length;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        if (!meta || meta.hidden) return;
+        const isOuter = di === 0 && nDs > 1;
+        (meta.data || []).forEach((arc, i) => {
+          const v = ds.data[i];
+          if (!arc || !(v > 0)) return;
+          const p = arc.getProps(['x', 'y', 'startAngle', 'endAngle', 'innerRadius', 'outerRadius'], true);
+          const mid = (p.startAngle + p.endAngle) / 2;
+          const rMid = (p.innerRadius + p.outerRadius) / 2;
+          const thick = p.outerRadius - p.innerRadius;
+          const arcLen = rMid * (p.endAngle - p.startAngle);
+          const cx = p.x + Math.cos(mid) * rMid, cy = p.y + Math.sin(mid) * rMid;
+          const pct = total > 0 ? `${Math.round((v / total) * 100)}%` : '';
+          const name = String((ds.kcLabels || [])[i] || '');
+          const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
+          const wrapName = (maxW) => {
+            const lines = []; let cur = '';
+            name.split(/\s+/).forEach((w) => {
+              const t = cur ? cur + ' ' + w : w;
+              if (cur && ctx.measureText(t).width > maxW) { lines.push(cur); cur = w; } else cur = t;
+            });
+            if (cur) lines.push(cur);
+            return lines;
+          };
+          const fits = (lines) => {
+            const w = Math.max(...lines.map(l => ctx.measureText(l).width));
+            const h = lines.length * lh;
+            const c = Math.abs(Math.cos(mid)), sn = Math.abs(Math.sin(mid));
+            const radial = c * w + sn * h;
+            const tang = sn * w + c * h;
+            return radial <= thick - 3 && tang <= arcLen - 3;
+          };
+          ctx.font = `600 ${fs}px ${tokens.fontFamily || 'sans-serif'}`;
+          let lines = null;
+          if (isOuter && name) {
+            const cand = wrapName(Math.max(30, thick * 1.1));
+            if (cand.length <= 2 && fits(cand.concat(pct ? [pct] : []))) lines = cand.concat(pct ? [pct] : []);
+            else if (cand.length <= 3 && fits(cand)) lines = cand;
+          }
+          if (!lines && pct && fits([pct])) lines = [pct];
+          if (!lines) return;
+          ctx.fillStyle = contrastText(bg);
+          const top = cy - ((lines.length - 1) * lh) / 2;
+          lines.forEach((l, k) => ctx.fillText(l, cx, top + k * lh));
+        });
+      });
+      ctx.restore();
+    }
+  };
+  const datasets = levels.map((lv) => ({
+    label: lv.ds.label || `Niveau ${lv.levelIdx + 1}`,
+    data: lv.data,
+    kcLabels: lv.labels,
+    backgroundColor: levelColors[lv.levelIdx],
+    borderColor: tokens.bg,
+    borderWidth: isTufte ? 1 : 2,
+    weight: lv.ds.weight !== undefined ? lv.ds.weight : 1
+  })).reverse();
+
+  // Les labels globaux suivent le dataset le plus externe (arcs les plus nombreux).
+  const labels = datasets.length ? datasets[0].kcLabels : [];
   const chartData = { labels, datasets };
 
   // Options Chart.js v4+ avec capture de partition multi-niveaux
@@ -137,10 +258,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'doughnut',
     data: chartData,
+    plugins: [sunburstLabelsPlugin],
     options: {
-      scales: {},
       ...defaultOpts,
-      cutout: '35%', // Cavité centrale modérée pour structure multi-anneaux
+      scales: {}, // AUCUN AXE CARTÉSIEN (après defaultOpts pour ne pas être écrasé)
+      cutout: 0, // Pas de trou central : la racine est le disque le plus interne
       rotation: -90, // Départ à 12h
       animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
       interaction: {
@@ -155,18 +277,32 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         ...defaultOpts.plugins,
-        datalabels: getDataLabelOptions(tokens, {
-          display: showDataLabels,
-          formatter: (val) => {
-            const num = typeof val === 'object' && val !== null ? (val.value ?? val.v ?? 0) : val;
-            return `${num}%`;
-          }
-        }),
+        // Étiquettes dessinées par kitChartsSunburstLabels (nom + part selon la place disponible)
+        datalabels: getDataLabelOptions(tokens, { display: () => false }),
         legend: {
           ...defaultOpts.plugins.legend,
           display: !isTufte,
           position: 'right',
-          align: 'center'
+          align: 'center',
+          labels: {
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: narrow ? 11 : 12, weight: '500' },
+            boxWidth: narrow ? 8 : 12,
+            padding: narrow ? 8 : 12,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            // Légende = niveau racine uniquement (les sous-niveaux héritent de sa teinte)
+            generateLabels: () => (levels[0] ? levels[0].labels : []).map((name, i) => ({
+              text: name,
+              fillStyle: levelColors[0][i],
+              strokeStyle: levelColors[0][i],
+              fontColor: tokens.textPrimary,
+              pointStyle: 'circle',
+              hidden: false,
+              index: i
+            }))
+          },
+          onClick: () => {}
         },
         tooltip: {
           ...defaultOpts.plugins.tooltip,
@@ -176,14 +312,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           bodyFont: { family: tokens.fontMono || 'monospace', size: 12, weight: '400' },
           animation: (isTufte || isReducedMotionPreferred()) ? false : { duration: 150, easing: 'easeOutQuad' },
           callbacks: {
+            title: (items) => {
+              const it = items && items[0];
+              if (!it) return '';
+              const names = it.dataset.kcLabels || [];
+              return names[it.dataIndex] || '';
+            },
             label: (context) => {
-              const val = context.parsed !== null && context.parsed !== undefined
-                ? context.parsed
-                : context.raw;
-              const formatted = typeof val === 'number'
-                ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val)
-                : val;
-              return ` ${context.dataset.label || ''} (${context.label || ''}): ${formatted}%`;
+              const val = Number(context.parsed !== null && context.parsed !== undefined ? context.parsed : context.raw) || 0;
+              const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val);
+              const pct = total > 0 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format((val / total) * 100) : '0';
+              return ` ${context.dataset.label || ''} : ${formatted} (${pct}% du total)`;
             }
           }
         }

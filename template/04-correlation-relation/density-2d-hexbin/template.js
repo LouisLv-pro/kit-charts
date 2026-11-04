@@ -66,22 +66,28 @@
     const stepY = (maxY - minY) / yBins || 6;
     const counts = new Map();
     let maxCount = 0;
-
+    // Affectation au centre hexagonal le plus proche (pavage pointy-top, rangées impaires décalées d'un demi-pas).
+    // Espace réel normalisé (R=1) : x = u * sqrt(3), y = v * 1.5.
+    const S3 = Math.sqrt(3);
     rawPoints.forEach(p => {
-      const row = Math.round((p.y - minY) / stepY);
-      const isOdd = row % 2 !== 0;
-      const xOffset = isOdd ? stepX * 0.5 : 0;
-      const col = Math.round((p.x - minX - xOffset) / stepX);
-
-      const hx = Math.round((minX + col * stepX + xOffset) * 10) / 10;
+      const u = (p.x - minX) / stepX;
+      const v = (p.y - minY) / stepY;
+      // Réseau pair : centres (i, 2j) ; réseau impair : centres (i + 0.5, 2j + 1)
+      const rowA = 2 * Math.round(v / 2);
+      const colA = Math.round(u);
+      const rowB = 2 * Math.round((v - 1) / 2) + 1;
+      const colB = Math.round(u - 0.5) + 0.5;
+      const dA = Math.pow((u - colA) * S3, 2) + Math.pow((v - rowA) * 1.5, 2);
+      const dB = Math.pow((u - colB) * S3, 2) + Math.pow((v - rowB) * 1.5, 2);
+      const row = dA <= dB ? rowA : rowB;
+      const colF = dA <= dB ? colA : colB;
+      const hx = Math.round((minX + colF * stepX) * 10) / 10;
       const hy = Math.round((minY + row * stepY) * 10) / 10;
       const key = `${hx}_${hy}`;
-
       const count = (counts.get(key) || 0) + 1;
       counts.set(key, count);
       if (count > maxCount) maxCount = count;
     });
-
     const bins = [];
     counts.forEach((v, key) => {
       const [xStr, yStr] = key.split('_');
@@ -98,7 +104,7 @@
   const compute2DBins = computeHexBins;
 
   /**
-   * Données de démonstration bivariées (N = 1800 mesures réelles Taille cm × Poids kg)
+   * Données de démonstration bivariées : alvéoles pré-agrégées (Taille cm × Poids kg), N total affiché dans la légende
    */
   const DEFAULT_DATA = (() => {
     const bins = [];
@@ -189,8 +195,34 @@
       if (b.y < minY) minY = b.y;
       if (b.y > maxY) maxY = b.y;
     });
-    const padX = (maxX - minX) * 0.08 || 4;
-    const padY = (maxY - minY) * 0.08 || 4;
+    // Pas réels du pavage (plus petits écarts positifs entre centres)
+    const uniq = (arr) => Array.from(new Set(arr)).sort((a, b) => a - b);
+    const minGap = (arr, fb) => { const u = uniq(arr); let g = Infinity; for (let i = 1; i < u.length; i++) g = Math.min(g, u[i] - u[i - 1]); return Number.isFinite(g) && g > 0 ? g : fb; };
+    const yStepBin = minGap(bins.map(b => b.y), 4.8);
+    const xStepBin = 2 * minGap(bins.map(b => b.x), 1.8);
+    const niceFloor = (v, q) => Math.floor(v / q) * q;
+    const niceCeil = (v, q) => Math.ceil(v / q) * q;
+    const axMinX = niceFloor(minX - xStepBin * 0.6, 5);
+    const axMaxX = niceCeil(maxX + xStepBin * 0.6, 5);
+    const axMinY = niceFloor(minY - yStepBin * 0.8, 5);
+    const axMaxY = niceCeil(maxY + yStepBin * 0.8, 5);
+    const srgbLum = (c) => {
+      let m = /^#?([0-9a-f]{6})$/i.exec(String(c).trim());
+      let rgb;
+      if (m) { const n = parseInt(m[1], 16); rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+      else { const t = /rgba?\(([^)]+)\)/.exec(String(c)); rgb = t ? t[1].split(',').slice(0, 3).map(Number) : [128, 128, 128]; }
+      const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]);
+    };
+    const textOn = (bg) => {
+      const L = srgbLum(bg);
+      const cLight = 1.05 / (L + 0.05);
+      const cDark = (L + 0.05) / (0.0185 + 0.05);
+      return cLight >= cDark ? '#FFFFFF' : '#0F172A';
+    };
+    // Étiquettes : jamais au-delà de 12 alvéoles ; sinon seulement les 3 plus denses (points focaux)
+    const labelAll = bins.length <= 12;
+    const focalSet = new Set(bins.map((b, i) => ({ i, v: b.v })).sort((a, b) => b.v - a.v).slice(0, 3).map(o => o.i));
 
     const hexbinCustomPlugin = {
       id: 'kitChartsHexbinHoneycombPainter',
@@ -201,41 +233,34 @@
         ctx.save();
         ctx.lineJoin = 'round';
 
-        // Calcul dynamique du rayon optimal de l'alvéole hexagonale
-        const pxStepX = Math.abs(x.getPixelForValue(minX + 3.6) - x.getPixelForValue(minX)) || 30;
-        const hexRadius = Math.max(12, Math.min(26, pxStepX * 0.58));
-
-        // 1. Tracé de toutes les alvéoles hexagonales
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+        ctx.clip();
+        // Rayons elliptiques déduits des pas réels : pavage exact (pointy-top, rangées décalées)
+        const pxStepX = Math.abs(x.getPixelForValue(minX + xStepBin) - x.getPixelForValue(minX));
+        const pxStepY = Math.abs(y.getPixelForValue(minY + yStepBin) - y.getPixelForValue(minY));
+        const hexRx = (pxStepX / Math.sqrt(3)) * 0.97;
+        const hexRy = (pxStepY / 1.5) * 0.97;
         bins.forEach((bin, idx) => {
           const px = x.getPixelForValue(bin.x);
           const py = y.getPixelForValue(bin.y);
-
-          // Hors zone du graphique ?
-          if (px < chartArea.left - 10 || px > chartArea.right + 10 || py < chartArea.top - 10 || py > chartArea.bottom + 10) {
-            return;
-          }
-
-          // Échelle séquentielle logarithmique pour optimiser le contraste perçu
-          const logRatio = Math.log(Math.max(1, bin.v - minCount + 1)) / Math.log(Math.max(2, maxCount - minCount + 1));
-          const fillColor = getSequentialColor(tokens, Math.min(1, Math.max(0.06, logRatio)));
-
+          // Échelle séquentielle linéaire, cohérente avec la légende
+          const ratio = maxCount > minCount ? (bin.v - minCount) / (maxCount - minCount) : 1;
+          const fillColor = getSequentialColor(tokens, Math.min(1, Math.max(0.06, ratio)));
           const isHovered = (idx === activeHoverIdx);
-
-          // Tracé de l'hexagone régulier (6 sommets)
+          const k = isHovered ? 1.12 : 1;
           ctx.beginPath();
-          for (let k = 0; k < 6; k++) {
-            const angle = (Math.PI / 6) + (k * Math.PI / 3);
-            const vx = px + (isHovered ? hexRadius * 1.15 : hexRadius) * Math.cos(angle);
-            const vy = py + (isHovered ? hexRadius * 1.15 : hexRadius) * Math.sin(angle);
-            if (k === 0) ctx.moveTo(vx, vy);
+          for (let q = 0; q < 6; q++) {
+            const angle = (Math.PI / 6) + (q * Math.PI / 3);
+            const vx = px + hexRx * k * Math.cos(angle);
+            const vy = py + hexRy * k * Math.sin(angle);
+            if (q === 0) ctx.moveTo(vx, vy);
             else ctx.lineTo(vx, vy);
           }
           ctx.closePath();
-
           ctx.fillStyle = fillColor;
           ctx.fill();
-
-          // Bordure
           if (isHovered) {
             ctx.strokeStyle = tokens.emphasis?.focal || tokens.textPrimary || '#FFFFFF';
             ctx.lineWidth = 2.5;
@@ -247,22 +272,20 @@
             ctx.lineWidth = isTufte ? 0.75 : 1.5;
             ctx.stroke();
           }
-
-          // Affichage du chiffre de densité au centre si l'alvéole est assez grande
-          if (hexRadius >= 16 && bin.v >= 10) {
-            ctx.fillStyle = logRatio > 0.55 ? '#FFFFFF' : (tokens.textPrimary || '#0F172A');
-            ctx.font = `600 10px ${tokens.fontMono || 'monospace'}`;
+          if ((labelAll || focalSet.has(idx)) && hexRx >= 11) {
+            ctx.fillStyle = textOn(fillColor);
+            ctx.font = `700 11px ${tokens.fontMono || 'monospace'}`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(String(bin.v), px, py);
           }
         });
-
+        ctx.restore();
         // 2. Échelle de Légende Continue en haut à droite
-        const barW = 120;
+        const barW = Math.max(90, Math.min(120, Math.round((chartArea.right - chartArea.left) * 0.4)));
         const barH = 10;
-        const barX = chartArea.right - barW - 10;
-        const barY = chartArea.top + 12;
+        const barX = chartArea.right - barW - 6;
+        const barY = chartArea.top - 26;
 
         // Boîtier de fond
         ctx.fillStyle = isDark ? 'rgba(36, 41, 51, 0.85)' : 'rgba(255, 255, 255, 0.85)';
@@ -284,7 +307,9 @@
         // Barre dégradée
         const legendGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
         legendGrad.addColorStop(0, getSequentialColor(tokens, 0.08));
+        legendGrad.addColorStop(0.25, getSequentialColor(tokens, 0.25));
         legendGrad.addColorStop(0.5, getSequentialColor(tokens, 0.5));
+        legendGrad.addColorStop(0.75, getSequentialColor(tokens, 0.75));
         legendGrad.addColorStop(1, getSequentialColor(tokens, 1.0));
 
         ctx.fillStyle = legendGrad;
@@ -298,7 +323,7 @@
         ctx.textAlign = 'left';
         ctx.fillText(String(minCount), barX, barY + barH + 11);
         ctx.textAlign = 'right';
-        ctx.fillText(`${maxCount}+`, barX + barW, barY + barH + 11);
+        ctx.fillText(`${maxCount}`, barX + barW, barY + barH + 11);
 
         ctx.restore();
       }
@@ -321,7 +346,7 @@
         ...defaultOpts,
         layout: {
           padding: {
-            top: 20,
+            top: 56,
             right: 24,
             bottom: 12,
             left: 12
@@ -349,9 +374,15 @@
             position: 'bottom',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' },
+              font: { family: tokens.fontFamily, size: 11, weight: '500' },
               usePointStyle: true,
-              boxWidth: 8
+              boxWidth: 8,
+              // Libellé abrégé en carte étroite : jamais rogné
+              generateLabels: (chart) => {
+                const full = chart.data.datasets[0].label;
+                const text = chart.width < 460 ? `N ≈ ${totalObs} obs` : full;
+                return [{ text, fillStyle: 'transparent', strokeStyle: 'transparent', lineWidth: 0, fontColor: tokens.textPrimary, hidden: false, datasetIndex: 0, pointStyle: 'rect' }];
+              }
             }
           },
           tooltip: {
@@ -374,8 +405,8 @@
           x: {
             type: 'linear',
             ...defaultOpts.scales.x,
-            min: Math.floor(minX - padX),
-            max: Math.ceil(maxX + padX),
+            min: axMinX,
+            max: axMaxX,
             grid: { color: tokens.gridColor },
             title: {
               display: true,
@@ -387,8 +418,8 @@
           y: {
             type: 'linear',
             ...defaultOpts.scales.y,
-            min: Math.floor(minY - padY),
-            max: Math.ceil(maxY + padY),
+            min: axMinY,
+            max: axMaxY,
             grid: { color: tokens.gridColor },
             title: {
               display: true,

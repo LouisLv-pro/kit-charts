@@ -109,7 +109,7 @@
           "emphasis": {
             "anomaly": "#E15759",
             "benchmark": "#57606C",
-            "context": "#BAB0AC",
+            "context": "#9A918C",
             "focal": "#4E79A7",
             "forecastAlpha": 0.5
           },
@@ -192,8 +192,8 @@
         "layout": {
           "padding": {
             "bottom": 16,
-            "left": 48,
-            "right": 54,
+            "left": 120,
+            "right": 120,
             "top": 16
           }
         },
@@ -201,19 +201,19 @@
         "plugins": {
           "datalabels": {
             "color": "#1E293B",
-            "display": true,
+            "display": false,
             "font": {
               "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
               "size": 10,
               "weight": "600"
             },
-            "formatter": "[Function:formatter]",
+            "formatter": "[Function:anonymous]",
             "padding": 4,
             "thresholdRatio": 0.05
           },
           "legend": {
             "align": "end",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 12,
               "boxWidth": 12,
@@ -224,7 +224,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -288,24 +287,22 @@
             "border": {
               "display": false
             },
+            "display": false,
             "grid": {
-              "color": "rgba(30, 41, 59, 0.06)",
-              "drawBorder": false,
-              "lineWidth": 1
-            },
-            "ticks": {
-              "callback": "[Function:callback]",
-              "color": "#334155",
-              "font": {
-                "family": "'Roboto Mono', Menlo, Monaco, Consolas, monospace",
-                "size": 11
-              },
-              "padding": 8
+              "display": false
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "tableau-stone-categorical"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "kcSlopeDirectLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

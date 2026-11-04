@@ -343,7 +343,7 @@
         },
         "layout": {
           "padding": {
-            "bottom": 34,
+            "bottom": 56,
             "left": 12,
             "right": 20,
             "top": 20
@@ -435,6 +435,7 @@
               "20-24h"
             ],
             "position": "left",
+            "reverse": true,
             "ticks": {
               "color": "#334155",
               "display": true,
@@ -446,12 +447,17 @@
             },
             "type": "category"
           }
-        }
+        },
+        "themeName": "okabe-ito-cud"
       },
       "plugins": [
         {
           "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
           "id": "kitChartsHeatmapValuesPlugin"
+        },
+        {
+          "afterDraw": "[Function:afterDraw]",
+          "id": "kitChartsHeatmapLegend"
         }
       ],
       "type": "matrix"

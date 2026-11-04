@@ -13,11 +13,11 @@
             "backgroundColor": [
               "rgba(136, 192, 208, 0.9)",
               "rgba(136, 192, 208, 0.9)",
-              "rgba(76, 86, 106, 0.5)",
-              "rgba(76, 86, 106, 0.5)",
-              "rgba(76, 86, 106, 0.5)",
-              "rgba(76, 86, 106, 0.5)",
-              "rgba(76, 86, 106, 0.5)"
+              "rgba(123, 136, 161, 0.8)",
+              "rgba(123, 136, 161, 0.8)",
+              "rgba(123, 136, 161, 0.8)",
+              "rgba(123, 136, 161, 0.8)",
+              "rgba(123, 136, 161, 0.8)"
             ],
             "borderColor": "#88C0D0",
             "borderRadius": 4,
@@ -32,11 +32,11 @@
               4
             ],
             "datalabels": {
-              "color": "#ECEFF4",
-              "display": true
+              "display": false
             },
             "label": "Occurrences d'Incidents",
             "order": 2,
+            "pointStyle": "rectRounded",
             "type": "bar",
             "yAxisID": "y"
           },
@@ -98,7 +98,7 @@
           "emphasis": {
             "anomaly": "#BF616A",
             "benchmark": "#ECEFF4",
-            "context": "#4C566A",
+            "context": "#7B88A1",
             "focal": "#88C0D0",
             "forecastAlpha": 0.5
           },
@@ -112,13 +112,13 @@
           "name": "nord-cognitive-dark",
           "palette": [
             "#88C0D0",
+            "#EBCB8B",
+            "#B48EAD",
+            "#A3BE8C",
+            "#D08770",
             "#81A1C1",
             "#5E81AC",
-            "#A3BE8C",
-            "#EBCB8B",
-            "#D08770",
-            "#BF616A",
-            "#B48EAD"
+            "#BF616A"
           ],
           "semantic": {
             "info": "#88C0D0",
@@ -203,11 +203,14 @@
             "align": "end",
             "display": true,
             "labels": {
+              "boxWidth": 10,
               "color": "#ECEFF4",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 12
-              }
+              },
+              "padding": 10,
+              "usePointStyle": true
             },
             "position": "top"
           },
@@ -255,21 +258,34 @@
               "display": false
             },
             "ticks": {
+              "autoSkip": false,
+              "callback": "[Function:callback]",
               "color": "#D8DEE9",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 11
               },
-              "maxRotation": 30
+              "maxRotation": 30,
+              "minRotation": 0
             }
           },
           "y": {
             "beginAtZero": true,
-            "grace": "8%",
             "grid": {
               "color": "rgba(236, 239, 244, 0.06)"
             },
+            "max": 325,
+            "min": 0,
             "position": "left",
+            "ticks": {
+              "color": "#D8DEE9",
+              "font": {
+                "family": "'JetBrains Mono', monospace",
+                "size": 11
+              },
+              "includeBounds": false,
+              "maxTicksLimit": "[undefined]"
+            },
             "title": {
               "color": "#D8DEE9",
               "display": true,
@@ -287,7 +303,7 @@
             "grid": {
               "display": false
             },
-            "max": 105,
+            "max": 100,
             "min": 0,
             "position": "right",
             "ticks": {
@@ -296,7 +312,8 @@
               "font": {
                 "family": "'JetBrains Mono', monospace",
                 "size": 11
-              }
+              },
+              "stepSize": 20
             },
             "title": {
               "color": "#88C0D0",
@@ -306,17 +323,22 @@
                 "size": 12,
                 "weight": "500"
               },
-              "text": "Pourcentage cumulé"
+              "text": "Pourcentage cumulé (Gini = 0.534)"
             },
             "type": "linear"
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "nord-cognitive-dark"
       },
       "plugins": [
         {
           "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
           "id": "kitChartsPareto80Line"
+        },
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsParetoBarLabels"
         }
       ],
       "type": "bar"

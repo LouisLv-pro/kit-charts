@@ -61,8 +61,7 @@
               ]
             ],
             "datalabels": {
-              "display": true,
-              "formatter": "[Function:formatter]"
+              "display": false
             },
             "label": "Variation Étape",
             "order": 2,
@@ -87,19 +86,19 @@
             "label": "Trajectoire Cumulée",
             "order": 1,
             "pointHoverRadius": 6,
-            "pointRadius": 4,
-            "tension": 0.15,
+            "pointRadius": 3,
+            "tension": 0,
             "type": "line"
           }
         ],
         "labels": [
-          "CA Brut Initial",
+          "Solde Initial",
           "Nouveaux Contrats",
           "Expansion Comptes",
           "Remises Commerciales",
           "Désabonnements (Churn)",
           "Frais d'Infrastructure",
-          "EBITDA Net"
+          "Solde Final"
         ]
       },
       "options": {
@@ -116,7 +115,7 @@
           "emphasis": {
             "anomaly": "#FDE725",
             "benchmark": "#3E4A89",
-            "context": "#CBD5E1",
+            "context": "#94A3B8",
             "focal": "#26828E",
             "forecastAlpha": 0.5
           },
@@ -207,27 +206,23 @@
         "maintainAspectRatio": false,
         "plugins": {
           "datalabels": {
-            "color": "#0F172A",
-            "display": true,
-            "font": {
-              "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
-              "size": 10,
-              "weight": "600"
-            },
-            "formatter": "[Function:formatter]",
-            "padding": 4,
-            "thresholdRatio": 0.05
+            "display": false
           },
           "legend": {
             "align": "end",
             "display": true,
             "labels": {
+              "boxHeight": 12,
+              "boxWidth": 40,
               "color": "#0F172A",
               "font": {
                 "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 12
-              }
+              },
+              "generateLabels": "[Function:generateLabels]",
+              "padding": 10
             },
+            "onClick": null,
             "position": "top"
           },
           "tooltip": {
@@ -274,12 +269,14 @@
               "display": false
             },
             "ticks": {
+              "autoSkip": false,
+              "callback": "[Function:callback]",
               "color": "#334155",
               "font": {
                 "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
                 "size": 11
               },
-              "maxRotation": 25
+              "maxRotation": 0
             }
           },
           "y": {
@@ -297,7 +294,8 @@
                 "family": "'IBM Plex Mono', Menlo, Monaco, Consolas, monospace",
                 "size": 11
               },
-              "padding": 8
+              "maxTicksLimit": 8,
+              "padding": 6
             },
             "title": {
               "color": "#334155",
@@ -307,12 +305,20 @@
                 "size": 12,
                 "weight": "500"
               },
+              "padding": 4,
               "text": "Solde Net (k€)"
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "viridis-perceptual"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "id": "kitChartsWaterfallLabels"
+        }
+      ],
       "type": "bar"
     },
     "kind": "chart-config"

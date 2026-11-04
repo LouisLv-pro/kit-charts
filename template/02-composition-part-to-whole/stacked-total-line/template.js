@@ -99,8 +99,12 @@
     const labels = rawData.labels;
     const rawDatasets = rawData.datasets;
 
+    // Carte étroite (< 420 px) : seuls les totaux sont étiquetés, polices et légende réduites.
+    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+    const narrow = cw > 0 && cw < 420;
     const totals = computeStackedTotals(rawDatasets);
-    const totalColor = tokens.emphasis?.focal || (isDark ? '#ECEFF4' : '#0F172A');
+    // Couleur neutre contrastée, distincte de toute série empilée
+    const totalColor = tokens.textPrimary || (isDark ? '#ECEFF4' : '#0F172A');
 
     const processedDatasets = rawDatasets.map((ds, idx) => {
       const color = getColor(tokens, idx);
@@ -112,8 +116,9 @@
         borderColor: color,
         borderWidth: 1,
         stack: 'totalStack',
+        pointStyle: 'rect',
         datalabels: {
-          display: showDataLabels
+          display: showDataLabels && !narrow
         },
         order: 2
       };
@@ -129,17 +134,33 @@
       pointRadius: 5,
       pointHoverRadius: 7,
       pointBackgroundColor: totalColor,
-      tension: 0.25,
+      tension: 0,
+      pointStyle: 'circle',
       datalabels: {
-        display: showDataLabels,
-        align: 'top',
-        anchor: 'center',
-        color: totalColor,
-        font: { weight: '700', size: 10 },
-        formatter: (v) => formatLabelValue(v)
+        display: false // étiquettes du total tracées par totalLabelsPlugin (au-dessus du point)
       },
       order: 1
     });
+
+    const totalLabelsPlugin = {
+      id: 'kitChartsTotalLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const meta = chart.getDatasetMeta(chart.data.datasets.length - 1);
+        if (!meta || !meta.data) return;
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        ctx.font = `700 ${narrow ? 10 : 12}px ${tokens.fontMono || 'monospace'}`;
+        ctx.fillStyle = totalColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        meta.data.forEach((pt, i) => {
+          if (!pt || totals[i] === undefined) return;
+          ctx.fillText(formatLabelValue(totals[i]), pt.x, Math.max(chartArea.top + 12, pt.y - 9));
+        });
+        ctx.restore();
+      }
+    };
 
     const defaultOpts = getChartDefaultOptions(tokens);
     const config = {
@@ -160,16 +181,19 @@
         plugins: {
           ...defaultOpts.plugins,
           datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
+            display: showDataLabels && !narrow,
             formatter: (v) => formatLabelValue(v)
           }),
           legend: {
             display: true,
             position: 'top',
-            align: 'end',
+            align: narrow ? 'start' : 'end',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+              usePointStyle: true,
+              boxWidth: narrow ? 8 : 10,
+              padding: narrow ? 8 : 10
             }
           },
           tooltip: {
@@ -187,7 +211,14 @@
           x: {
             ...defaultOpts.scales.x,
             stacked: true,
-            grid: { display: false }
+            grid: { display: false },
+            ticks: {
+              ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+              maxRotation: narrow ? 0 : 50,
+              autoSkip: false,
+              callback: function(value) { const l = String(this.getLabelForValue(value)); return narrow ? l.replace(/ 20(\d\d)$/, ' $1') : l; }
+            }
           },
           y: {
             ...defaultOpts.scales.y,
@@ -195,15 +226,17 @@
             beginAtZero: true,
             grace: '10%',
             grid: { color: tokens.gridColor },
+            ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 }, maxTicksLimit: narrow ? 5 : undefined },
             title: {
-              display: true,
+              display: !narrow,
               text: 'Revenu (k€)',
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }
           }
         }
-      }
+      },
+      plugins: [totalLabelsPlugin]
     };
 
     if (typeof Chart === 'undefined') return { config, totals, computeStackedTotals };

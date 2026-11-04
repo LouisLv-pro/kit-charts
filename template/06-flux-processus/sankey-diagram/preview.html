@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Diagramme de Sankey (Sankey Diagram) — kit-charts</title>
+  <title>Flux de quantités (Sankey) · Kit-Charts</title>
   <!-- Google Fonts pour tous les thèmes -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <!-- Chart.js v4.4.7 CDN -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.1/dist/chartjs-chart-sankey.min.js"></script>
@@ -266,6 +266,16 @@
       grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
       gap: 1.25rem;
     }
+
+    /* Habillage en thème sombre : updateTheme pose data-kc-dark sur <html>. */
+    html[data-kc-dark] .title-group h1, html[data-kc-dark] .toolbar-theme-label { color: #ECEFF4; }
+    html[data-kc-dark] .breadcrumb, html[data-kc-dark] .title-group p { color: #D8DEE9; }
+    html[data-kc-dark] .breadcrumb a, html[data-kc-dark] .rule-item h3 { color: #88C0D0; }
+    html[data-kc-dark] .header-panel { border-bottom-color: #4C566A; }
+    html[data-kc-dark] .theme-swatches-group { background: #3B4252; border-color: #4C566A; }
+    html[data-kc-dark] .active-theme-name-tag { background: #3B4252; color: #ECEFF4; border-color: #4C566A; }
+    html[data-kc-dark] .rule-item p, html[data-kc-dark] .rule-item strong { color: #D8DEE9; }
+    html[data-kc-dark] .btn-action { background: #3B4252; color: #ECEFF4; border-color: #4C566A; }
   </style>
 </head>
 <body>
@@ -276,8 +286,8 @@
       </div>
       <div class="header-panel">
         <div class="title-group">
-          <h1>Diagramme de Sankey (Sankey Diagram)</h1>
-          <p>Conservation stricte du volume (Σ Entrées = Σ Sorties) pour tracer les transferts d'énergie ou de flux.</p>
+          <h1>Flux de quantités (Sankey)</h1>
+          <p>Relie des sources à des destinations par des bandes dont la largeur est proportionnelle au volume, avec ce qui entre égal à ce qui sort.</p>
         </div>
         <div class="controls-group">
           <div class="toolbar-theme-label"><span>🎨</span> Thème :</div>
@@ -305,11 +315,11 @@
     <div id="cognitiveRulesCard" class="cognitive-rules-card">
       <div class="rule-item">
         <h3>✅ Quand l'utiliser</h3>
-        <p><strong>Cas d'usage :</strong> Visualisation de flux directionnels avec conservation des volumes entre étapes de transfert.</p>
+        <p>Suivre d'où vient l'énergie, comment elle est distribuée et où elle se perd.</p>
       </div>
       <div class="rule-item">
         <h3>❌ Quand NE PAS l'utiliser</h3>
-        <p><strong>Contre-indications :</strong> Réseaux avec boucles rétroactives complexes ou flux non quantifiables.</p>
+        <p>Représenter des flux qui reviennent en arrière ou des volumes qu'on ne peut pas chiffrer.</p>
       </div>
     </div>
   </div>
@@ -364,6 +374,7 @@
         }
 
         if (tokens) {
+          document.documentElement.toggleAttribute('data-kc-dark', Boolean(tokens.isDark));
           document.body.style.backgroundColor = tokens.isDark ? '#242933' : '#F8FAFC';
           document.body.style.color = tokens.textPrimary || '#0F172A';
           if (rulesCard) {

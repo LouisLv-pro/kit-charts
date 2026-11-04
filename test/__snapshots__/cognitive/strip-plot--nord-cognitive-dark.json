@@ -142,8 +142,8 @@
             "pointStyle": "circle"
           },
           {
-            "backgroundColor": "#81A1C1",
-            "borderColor": "#81A1C1",
+            "backgroundColor": "#EBCB8B",
+            "borderColor": "#EBCB8B",
             "borderWidth": 1,
             "data": [
               {
@@ -274,8 +274,8 @@
             "pointStyle": "circle"
           },
           {
-            "backgroundColor": "#5E81AC",
-            "borderColor": "#5E81AC",
+            "backgroundColor": "#B48EAD",
+            "borderColor": "#B48EAD",
             "borderWidth": 1,
             "data": [
               {
@@ -445,7 +445,7 @@
         "plugins": {
           "legend": {
             "align": "start",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 12,
               "boxWidth": 12,
@@ -456,7 +456,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -501,13 +500,12 @@
               "display": false
             },
             "grid": {
-              "color": "rgba(236, 239, 244, 0.06)",
-              "drawBorder": false,
-              "lineWidth": 1
+              "display": false
             },
             "max": 3.5,
-            "min": 0.5,
+            "min": 0.4,
             "ticks": {
+              "autoSkip": false,
               "callback": "[Function:callback]",
               "color": "#ECEFF4",
               "font": {
@@ -515,6 +513,8 @@
                 "size": 11,
                 "weight": "600"
               },
+              "maxRotation": 0,
+              "minRotation": 0,
               "padding": 8,
               "stepSize": 1
             },
@@ -536,9 +536,20 @@
                 "size": 11
               },
               "padding": 8
+            },
+            "title": {
+              "color": "#D8DEE9",
+              "display": true,
+              "font": {
+                "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+                "size": 12,
+                "weight": "500"
+              },
+              "text": "Score de récupération clinique"
             }
           }
-        }
+        },
+        "themeName": "nord-cognitive-dark"
       },
       "type": "scatter"
     },

@@ -12,7 +12,7 @@
           {
             "backgroundColor": [
               "#4477AA",
-              "#BBBBBB",
+              "#999999",
               "#475569"
             ],
             "barThickness": 14,
@@ -31,10 +31,7 @@
         ]
       },
       "options": {
-        "animation": {
-          "duration": 400,
-          "easing": "easeOutQuart"
-        },
+        "animation": false,
         "indexAxis": "y",
         "maintainAspectRatio": false,
         "plugins": {

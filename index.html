@@ -3,36 +3,36 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kit-Charts — Suite de Visualisation Graphique Cognitive & Psychophysique</title>
-  <meta name="description" content="Suite moderne de visualisations graphiques interactives Chart.js v4+ calibrées pour une clarté cognitive absolue et une discrimination psychophysique optimale.">
+  <title>Kit-Charts : des graphiques clairs, prêts à l'emploi</title>
+  <meta name="description" content="73 graphiques et tableaux prêts à l'emploi, pensés pour être compris du premier coup et lisibles par tous.">
 
-  <!-- Google Fonts pour tous les thèmes cognitifs -->
+  <!-- Polices : Inter pour l'habillage ; la police du thème actif est chargée à la demande (loadGoogleFonts) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400;1,700&family=Fira+Code:wght@400;500;600&family=Fira+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&family=Roboto+Mono:wght@400;500;700&family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500;600&family=Source+Sans+3:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- Chart.js Core v4.4.7 UMD -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
 
   <!-- Date Adapter (Luxon) pour les échelles temporelles & Chandelier OHLC -->
-  <script src="https://cdn.jsdelivr.net/npm/luxon@3.5.0/build/global/luxon.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/luxon@3.5.0/build/global/luxon.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chartjs-adapter-luxon@1.3.1/dist/chartjs-adapter-luxon.umd.min.js"></script>
 
   <!-- TopoJSON Client pour les projections cartographiques -->
-  <script src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/topojson-client@3.1.0/dist/topojson-client.min.js"></script>
 
   <!-- 6 Plugins spécialisés Chart.js v4+ -->
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.1/dist/chartjs-chart-sankey.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.1/dist/chartjs-chart-treemap.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.3.4/build/index.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.4/build/index.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.1/dist/chartjs-chart-sankey.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.1/dist/chartjs-chart-treemap.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@sgratzl/chartjs-chart-boxplot@4.3.4/build/index.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chartjs-chart-matrix@2.0.1/dist/chartjs-chart-matrix.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chartjs-chart-geo@4.3.4/build/index.umd.min.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/chartjs-chart-financial@0.2.0/dist/chartjs-chart-financial.min.js"></script>
 
   <!-- Système universel de thèmes cognitifs & Catalogue Pré-Bundlé Zero-CORS -->
-  <script src="./themes/theme-tokens.js"></script>
-  <script src="./themes/world-atlas.js"></script>
-  <script src="./catalog-bundle.js"></script>
+  <script defer src="./themes/theme-tokens.js"></script>
+  <script defer src="./themes/world-atlas.js"></script>
+  <script defer src="./catalog-bundle.js"></script>
 
   <style>
     /* ==========================================================================
@@ -401,7 +401,7 @@
       align-items: center;
       gap: 0.6rem;
       background: var(--accent);
-      color: #FFFFFF !important;
+      color: var(--accent-contrast, #FFFFFF) !important;
       padding: 0.9rem 1.85rem;
       border-radius: var(--radius-full);
       font-size: 0.95rem;
@@ -711,7 +711,7 @@
     /* État Activé avec Surbrillance / Glow Lumineux */
     .btn-label-toggle.active {
       background: var(--accent);
-      color: #FFFFFF !important;
+      color: var(--accent-contrast, #FFFFFF) !important;
       border-color: var(--accent);
       box-shadow: 0 0 16px var(--accent-glow), 0 4px 12px var(--accent-glow);
       transform: translateY(-1px);
@@ -940,6 +940,16 @@
       justify-content: center;
     }
 
+    /* Cartes KPI (renderCard) : la hauteur suit le contenu, sans rognage du pied de carte. */
+    .card-canvas-container:has(.kc-card-host) {
+      height: auto;
+      min-height: 250px;
+    }
+
+    .card-canvas-container .kc-card-host {
+      width: 100%;
+    }
+
     .card-canvas-container canvas {
       width: 100% !important;
       height: 100% !important;
@@ -1020,7 +1030,7 @@
     .card-btn-demo {
       background: var(--accent);
       border-color: var(--accent);
-      color: #FFFFFF !important;
+      color: var(--accent-contrast, #FFFFFF) !important;
       box-shadow: 0 4px 12px var(--accent-glow);
     }
 
@@ -1116,129 +1126,92 @@
     }
 
     /* ==========================================================================
-       8. PIED DE PAGE STRUCTURÉ ET STYLISÉ
+       8. PIED DE PAGE : SIGNATURE TYPOGRAPHIQUE
+       Le mot-symbole reprend les trois halos du hero (accent, indigo, rose) et
+       s'efface vers le bas, comme une image qui se dissout dans le fond.
        ========================================================================== */
     .portal-footer {
-      margin-top: 6rem;
-      padding: 4.5rem 0 2rem 0;
-      border-top: 1px solid var(--border);
       position: relative;
-      background: var(--surface-subtle);
+      margin-top: 4rem;
+      padding: 6rem 1.5rem 0;
+      overflow: hidden;
+      isolation: isolate;
     }
 
-    .footer-top-accent {
+    .portal-footer::before {
+      content: '';
       position: absolute;
-      top: -1px;
-      left: 0;
-      right: 0;
-      height: 2px;
-      background: linear-gradient(90deg, transparent 0%, var(--accent) 50%, transparent 100%);
+      inset: 0 0 auto 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-strong) 20%, var(--border-strong) 80%, transparent);
     }
 
-    .footer-container {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 0 2rem;
+    /* Les halos vivent dans un calque masqué en fondu vers le haut : pas d'arête visible. */
+    .footer-glows {
+      position: absolute;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 55%);
+      mask-image: linear-gradient(180deg, transparent 0%, #000 55%);
     }
 
-    .footer-grid {
-      display: grid;
-      grid-template-columns: 2fr 1.2fr 1.8fr;
-      gap: 3rem;
-      margin-bottom: 3.5rem;
+    .footer-glow {
+      position: absolute;
+      bottom: -35%;
+      width: 46vw;
+      height: 46vw;
+      max-width: 640px;
+      max-height: 640px;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.22;
     }
 
-    .footer-col-brand .footer-brand-title {
-      font-size: 1.35rem;
-      font-weight: 800;
-      color: var(--text-primary);
-      letter-spacing: -0.02em;
-      margin-bottom: 0.75rem;
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-    }
+    .footer-glow.g1 { left: 6%; background: var(--accent); }
+    .footer-glow.g2 { left: 34%; background: #818CF8; opacity: 0.18; }
+    .footer-glow.g3 { right: 4%; background: #F472B6; opacity: 0.14; }
 
-    .footer-col-brand p {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      margin-bottom: 1.25rem;
-    }
-
-    .footer-badges-wrap {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-
-    .footer-badge {
-      font-size: 0.725rem;
-      font-family: var(--font-mono);
-      font-weight: 600;
-      padding: 0.2rem 0.55rem;
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--radius-full);
-      color: var(--text-muted);
-    }
-
-    .footer-col-title {
-      font-size: 0.85rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--text-primary);
-      margin-bottom: 1.15rem;
-    }
-
-    .footer-col-links {
-      list-style: none;
-      display: flex;
-      flex-direction: column;
-      gap: 0.65rem;
-    }
-
-    .footer-col-links a {
-      color: var(--text-secondary);
-      text-decoration: none;
-      font-size: 0.875rem;
-      font-weight: 500;
-      transition: var(--transition-smooth);
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .footer-col-links a:hover {
-      color: var(--accent);
-      transform: translateX(3px);
-    }
-
-    .footer-bottom-bar {
-      padding-top: 2rem;
-      border-top: 1px solid var(--border);
+    .footer-meta {
+      max-width: 1320px;
+      margin: 0 auto 2.5rem;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      flex-wrap: wrap;
       gap: 1rem;
-      font-size: 0.825rem;
+      font-size: 0.8125rem;
       color: var(--text-muted);
     }
 
-    .footer-back-to-top {
+    .footer-meta a {
       color: var(--text-secondary);
       text-decoration: none;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      transition: var(--transition-smooth);
+      transition: color 0.2s ease;
     }
 
-    .footer-back-to-top:hover {
+    .footer-meta a:hover {
       color: var(--accent);
+    }
+
+    .footer-wordmark {
+      display: block;
+      margin: 0 auto;
+      text-align: center;
+      font-family: var(--font-sans);
+      font-weight: 800;
+      font-size: clamp(4.5rem, 17vw, 16.5rem);
+      line-height: 0.78;
+      letter-spacing: -0.05em;
+      white-space: nowrap;
+      user-select: none;
+      background: linear-gradient(100deg, var(--accent) 0%, #818CF8 48%, #F472B6 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      -webkit-mask-image: linear-gradient(180deg, #000 18%, rgba(0, 0, 0, 0.55) 58%, transparent 96%);
+      mask-image: linear-gradient(180deg, #000 18%, rgba(0, 0, 0, 0.55) 58%, transparent 96%);
+      /* Le fondu du masque fait disparaître le bas des lettres dans le bord de page. */
+      padding-bottom: 0.04em;
     }
 
     /* ==========================================================================
@@ -1251,10 +1224,6 @@
       }
       .floating-card {
         height: 180px;
-      }
-      .footer-grid {
-        grid-template-columns: 1fr 1fr;
-        gap: 2rem;
       }
     }
 
@@ -1278,13 +1247,8 @@
         top: 70px;
         padding: 0.85rem;
       }
-      .footer-grid {
-        grid-template-columns: 1fr;
-        gap: 2rem;
-      }
-      .footer-bottom-bar {
+      .footer-meta {
         flex-direction: column;
-        text-align: center;
       }
     }
 
@@ -1319,10 +1283,10 @@
 
     <nav class="nav-links" aria-label="Navigation principale">
       <a href="#section-themes" class="nav-link"><span>🎨</span> Thèmes</a>
-      <a href="#section-cards" class="nav-link"><span>💳</span> Cards</a>
+      <a href="#section-cards" class="nav-link"><span>💳</span> Indicateurs</a>
       <a href="#section-charts" class="nav-link"><span>📊</span> Graphiques</a>
       <a href="#section-tableaux" class="nav-link"><span>📋</span> Tableaux</a>
-      <a href="#section-tooltips" class="nav-link"><span>🔍</span> Tooltips</a>
+      <a href="#section-tooltips" class="nav-link"><span>🔍</span> Infobulles</a>
     </nav>
 
     <div class="nav-actions">
@@ -1345,7 +1309,7 @@
 
     <div class="hero-main">
       <div class="hero-badge-pill">
-        <span>✦</span> Design System & Dataviz Psychophysique
+        <span>✦</span> Bibliothèque de graphiques
       </div>
       
       <h1 class="hero-title">
@@ -1353,12 +1317,12 @@
       </h1>
 
       <p class="hero-subtitle">
-        La suite moderne de visualisations graphiques Chart.js conçue pour une clarté cognitive absolue et une précision psychophysique.
+        73 graphiques et tableaux prêts à l'emploi, pensés pour être compris du premier coup et lisibles par tous.
       </p>
 
       <div class="hero-cta-group">
         <a href="#section-cards" class="btn-hero-primary">
-          Explorer les Collections <span>↓</span>
+          Voir les graphiques <span>↓</span>
         </a>
       </div>
     </div>
@@ -1416,7 +1380,7 @@
       </div>
 
       <!-- Dessin 3 : Composition (Anneau Doughnut Part-to-Whole & KPI) -->
-      <div class="floating-card float-anim-3" title="Composition & Part-to-Whole">
+      <div class="floating-card float-anim-3" title="Parts d'un tout">
         <div class="hero-drawing-wrap">
           <canvas id="heroCanvasDonut"></canvas>
         </div>
@@ -1467,12 +1431,12 @@
          ======================================================================== -->
     <section class="portal-section" id="section-themes">
       <div class="section-header-wrap">
-        <div class="section-badge"><span>🎨</span> 00. Systèmes de Thèmes & Ergonomie Chromatique</div>
+        <div class="section-badge"><span>🎨</span> Thèmes</div>
         <h2 class="section-title">
-          Thèmes Cognitifs & Palettes Perceptuelles
+          Huit thèmes de couleurs
         </h2>
         <p class="section-desc">
-          Systèmes chromatiques et typographiques scientifiquement calibrés sur les espaces uniformes CIELAB / CAM02 : discrimination optimale sous toutes les formes de daltonisme (CVD Safe), luminance monotone, typographies haute lisibilité et chiffres tabulaires.
+          Chaque thème reste lisible par tous, y compris les personnes daltoniennes. Choisissez-en un : tous les graphiques de la page changent en même temps.
         </p>
       </div>
 
@@ -1486,12 +1450,12 @@
          ======================================================================== -->
     <section class="portal-section" id="section-cards">
       <div class="section-header-wrap">
-        <div class="section-badge"><span>💳</span> 00. KPI Cards</div>
+        <div class="section-badge"><span>💳</span> Indicateurs</div>
         <h2 class="section-title">
-          Cartes & Métriques KPI
+          Cartes d'indicateurs
         </h2>
         <p class="section-desc">
-          Cartes synthétiques haute densité pour tableaux de bord exécutifs, micro-sparklines temporelles, indicateurs d'objectifs bullet et décompositions conformes aux principes de Sweller et Cowan.
+          Un chiffre clé, sa tendance et son objectif, lisibles d'un coup d'œil. Idéal en haut d'un tableau de bord.
         </p>
       </div>
 
@@ -1505,67 +1469,67 @@
          ======================================================================== -->
     <section class="portal-section" id="section-charts">
       <div class="section-header-wrap">
-        <div class="section-badge"><span>📊</span> 01 à 08. Graphiques Dataviz</div>
+        <div class="section-badge"><span>📊</span> Graphiques</div>
         <h2 class="section-title">
-          Graphiques & Visualisations
+          Un graphique pour chaque question
         </h2>
         <p class="section-desc">
-          Suite exhaustive de visualisations calibrées rigoureusement selon les lois de Cleveland-McGill, Tufte et Stevens : comparaison, composition, distribution, corrélation, séries temporelles, flux et géospatial.
+          Rangés selon ce que vous voulez montrer : comparer, découper un total, voir une répartition, relier deux mesures, suivre une évolution, des flux, une hiérarchie ou des lieux.
         </p>
       </div>
 
       <!-- Sous-Catégorie : 01. Comparaison -->
       <div class="chart-subcategory-divider">
-        <h3 class="chart-subcategory-title"><span>📊</span> 01. Comparaison</h3>
+        <h3 class="chart-subcategory-title"><span>📊</span> 01. Comparer</h3>
         <div class="chart-subcategory-line"></div>
       </div>
       <div class="gallery-grid" id="grid-charts-01"></div>
 
       <!-- Sous-Catégorie : 02. Composition -->
       <div class="chart-subcategory-divider">
-        <h3 class="chart-subcategory-title"><span>🥧</span> 02. Composition & Part-to-Whole</h3>
+        <h3 class="chart-subcategory-title"><span>🥧</span> 02. Parts d'un tout</h3>
         <div class="chart-subcategory-line"></div>
       </div>
       <div class="gallery-grid" id="grid-charts-02"></div>
 
       <!-- Sous-Catégorie : 03. Distribution -->
       <div class="chart-subcategory-divider">
-        <h3 class="chart-subcategory-title"><span>📈</span> 03. Distribution & Densité</h3>
+        <h3 class="chart-subcategory-title"><span>📈</span> 03. Répartition des valeurs</h3>
         <div class="chart-subcategory-line"></div>
       </div>
       <div class="gallery-grid" id="grid-charts-03"></div>
 
       <!-- Sous-Catégorie : 04. Corrélation & Relation -->
       <div class="chart-subcategory-divider">
-        <h3 class="chart-subcategory-title"><span>🔵</span> 04. Corrélation & Relation</h3>
+        <h3 class="chart-subcategory-title"><span>🔵</span> 04. Liens entre deux mesures</h3>
         <div class="chart-subcategory-line"></div>
       </div>
       <div class="gallery-grid" id="grid-charts-04"></div>
 
       <!-- Sous-Catégorie : 05. Évolution Temporelle -->
       <div class="chart-subcategory-divider">
-        <h3 class="chart-subcategory-title"><span>⏳</span> 05. Évolution Temporelle</h3>
+        <h3 class="chart-subcategory-title"><span>⏳</span> 05. Évolution dans le temps</h3>
         <div class="chart-subcategory-line"></div>
       </div>
       <div class="gallery-grid" id="grid-charts-05"></div>
 
       <!-- Sous-Catégorie : 06. Flux & Processus -->
       <div class="chart-subcategory-divider">
-        <h3 class="chart-subcategory-title"><span>🌊</span> 06. Flux & Processus</h3>
+        <h3 class="chart-subcategory-title"><span>🌊</span> 06. Flux et étapes</h3>
         <div class="chart-subcategory-line"></div>
       </div>
       <div class="gallery-grid" id="grid-charts-06"></div>
 
       <!-- Sous-Catégorie : 07. Hiérarchie & Réseau -->
       <div class="chart-subcategory-divider">
-        <h3 class="chart-subcategory-title"><span>🌳</span> 07. Hiérarchie & Réseau</h3>
+        <h3 class="chart-subcategory-title"><span>🌳</span> 07. Hiérarchies et réseaux</h3>
         <div class="chart-subcategory-line"></div>
       </div>
       <div class="gallery-grid" id="grid-charts-07"></div>
 
       <!-- Sous-Catégorie : 08. Géospatial & Cartes -->
       <div class="chart-subcategory-divider">
-        <h3 class="chart-subcategory-title"><span>🗺️</span> 08. Géospatial & Cartes</h3>
+        <h3 class="chart-subcategory-title"><span>🗺️</span> 08. Cartes géographiques</h3>
         <div class="chart-subcategory-line"></div>
       </div>
       <div class="gallery-grid" id="grid-charts-08"></div>
@@ -1576,12 +1540,12 @@
          ======================================================================== -->
     <section class="portal-section" id="section-tableaux">
       <div class="section-header-wrap">
-        <div class="section-badge"><span>📋</span> 09. Tableaux Dataviz</div>
+        <div class="section-badge"><span>📋</span> Tableaux</div>
         <h2 class="section-title">
-          Tableaux & Matrices Dataviz
+          Des tableaux qui se lisent vite
         </h2>
         <p class="section-desc">
-          Tableaux analytiques conformes aux standards de Stephen Few, Edward Tufte et IBCS® : bar-in-cell, matrices heatmap, arborescences repliables, variances financières et classements.
+          Petites barres, couleurs et flèches dans les cellules : on repère l'essentiel sans tout lire.
         </p>
       </div>
 
@@ -1595,12 +1559,12 @@
          ======================================================================== -->
     <section class="portal-section" id="section-tooltips">
       <div class="section-header-wrap">
-        <div class="section-badge"><span>🔍</span> 10. Ergonomie & Interaction</div>
+        <div class="section-badge"><span>🔍</span> Interaction</div>
         <h2 class="section-title">
-          Tooltips & Infobulles Cognitives
+          Infobulles
         </h2>
         <p class="section-desc">
-          Système d'infobulles dynamiques anti-occlusion respectant la loi de Fitts, le principe de contiguïté de Mayer et les exigences de contraste WCAG AAA.
+          Au survol, une bulle donne le détail d'une valeur sans masquer les données voisines.
         </p>
       </div>
 
@@ -1611,72 +1575,26 @@
 
   </div>
 
-  <!-- ==========================================================================
-       PIED DE PAGE STRUCTURÉ ET STYLISÉ
-       ========================================================================== -->
+  <!-- Pied de page : signature typographique -->
   <footer class="portal-footer">
-    <div class="footer-top-accent"></div>
-    <div class="footer-container">
-      <div class="footer-grid">
-        <!-- Colonne 1 : Marque & Mission -->
-        <div class="footer-col-brand">
-          <div class="footer-brand-title">
-            <div class="brand-icon-wrap" style="width: 28px; height: 28px;">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="20" x2="18" y2="10"></line>
-                <line x1="12" y1="20" x2="12" y2="4"></line>
-                <line x1="6" y1="20" x2="6" y2="14"></line>
-              </svg>
-            </div>
-            <span>Kit-Charts</span>
-          </div>
-          <p>
-            Suite cognitive de visualisation graphique pour Chart.js v4+ calibrée pour une clarté analytique absolue, une discrimination psychophysique optimale et une conformité WCAG AAA.
-          </p>
-        </div>
-
-        <!-- Colonne 2 : Navigation Directe -->
-        <div>
-          <h4 class="footer-col-title">Navigation</h4>
-          <ul class="footer-col-links">
-            <li><a href="#section-themes">🎨 Thèmes Cognitifs (8)</a></li>
-            <li><a href="#section-cards">💳 KPI Cards (7)</a></li>
-            <li><a href="#section-charts">📊 Graphiques (60)</a></li>
-            <li><a href="#section-tableaux">📋 Tableaux Dataviz (6)</a></li>
-            <li><a href="#section-tooltips">🔍 Tooltips Lab (1)</a></li>
-          </ul>
-        </div>
-
-        <!-- Colonne 3 : Fondements & Normes -->
-        <div>
-          <h4 class="footer-col-title">Fondements Cognitifs</h4>
-          <ul class="footer-col-links">
-            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Cleveland & McGill (1984) — Rang 1</span></li>
-            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Edward Tufte — Data-Ink Maximal</span></li>
-            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Stephen Few — Bullet & Dashboarding</span></li>
-            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Norme IBCS® — Variance Financière</span></li>
-            <li><span style="color: var(--text-secondary); font-size: 0.85rem;">✦ Richard Mayer — Contiguïté Spatiale</span></li>
-          </ul>
-        </div>
-      </div>
-
-      <!-- Bas de Footer -->
-      <div class="footer-bottom-bar">
-        <div>
-          © 2026 <strong>Kit-Charts</strong> — Conçu pour l'excellence visuelle et l'aide à la décision. Licence MIT.
-        </div>
-        <div>
-          <a href="#" class="footer-back-to-top">↑ Remonter en haut de page</a>
-        </div>
-      </div>
+    <div class="footer-glows" aria-hidden="true">
+      <div class="footer-glow g1"></div>
+      <div class="footer-glow g2"></div>
+      <div class="footer-glow g3"></div>
     </div>
+    <div class="footer-meta">
+      <span>© 2026 Kit-Charts · Licence MIT</span>
+      <a href="#">Revenir en haut ↑</a>
+    </div>
+    <span class="footer-wordmark" aria-hidden="true">Kit-Charts</span>
   </footer>
 
   <!-- ==========================================================================
        MOTEUR JAVASCRIPT : RENDU DES SECTIONS, PASTILLES DE THÈMES & DESSINS HERO
        ========================================================================== -->
   <script>
-  (function() {
+  // Les bibliothèques sont chargées en defer : elles s'exécutent avant DOMContentLoaded.
+  document.addEventListener('DOMContentLoaded', function() {
     'use strict';
 
     const ThemeTokensModule = window.KitChartsTheme || (window.KitCharts && window.KitCharts.Theme) || {};
@@ -1686,15 +1604,15 @@
     const THEMES = ThemeTokensModule.THEMES || {};
 
     // ========================================================================
-    // REGISTRE EXHAUSTIF DES 83 TEMPLATES DU CATALOGUE
+    // REGISTRE DES TEMPLATES DU CATALOGUE (73 du registre + démonstrateur tooltip)
     // ========================================================================
     const CATALOG = [
       // 00. KPI Cards (7)
       {
         id: 'kpi-standard',
-        title: 'KPI Card Standard — Synthèse Exécutive',
+        title: 'Indicateur clé',
         category: '00-kpi-card',
-        categoryLabel: '00. KPI Cards',
+        categoryLabel: 'Indicateur',
         plugin: null,
         pluginLabel: 'Micro-Card',
         cognitiveRank: 'Rang 1 (Texte numérique direct & positionnement spatial)',
@@ -1703,9 +1621,9 @@
       },
       {
         id: 'kpi-sparkline',
-        title: 'KPI Card avec Sparkline — Micro-Tendance',
+        title: 'Indicateur avec tendance',
         category: '00-kpi-card',
-        categoryLabel: '00. KPI Cards',
+        categoryLabel: 'Indicateur',
         plugin: null,
         pluginLabel: 'Chart.js Sparkline',
         cognitiveRank: 'Rang 1 (Métrique) & Rang 4 (Continuité de Tufte)',
@@ -1714,9 +1632,9 @@
       },
       {
         id: 'kpi-bullet',
-        title: 'KPI Card Objectif & Cible — Micro-Bullet',
+        title: 'Indicateur face à son objectif',
         category: '00-kpi-card',
-        categoryLabel: '00. KPI Cards',
+        categoryLabel: 'Indicateur',
         plugin: null,
         pluginLabel: 'Chart.js Bullet',
         cognitiveRank: 'Rang 1 (Position alignée & Longueur sur échelle commune)',
@@ -1725,9 +1643,9 @@
       },
       {
         id: 'kpi-comparative',
-        title: 'KPI Card Comparative — Multi-Période',
+        title: 'Indicateur comparé (N-1, budget)',
         category: '00-kpi-card',
-        categoryLabel: '00. KPI Cards',
+        categoryLabel: 'Indicateur',
         plugin: null,
         pluginLabel: 'Micro-Card',
         cognitiveRank: 'Rang 1 (Comparaison bivalente côte-à-côte)',
@@ -1736,9 +1654,9 @@
       },
       {
         id: 'kpi-distribution',
-        title: 'KPI Card Décomposition — Micro-Distribution',
+        title: 'Indicateur et sa répartition',
         category: '00-kpi-card',
-        categoryLabel: '00. KPI Cards',
+        categoryLabel: 'Indicateur',
         plugin: null,
         pluginLabel: 'Micro-Bar 100%',
         cognitiveRank: 'Rang 1 (Total) & Rang 3 (Longueur de segment)',
@@ -1747,9 +1665,9 @@
       },
       {
         id: 'kpi-status-alert',
-        title: 'KPI Card Statut & Seuil d\'Alerte (Multi-State)',
+        title: 'Indicateur avec seuil d\'alerte',
         category: '00-kpi-card',
-        categoryLabel: '00. KPI Cards',
+        categoryLabel: 'Indicateur',
         plugin: null,
         pluginLabel: 'Micro-Gauge RAG',
         cognitiveRank: 'Rang 1 (Position sur réglette linéaire de seuils)',
@@ -1758,22 +1676,22 @@
       },
       {
         id: 'kpi-composite',
-        title: 'KPI Card Composite — Multi-Métriques Liées',
+        title: 'Indicateur et ses leviers',
         category: '00-kpi-card',
-        categoryLabel: '00. KPI Cards',
+        categoryLabel: 'Indicateur',
         plugin: null,
         pluginLabel: 'Micro-Drivers',
         cognitiveRank: 'Rang 1 (Hiérarchie dominante Hero vs Drivers secondaires)',
-        cognitiveSummary: 'Métrique macroscopique dominante (60%) associée à ses 3 leviers opérationnels causaux directs avec micro-deltas individuels.',
+        cognitiveSummary: 'Métrique principale mise en avant, associée à ses 3 leviers opérationnels causaux directs avec micro-deltas individuels.',
         tags: ['kpi', 'composite', 'drivers', 'équation', 'dupont', 'causes', 'e-commerce', 'ltv', 'multi-métriques', 'leviers']
       },
 
       // 01. Comparaison (10)
       {
         id: 'bar-chart-vertical',
-        title: 'Diagramme en Barres Verticales',
+        title: 'Barres verticales',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position sur échelle commune)',
@@ -1782,9 +1700,9 @@
       },
       {
         id: 'bar-chart-horizontal',
-        title: 'Diagramme en Barres Horizontales',
+        title: 'Barres horizontales',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position sur échelle commune)',
@@ -1793,9 +1711,9 @@
       },
       {
         id: 'grouped-bar-chart',
-        title: 'Diagramme en Barres Groupées',
+        title: 'Barres groupées',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position) + Loi de Proximité',
@@ -1804,9 +1722,9 @@
       },
       {
         id: 'stacked-bar-chart',
-        title: 'Diagramme en Barres Empilées',
+        title: 'Barres empilées',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Total & Base) / Rang 3 (Segments)',
@@ -1815,9 +1733,9 @@
       },
       {
         id: 'bullet-chart',
-        title: 'Graphique à Puces (Bullet Graph)',
+        title: 'Jauge linéaire (bullet)',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position & Longueur)',
@@ -1826,9 +1744,9 @@
       },
       {
         id: 'bar-target-overlay',
-        title: 'Barres + Marqueur de Cible (Target Overlay)',
+        title: 'Barres avec objectif',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position sur échelle commune & marqueur transversal)',
@@ -1837,9 +1755,9 @@
       },
       {
         id: 'lollipop-chart',
-        title: 'Graphique Sucette (Lollipop Chart)',
+        title: 'Sucettes (lollipop)',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position de point)',
@@ -1848,9 +1766,9 @@
       },
       {
         id: 'slope-chart',
-        title: 'Graphique de Pente (Slopegraph)',
+        title: 'Avant / après (pente)',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position) & Rang 4 (Pente)',
@@ -1859,9 +1777,9 @@
       },
       {
         id: 'dumbbell-chart',
-        title: 'Graphique en Haltères (Dumbbell Plot)',
+        title: 'Haltères : écart entre deux valeurs',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position alignée) & Rang 3 (Delta)',
@@ -1870,9 +1788,9 @@
       },
       {
         id: 'radar-chart',
-        title: 'Graphique Radar (Spider Chart)',
+        title: 'Radar',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 2 (Distance radiale)',
@@ -1881,9 +1799,9 @@
       },
       {
         id: 'polar-area-chart',
-        title: 'Diagramme Polaire de Nightingale',
+        title: 'Rose des vents (Nightingale)',
         category: '01-comparaison',
-        categoryLabel: '01. Comparaison',
+        categoryLabel: 'Comparer',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Rayon) & Rang 5 (Aire polaire)',
@@ -1894,9 +1812,9 @@
       // 02. Composition (6)
       {
         id: 'pie-chart',
-        title: 'Diagramme Circulaire (Pie Chart)',
+        title: 'Camembert',
         category: '02-composition-part-to-whole',
-        categoryLabel: '02. Composition',
+        categoryLabel: 'Parts d\'un tout',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 2-4 (Angle & Surface)',
@@ -1905,9 +1823,9 @@
       },
       {
         id: 'doughnut-chart',
-        title: 'Diagramme en Anneau (Doughnut Chart)',
+        title: 'Anneau',
         category: '02-composition-part-to-whole',
-        categoryLabel: '02. Composition',
+        categoryLabel: 'Parts d\'un tout',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 2 (Longueur d\'arc)',
@@ -1916,9 +1834,9 @@
       },
       {
         id: 'treemap',
-        title: 'Carte Proportionnelle (Treemap)',
+        title: 'Carte proportionnelle (treemap)',
         category: '02-composition-part-to-whole',
-        categoryLabel: '02. Composition',
+        categoryLabel: 'Parts d\'un tout',
         plugin: 'treemap',
         pluginLabel: 'Plugin: Treemap',
         cognitiveRank: 'Rang 5 (Aire 2D rectangulaire)',
@@ -1927,9 +1845,9 @@
       },
       {
         id: 'sunburst',
-        title: 'Diagramme Rayonnant (Sunburst Chart)',
+        title: 'Soleil (sunburst)',
         category: '02-composition-part-to-whole',
-        categoryLabel: '02. Composition',
+        categoryLabel: 'Parts d\'un tout',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 5 (Angle & Surface radiale)',
@@ -1938,9 +1856,9 @@
       },
       {
         id: 'waffle-chart',
-        title: 'Graphique Gaufre (Waffle Chart 10x10)',
+        title: 'Gaufre : 100 cases',
         category: '02-composition-part-to-whole',
-        categoryLabel: '02. Composition',
+        categoryLabel: 'Parts d\'un tout',
         plugin: 'matrix',
         pluginLabel: 'Plugin: Matrix',
         cognitiveRank: 'Dénombrement discret (1 case = 1%)',
@@ -1949,9 +1867,9 @@
       },
       {
         id: 'stacked-bar-100',
-        title: 'Barres Empilées 100% (100% Stacked Bar)',
+        title: 'Barres empilées à 100 %',
         category: '02-composition-part-to-whole',
-        categoryLabel: '02. Composition',
+        categoryLabel: 'Parts d\'un tout',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Base Y=0 & Sommet 100%)',
@@ -1960,9 +1878,9 @@
       },
       {
         id: 'pareto-chart',
-        title: 'Diagramme de Pareto (Loi 80/20)',
+        title: 'Pareto (règle des 80/20)',
         category: '02-composition-part-to-whole',
-        categoryLabel: '02. Composition',
+        categoryLabel: 'Parts d\'un tout',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position triée) & Rang 4 (Courbe de cumul)',
@@ -1971,9 +1889,9 @@
       },
       {
         id: 'stacked-total-line',
-        title: 'Barres Empilées + Ligne de Total',
+        title: 'Barres empilées avec total',
         category: '02-composition-part-to-whole',
-        categoryLabel: '02. Composition',
+        categoryLabel: 'Parts d\'un tout',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Ligne de total globale) & Rang 3 (Segments empilés)',
@@ -1984,9 +1902,9 @@
       // 03. Distribution (7)
       {
         id: 'histogramme',
-        title: 'Histogramme de Fréquence',
+        title: 'Histogramme',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position) & Rang 3 (Longueur 1D)',
@@ -1995,9 +1913,9 @@
       },
       {
         id: 'density-plot',
-        title: 'Graphique de Densité (Gaussian KDE)',
+        title: 'Courbe de densité',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position) & Rang 4 (Courbure continue)',
@@ -2006,9 +1924,9 @@
       },
       {
         id: 'box-plot',
-        title: 'Boîte à Moustaches (Box Plot)',
+        title: 'Boîte à moustaches',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: 'boxplot',
         pluginLabel: 'Plugin: Boxplot',
         cognitiveRank: 'Rang 1 (Position sur échelle commune)',
@@ -2017,9 +1935,9 @@
       },
       {
         id: 'violin-plot',
-        title: 'Diagramme en Violon (Violin Plot + KDE)',
+        title: 'Violon',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position) & Rang 5 (Silhouette de densité symétrique)',
@@ -2028,9 +1946,9 @@
       },
       {
         id: 'strip-plot',
-        title: 'Bandes de Points (Strip / Jitter Plot)',
+        title: 'Bandes de points',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position) + Jittering',
@@ -2039,9 +1957,9 @@
       },
       {
         id: 'beeswarm-plot',
-        title: 'Essaim de Points (Beeswarm Plot)',
+        title: 'Essaim de points',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position exacte) + Empilement',
@@ -2050,9 +1968,9 @@
       },
       {
         id: 'distribution-heatmap',
-        title: 'Heatmap de Distribution 2D',
+        title: 'Carte de chaleur jour × heure',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: 'matrix',
         pluginLabel: 'Plugin: Matrix',
         cognitiveRank: 'Rang 1 (Position 2D) & Rang 7 (Luminance)',
@@ -2061,9 +1979,9 @@
       },
       {
         id: 'histogramme-kde',
-        title: 'Histogramme + Densité Continue (KDE)',
+        title: 'Histogramme et courbe de densité',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 2 (Hauteur de barre) & Rang 4 (Courbe de densité continue)',
@@ -2072,9 +1990,9 @@
       },
       {
         id: 'box-strip-plot',
-        title: 'Box Plot + Strip / Jitter Plot',
+        title: 'Boîte à moustaches et points',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position de points) & Rang 2 (Boîte de Tukey)',
@@ -2083,9 +2001,9 @@
       },
       {
         id: 'raincloud-plot',
-        title: 'Raincloud Plot (Half-Violin + Box + Rain)',
+        title: 'Nuage de pluie (raincloud)',
         category: '03-distribution',
-        categoryLabel: '03. Distribution',
+        categoryLabel: 'Répartition',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Architecture Tri-Hybride (Macro KDE + Méso Box + Micro Rain)',
@@ -2096,9 +2014,9 @@
       // 04. Corrélation & Relation (5)
       {
         id: 'scatter-plot',
-        title: 'Nuage de Points (Scatter Plot)',
+        title: 'Nuage de points',
         category: '04-correlation-relation',
-        categoryLabel: '04. Corrélation',
+        categoryLabel: 'Liens',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position Cartésienne X, Y)',
@@ -2107,9 +2025,9 @@
       },
       {
         id: 'bubble-chart',
-        title: 'Diagramme à Bulles (Bubble Chart)',
+        title: 'Bulles',
         category: '04-correlation-relation',
-        categoryLabel: '04. Corrélation',
+        categoryLabel: 'Liens',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (X, Y) & Rang 5 (Aire r ∝ √Z)',
@@ -2118,9 +2036,9 @@
       },
       {
         id: 'matrix-heatmap',
-        title: 'Matrice de Corrélation (Matrix Heatmap)',
+        title: 'Matrice de corrélation',
         category: '04-correlation-relation',
-        categoryLabel: '04. Corrélation',
+        categoryLabel: 'Liens',
         plugin: 'matrix',
         pluginLabel: 'Plugin: Matrix',
         cognitiveRank: 'Rang 1 (Position) & Palette divergente',
@@ -2129,9 +2047,9 @@
       },
       {
         id: 'connected-scatter-plot',
-        title: 'Nuage de Points Relié (Connected Scatter)',
+        title: 'Nuage de points relié dans le temps',
         category: '04-correlation-relation',
-        categoryLabel: '04. Corrélation',
+        categoryLabel: 'Liens',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position X, Y) & Trajectoire',
@@ -2140,9 +2058,9 @@
       },
       {
         id: 'density-2d-hexbin',
-        title: 'Densité 2D et Hexbin (2D Density / Hexbin)',
+        title: 'Densité en hexagones',
         category: '04-correlation-relation',
-        categoryLabel: '04. Corrélation',
+        categoryLabel: 'Liens',
         plugin: 'matrix',
         pluginLabel: 'Plugin: Matrix',
         cognitiveRank: 'Rang 1 (Position) & Densité alvéolaire',
@@ -2151,9 +2069,9 @@
       },
       {
         id: 'scatter-regression',
-        title: 'Scatter Plot + Régression Linéaire + IC 95%',
+        title: 'Nuage de points et droite de tendance',
         category: '04-correlation-relation',
-        categoryLabel: '04. Corrélation',
+        categoryLabel: 'Liens',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position 2D) & Rang 4 (Tendance OLS et IC 95%)',
@@ -2162,9 +2080,9 @@
       },
       {
         id: 'joint-scatter-marginals',
-        title: 'Scatter Plot + Distributions Marginales (Jointplot)',
+        title: 'Nuage de points et répartitions',
         category: '04-correlation-relation',
-        categoryLabel: '04. Corrélation',
+        categoryLabel: 'Liens',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position 2D) & Rang 4 (Rubans marginaux KDE & Ellipse 95%)',
@@ -2175,9 +2093,9 @@
       // 05. Évolution Temporelle (7)
       {
         id: 'line-chart',
-        title: 'Graphique Linéaire Simple (Line Chart)',
+        title: 'Courbe',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position) & Pente de variation',
@@ -2186,9 +2104,9 @@
       },
       {
         id: 'multi-line-chart',
-        title: 'Graphique Multi-Lignes (Multi-Line Chart)',
+        title: 'Plusieurs courbes',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position) + Hiérarchie Focus',
@@ -2197,9 +2115,9 @@
       },
       {
         id: 'area-chart',
-        title: 'Graphique en Aires (Area Chart)',
+        title: 'Aire',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Ligne) & Volume sous courbe',
@@ -2208,9 +2126,9 @@
       },
       {
         id: 'stacked-area-chart',
-        title: 'Graphique en Aires Empilées (Stacked Area)',
+        title: 'Aires empilées',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Total) / Rang 3 (Bandes)',
@@ -2219,9 +2137,9 @@
       },
       {
         id: 'streamgraph',
-        title: 'Streamgraph (Flux Thématique Fluide)',
+        title: 'Flux de thèmes (streamgraph)',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Épaisseur locale & Silhouette fluide',
@@ -2230,9 +2148,9 @@
       },
       {
         id: 'candlestick-ohlc',
-        title: 'Chandelier Japonais OHLC (Candlestick)',
+        title: 'Chandeliers boursiers',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: 'financial',
         pluginLabel: 'Plugin: Financial (Luxon)',
         cognitiveRank: 'Rang 1 (Intervalles Open/High/Low/Close)',
@@ -2241,9 +2159,9 @@
       },
       {
         id: 'sparkline',
-        title: 'Micro-Ligne de Tendance (Sparkline)',
+        title: 'Mini-courbe (sparkline)',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Forme globale à haute densité',
@@ -2252,9 +2170,9 @@
       },
       {
         id: 'candlestick-volume',
-        title: 'Chandeliers Japonais + Volume (OHLCV)',
+        title: 'Chandeliers et volumes',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position sur continuum temporel partagé)',
@@ -2263,9 +2181,9 @@
       },
       {
         id: 'dual-axis-controlled',
-        title: 'Double Axe Y Normalisé (Dual-Axis Contrôlé)',
+        title: 'Deux courbes, deux échelles',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 4 (Continuité temporelle & garde-fous chromatiques)',
@@ -2274,9 +2192,9 @@
       },
       {
         id: 'price-indicator-overlays',
-        title: 'Prix + Overlays Indicateurs (SMA / Bollinger)',
+        title: 'Cours avec moyenne mobile',
         category: '05-evolution-temporelle',
-        categoryLabel: '05. Évolution',
+        categoryLabel: 'Évolution',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 4 (Continuité temporelle & canal de volatilité à 3 couches max)',
@@ -2287,9 +2205,9 @@
       // 06. Flux & Processus (5)
       {
         id: 'sankey-diagram',
-        title: 'Diagramme de Sankey (Sankey Diagram)',
+        title: 'Sankey : flux entre étapes',
         category: '06-flux-processus',
-        categoryLabel: '06. Flux',
+        categoryLabel: 'Flux',
         plugin: 'sankey',
         pluginLabel: 'Plugin: Sankey',
         cognitiveRank: 'Largeur de bande proportionnelle au flux',
@@ -2298,9 +2216,9 @@
       },
       {
         id: 'chord-diagram',
-        title: 'Diagramme de Corde (Chord Diagram)',
+        title: 'Cordes : échanges entre entités',
         category: '06-flux-processus',
-        categoryLabel: '06. Flux',
+        categoryLabel: 'Flux',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Largeur des rubans & Longueur d\'arc',
@@ -2309,9 +2227,9 @@
       },
       {
         id: 'funnel-chart',
-        title: 'Entonnoir de Conversion (Funnel Chart)',
+        title: 'Entonnoir de conversion',
         category: '06-flux-processus',
-        categoryLabel: '06. Flux',
+        categoryLabel: 'Flux',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position) & Rang 3 (Longueur)',
@@ -2320,9 +2238,9 @@
       },
       {
         id: 'waterfall-chart',
-        title: 'Graphique en Cascade (Waterfall Chart)',
+        title: 'Cascade',
         category: '06-flux-processus',
-        categoryLabel: '06. Flux',
+        categoryLabel: 'Flux',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Rang 1 (Position) & Longueur flottante',
@@ -2331,9 +2249,9 @@
       },
       {
         id: 'alluvial-diagram',
-        title: 'Diagramme Alluvial (Alluvial Diagram)',
+        title: 'Alluvial : passages entre catégories',
         category: '06-flux-processus',
-        categoryLabel: '06. Flux',
+        categoryLabel: 'Flux',
         plugin: 'sankey',
         pluginLabel: 'Plugin: Sankey',
         cognitiveRank: 'Largeur de bande & Hauteur de cohorte',
@@ -2342,9 +2260,9 @@
       },
       {
         id: 'gantt-progress',
-        title: 'Gantt + Avancement + Ligne \'Aujourd\'hui\'',
+        title: 'Planning (Gantt)',
         category: '06-flux-processus',
-        categoryLabel: '06. Flux',
+        categoryLabel: 'Flux',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position horizontale & marqueur temporel préattentif)',
@@ -2353,9 +2271,9 @@
       },
       {
         id: 'waterfall-cumulative-line',
-        title: 'Waterfall + Ligne Cumulée Continue',
+        title: 'Cascade et solde cumulé',
         category: '06-flux-processus',
-        categoryLabel: '06. Flux',
+        categoryLabel: 'Flux',
         plugin: null,
         pluginLabel: 'Combo Hybride',
         cognitiveRank: 'Rang 1 (Position de solde) & Rang 3 (Barres de variation)',
@@ -2366,9 +2284,9 @@
       // 07. Hiérarchie & Réseau (4)
       {
         id: 'node-link-network',
-        title: 'Réseau Nœuds-Liens (Node-Link Network)',
+        title: 'Réseau',
         category: '07-hierarchie-reseau',
-        categoryLabel: '07. Hiérarchie',
+        categoryLabel: 'Hiérarchie',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Topologie & Degré de centralité',
@@ -2377,9 +2295,9 @@
       },
       {
         id: 'arc-diagram',
-        title: 'Diagramme en Arcs (Arc Diagram)',
+        title: 'Arcs',
         category: '07-hierarchie-reseau',
-        categoryLabel: '07. Hiérarchie',
+        categoryLabel: 'Hiérarchie',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Position 1D & Portée de l\'arc',
@@ -2388,9 +2306,9 @@
       },
       {
         id: 'dendrogram',
-        title: 'Dendrogramme & Arbre Hiérarchique',
+        title: 'Arbre de regroupement (dendrogramme)',
         category: '07-hierarchie-reseau',
-        categoryLabel: '07. Hiérarchie',
+        categoryLabel: 'Hiérarchie',
         plugin: null,
         pluginLabel: 'Chart.js Core',
         cognitiveRank: 'Hauteur de branche (Dissimilarité)',
@@ -2399,9 +2317,9 @@
       },
       {
         id: 'marimekko-chart',
-        title: 'Graphique Marimekko / Mosaïque (Mekko)',
+        title: 'Mosaïque (Marimekko)',
         category: '07-hierarchie-reseau',
-        categoryLabel: '07. Hiérarchie',
+        categoryLabel: 'Hiérarchie',
         plugin: 'matrix',
         pluginLabel: 'Plugin: Matrix',
         cognitiveRank: 'Largeur (Poids) & Hauteur (100%×100%)',
@@ -2412,9 +2330,9 @@
       // 08. Géospatial & Cartes (3)
       {
         id: 'choropleth-map',
-        title: 'Carte Choroplèthe (Choropleth Map)',
+        title: 'Carte en aplats de couleur',
         category: '08-geospatial-cartes',
-        categoryLabel: '08. Géospatial',
+        categoryLabel: 'Carte',
         plugin: 'geo',
         pluginLabel: 'Plugin: Geo',
         cognitiveRank: 'Position géo & Luminance séquentielle',
@@ -2423,9 +2341,9 @@
       },
       {
         id: 'bubble-map',
-        title: 'Carte à Bulles (Bubble Map)',
+        title: 'Carte à bulles',
         category: '08-geospatial-cartes',
-        categoryLabel: '08. Géospatial',
+        categoryLabel: 'Carte',
         plugin: 'geo',
         pluginLabel: 'Plugin: Geo',
         cognitiveRank: 'Position spatiale & Surface de symbole',
@@ -2434,9 +2352,9 @@
       },
       {
         id: 'cartogram-tilegram',
-        title: 'Cartogramme & Grille de Tuiles (Tilegram)',
+        title: 'Carte en tuiles',
         category: '08-geospatial-cartes',
-        categoryLabel: '08. Géospatial',
+        categoryLabel: 'Carte',
         plugin: 'matrix',
         pluginLabel: 'Plugin: Matrix',
         cognitiveRank: 'Position relative & Tuiles égales',
@@ -2447,9 +2365,9 @@
       // 09. Tableaux Dataviz (6)
       {
         id: 'table-kpi-scorecard',
-        title: 'Tableau Exécutif KPI Scorecard',
+        title: 'Tableau de bord d\'indicateurs',
         category: '09-tableaux-dataviz',
-        categoryLabel: '09. Tableaux',
+        categoryLabel: 'Tableau',
         plugin: null,
         pluginLabel: 'DOM + SVG Inline',
         cognitiveRank: 'Stephen Few & Edward Tufte (Data-Ink)',
@@ -2458,9 +2376,9 @@
       },
       {
         id: 'table-heatmap-matrix',
-        title: 'Tableau Heatmap / Matrice 2D',
+        title: 'Tableau en carte de chaleur',
         category: '09-tableaux-dataviz',
-        categoryLabel: '09. Tableaux',
+        categoryLabel: 'Tableau',
         plugin: null,
         pluginLabel: 'DOM + Color Scale',
         cognitiveRank: 'Rang 7 (Luminance) + Inversion WCAG AAA',
@@ -2469,9 +2387,9 @@
       },
       {
         id: 'table-bar-in-cell',
-        title: 'Tableau Comparatif Bar-in-Cell & Bullet',
+        title: 'Tableau avec barres',
         category: '09-tableaux-dataviz',
-        categoryLabel: '09. Tableaux',
+        categoryLabel: 'Tableau',
         plugin: null,
         pluginLabel: 'DOM + SVG Inline',
         cognitiveRank: 'Rang 1 / 3 (Longueur sur échelle commune)',
@@ -2480,9 +2398,9 @@
       },
       {
         id: 'table-hierarchical-tree',
-        title: 'Tableau Hiérarchique & Arborescent',
+        title: 'Tableau en arborescence',
         category: '09-tableaux-dataviz',
-        categoryLabel: '09. Tableaux',
+        categoryLabel: 'Tableau',
         plugin: null,
         pluginLabel: 'DOM + Interactive Tree',
         cognitiveRank: 'Sweller (Réduction de charge par chunking)',
@@ -2491,9 +2409,9 @@
       },
       {
         id: 'table-financial-variance',
-        title: 'Tableau Financier & Variance IBCS',
+        title: 'Tableau d\'écarts financiers',
         category: '09-tableaux-dataviz',
-        categoryLabel: '09. Tableaux',
+        categoryLabel: 'Tableau',
         plugin: null,
         pluginLabel: 'DOM + SVG Inline',
         cognitiveRank: 'Norme IBCS® (Barres divergentes axe 0)',
@@ -2502,9 +2420,9 @@
       },
       {
         id: 'table-ranking-leaderboard',
-        title: 'Tableau de Classement & Performance',
+        title: 'Classement',
         category: '09-tableaux-dataviz',
-        categoryLabel: '09. Tableaux',
+        categoryLabel: 'Tableau',
         plugin: null,
         pluginLabel: 'DOM + SVG Inline',
         cognitiveRank: 'Ordre sérial & Podium perceptif doux',
@@ -2515,9 +2433,9 @@
       // 10. Tooltips & Ergonomie
       {
         id: 'tooltip',
-        title: 'Ergonomie des Infobulles & Details-on-Demand',
+        title: 'Infobulles au survol',
         category: 'tooltip',
-        categoryLabel: '10. Tooltip',
+        categoryLabel: 'Interaction',
         plugin: null,
         pluginLabel: 'Laboratoire Cognitif',
         cognitiveRank: 'Loi de Fitts, Mayer & Sweller',
@@ -2535,8 +2453,8 @@
         themeName: 'colorbrewer-accessible',
         title: 'ColorBrewer Accessible',
         badge: '01. ColorBrewer',
-        mode: 'Mode Clair',
-        origin: 'Cynthia Brewer & Mark Harrower (Penn State)',
+        mode: 'Clair et polyvalent',
+        origin: 'Cynthia Brewer (Penn State)',
         fontSans: 'Inter',
         fontMono: 'JetBrains Mono',
         palette: ['#2B8CBE', '#E66101', '#5E3C99', '#4DAC26', '#D01C8B', '#FDB863', '#B8E186', '#999999'],
@@ -2548,8 +2466,8 @@
         themeName: 'viridis-perceptual',
         title: 'Viridis Perceptual',
         badge: '02. Viridis',
-        mode: 'Luminance Monotone',
-        origin: 'Stéfan van der Walt & Nathaniel Smith (SciPy)',
+        mode: 'Dégradé régulier',
+        origin: 'Stéfan van der Walt & Nathaniel Smith',
         fontSans: 'IBM Plex Sans',
         fontMono: 'IBM Plex Mono',
         palette: ['#3E4A89', '#26828E', '#35B779', '#B4DE2C', '#440154', '#FDE725', '#31688E', '#1F9E89'],
@@ -2561,8 +2479,8 @@
         themeName: 'paul-tol-scientific',
         title: 'Paul Tol Scientific',
         badge: '03. Paul Tol',
-        mode: 'Clarté Scientifique',
-        origin: 'Dr. Paul Tol (SRON Space Research / Nature)',
+        mode: 'Style scientifique',
+        origin: 'Paul Tol (SRON)',
         fontSans: 'Fira Sans',
         fontMono: 'Fira Code',
         palette: ['#4477AA', '#EE6677', '#228833', '#CCBB44', '#66CCEE', '#AA3377', '#BBBBBB', '#555555'],
@@ -2574,8 +2492,8 @@
         themeName: 'tableau-stone-categorical',
         title: 'Tableau 10 Stone',
         badge: '04. Tableau 10',
-        mode: 'Business Standard',
-        origin: 'Maureen Stone, Cristy Miller & Jeffrey Heer (IEEE InfoVis)',
+        mode: 'Style entreprise',
+        origin: 'Maureen Stone (Tableau)',
         fontSans: 'Roboto',
         fontMono: 'Roboto Mono',
         palette: ['#4E79A7', '#F28E2B', '#E15759', '#76B7B2', '#59A14F', '#EDC948', '#B07AA1', '#FF9DA7'],
@@ -2587,8 +2505,8 @@
         themeName: 'okabe-ito-cud',
         title: 'Okabe-Ito CUD',
         badge: '05. Okabe-Ito',
-        mode: 'Conformité Universelle',
-        origin: 'Masataka Okabe & Kei Ito (CUD Standard)',
+        mode: 'Sûr pour les daltoniens',
+        origin: 'Masataka Okabe & Kei Ito',
         fontSans: 'Source Sans 3',
         fontMono: 'Source Code Pro',
         palette: ['#0072B2', '#D55E00', '#009E73', '#E69F00', '#56B4E9', '#F0E442', '#CC79A7', '#595959'],
@@ -2600,7 +2518,7 @@
         themeName: 'tufte-minimalist-executive',
         title: 'Tufte Minimalist Executive',
         badge: '06. Tufte Minimalist',
-        mode: 'Data-Ink Maximal',
+        mode: 'Épuré',
         origin: 'Edward Tufte & Stephen Few',
         fontSans: 'Geist / Inter',
         fontMono: 'Geist Mono',
@@ -2613,11 +2531,11 @@
         themeName: 'nord-cognitive-dark',
         title: 'Nord Cognitive Dark',
         badge: '07. Nord Dark',
-        mode: 'Mode Sombre Anti-Fatigue',
-        origin: 'Nord System & Ergonomie de l\'Asthénopie (Sheedy et al.)',
+        mode: 'Sombre, repose les yeux',
+        origin: 'Palette Nord (Arctic Ice Studio)',
         fontSans: 'Inter / Geist',
         fontMono: 'JetBrains Mono',
-        palette: ['#88C0D0', '#81A1C1', '#5E81AC', '#A3BE8C', '#EBCB8B', '#D08770', '#BF616A', '#B48EAD'],
+        palette: ['#88C0D0', '#EBCB8B', '#B48EAD', '#A3BE8C', '#D08770', '#81A1C1', '#5E81AC', '#BF616A'],
         seqGradient: 'linear-gradient(90deg, #3B4252, #4C566A, #5E81AC, #81A1C1, #88C0D0, #ECEFF4)',
         status: ['#A3BE8C', '#EBCB8B', '#BF616A', '#88C0D0']
       },
@@ -2626,7 +2544,7 @@
         themeName: 'atkinson-hyperlegible',
         title: 'Atkinson Hyperlegible',
         badge: '08. Atkinson',
-        mode: 'Haute Lisibilité / Basse Vision',
+        mode: 'Très grande lisibilité',
         origin: 'Braille Institute of America & Applied Design Works',
         fontSans: 'Atkinson Hyperlegible',
         fontMono: 'Fira Code',
@@ -2643,7 +2561,6 @@
     let globalShowDataLabels = (typeof getStoredLabels === 'function' ? getStoredLabels() : true);
     const chartRegistry = new Map();
     let heroChartGraphs = null;
-    let heroAnimFrameId = null;
 
     function getPreviewUrlWithParams(baseUrl, theme = currentTheme, showLabels = globalShowDataLabels) {
       if (!baseUrl) return '#';
@@ -2702,7 +2619,7 @@
 
           <div class="theme-palette-preview">
             <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.75rem; font-weight: 700; color: var(--text-secondary); margin-bottom: 0.2rem;">
-              <span>Palette Qualitative (8 Teintes)</span>
+              <span>8 couleurs</span>
               <div style="display: flex; gap: 0.35rem; align-items: center;">
                 <span style="font-size: 0.7rem; color: var(--text-muted);">Statuts :</span>
                 ${statusDotsHtml}
@@ -2712,7 +2629,7 @@
               ${swatchesHtml}
             </div>
             <div style="display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.25rem;">
-              <span style="font-size: 0.7rem; color: var(--text-muted);">Dégradé Séquentiel (Luminance Monotone) :</span>
+              <span style="font-size: 0.7rem; color: var(--text-muted);">Dégradé :</span>
               <div class="theme-seq-mini-bar" style="background: ${theme.seqGradient};"></div>
             </div>
             <div class="theme-typography-tag">
@@ -2723,8 +2640,8 @@
         </div>
 
         <div class="card-footer">
-          <a href="${getPreviewUrlWithParams('./themes/' + theme.id + '/preview.html', theme.themeName)}" data-base-url="./themes/${theme.id}/preview.html" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir le template dans une page dédiée autonome">
-            <span>▶</span> Ouvrir le template
+          <a href="${getPreviewUrlWithParams('./themes/' + theme.id + '/preview.html', theme.themeName)}" data-base-url="./themes/${theme.id}/preview.html" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir dans une page dédiée">
+            <span>▶</span> Voir le thème
           </a>
         </div>
       `;
@@ -2736,36 +2653,9 @@
     // 1. GÉNÉRATION D'UNE CARTE DANS UN CONTENEUR DE SECTION
     // ========================================================================
     function createCardElement(chart) {
-      let previewUrl = `./template/${chart.category}/${chart.id}/preview.html`;
-      if (chart.id === 'animation') {
-        previewUrl = `./template/animation/preview.html`;
-      } else if (chart.id === 'tooltip') {
-        previewUrl = `./template/tooltip/preview.html`;
-      } else if (chart.id.startsWith('anim-')) {
-        const folderMap = {
-          'anim-staged-transitions': '01-staged-transitions',
-          'anim-anti-change-blindness': '02-anti-change-blindness',
-          'anim-preattentive-pulse': '03-preattentive-pulse',
-          'anim-continuous-zoom': '04-continuous-zoom',
-          'anim-mot-stagger': '05-mot-stagger',
-          'anim-apprehension-replay': '06-apprehension-replay',
-          'anim-event-segmentation': '07-event-segmentation',
-          'anim-lasseter-anticipation': '08-lasseter-anticipation',
-          'anim-path-drawing': '09-path-drawing',
-          'anim-count-up': '10-count-up',
-          'anim-focus-context': '11-focus-context',
-          'anim-bar-chart-race': '12-bar-chart-race',
-          'anim-pan-camera': '13-pan-camera',
-          'anim-cross-type-morph': '14-cross-type-morph',
-          'anim-axis-rescale': '15-axis-rescale',
-          'anim-motion-trails': '16-motion-trails',
-          'anim-series-buildup': '17-series-buildup',
-          'anim-scrollytelling': '18-scrollytelling',
-          'anim-critical-damping': '19-critical-damping',
-          'anim-delta-flash': '20-delta-flash'
-        };
-        previewUrl = `./template/animation/${folderMap[chart.id] || chart.id}/preview.html`;
-      }
+      const previewUrl = chart.id === 'tooltip'
+        ? './template/tooltip/preview.html'
+        : `./template/${chart.category}/${chart.id}/preview.html`;
 
       const card = document.createElement('article');
       card.className = 'chart-card';
@@ -2781,7 +2671,6 @@
             </div>
             <div class="card-badges">
               <span class="badge-category">${chart.categoryLabel}</span>
-              <span class="badge-plugin">${chart.pluginLabel}</span>
             </div>
           </div>
 
@@ -2795,8 +2684,8 @@
         </div>
 
         <div class="card-footer">
-          <a href="${getPreviewUrlWithParams(previewUrl)}" data-base-url="${previewUrl}" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir le template dans une page dédiée autonome">
-            <span>▶</span> Ouvrir le template
+          <a href="${getPreviewUrlWithParams(previewUrl)}" data-base-url="${previewUrl}" target="_blank" rel="noopener" class="card-btn card-btn-demo" title="Ouvrir dans une page dédiée">
+            <span>▶</span> Voir en grand
           </a>
         </div>
       `;
@@ -2983,41 +2872,91 @@
     // ========================================================================
     // 4. RENDU DES CHARTS DU CATALOGUE DANS LEURS CANVAS TARGET
     // ========================================================================
+    // Rendu paresseux : une carte n'est dessinée que lorsqu'elle approche du viewport
+    // (IntersectionObserver), puis redessinée seulement si le thème ou les labels ont changé
+    // depuis son dernier rendu. Un changement de thème ne redessine donc que les cartes visibles.
+    const visibleCards = new Set();
+    let renderSeq = 0; // incrémenté à chaque changement de thème ou de labels
+
+    function destroyChartOn(canvas) {
+      if (typeof Chart !== 'undefined' && Chart.getChart) {
+        const existing = Chart.getChart(canvas);
+        if (existing) existing.destroy();
+      }
+    }
+
     function loadAndRenderChart(chartId) {
       const chartInfo = CATALOG.find(c => c.id === chartId);
       if (!chartInfo) return;
 
+      const prev = chartRegistry.get(chartId);
+      if (prev && prev.seq === renderSeq) return; // déjà à jour
+
+      const container = document.getElementById(`container-${chartId}`);
       const canvas = document.getElementById(`canvas-${chartId}`);
       const skeleton = document.getElementById(`skeleton-${chartId}`);
-      if (!canvas) return;
+      if (!canvas || !container) return;
 
       const chartModule = window.KitCharts && window.KitCharts[chartId];
+      if (!chartModule) {
+        if (skeleton) skeleton.innerHTML = '<span style="color: var(--text-muted); font-size: 0.75rem;">Aperçu indisponible</span>';
+        return;
+      }
 
-      if (chartModule && typeof chartModule.createChart === 'function') {
-        try {
-          const dataCopy = chartModule.DEFAULT_DATA ? JSON.parse(JSON.stringify(chartModule.DEFAULT_DATA)) : null;
-          if (dataCopy) dataCopy.showDataLabels = globalShowDataLabels;
-          const chartInstance = chartModule.createChart(canvas, dataCopy, currentTheme, { showDataLabels: globalShowDataLabels });
-          chartRegistry.set(chartId, {
-            mod: chartModule,
-            chartInstance,
-            canvas,
-            chartInfo
-          });
+      try {
+        const dataCopy = chartModule.DEFAULT_DATA ? JSON.parse(JSON.stringify(chartModule.DEFAULT_DATA)) : null;
+        if (dataCopy && typeof dataCopy === 'object') dataCopy.showDataLabels = globalShowDataLabels;
+        let instance = null;
 
-          if (skeleton) {
-            skeleton.style.opacity = '0';
-            setTimeout(() => { skeleton.style.display = 'none'; }, 200);
+        if (typeof chartModule.renderCard === 'function') {
+          // Cartes KPI : même chemin que preview.html et le compilateur (renderCard), pas createChart.
+          let host = document.getElementById(`cardhost-${chartId}`);
+          if (!host) {
+            host = document.createElement('div');
+            host.id = `cardhost-${chartId}`;
+            host.className = 'kc-card-host';
+            container.appendChild(host);
           }
-          return;
-        } catch (err) {
-          console.error(`[kit-charts] Erreur de rendu pour ${chartId}:`, err);
+          canvas.style.display = 'none';
+          instance = chartModule.renderCard(host, dataCopy, currentTheme);
+        } else if (typeof chartModule.createChart === 'function') {
+          destroyChartOn(canvas);
+          instance = chartModule.createChart(canvas, dataCopy, currentTheme, { showDataLabels: globalShowDataLabels });
+        }
+
+        chartRegistry.set(chartId, { chartInstance: instance, seq: renderSeq });
+        if (skeleton) skeleton.style.display = 'none';
+      } catch (err) {
+        console.error(`[kit-charts] Erreur de rendu pour ${chartId}:`, err);
+        if (skeleton) {
+          skeleton.style.display = '';
+          skeleton.innerHTML = '<span style="color: var(--text-muted); font-size: 0.75rem;">Aperçu indisponible</span>';
         }
       }
+    }
 
-      if (skeleton) {
-        skeleton.innerHTML = `<span style="color: var(--text-muted); font-size: 0.75rem;">Aperçu indisponible</span>`;
+    function renderVisibleCharts() {
+      visibleCards.forEach(id => loadAndRenderChart(id));
+    }
+
+    function observeCards() {
+      const cards = document.querySelectorAll('.chart-card[data-chart-id]');
+      if (typeof IntersectionObserver === 'undefined') {
+        cards.forEach(card => loadAndRenderChart(card.dataset.chartId));
+        return;
       }
+      const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+          const id = entry.target.dataset.chartId;
+          if (entry.isIntersecting) {
+            visibleCards.add(id);
+            loadAndRenderChart(id);
+          } else {
+            visibleCards.delete(id);
+          }
+        });
+      }, { rootMargin: '600px 0px' });
+      cards.forEach(card => observer.observe(card));
     }
 
     // ========================================================================
@@ -3043,33 +2982,8 @@
         }
       }
 
-      for (const [chartId, entry] of chartRegistry.entries()) {
-        try {
-          if (entry.chartInstance && typeof entry.chartInstance.draw === 'function' && entry.chartInstance.options) {
-            if (!entry.chartInstance.options.plugins) entry.chartInstance.options.plugins = {};
-            if (!entry.chartInstance.options.plugins.datalabels) entry.chartInstance.options.plugins.datalabels = {};
-            entry.chartInstance.options.plugins.datalabels.display = globalShowDataLabels;
-            entry.chartInstance.options.showDataLabels = globalShowDataLabels;
-            if (entry.chartInstance.config?.options) {
-              if (!entry.chartInstance.config.options.plugins) entry.chartInstance.config.options.plugins = {};
-              if (!entry.chartInstance.config.options.plugins.datalabels) entry.chartInstance.config.options.plugins.datalabels = {};
-              entry.chartInstance.config.options.plugins.datalabels.display = globalShowDataLabels;
-              entry.chartInstance.config.options.showDataLabels = globalShowDataLabels;
-            }
-            if (typeof entry.chartInstance.clear === 'function') {
-              entry.chartInstance.clear();
-            }
-            entry.chartInstance.draw();
-          } else if (entry.mod && typeof entry.mod.createChart === 'function') {
-            const dataCopy = entry.mod.DEFAULT_DATA ? JSON.parse(JSON.stringify(entry.mod.DEFAULT_DATA)) : null;
-            if (dataCopy) dataCopy.showDataLabels = globalShowDataLabels;
-            const newInstance = entry.mod.createChart(entry.canvas, dataCopy, currentTheme, { showDataLabels: globalShowDataLabels });
-            entry.chartInstance = newInstance;
-          }
-        } catch (err) {
-          console.warn(`[kit-charts] Erreur bascule data labels pour ${chartId}:`, err);
-        }
-      }
+      renderSeq++;
+      renderVisibleCharts();
     }
 
     function applyGlobalTheme(themeName) {
@@ -3106,6 +3020,8 @@
       document.documentElement.style.setProperty('--font-sans', tokens.fontFamily);
       document.documentElement.style.setProperty('--font-mono', tokens.fontMono);
       document.documentElement.style.setProperty('--accent', tokens.palette[0] || '#225BFF');
+      // Texte posé sur l'accent : noir ou blanc selon le ratio WCAG (l'accent Nord est clair).
+      document.documentElement.style.setProperty('--accent-contrast', (ThemeTokensModule.getContrastingTextColor || (() => '#FFFFFF'))(tokens.palette[0] || '#225BFF', '#FFFFFF', '#0F172A'));
       document.documentElement.style.setProperty('--accent-hover', tokens.palette[1] || tokens.palette[0] || '#1742C2');
       document.documentElement.style.setProperty('--accent-light', (tokens.palette[0] || '#225BFF') + '18');
       document.documentElement.style.setProperty('--accent-glow', (tokens.palette[0] || '#225BFF') + '35');
@@ -3132,8 +3048,10 @@
       // Réactualisation des 3 dessins du hero avec la nouvelle palette
       initHeroDrawings();
 
-      // Mise à jour de tous les templates du catalogue
-      CATALOG.forEach(c => loadAndRenderChart(c.id));
+      // Invalide tous les rendus ; seules les cartes visibles sont redessinées tout de suite,
+      // les autres le seront à leur entrée dans le viewport.
+      renderSeq++;
+      renderVisibleCharts();
     }
 
     // Export global pour interaction depuis les cartes de thèmes
@@ -3169,10 +3087,6 @@
         });
       }
 
-      // Redimensionnement de fenêtre pour le dessin d'animation
-      window.addEventListener('resize', () => {
-        initHeroDrawings();
-      });
     }
 
     // ========================================================================
@@ -3200,16 +3114,12 @@
       // 3. Application du thème initial
       applyGlobalTheme(currentTheme);
 
-      // 4. Chargement immédiat des graphiques
-      CATALOG.forEach(c => loadAndRenderChart(c.id));
+      // 4. Rendu paresseux des cartes du catalogue
+      observeCards();
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', initApp);
-    } else {
-      initApp();
-    }
-  })();
+    initApp();
+  });
   </script>
 </body>
 </html>

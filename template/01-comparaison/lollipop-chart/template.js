@@ -100,8 +100,10 @@ const lollipopHeadPlugin = {
           const fSize = font.size || 10;
           const fFam = font.family || tokens.fontMono || 'monospace';
           const fWeight = font.weight || '600';
+          // Décimales homogènes : si une valeur du jeu est décimale, toutes s'affichent avec 1 décimale
+          const hasDec = chart.data.datasets.some(d => (d.data || []).some(v => typeof v === 'number' && !Number.isInteger(v)));
           const formatted = typeof val === 'number'
-            ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val)
+            ? new Intl.NumberFormat('fr-FR', { minimumFractionDigits: hasDec ? 1 : 0, maximumFractionDigits: 1 }).format(val)
             : val;
           ctx.font = `${fWeight} ${fSize}px ${fFam}`;
           ctx.fillStyle = chart.options?.plugins?.datalabels?.color || tokens.textPrimary || '#0F172A';
@@ -292,6 +294,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Règle psychophysique obligatoire
+          title: { display: datasets.length === 1 && !!datasets[0].label, text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
           grace: '12%',
           grid: {
             color: tokens.gridColor,

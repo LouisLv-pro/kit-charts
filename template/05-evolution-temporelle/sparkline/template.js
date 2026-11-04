@@ -62,7 +62,7 @@ const DEFAULT_DATA = {
  * @param {string} [themeName='colorbrewer-accessible'] - Theme identifier
  * @returns {Object} Initialized Chart.js instance or mock instance
  */
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string' && typeof document !== 'undefined'
     ? document.getElementById(canvasTarget)
     : canvasTarget;
@@ -126,6 +126,51 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   });
 
   const chartData = { labels, datasets };
+
+  // Étiquettes min, max et dernier point uniquement (plugin local, indépendant du plugin datalabels commun).
+  const extremaPlugin = {
+    id: 'kitChartsSparkExtrema',
+    afterDatasetsDraw(chart) {
+      if ((options && options.showDataLabels === false) || (customData && customData.showDataLabels === false)) return;
+      const { ctx, chartArea } = chart;
+      const meta = chart.getDatasetMeta(0);
+      const data = (chart.data.datasets[0] && chart.data.datasets[0].data) || [];
+      if (!meta || !data.length) return;
+      const nums = data.map((v) => (typeof v === 'number' ? v : NaN));
+      const max = Math.max(...nums.filter((v) => !isNaN(v)));
+      const min = Math.min(...nums.filter((v) => !isNaN(v)));
+      const iMax = nums.indexOf(max);
+      const iMin = nums.indexOf(min);
+      const iLast = nums.length - 1;
+      const fmt = (v) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(v);
+      const spots = [];
+      [[iMax, 'above'], [iMin, 'below'], [iLast, iLast === iMax ? 'above' : (iLast === iMin ? 'below' : 'above')]].forEach(([i, pos]) => {
+        if (!spots.some((s) => s.i === i)) spots.push({ i, pos });
+      });
+      ctx.save();
+      ctx.font = `600 11px ${tokens.fontMono || tokens.fontFamily || 'monospace'}`;
+      ctx.fillStyle = tokens.textPrimary;
+      ctx.textBaseline = 'middle';
+      spots.forEach(({ i, pos }) => {
+        const el = meta.data[i];
+        if (!el) return;
+        const text = fmt(nums[i]);
+        const w = ctx.measureText(text).width;
+        let x = el.x - w / 2;
+        x = Math.max(chartArea.left, Math.min(x, chartArea.right - w));
+        const y = pos === 'above' ? el.y - 11 : el.y + 11;
+        ctx.fillText(text, x, y);
+        if (i !== iLast) {
+          ctx.beginPath();
+          ctx.arc(el.x, el.y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = (data === null ? tokens.textPrimary : (datasets[0] && datasets[0].borderColor) || tokens.textPrimary);
+          ctx.fill();
+          ctx.fillStyle = tokens.textPrimary;
+        }
+      });
+      ctx.restore();
+    }
+  };
   const baseOptions = getChartDefaultOptions(tokens);
   const temporalOpts = getTemporalInteractionOptions(tokens, { mode: 'index', axis: 'x', hitRadius: 10, hoverRadius: 5 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 550, easing: 'easeOutCubic' });
@@ -133,6 +178,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const config = {
     type: 'line',
     data: chartData,
+    plugins: [extremaPlugin],
     options: {
       ...baseOptions,
       ...temporalOpts,
@@ -141,7 +187,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       maintainAspectRatio: false,
       events: ['mousemove', 'mouseout', 'touchstart', 'touchmove'],
       layout: {
-        padding: { top: 4, bottom: 4, left: 2, right: 6 }
+        padding: { top: 18, bottom: 18, left: 18, right: 30 }
       },
       scales: {
         x: {

@@ -39,7 +39,7 @@
  * @file 03-distribution/histogramme/template.js
  * @description Template Chart.js v4+ pour Histogramme de Fréquence (Histogram).
  * Psychophysique: Encodage de distribution continue via surfaces de barres contiguës (Rang 1/2 Cleveland-McGill).
- * Règle d'or: beginAtZero: true absolu sur l'axe Y, espacement contigu (barPercentage: 1.0, categoryPercentage: 0.98),
+ * Règle d'or: beginAtZero: true absolu sur l'axe Y, espacement contigu (barPercentage: 1.0, categoryPercentage: 1.0),
  * algorithme de binning Freedman-Diaconis déterministe pour découpage optimal en classes de fréquence.
  */
 
@@ -79,8 +79,14 @@ function computeFreedmanDiaconisBins(values, maxBins = 20) {
   }
 
   // Calcul Quartiles et IQR
-  const q1 = sorted[Math.floor(n * 0.25)];
-  const q3 = sorted[Math.floor(n * 0.75)];
+  const quant = (p) => {
+    const idx = (n - 1) * p;
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  };
+  const q1 = quant(0.25);
+  const q3 = quant(0.75);
   const iqr = q3 - q1;
 
   // Largeur de bin selon Freedman-Diaconis ou Sturges fallback si IQR nul
@@ -117,6 +123,8 @@ function computeFreedmanDiaconisBins(values, maxBins = 20) {
  * Données par défaut représentatives (Temps de réponse serveur en ms, N=320 requêtes)
  */
 const DEFAULT_DATA = {
+  xLabel: 'Temps de réponse (ms)',
+  yLabel: 'Effectif (requêtes)',
   labels: ['[10-25[', '[25-40[', '[40-55[', '[55-70[', '[70-85[', '[85-100[', '[100-115[', '[115-130['],
   datasets: [{
     label: 'Distribution Latence Serveur (ms)',
@@ -224,7 +232,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           borderColor: colors.border,
           borderWidth: colors.borderWidth,
           borderRadius: 0,
-          categoryPercentage: 0.98,
+          categoryPercentage: 1.0,
           barPercentage: 1.0
         };
       }
@@ -237,7 +245,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         borderColor: colors.border,
         borderWidth: colors.borderWidth,
         borderRadius: 0, // Pas de bordure arrondie pour signifier la continuité physique des bins
-        categoryPercentage: 0.98,
+        categoryPercentage: 1.0,
         barPercentage: 1.0
       };
     });
@@ -260,7 +268,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       ...spatialOpts,
       animation: animOpts,
       // Encodage continu Gestalt : barres contiguës sans interstices parasites
-      categoryPercentage: 0.98,
+      categoryPercentage: 1.0,
       barPercentage: 1.0,
       plugins: {
         ...defaultOpts.plugins,
@@ -294,6 +302,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       },
       scales: {
         x: {
+          title: {
+            display: !!rawData.xLabel,
+            text: rawData.xLabel || '',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           grid: {
             display: false,
             drawBorder: false
@@ -303,7 +317,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             color: tokens.textSecondary,
             font: {
               family: tokens.fontFamily,
-              size: 10
+              size: 11
             },
             maxRotation: 45,
             minRotation: 0,
@@ -311,6 +325,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         },
         y: {
+          title: {
+            display: true,
+            text: rawData.yLabel || 'Effectif (observations)',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage par hauteur de bin
           grid: {
             color: tokens.gridColor,

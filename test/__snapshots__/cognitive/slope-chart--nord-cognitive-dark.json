@@ -30,8 +30,8 @@
             "tension": 0
           },
           {
-            "backgroundColor": "#81A1C1",
-            "borderColor": "#81A1C1",
+            "backgroundColor": "#EBCB8B",
+            "borderColor": "#EBCB8B",
             "borderDash": [],
             "borderWidth": 2.5,
             "data": [
@@ -40,7 +40,7 @@
             ],
             "fill": false,
             "label": "Nucléaire",
-            "pointBackgroundColor": "#81A1C1",
+            "pointBackgroundColor": "#EBCB8B",
             "pointBorderColor": "#2E3440",
             "pointBorderWidth": 2,
             "pointHitRadius": 12,
@@ -50,8 +50,8 @@
             "tension": 0
           },
           {
-            "backgroundColor": "#5E81AC",
-            "borderColor": "#5E81AC",
+            "backgroundColor": "#B48EAD",
+            "borderColor": "#B48EAD",
             "borderDash": [],
             "borderWidth": 2.5,
             "data": [
@@ -60,7 +60,7 @@
             ],
             "fill": false,
             "label": "Gaz Naturel",
-            "pointBackgroundColor": "#5E81AC",
+            "pointBackgroundColor": "#B48EAD",
             "pointBorderColor": "#2E3440",
             "pointBorderWidth": 2,
             "pointHitRadius": 12,
@@ -109,7 +109,7 @@
           "emphasis": {
             "anomaly": "#BF616A",
             "benchmark": "#ECEFF4",
-            "context": "#4C566A",
+            "context": "#7B88A1",
             "focal": "#88C0D0",
             "forecastAlpha": 0.5
           },
@@ -123,13 +123,13 @@
           "name": "nord-cognitive-dark",
           "palette": [
             "#88C0D0",
+            "#EBCB8B",
+            "#B48EAD",
+            "#A3BE8C",
+            "#D08770",
             "#81A1C1",
             "#5E81AC",
-            "#A3BE8C",
-            "#EBCB8B",
-            "#D08770",
-            "#BF616A",
-            "#B48EAD"
+            "#BF616A"
           ],
           "semantic": {
             "info": "#88C0D0",
@@ -193,8 +193,8 @@
         "layout": {
           "padding": {
             "bottom": 16,
-            "left": 48,
-            "right": 54,
+            "left": 120,
+            "right": 120,
             "top": 16
           }
         },
@@ -202,19 +202,19 @@
         "plugins": {
           "datalabels": {
             "color": "#ECEFF4",
-            "display": true,
+            "display": false,
             "font": {
               "family": "'JetBrains Mono', monospace",
               "size": 10,
               "weight": "600"
             },
-            "formatter": "[Function:formatter]",
+            "formatter": "[Function:anonymous]",
             "padding": 4,
             "thresholdRatio": 0.05
           },
           "legend": {
             "align": "end",
-            "display": true,
+            "display": false,
             "labels": {
               "boxHeight": 12,
               "boxWidth": 12,
@@ -225,7 +225,6 @@
                 "weight": "500"
               },
               "padding": 16,
-              "pointStyle": "circle",
               "usePointStyle": true
             },
             "position": "top"
@@ -289,24 +288,22 @@
             "border": {
               "display": false
             },
+            "display": false,
             "grid": {
-              "color": "rgba(236, 239, 244, 0.06)",
-              "drawBorder": false,
-              "lineWidth": 1
-            },
-            "ticks": {
-              "callback": "[Function:callback]",
-              "color": "#D8DEE9",
-              "font": {
-                "family": "'JetBrains Mono', monospace",
-                "size": 11
-              },
-              "padding": 8
+              "display": false
             }
           }
         },
-        "showDataLabels": true
+        "showDataLabels": true,
+        "themeName": "nord-cognitive-dark"
       },
+      "plugins": [
+        {
+          "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
+          "beforeLayout": "[Function:beforeLayout]",
+          "id": "kcSlopeDirectLabels"
+        }
+      ],
       "type": "line"
     },
     "kind": "chart-config"

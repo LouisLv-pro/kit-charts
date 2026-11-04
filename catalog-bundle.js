@@ -3,7 +3,7 @@
  * @description All kit-charts template generators pre-bundled for instant zero-CORS execution.
  * Allows index.html and npm consumers to render every catalog chart immediately on file://, http://, and Node.js.
  * @version 1.0.0
- * @generated 2026-11-04T14:56:30.409Z
+ * @generated 2026-11-04T16:01:12.654Z
  */
 
 (function(global) {
@@ -31,6 +31,19 @@
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const readableText = (fg, surface, alpha) => {
+    const parse = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim()) || /^#?([0-9a-f]{3})$/i.exec(String(h || '').trim()); if (!m) return null; let x = m[1]; if (x.length === 3) x = x.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16)); };
+    const lum = (c) => { const l = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+    const f = parse(fg), s = parse(surface);
+    if (!f || !s) return fg;
+    const a = alpha == null ? 0.18 : alpha;
+    const bg = s.map((v, i) => Math.round(v * (1 - a) + f[i] * a));
+    const toward = lum(bg) < 0.4 ? 255 : 0;
+    let c = f.slice();
+    for (let t = 0; t <= 1.0001 && ratio(c, bg) < 4.6; t += 0.05) c = f.map(v => Math.round(v + (toward - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   const DEFAULT_DATA = {
@@ -43,6 +56,18 @@
     metricType: 'gain',
     footnote: 'Écart restant : -40 000 € • 18 jours ouvrés restants'
   };
+
+  /**
+   * Statut d'atteinte selon la polarité : 'cost' = LOWER_IS_BETTER (atteint si valeur <= cible).
+   * @returns {{attainment:number, isCost:boolean, success:boolean, near:boolean}}
+   */
+  function resolveAttainment(actual, target, metricType) {
+    const isCost = metricType === 'cost';
+    const attainment = Math.round((actual / target) * 100);
+    const success = isCost ? actual <= target : actual >= target;
+    const near = !success && (isCost ? actual <= target * 1.2 : actual >= target * 0.85);
+    return { attainment, isCost, success, near };
+  }
 
   const kindOf = (v) => (v === undefined ? 'absent' : (v === null ? 'null' : (Array.isArray(v) ? 'tableau' : typeof v)));
   const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
@@ -110,9 +135,15 @@
     const unitSuffix = data.unit ? ' ' + data.unit : '';
 
 
-    const attainment = Math.round((actual / target) * 100);
-    const valence = attainment >= 100 ? 1 : (attainment >= 85 ? 0 : -1);
-    const barColor = valence >= 1 ? (tokens.semantic?.positive || '#2E7D32') : (tokens.palette[0] || '#2B8CBE');
+    const status = resolveAttainment(actual, target, data.metricType);
+    const attainment = status.attainment;
+    const barColor = status.success
+      ? (tokens.semantic?.positive || '#2E7D32')
+      : (status.near ? (tokens.palette[0] || '#2B8CBE') : (tokens.semantic?.negative || '#C62828'));
+    // Gradation des bandes : la plus foncée = zone la moins bonne (convention Few), identique clair/sombre.
+    const bandAlpha = status.isCost ? [0.05, 0.11, 0.18] : [0.18, 0.11, 0.05];
+    const bandBase = isDark ? '255, 255, 255' : '15, 23, 42';
+    const bandFill = (i) => `rgba(${bandBase}, ${isDark ? bandAlpha[i] * 0.8 : bandAlpha[i]})`;
     const targetMarkerColor = tokens.textPrimary || (isDark ? '#ECEFF4' : '#0F172A');
 
     // Plugin custom pour dessiner le marqueur cible vertical
@@ -134,11 +165,6 @@
         ctx.lineTo(targetX, yBottom);
         ctx.stroke();
 
-        // Petit repère textuel subtil
-        ctx.fillStyle = tokens.textMuted || '#64748B';
-        ctx.font = `600 10px ${tokens.fontMono || 'monospace'}`;
-        ctx.textAlign = 'center';
-        ctx.fillText('▼', targetX, yTop - 2);
         ctx.restore();
       }
     };
@@ -164,7 +190,7 @@
           ranges && {
             label: 'Plage Insatisfaisant',
             data: [ranges[0]],
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.06)' : 'rgba(15, 23, 42, 0.08)',
+            backgroundColor: bandFill(0),
             barThickness: 24,
             borderRadius: 4,
             order: 4,
@@ -174,7 +200,7 @@
           ranges && {
             label: 'Plage Satisfaisant',
             data: [ranges[1]],
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.10)' : 'rgba(15, 23, 42, 0.05)',
+            backgroundColor: bandFill(1),
             barThickness: 24,
             borderRadius: 4,
             order: 3,
@@ -184,7 +210,7 @@
           ranges && {
             label: 'Plage Optimale',
             data: [ranges[2]],
-            backgroundColor: isDark ? 'rgba(255, 255, 255, 0.14)' : 'rgba(15, 23, 42, 0.03)',
+            backgroundColor: bandFill(2),
             barThickness: 24,
             borderRadius: 4,
             order: 2,
@@ -196,7 +222,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -244,13 +270,13 @@
 
     const actual = data.value;
     const target = data.target;
-    const attainment = Math.round((actual / target) * 100);
-    const isSuccess = attainment >= 100;
-    const isWarning = attainment >= 80 && attainment < 100;
+    const st = resolveAttainment(actual, target, data.metricType);
+    const attainment = st.attainment;
+    const statusLabel = st.success ? 'Atteint' : (st.isCost ? 'Dépassé' : 'En cours');
 
-    const statusColor = isSuccess
+    const statusColor = st.success
       ? (tokens.semantic?.positive || '#2E7D32')
-      : (isWarning ? (tokens.palette[0] || '#2B8CBE') : (tokens.semantic?.warning || '#EF6C00'));
+      : (st.near ? (tokens.palette[0] || '#2B8CBE') : (tokens.semantic?.negative || '#C62828'));
 
     const badgeBg = hexToRgba(statusColor, tokens.isDark ? 0.18 : 0.10);
     const badgeBorder = hexToRgba(statusColor, tokens.isDark ? 0.35 : 0.25);
@@ -294,11 +320,11 @@
             white-space: nowrap;
             font-variant-numeric: tabular-nums;
             background: ${badgeBg};
-            color: ${statusColor};
+            color: ${readableText(statusColor, (tokens.surfaceRaised || tokens.surface), tokens.isDark ? 0.18 : 0.10)};
             border: 1px solid ${badgeBorder};
           ">
             <span style="display: block; text-align: center;">${attainment}%</span>
-            <span style="display: block; font-size: 0.675rem; font-weight: 600; text-align: center;">Atteint</span>
+            <span style="display: block; font-size: 0.675rem; font-weight: 600; text-align: center;">${statusLabel}</span>
           </span>
         </div>
 
@@ -370,6 +396,19 @@
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const readableText = (fg, surface, alpha) => {
+    const parse = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim()) || /^#?([0-9a-f]{3})$/i.exec(String(h || '').trim()); if (!m) return null; let x = m[1]; if (x.length === 3) x = x.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16)); };
+    const lum = (c) => { const l = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+    const f = parse(fg), s = parse(surface);
+    if (!f || !s) return fg;
+    const a = alpha == null ? 0.18 : alpha;
+    const bg = s.map((v, i) => Math.round(v * (1 - a) + f[i] * a));
+    const toward = lum(bg) < 0.4 ? 255 : 0;
+    let c = f.slice();
+    for (let t = 0; t <= 1.0001 && ratio(c, bg) < 4.6; t += 0.05) c = f.map(v => Math.round(v + (toward - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   const DEFAULT_DATA = {
@@ -487,7 +526,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -549,18 +588,13 @@
     const budBg = hexToRgba(budColor, isDark ? 0.18 : 0.10);
     const budBorder = hexToRgba(budColor, isDark ? 0.35 : 0.25);
 
-    function formatBenchmarkLabel(label, val, unit) {
-      if (!label) return '';
-      if (/\(.*\)/.test(label)) return label;
-      if (val !== undefined && val !== null) {
-        const formattedVal = typeof val === 'number' ? val.toLocaleString('fr-FR') : val;
-        return `${label} (${formattedVal}${unit ? ' ' + unit : ''})`;
-      }
-      return label;
+    function formatRefValue(val, unit) {
+      const formattedVal = typeof val === 'number' ? val.toLocaleString('fr-FR') : String(val);
+      return `${formattedVal}${unit ? ' ' + unit : ''}`;
     }
 
     function formatDeltaPct(deltaPct) {
-      return isNum(deltaPct) ? ` (${deltaPct >= 0 ? '+' : ''}${deltaPct}%)` : '';
+      return isNum(deltaPct) ? ` (${deltaPct >= 0 ? '+' : ''}${deltaPct.toLocaleString('fr-FR', { maximumFractionDigits: 1 })}%)` : '';
     }
 
     function formatDeltaAbs(deltaAbs, unit) {
@@ -625,10 +659,10 @@
           margin-bottom: 0.5rem;
         ">
           <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: normal; overflow-wrap: break-word; max-width: 100%; min-width: 0;">
-            ${escapeHtml(formatBenchmarkLabel(hist.label, hist.value, data.unit))}
+            ${escapeHtml(hist.label)}<br><span style="font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap;">${escapeHtml(formatRefValue(hist.value, data.unit))}</span>
           </div>
           <div style="font-size: 0.7rem; font-weight: 600; color: ${tokens.textMuted}; text-transform: uppercase; text-align: center; white-space: normal; overflow-wrap: break-word; max-width: 100%; min-width: 0;">
-            ${escapeHtml(formatBenchmarkLabel(bud.label, bud.value, data.unit))}
+            ${escapeHtml(bud.label)}<br><span style="font-weight: 500; font-variant-numeric: tabular-nums; white-space: nowrap;">${escapeHtml(formatRefValue(bud.value, data.unit))}</span>
           </div>
           <div style="display: flex; justify-content: center; min-width: 0;">
             <div style="
@@ -636,16 +670,18 @@
               align-items: center;
               justify-content: center;
               text-align: center;
-              gap: 4px;
+              gap: 2px 4px;
+              flex-wrap: wrap;
+              max-width: 100%;
               margin-top: 4px;
-              padding: 3px 10px;
-              border-radius: 9999px;
-              font-size: 0.725rem;
+              padding: 3px 8px;
+              border-radius: 12px;
+              font-size: 0.7rem;
               font-weight: 700;
-              white-space: nowrap;
+              white-space: normal;
               font-variant-numeric: tabular-nums;
               background: ${histBg};
-              color: ${histColor};
+              color: ${readableText(histColor, (tokens.surfaceRaised || tokens.surface), isDark ? 0.18 : 0.10)};
               border: 1px solid ${histBorder};
             ">
               <span style="font-size: 0.65rem;">${hist.deltaAbs >= 0 ? '▲' : '▼'}</span>
@@ -659,16 +695,18 @@
               align-items: center;
               justify-content: center;
               text-align: center;
-              gap: 4px;
+              gap: 2px 4px;
+              flex-wrap: wrap;
+              max-width: 100%;
               margin-top: 4px;
-              padding: 3px 10px;
-              border-radius: 9999px;
-              font-size: 0.725rem;
+              padding: 3px 8px;
+              border-radius: 12px;
+              font-size: 0.7rem;
               font-weight: 700;
-              white-space: nowrap;
+              white-space: normal;
               font-variant-numeric: tabular-nums;
               background: ${budBg};
-              color: ${budColor};
+              color: ${readableText(budColor, (tokens.surfaceRaised || tokens.surface), isDark ? 0.18 : 0.10)};
               border: 1px solid ${budBorder};
             ">
               <span style="font-size: 0.65rem;">${bud.deltaAbs >= 0 ? '▲' : '▼'}</span>
@@ -719,6 +757,19 @@
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const readableText = (fg, surface, alpha) => {
+    const parse = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim()) || /^#?([0-9a-f]{3})$/i.exec(String(h || '').trim()); if (!m) return null; let x = m[1]; if (x.length === 3) x = x.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16)); };
+    const lum = (c) => { const l = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+    const f = parse(fg), s = parse(surface);
+    if (!f || !s) return fg;
+    const a = alpha == null ? 0.18 : alpha;
+    const bg = s.map((v, i) => Math.round(v * (1 - a) + f[i] * a));
+    const toward = lum(bg) < 0.4 ? 255 : 0;
+    let c = f.slice();
+    for (let t = 0; t <= 1.0001 && ratio(c, bg) < 4.6; t += 0.05) c = f.map(v => Math.round(v + (toward - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   const DEFAULT_DATA = {
@@ -786,7 +837,7 @@
 
     const bgColors = drivers.map(d => {
       const isPos = d.delta >= 0;
-      return getValenceColor(tokens, isPos ? 1 : -1, 'gain');
+      return getValenceColor(tokens, isPos ? 1 : -1, d.metricType || 'gain');
     });
 
     if (typeof Chart === 'undefined') return null;
@@ -806,13 +857,13 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
             enabled: true,
             callbacks: {
-              label: (ctx) => `Variation : ${ctx.parsed.x > 0 ? '+' : ''}${ctx.parsed.x}%`
+              label: (ctx) => `Variation : ${ctx.parsed.x > 0 ? '+' : ''}${ctx.parsed.x.toLocaleString('fr-FR', { maximumFractionDigits: 2 })}%`
             }
           }
         },
@@ -849,6 +900,7 @@
     const drivers = data.drivers;
     const isDark = Boolean(tokens.isDark);
 
+    const fmtDelta = (n) => Math.abs(n).toLocaleString('fr-FR', { maximumFractionDigits: 2 }).replace(/^/, n < 0 ? '-' : '');
     const hasDelta = isNum(data.delta);
     const isPositive = data.delta >= 0;
     const valence = isPositive ? 1 : -1;
@@ -859,7 +911,7 @@
     // Génération des 3 colonnes drivers
     const driversHtml = drivers.map(drv => {
       const drvPos = drv.delta >= 0;
-      const drvColor = getValenceColor(tokens, drvPos ? 1 : -1, 'gain');
+      const drvColor = readableText(getValenceColor(tokens, drvPos ? 1 : -1, drv.metricType || 'gain'), (tokens.surfaceRaised || tokens.surface), 0);
       const valStr = typeof drv.value === 'number' ? drv.value.toLocaleString('fr-FR') : String(drv.value);
       return `
         <div style="display: flex; flex-direction: column; gap: 2px;">
@@ -870,7 +922,7 @@
             ${escapeHtml(valStr)} <span style="font-size: 0.75rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(drv.unit || '')}</span>
           </span>
           <span style="font-size: 0.7rem; font-weight: 700; color: ${drvColor}; font-variant-numeric: tabular-nums;">
-            ${drvPos ? '▲ +' : '▼ '}${drv.delta}${escapeHtml(drv.deltaUnit || '%')}
+            ${drvPos ? '▲ +' : '▼ '}${fmtDelta(drv.delta)}${escapeHtml(drv.deltaUnit || '%')}
           </span>
         </div>
       `;
@@ -911,11 +963,11 @@
             font-weight: 700;
             font-variant-numeric: tabular-nums;
             background: ${badgeBg};
-            color: ${valenceColor};
+            color: ${readableText(valenceColor, (tokens.surfaceRaised || tokens.surface), isDark ? 0.18 : 0.10)};
             border: 1px solid ${badgeBorder};
           ">
             <span>${isPositive ? '▲' : '▼'}</span>
-            <span>${isPositive ? '+' : ''}${data.delta}%</span>
+            <span>${isPositive ? '+' : ''}${fmtDelta(data.delta)}%</span>
           </span>` : ''}
         </div>
 
@@ -1036,6 +1088,8 @@
       if (typeof seg.label !== 'string' || !seg.label) return `formattedData.segments[${i}].label attendu en texte non vide, reçu ${kindOf(seg.label)}`;
       if (!isNum(seg.pct) || seg.pct < 0) return `formattedData.segments[${i}].pct attendu en nombre positif, reçu ${kindOf(seg.pct)}`;
     }
+    const total = d.segments.reduce((a, seg) => a + seg.pct, 0);
+    if (Math.abs(total - 100) > 0.5) return `formattedData.segments : la somme des pct doit valoir 100, reçu ${Math.round(total * 10) / 10}`;
     return null;
   }
 
@@ -1081,7 +1135,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -1199,7 +1253,7 @@
           </span>` : ''}
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 0.5rem;">
           <div style="
             font-size: 2.1rem;
             font-weight: 800;
@@ -1379,8 +1433,10 @@
           pointBackgroundColor: (ctx) => {
             const idx = ctx.dataIndex;
             if (idx === lastIndex) return strokeColor;
-            if (idx === maxIndex) return tokens.palette[1] || strokeColor;
-            if (idx === minIndex) return tokens.textMuted || '#64748B';
+            const lowerBetter = data.metricType === 'cost';
+            const bestIdx = lowerBetter ? minIndex : maxIndex;
+            if (idx === bestIdx) return tokens.semantic?.positive || strokeColor;
+            if (idx === (lowerBetter ? maxIndex : minIndex)) return tokens.semantic?.negative || tokens.textMuted || '#64748B';
             return strokeColor;
           },
           pointBorderColor: tokens.surfaceRaised || tokens.bg || '#FFFFFF',
@@ -1391,7 +1447,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -1406,7 +1462,7 @@
             bodyFont: { family: tokens.fontMono, size: 11, weight: '600' },
             callbacks: {
               title: (items) => items[0]?.label || '',
-              label: (ctx) => `${data.title} : ${ctx.parsed.y}${data.unit || ''}`
+              label: (ctx) => `${data.title} : ${ctx.parsed.y.toLocaleString('fr-FR')}${data.unit ? ' ' + data.unit : ''}`
             }
           }
         },
@@ -1634,7 +1690,7 @@
     if (typeof Chart === 'undefined') return null;
 
     const hasBenchmark = isNum(data.benchmark) && data.benchmark !== 0;
-    const progressRatio = hasBenchmark ? Math.max(0, Math.min(100, Math.round((data.value / data.benchmark) * 100))) : 0;
+    const progressRatio = hasBenchmark ? Math.max(0, Math.round((data.value / data.benchmark) * 100)) : 0;
     const isDark = Boolean(tokens.isDark);
 
     const chart = new Chart(canvas, {
@@ -1642,7 +1698,7 @@
       data: {
         labels: ['Réalisé', 'Reste'],
         datasets: [{
-          data: [progressRatio, Math.max(0, 100 - progressRatio)],
+          data: [Math.min(progressRatio, 100), Math.max(0, 100 - progressRatio)],
           backgroundColor: [
             valenceColor,
             isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(15, 23, 42, 0.06)'
@@ -1656,7 +1712,7 @@
       options: {
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -1810,6 +1866,19 @@
   };
   const resolveThresholds = (KitChartsTheme && KitChartsTheme.resolveThresholds) || (typeof window !== 'undefined' && window.resolveThresholds) || null;
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const readableText = (fg, surface, alpha) => {
+    const parse = (h) => { const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim()) || /^#?([0-9a-f]{3})$/i.exec(String(h || '').trim()); if (!m) return null; let x = m[1]; if (x.length === 3) x = x.split('').map(c => c + c).join(''); return [0, 2, 4].map(i => parseInt(x.slice(i, i + 2), 16)); };
+    const lum = (c) => { const l = c.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2]; };
+    const ratio = (a, b) => { const la = lum(a), lb = lum(b); return (Math.max(la, lb) + 0.05) / (Math.min(la, lb) + 0.05); };
+    const f = parse(fg), s = parse(surface);
+    if (!f || !s) return fg;
+    const a = alpha == null ? 0.18 : alpha;
+    const bg = s.map((v, i) => Math.round(v * (1 - a) + f[i] * a));
+    const toward = lum(bg) < 0.4 ? 255 : 0;
+    let c = f.slice();
+    for (let t = 0; t <= 1.0001 && ratio(c, bg) < 4.6; t += 0.05) c = f.map(v => Math.round(v + (toward - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
   const DEFAULT_DATA = {
@@ -1879,7 +1948,7 @@
     let tNominal = data.thresholds.nominal;
     let tCritical = data.thresholds.critical;
     // Échelle : fournie, sinon déduite des valeurs fournies (jamais un plafond d'exemple)
-    const maxVal = isNum(data.maxScale) ? Math.max(data.maxScale, tNominal, tCritical) : Math.max(val, tNominal, tCritical) * 1.2;
+    const maxVal = isNum(data.maxScale) ? Math.max(data.maxScale, tNominal, tCritical, val) : Math.max(val, tNominal, tCritical) * 1.2;
     const isHigherBetter = data.polarity === 'higher-is-better';
     const unitStr = data.unit || '';
 
@@ -1990,7 +2059,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -2122,7 +2191,7 @@
             font-weight: 700;
             font-variant-numeric: tabular-nums;
             background: ${badgeBg};
-            color: ${statusColor};
+            color: ${readableText(statusColor, (tokens.surfaceRaised || tokens.surface), isDark ? 0.18 : 0.10)};
             border: 1px solid ${badgeBorder};
           ">
             <span>${statusIcon}</span>
@@ -2130,7 +2199,7 @@
           </span>
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.25rem;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 0.25rem;">
           <div style="
             font-size: 2.1rem;
             font-weight: 800;
@@ -2141,7 +2210,7 @@
           ">
             ${val.toLocaleString('fr-FR')} <span style="font-size: 1.25rem; font-weight: 500; color: ${tokens.textMuted};">${escapeHtml(data.unit || '')}</span>
           </div>
-          <div style="font-size: 0.75rem; color: ${tokens.textMuted}; font-weight: 500;">
+          <div style="font-size: 0.75rem; color: ${tokens.textMuted}; font-weight: 500; white-space: nowrap;">
             Plage nominale : ${isHigherBetter ? '&gt;' : '&lt;'} ${tNominal} ${escapeHtml(data.unit || '')}
           </div>
         </div>
@@ -2156,7 +2225,7 @@
           padding-top: 0.4rem;
           border-top: 1px solid ${tokens.gridColor || tokens.border};
           font-size: 0.7rem;
-          color: ${statusKey === 'danger' ? statusColor : tokens.textMuted};
+          color: ${statusKey === 'danger' ? readableText(statusColor, (tokens.surfaceRaised || tokens.surface), 0) : tokens.textMuted};
           font-weight: ${statusKey === 'danger' ? '600' : 'normal'};
         ">
           ${escapeHtml(data.footnote)}
@@ -2432,6 +2501,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         x: {
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage horizontal
+          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1', text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
           grace: '15%',
           grid: {
             color: tokens.gridColor,
@@ -2722,10 +2792,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         datalabels: getDataLabelOptions(tokens, {
           display: showDataLabels,
           formatter: (val) => {
-            if (typeof val === 'number' && Math.abs(val) >= 1000) {
-              return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-            }
-            return val;
+            // Valeur exacte (milliers séparés), cohérente avec l'infobulle ; l'axe garde le format compact
+            return typeof val === 'number' ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val) : val;
           }
         }),
         legend: {
@@ -2784,6 +2852,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage par longueur
+          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1', text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
           grace: '10%',
           grid: {
             color: tokens.gridColor,
@@ -2799,10 +2868,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             },
             padding: 8,
             callback: (val) => {
-              if (typeof val === 'number' && Math.abs(val) >= 1000) {
-                return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-              }
-              return val;
+              // Même format que les étiquettes de barres (milliers séparés), jamais de notation compacte
+              return typeof val === 'number' ? new Intl.NumberFormat('fr-FR').format(val) : val;
             }
           }
         }
@@ -2879,6 +2946,29 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
+
+  function relLum(hex) {
+    const h = String(hex || '').replace('#', '');
+    if (h.length < 6) return 0;
+    const c = [0, 2, 4].map(i => parseInt(h.substr(i, 2), 16) / 255).map(v => v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4));
+    return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+  }
+  function contrastRatio(a, b) {
+    const x = relLum(a), y = relLum(b);
+    return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05);
+  }
+  // Ajuste une teinte de texte (assombrie en clair, éclaircie en sombre) jusqu'à 4.5:1 sur le fond.
+  function ensureTextContrast(hex, bg, isDarkTheme) {
+    if (typeof hex !== 'string' || hex.charAt(0) !== '#' || hex.length < 7 || typeof bg !== 'string' || bg.charAt(0) !== '#') return hex;
+    let col = hex;
+    for (let i = 0; i < 12 && contrastRatio(col, bg) < 4.5; i++) {
+      const ch = [1, 3, 5].map(k => parseInt(col.substr(k, 2), 16));
+      const next = ch.map(v => Math.round(isDarkTheme ? v + (255 - v) * 0.15 : v * 0.85));
+      col = '#' + next.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return col;
+  }
+
   function computeVarianceDeltas(actuals, targets) {
     return actuals.map((act, idx) => {
       const tgt = Number(targets[idx]) || 0;
@@ -2941,11 +3031,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const targets = (rawData.datasets && rawData.datasets[1] && rawData.datasets[1].data);
 
     const analysis = computeVarianceDeltas(actuals, targets);
+    // Carte étroite (< 420 px) : polices réduites, étiquettes compactes, légende courte.
+    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+    const narrow = cw > 0 && cw < 420;
 
     const successColor = tokens.semantic?.positive || tokens.status?.success || '#2E7D32';
     const warningColor = tokens.semantic?.warning || tokens.status?.warning || '#EF6C00';
     const dangerColor = tokens.semantic?.negative || tokens.status?.danger || '#C62828';
     const targetMarkerColor = tokens.emphasis?.benchmark || (isDark ? '#ECEFF4' : '#0F172A');
+    const cardBg = tokens.bg || (isDark ? '#2E3440' : '#FFFFFF');
+    const textFor = (c) => ensureTextContrast(c, cardBg, isDark);
+    const haloColor = isDark ? '#2E3440' : '#FFFFFF';
 
     const targetOverlayPlugin = {
       id: 'kitChartsTargetOverlayPainter',
@@ -2964,22 +3060,25 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           const xTarget = x.getPixelForValue(item.target);
 
           // Tracé du trait vertical de cible (Target Tick)
-          ctx.beginPath();
-          ctx.strokeStyle = targetMarkerColor;
-          ctx.lineWidth = 3;
-          ctx.moveTo(xTarget, yCenter - tickHeight / 2);
-          ctx.lineTo(xTarget, yCenter + tickHeight / 2);
-          ctx.stroke();
+          // Liseré de séparation puis trait : lisible même sur une barre de couleur
+          [[haloColor, 6], [targetMarkerColor, 3]].forEach(([col, w]) => {
+            ctx.beginPath();
+            ctx.strokeStyle = col;
+            ctx.lineWidth = w;
+            ctx.moveTo(xTarget, yCenter - tickHeight / 2);
+            ctx.lineTo(xTarget, yCenter + tickHeight / 2);
+            ctx.stroke();
+          });
 
           // Libellé de variance Delta% et valeur affichés si showDataLabels est actif
           if (showLabels) {
             const xActual = x.getPixelForValue(item.actual);
-            ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
-            ctx.fillStyle = item.status === 'success' ? successColor : (item.status === 'warning' ? warningColor : dangerColor);
+            ctx.font = `600 ${narrow ? 10 : 11}px ${tokens.fontMono || 'monospace'}`;
+            ctx.fillStyle = textFor(item.status === 'success' ? successColor : (item.status === 'warning' ? warningColor : dangerColor));
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
             const sign = item.deltaPct >= 0 ? '+' : '';
-            const labelStr = `${item.actual.toLocaleString('fr-FR')} k€ (${sign}${item.deltaPct}%)`;
+            const labelStr = `${item.actual.toLocaleString('fr-FR')}${narrow ? '' : ' k€'} (${sign}${item.deltaPct.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} %)`;
             const xPos = Math.max(xActual, xTarget) + 8;
             ctx.fillText(labelStr, xPos, yCenter);
           }
@@ -3024,7 +3123,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         showDataLabels: showDataLabels,
         layout: {
           padding: {
-            right: 32
+            right: narrow ? 66 : 120 // place pour l'étiquette valeur + écart de la barre la plus longue
           }
         },
         animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
@@ -3037,7 +3136,26 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           datalabels: getDataLabelOptions(tokens, {
             display: showDataLabels
           }),
-          legend: { display: false },
+          legend: {
+            display: true,
+            position: 'top',
+            align: narrow ? 'start' : 'end',
+            onClick: null,
+            labels: {
+              usePointStyle: true,
+              boxWidth: narrow ? 8 : 12,
+              boxHeight: narrow ? 8 : 12,
+              padding: narrow ? 8 : 10,
+              color: tokens.textPrimary,
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 11, weight: '500' },
+              generateLabels: () => ([
+                { text: 'Objectif', fillStyle: targetMarkerColor, strokeStyle: targetMarkerColor, lineWidth: 3, pointStyle: 'line', rotation: 90, fontColor: tokens.textPrimary, hidden: false },
+                { text: narrow ? 'Atteint' : 'Objectif atteint', fillStyle: successColor, strokeStyle: successColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
+                { text: narrow ? 'Écart ≤ 10 %' : 'Écart jusqu\'à -10 %', fillStyle: warningColor, strokeStyle: warningColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
+                { text: narrow ? 'Écart > 10 %' : 'Écart pire que -10 %', fillStyle: dangerColor, strokeStyle: dangerColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false }
+              ])
+            }
+          },
           tooltip: {
             ...defaultOpts.plugins.tooltip,
             callbacks: {
@@ -3061,8 +3179,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             beginAtZero: true,
             grace: '25%',
             grid: { color: tokens.gridColor },
+            ticks: { ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks), maxTicksLimit: narrow ? 5 : 8, font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
             title: {
-              display: true,
+              display: !narrow,
               text: 'Montant (k€)',
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
@@ -3070,6 +3189,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           },
           y: {
             ...defaultOpts.scales.y,
+            ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
             grid: { display: false }
           }
         }
@@ -3226,8 +3346,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         borderColor: ds.borderColor || bg,
         borderWidth: 0,
         borderRadius: isTufte ? 0 : 3,
-        barPercentage: 0.45,
-        categoryPercentage: 0.8,
+        grouped: false, // superposition : la mesure se dessine devant les paliers
+        barPercentage: 0.32,
+        categoryPercentage: 0.7,
         order: 1
       };
     }
@@ -3253,21 +3374,34 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       };
     }
 
-    // 3. Paliers de contexte qualitatif (Bandes de fond)
-    const bandColor = isDark ? '#4C566A' : '#CBD5E1';
-    const alertBorderColor = isDark ? '#4C566A' : '#CBD5E1';
+    // 3. Paliers de contexte qualitatif : bandes superposées, le plus large derrière,
+    // dégradé de gris (le palier le plus bas est le plus sombre, convention Few).
+    const bandIdxs = rawDatasets.map((d, i) => i).filter(i => {
+      const l = (rawDatasets[i].label || '').toLowerCase();
+      return i > 1 && !(l.includes('réalisé') || l.includes('actual') || l.includes('objectif') || l.includes('target') || l.includes('cible') || l.includes('benchmark'));
+    });
+    const bandSum = (i) => (Array.isArray(rawDatasets[i].data) ? rawDatasets[i].data : []).reduce((a, v) => a + (Number(v) || 0), 0);
+    const bandsAsc = bandIdxs.slice().sort((a, b) => bandSum(a) - bandSum(b));
+    const bandRank = Math.max(0, bandsAsc.indexOf(idx));
+    const bandCount = Math.max(1, bandsAsc.length);
+    const lightShades = ['#94A3B8', '#CBD5E1', '#E2E8F0', '#F1F5F9'];
+    const darkShades = ['#8693B0', '#65728F', '#4A566F', '#3E4860']; // le palier le plus large reste nettement plus clair que le fond sombre
+    const shades = isDark ? darkShades : lightShades;
+    const shadeIdx = bandCount === 1 ? 1 : Math.min(shades.length - 1, Math.round(bandRank * (Math.min(3, bandCount) - 1) / (bandCount - 1)));
+    const bandColor = shades[shadeIdx];
 
     return {
       label: ds.label || `Palier ${idx}`,
       type: 'bar',
       data: Array.isArray(ds.data) ? [...ds.data] : [],
       backgroundColor: ds.backgroundColor || bandColor,
-      borderColor: ds.borderColor || alertBorderColor,
+      borderColor: ds.borderColor || bandColor,
       borderWidth: 0,
       borderRadius: 0,
-      barPercentage: 0.85,
-      categoryPercentage: 0.8,
-      order: 10 + idx
+      grouped: false,
+      barPercentage: 1.0,
+      categoryPercentage: 0.7,
+      order: 10 + bandRank // ordre élevé = dessiné en premier : le plus large derrière, le plus petit devant
     };
   });
 
@@ -3314,7 +3448,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             if (ctx && ctx.datasetIndex !== 0) return null;
             const rawVal = typeof val === 'object' && val !== null ? (val.x ?? val.value ?? 0) : val;
             if (typeof rawVal === 'number') {
-              return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(rawVal) + ' MW';
+              return new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(rawVal) ;
             }
             return String(rawVal || '');
           }
@@ -3542,7 +3676,9 @@ const dumbbellConnectorPlugin = {
     const count = Math.min(meta0.data.length, meta1.data.length);
     ctx.save();
     ctx.lineWidth = 3;
-    ctx.strokeStyle = chart.options.scales?.x?.grid?.color || 'rgba(148, 163, 184, 0.4)';
+    // Trait de liaison : contraste de contour >= 3:1 (et non la couleur quasi transparente de la grille)
+    const connTokens = chart.options?._kitChartsTokens || getThemeTokens(DEFAULT_THEME);
+    ctx.strokeStyle = connTokens.textMuted || connTokens.axisColor || '#64748B';
 
     for (let i = 0; i < count; i++) {
       const p0 = meta0.data[i];
@@ -3583,14 +3719,14 @@ const dumbbellConnectorPlugin = {
       const isClose = dx < 36;
 
       if (v0 !== undefined && v0 !== null) {
-        ctx.fillStyle = chart.data.datasets[0]?.backgroundColor || tokens.palette[1] || '#E66101';
+        ctx.fillStyle = tokens.textPrimary || '#0F172A'; // texte neutre (contraste 4.5:1), la série se lit via la couleur du point
         ctx.textAlign = 'center';
         ctx.textBaseline = 'bottom';
         ctx.fillText(String(v0), p0.x, p0.y - 8);
       }
 
       if (v1 !== undefined && v1 !== null) {
-        ctx.fillStyle = chart.data.datasets[1]?.backgroundColor || tokens.palette[0] || '#2B8CBE';
+        ctx.fillStyle = tokens.textPrimary || '#0F172A';
         ctx.textAlign = 'center';
         ctx.textBaseline = isClose ? 'top' : 'bottom';
         const yOffset = isClose ? 14 : -8;
@@ -4255,8 +4391,10 @@ const lollipopHeadPlugin = {
           const fSize = font.size || 10;
           const fFam = font.family || tokens.fontMono || 'monospace';
           const fWeight = font.weight || '600';
+          // Décimales homogènes : si une valeur du jeu est décimale, toutes s'affichent avec 1 décimale
+          const hasDec = chart.data.datasets.some(d => (d.data || []).some(v => typeof v === 'number' && !Number.isInteger(v)));
           const formatted = typeof val === 'number'
-            ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val)
+            ? new Intl.NumberFormat('fr-FR', { minimumFractionDigits: hasDec ? 1 : 0, maximumFractionDigits: 1 }).format(val)
             : val;
           ctx.font = `${fWeight} ${fSize}px ${fFam}`;
           ctx.fillStyle = chart.options?.plugins?.datalabels?.color || tokens.textPrimary || '#0F172A';
@@ -4447,6 +4585,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Règle psychophysique obligatoire
+          title: { display: datasets.length === 1 && !!datasets[0].label, text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
           grace: '12%',
           grid: {
             color: tokens.gridColor,
@@ -4545,6 +4684,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const getContrastingTextColor = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) || (typeof window !== 'undefined' && window.getContrastingTextColor) || null;
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -4562,6 +4702,42 @@ const DEFAULT_DATA = {
   datasets: [{
     data: [42, 28, 35, 18, 50, 32, 45, 22]
   }]
+};
+
+
+/**
+ * Étiquettes de valeurs réelles au centre des secteurs (le rayon porte √V, pas V).
+ */
+const polarValueLabelsPlugin = {
+  id: 'kcPolarValueLabels',
+  afterDatasetsDraw(chart) {
+    if (chart.options?.showDataLabels === false) return;
+    const tokens = chart.options?._kitChartsTokens || {};
+    const ctx = chart.ctx;
+    ctx.save();
+    ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    chart.data.datasets.forEach((ds, di) => {
+      const meta = chart.getDatasetMeta(di);
+      if (!meta || meta.hidden) return;
+      (meta.data || []).forEach((arc, i) => {
+        const raw = ds.rawValues ? ds.rawValues[i] : ds.data[i];
+        if (raw === null || raw === undefined || !arc) return;
+        const p = arc.getProps(['startAngle', 'endAngle', 'outerRadius', 'x', 'y'], true);
+        const r = p.outerRadius * 0.62;
+        if (r < 14) return;
+        const a = (p.startAngle + p.endAngle) / 2;
+        const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
+        ctx.fillStyle = (typeof getContrastingTextColor === 'function' ? getContrastingTextColor(bg) : '#0F172A');
+        const txt = typeof raw === 'number' && Math.abs(raw) >= 1000
+          ? new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(raw)
+          : new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(raw);
+        ctx.fillText(txt, p.x + Math.cos(a) * r, p.y + Math.sin(a) * r);
+      });
+    });
+    ctx.restore();
+  }
 };
 
 /**
@@ -4612,13 +4788,18 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           i === ds.focusIndex ? (tokens.emphasis?.focal || getColor(tokens, 0)) : (tokens.emphasis?.context || tokens.textMuted || '#CBD5E1')
         );
       } else if (!Array.isArray(bgColors)) {
-        bgColors = Array.from({ length: dataLen }, (_, i) => getColor(tokens, i));
+        // Teinte unique : les directions sont déjà portées par les étiquettes angulaires
+        const mono = getColor(tokens, 0);
+        bgColors = Array.from({ length: dataLen }, () => mono);
       }
     }
 
+    const rawValues = Array.isArray(ds.data) ? [...ds.data] : [];
     return {
       label: ds.label || 'Valeur',
-      data: Array.isArray(ds.data) ? [...ds.data] : [],
+      rawValues,
+      // Nightingale : rayon = racine de la valeur pour que l'AIRE soit proportionnelle à la valeur
+      data: rawValues.map(v => Math.sqrt(Math.max(0, Number(v) || 0))),
       backgroundColor: bgColors,
       borderColor: tokens.bg,
       borderWidth: isTufte ? 1 : 2
@@ -4632,6 +4813,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'polarArea',
     data: chartData,
+    plugins: [polarValueLabelsPlugin],
     options: {
       ...defaultOpts,
       animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
@@ -4647,18 +4829,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         ...defaultOpts.plugins,
-        datalabels: getDataLabelOptions(tokens, {
-          display: showDataLabels,
-          formatter: (val) => {
-            if (typeof val === 'number' && Math.abs(val) >= 1000) {
-              return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-            }
-            return val;
-          }
-        }),
+        // Étiquettes dessinées par le plugin local (valeurs réelles, pas les rayons √V)
+        datalabels: getDataLabelOptions(tokens, { display: false }),
         legend: {
           ...defaultOpts.plugins.legend,
-          display: !isTufte,
+          display: false,
           position: 'right',
           align: 'center'
         },
@@ -4679,9 +4854,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           animation: (isTufte || isReducedMotionPreferred()) ? false : { duration: 150, easing: 'easeOutQuad' },
           callbacks: {
             label: (context) => {
-              const val = context.parsed.r !== null && context.parsed.r !== undefined
-                ? context.parsed.r
-                : context.raw;
+              const rv = context.dataset.rawValues;
+              const val = rv ? rv[context.dataIndex] : context.raw;
               const formatted = typeof val === 'number'
                 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val)
                 : val;
@@ -4699,18 +4873,32 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             lineWidth: 1
           },
           grid: {
-            color: tokens.gridColor,
+            color: tokens.border || tokens.gridColor,
             lineWidth: 1
           },
-          ticks: {
-            backdropColor: 'transparent',
-            color: tokens.textMuted,
-            font: {
-              family: tokens.fontMono || tokens.fontFamily,
-              size: 10
-            },
-            showLabelBackdrop: false
+          // Centre chaque secteur sur sa direction (Nord = haut) : décalage d'une demi-part
+          startAngle: labels.length > 0 ? -180 / labels.length : 0,
+          // Libellés de direction autour du cercle (remplacent la légende)
+          pointLabels: {
+            display: true,
+            centerPointLabels: true,
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: 11, weight: '500' },
+            padding: 6
           },
+          // Anneaux positionnés sur des valeurs réelles rondes (échelle racine)
+          afterBuildTicks: (scale) => {
+            const maxRaw = scale.max * scale.max;
+            const steps = [1, 2, 5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 5000, 10000, 100000];
+            const step = steps.find(st => maxRaw / st <= 5) || steps[steps.length - 1];
+            const ticks = [];
+            for (let v = step; v <= maxRaw * 1.0001; v += step) ticks.push({ value: Math.sqrt(v) });
+            scale.ticks = ticks;
+          },
+          ticks: {
+            display: false
+          },
+          min: 0,
           suggestedMin: 0
         }
       }
@@ -4838,6 +5026,78 @@ function hexToRgba(hex, alpha = 0.2) {
  * @param {Object} [options={}] - Options additionnelles (ex: showDataLabels)
  * @returns {Object} Instance Chart.js initialisée
  */
+// Carte étroite ou basse (< 420 px de large ou < 300 px de haut) : mise en page compacte.
+function isNarrow(chart) {
+  if (!chart) return false;
+  const w = chart.width || (chart.canvas && chart.canvas.clientWidth) || 0;
+  const h = chart.height || (chart.canvas && chart.canvas.clientHeight) || 0;
+  return (w > 0 && w < 420) || (h > 0 && h < 300);
+}
+
+/**
+ * Badges de valeur du radar, placés radialement par rapport au centre (jamais sur le point).
+ * Large : profil principal vers l'extérieur, second profil vers l'intérieur, badges encadrés.
+ * Étroit : profil principal seul, valeur vers l'intérieur avec halo, sans cadre.
+ */
+const radarBadgesPlugin = {
+  id: 'kcRadarBadges',
+  afterDatasetsDraw(chart) {
+    if (chart.options?.showDataLabels === false) return;
+    const rScale = chart.scales && chart.scales.r;
+    if (!rScale) return;
+    const tokens = chart.options?._kitChartsTokens || {};
+    const ctx = chart.ctx;
+    const narrow = isNarrow(chart);
+    const fontSize = narrow ? 9 : 10;
+    const surface = tokens.surface || (tokens.isDark ? '#242933' : '#FFFFFF');
+    const fmt = (v) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(v);
+    ctx.save();
+    ctx.font = `700 ${fontSize}px ${tokens.fontMono || 'monospace'}`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    const count = Math.min(chart.data.datasets.length, narrow ? 1 : 2);
+    for (let di = 0; di < count; di++) {
+      const meta = chart.getDatasetMeta(di);
+      const ds = chart.data.datasets[di];
+      if (!meta || meta.hidden) continue;
+      (meta.data || []).forEach((pt, i) => {
+        const v = ds.data[i];
+        if (typeof v !== 'number' || !pt) return;
+        const text = fmt(v);
+        const w = ctx.measureText(text).width + (narrow ? 2 : 8);
+        const h = fontSize + (narrow ? 2 : 4);
+        let ux = pt.x - rScale.xCenter, uy = pt.y - rScale.yCenter;
+        const len = Math.hypot(ux, uy) || 1;
+        ux /= len; uy /= len;
+        // Large : la valeur la plus haute se pose vers l'extérieur, la plus basse vers l'intérieur
+        // (le badge ne recouvre jamais le point de l'autre profil). Étroit : vers l'intérieur.
+        const other = chart.data.datasets[di === 0 ? 1 : 0];
+        const ov = other && other.data ? other.data[i] : undefined;
+        const higher = typeof ov !== 'number' ? di === 0 : (v > ov || (v === ov && di === 0));
+        const dir = narrow ? -1 : (higher ? 1 : -1);
+        const d = 5 + Math.abs(ux) * w / 2 + Math.abs(uy) * h / 2;
+        const bx = pt.x + dir * ux * d, by = pt.y + dir * uy * d;
+        if (narrow) {
+          ctx.lineWidth = 3; ctx.lineJoin = 'round';
+          ctx.strokeStyle = surface;
+          ctx.strokeText(text, bx, by);
+        } else {
+          ctx.fillStyle = surface;
+          ctx.strokeStyle = ds.borderColor || tokens.border;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.rect(bx - w / 2, by - h / 2, w, h);
+          ctx.fill();
+          ctx.stroke();
+        }
+        ctx.fillStyle = tokens.textPrimary || '#0F172A';
+        ctx.fillText(text, bx, by);
+      });
+    }
+    ctx.restore();
+  }
+};
+
 function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string'
     ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -4895,27 +5155,33 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       backgroundColor: fillColor,
       borderColor: borderColor,
       borderWidth: borderWidth !== undefined ? borderWidth : (isTufte ? 1.5 : 2),
-      borderDash: borderDash,
+      // Double codage pour ne pas dépendre de la seule teinte : profil secondaire en pointillés
+      borderDash: (Array.isArray(borderDash) && borderDash.length) ? borderDash : (idx > 0 ? [6, 4] : []),
       pointBackgroundColor: borderColor,
       pointBorderColor: tokens.bg,
       pointBorderWidth: 1.5,
       pointRadius: pointRadius,
       pointHoverRadius: pointRadius + 3,
       pointHitRadius: 10,
-      pointStyle: pointStyle,
+      pointStyle: (ds.pointStyle || idx === 0) ? pointStyle : 'rectRot',
       fill: ds.fill !== undefined ? ds.fill : true
     };
   });
 
   const chartData = { labels, datasets };
+  // Axes normés : échelle 0-100 fixe quand toutes les valeurs y tiennent
+  const allWithin100 = datasets.length > 0 && datasets.every(d => d.data.every(v => typeof v === 'number' && v >= 0 && v <= 100));
 
   // Options Chart.js v4+ pour échelle radiale 'r' avec interaction Fitts indexée
   const defaultOpts = getChartDefaultOptions(tokens);
   const config = {
     type: 'radar',
     data: chartData,
+    plugins: [radarBadgesPlugin],
     options: {
       ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
       animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
       interaction: {
         mode: 'index',
@@ -4928,36 +5194,19 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         ...defaultOpts.plugins,
-        datalabels: {
-          display: (context) => {
-            return showDataLabels && (typeof context === 'object' && context.datasetIndex !== undefined ? context.datasetIndex < 2 : true);
-          },
-          align: (context) => (context && context.datasetIndex === 0) ? 'end' : 'start',
-          anchor: (context) => (context && context.datasetIndex === 0) ? 'end' : 'start',
-          offset: 6,
-          backgroundColor: (context) => hexToRgba(tokens.surface || '#FFFFFF', 0.92),
-          borderColor: (context) => (context && context.dataset && context.dataset.borderColor) || tokens.border,
-          borderWidth: 1,
-          borderRadius: 4,
-          padding: { top: 2, bottom: 2, left: 4, right: 4 },
-          color: (context) => (context && context.dataset && context.dataset.borderColor) || tokens.textPrimary,
-          font: {
-            family: tokens.fontMono || 'monospace',
-            size: 10,
-            weight: '700'
-          },
-          formatter: (val) => {
-            if (typeof val === 'number' && Math.abs(val) >= 1000) {
-              return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-            }
-            return val;
-          }
-        },
+        // Badges dessinés par le plugin local kcRadarBadges (placement radial, adapté à la taille)
+        datalabels: { display: () => false },
         legend: {
           ...defaultOpts.plugins.legend,
           display: !isTufte,
-          position: 'top',
-          align: 'end'
+          position: (context) => (isNarrow(context && context.chart) ? 'right' : 'top'),
+          align: (context) => (isNarrow(context && context.chart) ? 'center' : 'end'),
+          labels: {
+            ...(defaultOpts.plugins.legend && defaultOpts.plugins.legend.labels),
+            boxWidth: 10,
+            boxHeight: 10,
+            font: { family: tokens.fontFamily, size: 10 }
+          }
         },
         tooltip: {
           ...defaultOpts.plugins.tooltip,
@@ -5001,16 +5250,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           },
           pointLabels: {
             color: tokens.textPrimary,
-            font: {
+            font: (context) => ({
               family: tokens.fontFamily,
-              size: 11,
+              size: isNarrow(context && context.chart) ? 10 : 11,
               weight: '500'
-            },
-            padding: 16
+            }),
+            padding: (context) => (isNarrow(context && context.chart) ? 6 : 20)
           },
           ticks: {
-            display: false
+            display: false, // les valeurs sont lues sur les étiquettes ; anneaux tous les 25 points
+            stepSize: allWithin100 ? 25 : undefined,
+            showLabelBackdrop: false,
+            backdropColor: 'transparent',
+            color: tokens.textMuted,
+            font: { family: tokens.fontMono || tokens.fontFamily, size: 9 }
           },
+          min: 0,
+          max: allWithin100 ? 100 : undefined,
           suggestedMin: 0
         }
       }
@@ -5110,6 +5366,79 @@ const DEFAULT_DATA = {
   ]
 };
 
+
+/**
+ * Étiquetage direct d'un slopegraph : "Nom  valeur" à gauche, "valeur  Nom" à droite,
+ * avec écartement vertical minimal pour éviter les chevauchements.
+ */
+const slopeDirectLabelsPlugin = {
+  id: 'kcSlopeDirectLabels',
+  // Réserve latérale proportionnelle à la largeur du canvas (carte étroite : colonnes non écrasées).
+  beforeLayout(chart) {
+    const pad = Math.round(Math.min(190, Math.max(70, chart.width * 0.31)));
+    const p = chart.options.layout && chart.options.layout.padding;
+    if (p && typeof p === 'object') { p.left = pad; p.right = pad; }
+  },
+  afterDatasetsDraw(chart) {
+    if (chart.options?.showDataLabels === false) return;
+    const tokens = chart.options?._kitChartsTokens || {};
+    const ctx = chart.ctx;
+    const narrow = chart.width < 420;
+    const fontSize = narrow ? 10 : 11;
+    const lineH = fontSize + 3;
+    const fmt = (v) => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v);
+    const sides = [
+      { idx: 0, align: 'right', dx: -10 },
+      { idx: null, align: 'left', dx: 10 }
+    ];
+    ctx.save();
+    ctx.font = `600 ${fontSize}px ${tokens.fontFamily || 'sans-serif'}`;
+    ctx.fillStyle = tokens.textPrimary || '#0F172A';
+    ctx.textBaseline = 'middle';
+    const padSide = Math.max(0, chart.chartArea.left);
+    const avail = Math.max(40, padSide - 10 - 4);
+    // Découpe le nom en lignes pour tenir dans la réserve latérale (sans jamais rogner) :
+    // la valeur reste collée au mot côté tracé.
+    const wrap = (name, valueText, left) => {
+      const words = String(name).split(/\s+/);
+      if (left) words[words.length - 1] += '  ' + valueText; else words[0] = valueText + '  ' + words[0];
+      const lines = [];
+      let cur = '';
+      words.forEach((w) => {
+        const test = cur ? cur + ' ' + w : w;
+        if (cur && ctx.measureText(test).width > avail) { lines.push(cur); cur = w; } else cur = test;
+      });
+      if (cur) lines.push(cur);
+      return lines;
+    };
+    sides.forEach((side) => {
+      const items = [];
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        if (!meta || meta.hidden || !meta.data.length) return;
+        const i = side.idx === null ? meta.data.length - 1 : side.idx;
+        const pt = meta.data[i];
+        const v = ds.data[i];
+        if (!pt || v === null || v === undefined) return;
+        const valueText = fmt(v);
+        const out = wrap(ds.label, valueText, side.idx === 0);
+        items.push({ out, x: pt.x, y: pt.y, ly: pt.y, h: out.length * lineH });
+      });
+      items.sort((a, b) => a.y - b.y);
+      for (let k = 1; k < items.length; k++) {
+        const need = (items[k - 1].h + items[k].h) / 2;
+        if (items[k].ly - items[k - 1].ly < need) items[k].ly = items[k - 1].ly + need;
+      }
+      ctx.textAlign = side.align;
+      items.forEach((it) => {
+        const top = it.ly - ((it.out.length - 1) * lineH) / 2;
+        it.out.forEach((line, k) => ctx.fillText(line, it.x + side.dx, top + k * lineH));
+      });
+    });
+    ctx.restore();
+  }
+};
+
 /**
  * Crée et initialise un graphique de pente (Slope Chart) dans le canvas cible.
  *
@@ -5196,14 +5525,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'line',
     data: chartData,
+    plugins: [slopeDirectLabelsPlugin],
     options: {
       ...defaultOpts,
       _kitChartsTokens: tokens,
       showDataLabels: showDataLabels,
       layout: {
         padding: {
-          left: 48,
-          right: 54,
+          left: 120,
+          right: 120,
           top: 16,
           bottom: 16
         }
@@ -5222,18 +5552,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         ...defaultOpts.plugins,
-        datalabels: getDataLabelOptions(tokens, {
-          display: showDataLabels,
-          formatter: (val) => {
-            if (typeof val === 'number' && Math.abs(val) >= 1000) {
-              return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-            }
-            return val;
-          }
-        }),
+        // Étiquettes directes dessinées par le plugin local (nom + valeur)
+        datalabels: getDataLabelOptions(tokens, { display: false }),
         legend: {
           ...defaultOpts.plugins.legend,
-          display: !isTufte,
+          display: false,
           position: 'top',
           align: 'end'
         },
@@ -5283,26 +5606,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }
         },
         y: {
-          grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
-            drawBorder: false
-          },
-          border: { display: false },
-          ticks: {
-            color: tokens.textSecondary,
-            font: {
-              family: tokens.fontMono || tokens.fontFamily,
-              size: 11
-            },
-            padding: 8,
-            callback: (val) => {
-              if (typeof val === 'number' && Math.abs(val) >= 1000) {
-                return new Intl.NumberFormat('fr-FR', { notation: 'compact' }).format(val);
-              }
-              return val;
-            }
-          }
+          // Pas d'axe Y : les valeurs sont lues sur les étiquettes directes
+          display: false,
+          grid: { display: false },
+          border: { display: false }
         }
       }
     }
@@ -5400,6 +5707,40 @@ const DEFAULT_DATA = {
   ]
 };
 
+
+/**
+ * Total de chaque pile affiché au sommet (lecture du cumul sans addition mentale).
+ */
+const stackTotalsPlugin = {
+  id: 'kcStackTotals',
+  afterDatasetsDraw(chart) {
+    if (chart.options?.showDataLabels === false) return;
+    const tokens = chart.options?._kitChartsTokens || {};
+    const ctx = chart.ctx;
+    const n = (chart.data.labels || []).length;
+    ctx.save();
+    ctx.font = `700 11px ${tokens.fontMono || 'monospace'}`;
+    ctx.fillStyle = tokens.textPrimary || '#0F172A';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'bottom';
+    for (let i = 0; i < n; i++) {
+      let total = 0;
+      let top = null;
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        if (!meta || meta.hidden) return;
+        const v = Number(ds.data[i]);
+        if (!isFinite(v)) return;
+        total += v;
+        const el = meta.data[i];
+        if (el && (top === null || el.y < top.y)) top = el;
+      });
+      if (top) ctx.fillText(new Intl.NumberFormat('fr-FR').format(total), top.x, top.y - 4);
+    }
+    ctx.restore();
+  }
+};
+
 /**
  * Crée et initialise un diagramme en barres empilées dans le canvas cible.
  *
@@ -5475,6 +5816,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'bar',
     data: chartData,
+    plugins: [stackTotalsPlugin],
     options: {
       ...defaultOpts,
       _kitChartsTokens: tokens,
@@ -5686,6 +6028,7 @@ const DEFAULT_DATA = {
   labels: ['Abonnements SaaS', 'Licences Enterprise', 'Services Pro', 'Usage API'],
   datasets: [{
     label: 'Revenus (M€)',
+    unit: ' M€',
     data: [42, 28, 18, 12]
   }]
 };
@@ -5740,6 +6083,19 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     pairs.sort((a, b) => b.val - a.val);
   }
 
+  // Consolidation des tranches < 3% en "Autres" (règle famille 02)
+  if (ds0.groupSmall !== false && pairs.length > 2) {
+    const sum0 = pairs.reduce((a, p) => a + p.val, 0);
+    const small = pairs.filter(p => sum0 > 0 && p.val / sum0 < 0.03);
+    if (small.length > 0 && pairs.length - small.length >= 2) {
+      const keep = pairs.filter(p => !small.includes(p));
+      keep.push({ label: 'Autres', val: small.reduce((a, p) => a + p.val, 0), color: tokens.emphasis?.context || tokens.textMuted || '#94A3B8', isOther: true });
+      pairs.length = 0;
+      keep.forEach(p => pairs.push(p));
+      if (ds0.sorted !== false) pairs.sort((a, b) => (a.isOther ? 1 : b.isOther ? -1 : b.val - a.val));
+    }
+  }
+
   labels = pairs.map(p => p.label);
   const data = pairs.map(p => p.val);
   const total = data.reduce((a, b) => a + b, 0);
@@ -5761,7 +6117,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       // KPI
       ctx.fillStyle = tokens.textPrimary || '#0F172A';
       ctx.font = `700 18px ${tokens.fontMono || 'monospace'}`;
-      ctx.fillText(total + (ds0.unit || ' M€'), centerX, centerY - 6);
+      ctx.fillText(formatLabelValue(total) + (ds0.unit !== undefined ? ds0.unit : ''), centerX, centerY - 6);
 
       // Label
       ctx.fillStyle = tokens.textMuted || '#64748B';
@@ -5808,6 +6164,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ...defaultOpts.plugins,
         datalabels: getDataLabelOptions(tokens, {
           display: showDataLabels,
+          fontSize: 12,
           formatter: (val, ctx) => {
             if (ctx && ctx.percentText) return ctx.percentText;
             const num = typeof val === 'object' && val !== null ? (val.value ?? val.v ?? 0) : (Number(val) || 0);
@@ -5897,6 +6254,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const getContrastingTextColor = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) || (typeof window !== 'undefined' && window.getContrastingTextColor) || function() { return '#0F172A'; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
 
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -5997,6 +6355,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const inputValues = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Incidents';
 
+    // Carte étroite (< 420 px) : libellés abrégés, titres d'axes retirés, polices réduites.
+    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+    const narrow = cw > 0 && cw < 420;
+    const shortLabel = (l) => { const t = String(l); return t.length > 13 ? t.slice(0, 12).trimEnd() + '…' : t; };
     const pareto = computeParetoCumsum(inputLabels, inputValues);
     const gini = computeGini(pareto.values);
 
@@ -6021,10 +6383,54 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ctx.stroke();
 
         ctx.setLineDash([]);
-        ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
+        ctx.font = `600 ${narrow ? 10 : 11}px ${tokens.fontMono || 'monospace'}`;
         ctx.fillStyle = thresholdColor;
         ctx.textAlign = 'right';
-        ctx.fillText('Seuil 80% (Vital Few)', chartArea.right - 8, y80 - 6);
+        ctx.textBaseline = 'top';
+        // Sous le trait : au-dessus, la courbe cumulée passe sur l'étiquette
+        ctx.fillText(narrow ? 'Seuil 80 %' : 'Seuil 80% (Vital Few)', chartArea.right - 6, y80 + 4);
+        ctx.restore();
+      }
+    };
+
+    // Étiquettes de barres locales : à l'intérieur du sommet quand la barre est assez haute
+    // (la première barre coïncide toujours avec le premier point du cumul), sinon au-dessus.
+    const paretoBarLabelsPlugin = {
+      id: 'kitChartsParetoBarLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const meta = chart.getDatasetMeta(0);
+        if (!meta || meta.hidden) return;
+        const ctx = chart.ctx;
+        ctx.save();
+        ctx.font = `700 ${narrow ? 10 : 11}px ${tokens.fontMono || 'monospace'}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const fillBase = barColor;
+        meta.data.forEach((el, i) => {
+          const v = pareto.values[i];
+          if (typeof v !== 'number' || !el) return;
+          const top = Math.min(el.y, el.base), h = Math.abs(el.base - el.y);
+          const text = formatLabelValue(v);
+          const inside = h >= 26;
+          if (inside) {
+            const a = pareto.cumulativePcts[i] <= 80 ? (isDark ? 0.90 : 0.80) : (isDark ? 0.80 : 0.50);
+            const src = pareto.cumulativePcts[i] <= 80 ? fillBase : (tokens.emphasis?.context || '#CBD5E1');
+            const m = /^#?([0-9a-f]{6})$/i.exec(String(src).trim());
+            const bgm = /^#?([0-9a-f]{6})$/i.exec(String(tokens.bg || '').trim());
+            let solid = src;
+            if (m && bgm) {
+              const f = [0, 2, 4].map(k => parseInt(m[1].slice(k, k + 2), 16));
+              const b = [0, 2, 4].map(k => parseInt(bgm[1].slice(k, k + 2), 16));
+              solid = '#' + f.map((c, k) => Math.round(c * a + b[k] * (1 - a)).toString(16).padStart(2, '0')).join('');
+            }
+            ctx.fillStyle = getContrastingTextColor(solid);
+            ctx.fillText(text, el.x, top + 11);
+          } else {
+            ctx.fillStyle = tokens.textPrimary;
+            ctx.fillText(text, el.x, top - 8);
+          }
+        });
         ctx.restore();
       }
     };
@@ -6041,15 +6447,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             yAxisID: 'y',
             data: pareto.values,
             backgroundColor: pareto.cumulativePcts.map(pct =>
-              pct <= 80 ? hexToRgba(barColor, isDark ? 0.90 : 0.80) : hexToRgba(tokens.emphasis?.context || '#CBD5E1', 0.50)
+              pct <= 80 ? hexToRgba(barColor, isDark ? 0.90 : 0.80) : hexToRgba(tokens.emphasis?.context || '#CBD5E1', isDark ? 0.80 : 0.50)
             ),
             borderColor: barColor,
             borderWidth: 1.5,
             borderRadius: 4,
-            datalabels: {
-              display: showDataLabels,
-              color: tokens.textPrimary
-            },
+            pointStyle: 'rectRounded',
+            datalabels: { display: false }, // étiquettes dessinées par kitChartsParetoBarLabels
             order: 2
           },
           {
@@ -6065,7 +6469,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             pointBackgroundColor: lineColor,
             tension: 0.2,
             datalabels: {
-              display: showDataLabels,
+              // Carte étroite : les valeurs du cumul se lisent sur l'axe droit et à l'infobulle
+              display: showDataLabels && !narrow,
               align: 'top',
               anchor: 'center',
               color: lineColor,
@@ -6099,10 +6504,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           legend: {
             display: true,
             position: 'top',
-            align: 'end',
+            align: narrow ? 'start' : 'end',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+              usePointStyle: true,
+              boxWidth: narrow ? 8 : 10,
+              padding: narrow ? 8 : 10
             }
           },
           tooltip: {
@@ -6126,18 +6534,28 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             grid: { display: false },
             ticks: {
               color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 11 },
-              maxRotation: 30
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 11 },
+              maxRotation: narrow ? 90 : 30,
+              minRotation: narrow ? 90 : 0,
+              autoSkip: false,
+              callback: function(value) { const l = this.getLabelForValue(value); return narrow ? shortLabel(l) : l; }
             }
           },
           y: {
             type: 'linear',
             position: 'left',
             beginAtZero: true,
-            grace: '8%',
+            min: 0,
+            max: pareto.total, // le sommet de l'axe gauche = total : 100% du cumul y est aligné
             grid: { color: tokens.gridColor },
+            ticks: {
+              color: tokens.textSecondary,
+              font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
+              includeBounds: false,
+              maxTicksLimit: narrow ? 4 : undefined
+            },
             title: {
-              display: true,
+              display: !narrow,
               text: "Nombre d'occurrences",
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
@@ -6148,23 +6566,24 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             position: 'right',
             beginAtZero: true,
             min: 0,
-            max: 105,
+            max: 100,
             grid: { display: false },
             ticks: {
+              stepSize: narrow ? 25 : 20,
               color: lineColor,
-              font: { family: tokens.fontMono, size: 11 },
+              font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
               callback: (val) => `${val}%`
             },
             title: {
-              display: true,
-              text: 'Pourcentage cumulé',
+              display: !narrow,
+              text: `Pourcentage cumulé (Gini = ${gini})`,
               color: lineColor,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }
           }
         }
       },
-      plugins: [pareto80LinePlugin]
+      plugins: [pareto80LinePlugin, paretoBarLabelsPlugin]
     };
 
     if (typeof Chart === 'undefined') return Object.assign(config, { pareto, gini, computeParetoCumsum, computeGini });
@@ -6301,8 +6720,22 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     pairs.sort((a, b) => b.val - a.val);
   }
 
+  // Consolidation des tranches < 3% en "Autres" (règle famille 02)
+  if (ds0.groupSmall !== false && pairs.length > 2) {
+    const sum0 = pairs.reduce((a, p) => a + p.val, 0);
+    const small = pairs.filter(p => sum0 > 0 && p.val / sum0 < 0.03);
+    if (small.length > 0 && pairs.length - small.length >= 2) {
+      const keep = pairs.filter(p => !small.includes(p));
+      keep.push({ label: 'Autres', val: small.reduce((a, p) => a + p.val, 0), color: tokens.emphasis?.context || tokens.textMuted || '#94A3B8', isOther: true });
+      pairs.length = 0;
+      keep.forEach(p => pairs.push(p));
+      if (ds0.sorted !== false) pairs.sort((a, b) => (a.isOther ? 1 : b.isOther ? -1 : b.val - a.val));
+    }
+  }
+
   labels = pairs.map(p => p.label);
   const data = pairs.map(p => p.val);
+  const total = data.reduce((a, b) => a + b, 0);
   const bgColors = pairs.map((p, i) => p.color || getColor(tokens, i));
 
   const defaultOpts = getChartDefaultOptions(tokens);
@@ -6338,9 +6771,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       plugins: {
         datalabels: getDataLabelOptions(tokens, {
           display: showDataLabels,
+          fontSize: 12,
           formatter: (val) => {
-            const num = typeof val === 'object' && val !== null ? (val.value ?? val.v ?? 0) : val;
-            return `${num}%`;
+            const num = typeof val === 'object' && val !== null ? (val.value ?? val.v ?? 0) : (Number(val) || 0);
+            return total > 0 ? `${Math.round((num / total) * 100)}%` : '';
           }
         }),
         legend: {
@@ -6365,7 +6799,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           callbacks: {
             label: (ctx) => {
               const val = ctx.parsed;
-              return ` ${ctx.label} : ${val} %`;
+              const pct = total > 0 ? ((val / total) * 100).toFixed(1) : 0;
+              return ` ${ctx.label} : ${val} (${pct}%)`;
             }
           }
         }
@@ -6448,9 +6883,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 const DEFAULT_DATA = {
   labels: ['Équipe A', 'Équipe B', 'Équipe C', 'Équipe D'],
   datasets: [
-    { label: 'Succès', data: [75, 60, 82, 90] },
-    { label: 'En cours', data: [15, 25, 10, 5] },
-    { label: 'Échec', data: [10, 15, 8, 5] }
+    { label: 'Succès', data: [75, 60, 82, 90], valence: 1 },
+    { label: 'En cours', data: [15, 25, 10, 5], valence: 0 },
+    { label: 'Échec', data: [10, 15, 8, 5], valence: -1 }
   ]
 };
 
@@ -6486,7 +6921,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // Préparation des données avec support d'accentuation et de valence
   const rawData = customData || DEFAULT_DATA;
   const labels = rawData.labels ? [...rawData.labels] : [];
-  const datasets = (rawData.datasets || []).map((ds, idx) => {
+  // Normalisation 100% : chaque catégorie est ramenée à sa somme (valeurs brutes conservées pour l'infobulle)
+  const srcDatasets = rawData.datasets || [];
+  const numOf = (v) => {
+    const n = typeof v === 'object' && v !== null ? (v.value ?? v.y ?? v.v ?? 0) : v;
+    return Number(n) || 0;
+  };
+  const colTotals = labels.map((_, i) => srcDatasets.reduce((acc, d) => acc + numOf((d.data || [])[i]), 0));
+  const datasets = srcDatasets.map((ds, idx) => {
     const primaryColor = getColor(tokens, idx);
 
     let bgColors = ds.backgroundColor;
@@ -6511,7 +6953,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     return {
       label: ds.label || `Segment ${idx + 1}`,
-      data: Array.isArray(ds.data) ? [...ds.data] : [],
+      data: Array.isArray(ds.data) ? ds.data.map((v, i) => (colTotals[i] > 0 ? (numOf(v) / colTotals[i]) * 100 : 0)) : [],
+      rawValues: Array.isArray(ds.data) ? ds.data.map(numOf) : [],
       backgroundColor: bgColors,
       borderColor: borderColors,
       borderWidth: typeof borderWidths === 'number' ? borderWidths : 0,
@@ -6524,11 +6967,74 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   const chartData = { labels, datasets };
 
+  // Segments trop petits pour porter leur étiquette (part < 5 % ou hauteur < 16 px, mêmes seuils
+  // que le plugin commun) : la part est posée à droite de la barre, dans l'espace entre barres.
+  const smallSegmentLabelsPlugin = {
+    id: 'kitChartsSmallSegmentLabels',
+    afterDatasetsDraw(chart) {
+      if (!showDataLabels || chart.options?.showDataLabels === false) return;
+      // Carte étroite : pas de place entre les barres, les parts se lisent à l'infobulle.
+      if (chart.width < 420) return;
+      const ctx = chart.ctx;
+      const fs = 10;
+      ctx.save();
+      ctx.font = `600 ${fs}px ${tokens.fontMono || 'monospace'}`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      const ref = chart.getDatasetMeta(0);
+      const count = ref && ref.data ? ref.data.length : 0;
+      for (let i = 0; i < count; i++) {
+        const items = [];
+        chart.data.datasets.forEach((ds, di) => {
+          const meta = chart.getDatasetMeta(di);
+          if (!meta || meta.hidden) return;
+          const el = meta.data[i];
+          const v = ds.data[i];
+          if (!el || !(v > 0)) return;
+          const p = el.getProps ? el.getProps(['x', 'y', 'base', 'width'], true) : el;
+          const segH = Math.abs(p.base - p.y);
+          if (v / 100 >= 0.05 && segH >= 16) return; // déjà étiqueté dans le segment
+          const color = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
+          if (segH >= 11) {
+            // Segment bas mais lisible : part à l'intérieur, en police réduite
+            const contrast = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) ? KitChartsTheme.getContrastingTextColor(color) : '#0F172A';
+            ctx.save();
+            ctx.font = `600 9px ${tokens.fontMono || 'monospace'}`;
+            ctx.textAlign = 'center';
+            ctx.fillStyle = contrast;
+            ctx.fillText(`${Math.round(v)}%`, p.x, (p.y + p.base) / 2);
+            ctx.restore();
+            return;
+          }
+          items.push({ y: (p.y + p.base) / 2, text: `${Math.round(v)}%`, color: color, x: p.x, w: p.width || 0, el: ref.data[i] });
+        });
+        if (!items.length) continue;
+        items.sort((a, b) => a.y - b.y);
+        for (let k = 1; k < items.length; k++) if (items[k].y - items[k - 1].y < 12) items[k].y = items[k - 1].y + 12;
+        const first = items[0];
+        const left = first.x + first.w / 2 + 4;
+        const nextEl = ref.data[i + 1];
+        const limit = nextEl ? (nextEl.x - (nextEl.width || 0) / 2) : chart.chartArea.right;
+        items.forEach((it) => {
+          const tw = ctx.measureText(it.text).width;
+          if (limit - left < tw + 10) return;
+          // Pastille de la couleur du segment : lie l'étiquette à sa série malgré le décalage
+          ctx.fillStyle = it.color || '#999';
+          ctx.fillRect(left, it.y - 3, 6, 6);
+          ctx.fillStyle = tokens.textPrimary || '#0F172A';
+          ctx.fillText(it.text, left + 9, it.y);
+        });
+      }
+      ctx.restore();
+    }
+  };
+
   // Options Chart.js v4+ avec empilement 100% et capture Fitts 1D
   const defaultOpts = getChartDefaultOptions(tokens);
   const config = {
     type: 'bar',
     data: chartData,
+    plugins: [smallSegmentLabelsPlugin],
     options: {
       ...defaultOpts,
       animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
@@ -6549,9 +7055,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ...defaultOpts.plugins,
         datalabels: getDataLabelOptions(tokens, {
           display: showDataLabels,
+          isPercent: true, // lu par le plugin de labels (les fonctions d'options sont résolues comme scriptables par Chart.js)
           formatter: (val) => {
-            const num = typeof val === 'object' && val !== null ? (val.value ?? val.y ?? val.v ?? 0) : val;
-            return `${num}%`;
+            const num = typeof val === 'object' && val !== null ? (val.value ?? val.y ?? val.v ?? 0) : Number(val);
+            return `${Math.round(num)}%`;
           }
         }),
         legend: {
@@ -6586,7 +7093,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               const formatted = typeof val === 'number'
                 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val)
                 : val;
-              return ` ${context.dataset.label || ''}: ${formatted}%`;
+              const rv = context.dataset.rawValues && context.dataset.rawValues[context.dataIndex];
+              const rawTxt = (typeof rv === 'number' && Math.abs(rv - val) > 0.05)
+                ? ` (valeur : ${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(rv)})`
+                : '';
+              return ` ${context.dataset.label || ''}: ${formatted}%${rawTxt}`;
             }
           }
         }
@@ -6763,8 +7274,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const labels = rawData.labels;
     const rawDatasets = rawData.datasets;
 
+    // Carte étroite (< 420 px) : seuls les totaux sont étiquetés, polices et légende réduites.
+    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+    const narrow = cw > 0 && cw < 420;
     const totals = computeStackedTotals(rawDatasets);
-    const totalColor = tokens.emphasis?.focal || (isDark ? '#ECEFF4' : '#0F172A');
+    // Couleur neutre contrastée, distincte de toute série empilée
+    const totalColor = tokens.textPrimary || (isDark ? '#ECEFF4' : '#0F172A');
 
     const processedDatasets = rawDatasets.map((ds, idx) => {
       const color = getColor(tokens, idx);
@@ -6776,8 +7291,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         borderColor: color,
         borderWidth: 1,
         stack: 'totalStack',
+        pointStyle: 'rect',
         datalabels: {
-          display: showDataLabels
+          display: showDataLabels && !narrow
         },
         order: 2
       };
@@ -6793,17 +7309,33 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       pointRadius: 5,
       pointHoverRadius: 7,
       pointBackgroundColor: totalColor,
-      tension: 0.25,
+      tension: 0,
+      pointStyle: 'circle',
       datalabels: {
-        display: showDataLabels,
-        align: 'top',
-        anchor: 'center',
-        color: totalColor,
-        font: { weight: '700', size: 10 },
-        formatter: (v) => formatLabelValue(v)
+        display: false // étiquettes du total tracées par totalLabelsPlugin (au-dessus du point)
       },
       order: 1
     });
+
+    const totalLabelsPlugin = {
+      id: 'kitChartsTotalLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const meta = chart.getDatasetMeta(chart.data.datasets.length - 1);
+        if (!meta || !meta.data) return;
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        ctx.font = `700 ${narrow ? 10 : 12}px ${tokens.fontMono || 'monospace'}`;
+        ctx.fillStyle = totalColor;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        meta.data.forEach((pt, i) => {
+          if (!pt || totals[i] === undefined) return;
+          ctx.fillText(formatLabelValue(totals[i]), pt.x, Math.max(chartArea.top + 12, pt.y - 9));
+        });
+        ctx.restore();
+      }
+    };
 
     const defaultOpts = getChartDefaultOptions(tokens);
     const config = {
@@ -6824,16 +7356,19 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         plugins: {
           ...defaultOpts.plugins,
           datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
+            display: showDataLabels && !narrow,
             formatter: (v) => formatLabelValue(v)
           }),
           legend: {
             display: true,
             position: 'top',
-            align: 'end',
+            align: narrow ? 'start' : 'end',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+              usePointStyle: true,
+              boxWidth: narrow ? 8 : 10,
+              padding: narrow ? 8 : 10
             }
           },
           tooltip: {
@@ -6851,7 +7386,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           x: {
             ...defaultOpts.scales.x,
             stacked: true,
-            grid: { display: false }
+            grid: { display: false },
+            ticks: {
+              ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
+              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+              maxRotation: narrow ? 0 : 50,
+              autoSkip: false,
+              callback: function(value) { const l = String(this.getLabelForValue(value)); return narrow ? l.replace(/ 20(\d\d)$/, ' $1') : l; }
+            }
           },
           y: {
             ...defaultOpts.scales.y,
@@ -6859,15 +7401,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             beginAtZero: true,
             grace: '10%',
             grid: { color: tokens.gridColor },
+            ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 }, maxTicksLimit: narrow ? 5 : undefined },
             title: {
-              display: true,
+              display: !narrow,
               text: 'Revenu (k€)',
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }
           }
         }
-      }
+      },
+      plugins: [totalLabelsPlugin]
     };
 
     if (typeof Chart === 'undefined') return { config, totals, computeStackedTotals };
@@ -6929,19 +7473,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
  * Données par défaut représentatives (Répartition géographique hiérarchique : Régions > Sous-régions)
  */
 const DEFAULT_DATA = {
+  // Niveau 0 (racine, centre) : 4 régions
   labels: ['Europe', 'Amériques', 'Asie-Pacifique', 'Afrique & ME'],
   datasets: [
-    // Anneau intérieur (Niveau 1 : Régions Macro)
     {
       label: 'Régions',
       data: [40, 30, 20, 10],
       weight: 1
     },
-    // Anneau extérieur (Niveau 2 : Sous-régions)
+    // Niveau 1 (anneau extérieur) : sous-régions, regroupées par parent dans l'ordre
     {
       label: 'Sous-Régions',
+      labels: ['Europe de l\'Ouest', 'Europe du Nord', 'Amérique du Nord', 'Amérique latine', 'Asie de l\'Est', 'Asie du Sud-Est', 'Moyen-Orient', 'Afrique'],
       data: [20, 20, 15, 15, 12, 8, 6, 4],
-      weight: 1.8
+      weight: 1.4
     }
   ]
 };
@@ -6975,39 +7520,159 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const isTufte = tokens.name === 'tufte-minimalist-executive';
   const showDataLabels = (customData && customData.showDataLabels !== undefined) ? customData.showDataLabels : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
-  // Préparation des données avec support d'accentuation
+  // Préparation des données : datasets[0] = racine (centre), datasets[i] = niveau i vers l'extérieur.
+  // Chart.js dessine le dataset 0 le plus à l'extérieur : l'ordre est donc inversé au tracé.
   const rawData = customData || DEFAULT_DATA;
-  const labels = rawData.labels ? [...rawData.labels] : [];
-  const datasets = (rawData.datasets || []).map((ds, levelIdx) => {
-    const dataLen = Array.isArray(ds.data) ? ds.data.length : 1;
-    let bgColors = ds.backgroundColor;
-
-    if (!bgColors || Array.isArray(ds.emphasisRoles) || Array.isArray(ds.roles) || Array.isArray(ds.valences) || ds.focusIndex !== undefined) {
-      if (Array.isArray(ds.emphasisRoles) || Array.isArray(ds.roles)) {
-        const roles = ds.emphasisRoles || ds.roles;
-        bgColors = roles.map((r, i) => getEmphasisStyle(tokens, r).backgroundColor || getColor(tokens, (levelIdx * 4 + i) % tokens.palette.length));
-      } else if (Array.isArray(ds.valences)) {
-        const metricType = ds.metricType || 'gain';
-        bgColors = ds.valences.map(v => getValenceColor(tokens, v, metricType));
-      } else if (ds.focusIndex !== undefined) {
-        bgColors = Array.from({ length: dataLen }, (_, i) =>
-          i === ds.focusIndex ? (tokens.emphasis?.focal || getColor(tokens, 0)) : (tokens.emphasis?.context || tokens.textMuted || '#CBD5E1')
-        );
-      } else if (!Array.isArray(bgColors)) {
-        bgColors = Array.from({ length: dataLen }, (_, i) => getColor(tokens, (levelIdx * 4 + i) % tokens.palette.length));
-      }
-    }
-
-    return {
-      label: ds.label || `Niveau ${levelIdx + 1}`,
-      data: Array.isArray(ds.data) ? [...ds.data] : [],
-      backgroundColor: bgColors,
-      borderColor: tokens.bg,
-      borderWidth: isTufte ? 1 : 2,
-      weight: ds.weight !== undefined ? ds.weight : (levelIdx === 0 ? 1 : 1.5)
-    };
+  const rootLabels = rawData.labels ? [...rawData.labels] : [];
+  const levels = (rawData.datasets || []).map((ds, levelIdx) => {
+    const data = Array.isArray(ds.data) ? ds.data.map(v => (typeof v === 'object' && v !== null ? (v.value ?? v.v ?? 0) : Number(v) || 0)) : [];
+    const lbls = Array.isArray(ds.labels) ? [...ds.labels] : (levelIdx === 0 ? rootLabels : data.map((_, i) => `${ds.label || 'Niveau ' + (levelIdx + 1)} ${i + 1}`));
+    return { ds, data, labels: lbls, levelIdx };
   });
 
+  const hexToRgb = (hex) => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  const mixHex = (a, b, t) => {
+    const ca = hexToRgb(a), cb = hexToRgb(b);
+    if (!ca || !cb) return a;
+    const c = ca.map((v, i) => Math.round(v + (cb[i] - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
+  const contrastText = (bg) => {
+    const f = KitChartsTheme && KitChartsTheme.getContrastingTextColor;
+    if (f) return f(bg, '#FFFFFF', '#0F172A');
+    const c = hexToRgb(bg);
+    if (!c) return '#0F172A';
+    const l = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    return l < 140 ? '#FFFFFF' : '#0F172A';
+  };
+
+  // Parent de chaque arc : celui dont l'intervalle angulaire contient le milieu de l'arc.
+  const startsOf = (arr) => { let acc = 0; return arr.map(v => { const s = acc; acc += v; return [s, acc]; }); };
+  const levelColors = [];
+  levels.forEach((lv, levelIdx) => {
+    const { ds, data } = lv;
+    let colors;
+    if (Array.isArray(ds.backgroundColor)) {
+      colors = [...ds.backgroundColor];
+    } else if (levelIdx === 0) {
+      if (Array.isArray(ds.emphasisRoles) || Array.isArray(ds.roles)) {
+        const roles = ds.emphasisRoles || ds.roles;
+        colors = roles.map((r, i) => getEmphasisStyle(tokens, r).backgroundColor || getColor(tokens, i));
+      } else if (Array.isArray(ds.valences)) {
+        const metricType = ds.metricType || 'gain';
+        colors = ds.valences.map(v => getValenceColor(tokens, v, metricType));
+      } else if (ds.focusIndex !== undefined) {
+        colors = data.map((_, i) => i === ds.focusIndex ? (tokens.emphasis?.focal || getColor(tokens, 0)) : (tokens.emphasis?.context || tokens.textMuted || '#CBD5E1'));
+      } else {
+        colors = data.map((_, i) => getColor(tokens, i));
+      }
+    } else {
+      // Teinte héritée du parent, luminosité variable selon le rang parmi les frères.
+      const parentIv = startsOf(levels[levelIdx - 1].data);
+      const iv = startsOf(data);
+      const siblingCount = {};
+      const parentOf = iv.map(([s, e]) => {
+        const mid = (s + e) / 2;
+        const p = parentIv.findIndex(([ps, pe]) => mid >= ps && mid < pe);
+        return p < 0 ? parentIv.length - 1 : p;
+      });
+      parentOf.forEach(p => { siblingCount[p] = (siblingCount[p] || 0) + 1; });
+      const seen = {};
+      colors = parentOf.map((p) => {
+        const base = levelColors[levelIdx - 1][p] || getColor(tokens, p);
+        const k = seen[p] || 0; seen[p] = k + 1;
+        const n = siblingCount[p];
+        const t = n > 1 ? 0.18 + 0.32 * (k / (n - 1)) : 0.25;
+        return mixHex(base, tokens.isDark ? '#000000' : '#FFFFFF', t * (tokens.isDark ? 0.8 : 1));
+      });
+    }
+    levelColors.push(colors);
+  });
+
+  const total = levels[0] ? levels[0].data.reduce((a, b) => a + b, 0) : 0;
+  const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+  const narrow = cw > 0 && cw < 420;
+
+  // Étiquettes d'arcs locales : anneau extérieur = nom (sur 1 ou 2 lignes) + part quand l'arc est
+  // assez grand, sinon la part seule ; anneaux intérieurs = part seule (noms en légende).
+  const sunburstLabelsPlugin = {
+    id: 'kitChartsSunburstLabels',
+    afterDatasetsDraw(chart) {
+      if (!showDataLabels || chart.options?.showDataLabels === false) return;
+      const ctx = chart.ctx;
+      const fs = narrow ? 9 : 11;
+      const lh = fs + 2;
+      const nDs = chart.data.datasets.length;
+      ctx.save();
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        if (!meta || meta.hidden) return;
+        const isOuter = di === 0 && nDs > 1;
+        (meta.data || []).forEach((arc, i) => {
+          const v = ds.data[i];
+          if (!arc || !(v > 0)) return;
+          const p = arc.getProps(['x', 'y', 'startAngle', 'endAngle', 'innerRadius', 'outerRadius'], true);
+          const mid = (p.startAngle + p.endAngle) / 2;
+          const rMid = (p.innerRadius + p.outerRadius) / 2;
+          const thick = p.outerRadius - p.innerRadius;
+          const arcLen = rMid * (p.endAngle - p.startAngle);
+          const cx = p.x + Math.cos(mid) * rMid, cy = p.y + Math.sin(mid) * rMid;
+          const pct = total > 0 ? `${Math.round((v / total) * 100)}%` : '';
+          const name = String((ds.kcLabels || [])[i] || '');
+          const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
+          const wrapName = (maxW) => {
+            const lines = []; let cur = '';
+            name.split(/\s+/).forEach((w) => {
+              const t = cur ? cur + ' ' + w : w;
+              if (cur && ctx.measureText(t).width > maxW) { lines.push(cur); cur = w; } else cur = t;
+            });
+            if (cur) lines.push(cur);
+            return lines;
+          };
+          const fits = (lines) => {
+            const w = Math.max(...lines.map(l => ctx.measureText(l).width));
+            const h = lines.length * lh;
+            const c = Math.abs(Math.cos(mid)), sn = Math.abs(Math.sin(mid));
+            const radial = c * w + sn * h;
+            const tang = sn * w + c * h;
+            return radial <= thick - 3 && tang <= arcLen - 3;
+          };
+          ctx.font = `600 ${fs}px ${tokens.fontFamily || 'sans-serif'}`;
+          let lines = null;
+          if (isOuter && name) {
+            const cand = wrapName(Math.max(30, thick * 1.1));
+            if (cand.length <= 2 && fits(cand.concat(pct ? [pct] : []))) lines = cand.concat(pct ? [pct] : []);
+            else if (cand.length <= 3 && fits(cand)) lines = cand;
+          }
+          if (!lines && pct && fits([pct])) lines = [pct];
+          if (!lines) return;
+          ctx.fillStyle = contrastText(bg);
+          const top = cy - ((lines.length - 1) * lh) / 2;
+          lines.forEach((l, k) => ctx.fillText(l, cx, top + k * lh));
+        });
+      });
+      ctx.restore();
+    }
+  };
+  const datasets = levels.map((lv) => ({
+    label: lv.ds.label || `Niveau ${lv.levelIdx + 1}`,
+    data: lv.data,
+    kcLabels: lv.labels,
+    backgroundColor: levelColors[lv.levelIdx],
+    borderColor: tokens.bg,
+    borderWidth: isTufte ? 1 : 2,
+    weight: lv.ds.weight !== undefined ? lv.ds.weight : 1
+  })).reverse();
+
+  // Les labels globaux suivent le dataset le plus externe (arcs les plus nombreux).
+  const labels = datasets.length ? datasets[0].kcLabels : [];
   const chartData = { labels, datasets };
 
   // Options Chart.js v4+ avec capture de partition multi-niveaux
@@ -7015,10 +7680,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'doughnut',
     data: chartData,
+    plugins: [sunburstLabelsPlugin],
     options: {
-      scales: {},
       ...defaultOpts,
-      cutout: '35%', // Cavité centrale modérée pour structure multi-anneaux
+      scales: {}, // AUCUN AXE CARTÉSIEN (après defaultOpts pour ne pas être écrasé)
+      cutout: 0, // Pas de trou central : la racine est le disque le plus interne
       rotation: -90, // Départ à 12h
       animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
       interaction: {
@@ -7033,18 +7699,32 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         ...defaultOpts.plugins,
-        datalabels: getDataLabelOptions(tokens, {
-          display: showDataLabels,
-          formatter: (val) => {
-            const num = typeof val === 'object' && val !== null ? (val.value ?? val.v ?? 0) : val;
-            return `${num}%`;
-          }
-        }),
+        // Étiquettes dessinées par kitChartsSunburstLabels (nom + part selon la place disponible)
+        datalabels: getDataLabelOptions(tokens, { display: () => false }),
         legend: {
           ...defaultOpts.plugins.legend,
           display: !isTufte,
           position: 'right',
-          align: 'center'
+          align: 'center',
+          labels: {
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: narrow ? 11 : 12, weight: '500' },
+            boxWidth: narrow ? 8 : 12,
+            padding: narrow ? 8 : 12,
+            usePointStyle: true,
+            pointStyle: 'circle',
+            // Légende = niveau racine uniquement (les sous-niveaux héritent de sa teinte)
+            generateLabels: () => (levels[0] ? levels[0].labels : []).map((name, i) => ({
+              text: name,
+              fillStyle: levelColors[0][i],
+              strokeStyle: levelColors[0][i],
+              fontColor: tokens.textPrimary,
+              pointStyle: 'circle',
+              hidden: false,
+              index: i
+            }))
+          },
+          onClick: () => {}
         },
         tooltip: {
           ...defaultOpts.plugins.tooltip,
@@ -7054,14 +7734,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           bodyFont: { family: tokens.fontMono || 'monospace', size: 12, weight: '400' },
           animation: (isTufte || isReducedMotionPreferred()) ? false : { duration: 150, easing: 'easeOutQuad' },
           callbacks: {
+            title: (items) => {
+              const it = items && items[0];
+              if (!it) return '';
+              const names = it.dataset.kcLabels || [];
+              return names[it.dataIndex] || '';
+            },
             label: (context) => {
-              const val = context.parsed !== null && context.parsed !== undefined
-                ? context.parsed
-                : context.raw;
-              const formatted = typeof val === 'number'
-                ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val)
-                : val;
-              return ` ${context.dataset.label || ''} (${context.label || ''}): ${formatted}%`;
+              const val = Number(context.parsed !== null && context.parsed !== undefined ? context.parsed : context.raw) || 0;
+              const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val);
+              const pct = total > 0 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format((val / total) * 100) : '0';
+              return ` ${context.dataset.label || ''} : ${formatted} (${pct}% du total)`;
             }
           }
         }
@@ -7199,24 +7882,66 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   // Préparation des données
   const rawData = customData || DEFAULT_DATA;
+  const firstDs = (rawData.datasets || [])[0] || {};
+  const valueKey = firstDs.key || 'value';
+  const ctx0Total = (firstDs.tree || firstDs.data || []).reduce((a, it) => a + (Number(it && it[valueKey]) || 0), 0);
+  const unitTxt = firstDs.unit ? ` ${firstDs.unit}` : '';
   const datasets = (rawData.datasets || []).map((ds, idx) => {
-    // Détermination de la couleur de fond par élément ou groupe avec support de l'accentuation et de la valence
-    const bgFn = typeof ds.backgroundColor === 'function'
-      ? ds.backgroundColor
-      : (ctx) => {
-          const raw = ctx.raw;
-          const item = raw ? (raw._data || raw) : null;
-          if (item) {
-            if (item.emphasisRole || item.role) {
-              return getEmphasisStyle(tokens, item.emphasisRole || item.role).backgroundColor || getColor(tokens, 0);
-            }
-            if (item.valence !== undefined || item.direction !== undefined) {
-              return getValenceColor(tokens, item.valence !== undefined ? item.valence : item.direction, item.metricType || 'gain');
-            }
-          }
-          const itemIndex = ctx.dataIndex !== undefined ? ctx.dataIndex : 0;
-          return getColor(tokens, itemIndex);
-        };
+    // Couleur par groupe parent (teinte héritée), luminosité variable pour les feuilles
+    const treeItems = ds.tree || ds.data || [];
+    const groupKey = (ds.groups && ds.groups[0]) || 'category';
+    const groupNames = [];
+    treeItems.forEach(it => { if (it && !groupNames.includes(it[groupKey])) groupNames.push(it[groupKey]); });
+    const leafRank = {};
+    const leafCount = {};
+    treeItems.forEach(it => { if (it) leafCount[it[groupKey]] = (leafCount[it[groupKey]] || 0) + 1; });
+    const seenLeaf = {};
+    treeItems.forEach(it => {
+      if (!it) return;
+      const g = it[groupKey];
+      leafRank[g + '\u0000' + (it.name || '')] = seenLeaf[g] || 0;
+      seenLeaf[g] = (seenLeaf[g] || 0) + 1;
+    });
+    const hexToRgb = (hex) => {
+      const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim());
+      if (!m) return null;
+      const n = parseInt(m[1], 16);
+      return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+    };
+    const mixHex = (a, b, t) => {
+      const ca = hexToRgb(a), cb = hexToRgb(b);
+      if (!ca || !cb) return a;
+      return '#' + ca.map((v, i) => Math.round(v + (cb[i] - v) * t).toString(16).padStart(2, '0')).join('');
+    };
+    const cellColor = (ctx) => {
+      const raw = ctx.raw;
+      const item = raw ? (raw._data || raw) : null;
+      if (item) {
+        if (item.emphasisRole || item.role) {
+          return getEmphasisStyle(tokens, item.emphasisRole || item.role).backgroundColor || getColor(tokens, 0);
+        }
+        if (item.valence !== undefined || item.direction !== undefined) {
+          return getValenceColor(tokens, item.valence !== undefined ? item.valence : item.direction, item.metricType || 'gain');
+        }
+      }
+      const isLeaf = raw && raw.l !== undefined ? raw.l >= 1 : true;
+      const gName = isLeaf ? (item && item[groupKey]) : (raw && raw.g);
+      let gi = groupNames.indexOf(gName);
+      if (gi < 0) gi = ctx.dataIndex !== undefined ? ctx.dataIndex : 0;
+      const base = getColor(tokens, gi);
+      if (!isLeaf) return base;
+      const n = leafCount[gName] || 1;
+      const k = leafRank[gName + '\u0000' + ((item && item.name) || '')] || 0;
+      const t = n > 1 ? 0.12 + 0.38 * (k / (n - 1)) : 0.2;
+      return mixHex(base, tokens.isDark ? '#000000' : '#FFFFFF', tokens.isDark ? t * 0.7 : t);
+    };
+    const textOn = (bg) => {
+      const f = KitChartsTheme && KitChartsTheme.getContrastingTextColor;
+      if (f) return f(bg, '#FFFFFF', '#0F172A');
+      const c = hexToRgb(bg);
+      return c && (0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]) < 140 ? '#FFFFFF' : '#0F172A';
+    };
+    const bgFn = typeof ds.backgroundColor === 'function' ? ds.backgroundColor : cellColor;
 
     return {
       tree: ds.tree || ds.data || [],
@@ -7239,16 +7964,18 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           const val = raw.v !== undefined ? raw.v : (item.value || '');
           return val ? `${name} (${val})` : name;
         },
-        color: (ctx) => {
-          // Contraste de texte adaptatif
-          return tokens.isDark ? '#ECEFF4' : '#FFFFFF';
-        },
+        color: (ctx) => textOn(bgFn(ctx)),
         font: {
           family: tokens.fontFamily,
           size: 11,
           weight: '600'
         },
         padding: 4
+      },
+      captions: {
+        display: true,
+        color: (ctx) => textOn(bgFn(ctx)),
+        font: { family: tokens.fontFamily, size: 12, weight: '700' }
       }
     };
   });
@@ -7300,7 +8027,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               const formatted = typeof val === 'number'
                 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val)
                 : val;
-              return ` Valeur : ${formatted} Mds €`;
+              const tot = ctx0Total;
+              const part = (typeof val === 'number' && tot > 0) ? ` (${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format((val / tot) * 100)}% du total)` : '';
+              return ` Valeur : ${formatted}${unitTxt}${part}`;
             }
           }
         }
@@ -7397,7 +8126,7 @@ function generateWaffleData(percentage = 68) {
   const clamped = Math.max(0, Math.min(100, Math.round(percentage)));
   return Array.from({ length: 100 }, (_, i) => ({
     x: (i % 10) + 1,
-    y: Math.floor(i / 10) + 1,
+    y: 10 - Math.floor(i / 10), // remplissage de bas en haut, ligne par ligne
     v: i < clamped ? 1 : 0
   }));
 }
@@ -7442,7 +8171,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const isTufte = tokens.name === 'tufte-minimalist-executive';
   const showDataLabels = (customData && customData.showDataLabels !== undefined) ? customData.showDataLabels : (options.showDataLabels !== undefined ? options.showDataLabels : true);
   const primaryColor = getColor(tokens, 0);
-  const inactiveColor = isDark ? 'rgba(236, 239, 244, 0.12)' : 'rgba(15, 23, 42, 0.08)';
+  const inactiveColor = isDark ? 'rgba(236, 239, 244, 0.22)' : 'rgba(15, 23, 42, 0.38)'; // cellules vides : >= 2:1 sur fond clair
 
   // Préparation des données avec support d'accentuation et de valence
   const rawData = customData || DEFAULT_DATA;
@@ -7469,15 +8198,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     return {
       label: ds.label || 'Progression (%)',
       data: data,
+      // Cellules carrées : la zone de tracé est rendue carrée par waffleSquarePlugin
       width: ({ chart }) => {
         const area = chart.chartArea || {};
-        const w = (area.right - area.left) || 300;
-        return Math.max(12, Math.floor(w / 11) - 3);
+        const side = Math.min((area.right - area.left) || 300, (area.bottom - area.top) || 300);
+        return Math.max(8, Math.floor(side / 10) - 3);
       },
       height: ({ chart }) => {
         const area = chart.chartArea || {};
-        const h = (area.bottom - area.top) || 300;
-        return Math.max(12, Math.floor(h / 11) - 3);
+        const side = Math.min((area.right - area.left) || 300, (area.bottom - area.top) || 300);
+        return Math.max(8, Math.floor(side / 10) - 3);
       },
       backgroundColor: (c) => {
         const raw = c.raw || (c.dataset?.data?.[c.dataIndex]);
@@ -7491,6 +8221,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   });
 
   const chartData = { datasets };
+
+  const bottomReserve = showDataLabels ? 25 : 5;
+  const waffleSquarePlugin = {
+    id: 'waffleSquarePlugin_' + Math.random().toString(36).substring(2, 7),
+    beforeLayout(chart) {
+      const side = Math.max(60, Math.min(chart.width, chart.height - bottomReserve));
+      const padX = Math.max(0, Math.floor((chart.width - side) / 2));
+      const pad = chart.options.layout && chart.options.layout.padding;
+      if (pad && typeof pad === 'object') {
+        pad.left = padX;
+        pad.right = padX;
+      }
+    }
+  };
 
   const waffleSummaryPlugin = {
     id: 'waffleSummaryPlugin_' + Math.random().toString(36).substring(2, 7),
@@ -7519,11 +8263,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'matrix',
     data: chartData,
-    plugins: [waffleSummaryPlugin],
+    plugins: [waffleSquarePlugin, waffleSummaryPlugin],
     options: {
       ...defaultOpts,
       layout: {
-        padding: { bottom: showDataLabels ? 25 : 5 }
+        padding: { left: 0, right: 0, top: 0, bottom: showDataLabels ? 25 : 5 }
       },
       animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
       interaction: {
@@ -7561,11 +8305,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       scales: {
         x: {
           display: false,
+          offset: false,
           min: 0.5,
           max: 10.5
         },
         y: {
           display: false,
+          offset: false,
           min: 0.5,
           max: 10.5
         }
@@ -7728,6 +8474,7 @@ const DEFAULT_DATA = (() => {
 
   return {
     categories: ['Design Système A', 'Design Système B', 'Design Système C'],
+    yLabel: "Score d'utilisabilité (SUS)",
     datasets: [
       {
         label: 'Design Système A',
@@ -7753,6 +8500,20 @@ const DEFAULT_DATA = (() => {
  * @param {string} [themeName='colorbrewer-accessible'] - Identifiant du thème cognitif
  * @returns {Object} Instance Chart.js initialisée
  */
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
+
 function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
   const canvas = typeof canvasTarget === 'string'
     ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -7884,7 +8645,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ...defaultOpts.plugins,
         legend: {
           ...defaultOpts.plugins?.legend,
-          display: datasets.length > 1 && !isTufte
+          display: datasets.length > 1 && !isTufte && datasets.length !== categories.length
         },
         tooltip: {
           ...defaultOpts.plugins?.tooltip,
@@ -7920,11 +8681,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           type: 'linear',
           min: 0.4,
           max: (categories.length || datasets.length) + 0.6,
-          grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
-            drawBorder: false
-          },
+          grid: { display: false },
           border: { display: false },
           ticks: {
             stepSize: 1,
@@ -7935,13 +8692,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
               size: 11
             },
             padding: 8,
-            callback: (val) => {
+            maxRotation: 0,
+            minRotation: 0,
+            autoSkip: false,
+            callback: function(val) {
               const idx = Math.round(val) - 1;
-              return categories[idx] || '';
+              const n = Math.max(1, categories.length || datasets.length);
+              return wrapCategoryLabel(categories[idx] || '', (this.chart.width - 70) / n - 6, 11);
             }
           }
         },
         y: {
+          title: {
+            display: !!rawData.yLabel,
+            text: rawData.yLabel || '',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -8079,13 +8846,27 @@ const DEFAULT_DATA = {
   datasets: [{
     label: 'Biomarqueur (mg/dL)',
     data: [
-      { min: 12, q1: 18, median: 24, q3: 31, max: 42, outliers: [48] },
+      { min: 12, q1: 18, median: 24, q3: 31, max: 42, outliers: [58] },
       { min: 19, q1: 28, median: 36, q3: 44, max: 55, outliers: [] },
-      { min: 22, q1: 34, median: 42, q3: 50, max: 62, outliers: [14, 68] },
+      { min: 22, q1: 34, median: 42, q3: 50, max: 62, outliers: [4, 80] },
       { min: 10, q1: 16, median: 22, q3: 29, max: 38, outliers: [] }
     ]
   }]
 };
+
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
 
 function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
   const canvas = typeof canvasTarget === 'string'
@@ -8106,9 +8887,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const rawData = customData || DEFAULT_DATA;
   const labels = rawData.labels || ['Groupe 1', 'Groupe 2', 'Groupe 3', 'Groupe 4'];
   const rawBoxData = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data) || [
-    { min: 12, q1: 18, median: 24, q3: 31, max: 42, outliers: [48] },
+    { min: 12, q1: 18, median: 24, q3: 31, max: 42, outliers: [58] },
     { min: 19, q1: 28, median: 36, q3: 44, max: 55, outliers: [] },
-    { min: 22, q1: 34, median: 42, q3: 50, max: 62, outliers: [14, 68] },
+    { min: 22, q1: 34, median: 42, q3: 50, max: 62, outliers: [4, 80] },
     { min: 10, q1: 16, median: 22, q3: 29, max: 38, outliers: [] }
   ];
   const boxStats = rawBoxData.map(d => Array.isArray(d) ? computeTukeyBoxplotStats(d) : d);
@@ -8181,7 +8962,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ctx.beginPath();
         ctx.strokeStyle = tokens.isDark ? '#D8DEE9' : '#334155';
         ctx.lineWidth = 1.5;
-        ctx.setLineDash([3, 3]);
+        ctx.setLineDash([]);
         ctx.moveTo(xPos, yMin);
         ctx.lineTo(xPos, yQ1);
         ctx.stroke();
@@ -8195,7 +8976,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
         // 2. Upper Whisker (q3 to max)
         ctx.beginPath();
-        ctx.setLineDash([3, 3]);
+        ctx.setLineDash([]);
         ctx.moveTo(xPos, yQ3);
         ctx.lineTo(xPos, yMax);
         ctx.stroke();
@@ -8225,7 +9006,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ctx.lineTo(xPos + halfBox, yMed);
         ctx.stroke();
 
-        // 5. Outliers (Double encoding: Distinctive Anomaly Token + Triangle Glyphs)
+        // 5. Outliers (cercles isolés, couleur d'anomalie)
         if (Array.isArray(stat.outliers)) {
           const anomalyColor = tokens.emphasis?.anomaly || tokens.semantic?.negative || '#D01C8B';
           stat.outliers.forEach(outVal => {
@@ -8233,10 +9014,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             const size = 5;
             ctx.beginPath();
             ctx.fillStyle = anomalyColor;
-            ctx.moveTo(xPos, yOut - size);
-            ctx.lineTo(xPos + size, yOut + size);
-            ctx.lineTo(xPos - size, yOut + size);
-            ctx.closePath();
+            ctx.arc(xPos, yOut, 4, 0, Math.PI * 2);
             ctx.fill();
             ctx.strokeStyle = tokens.surfaceRaised || tokens.bg || '#FFFFFF';
             ctx.lineWidth = 1.5;
@@ -8288,11 +9066,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           grid: { display: false },
           ticks: {
             color: tokens.textPrimary,
-            font: { family: tokens.fontFamily, size: 12, weight: '600' }
+            font: { family: tokens.fontFamily, size: 11, weight: '600' },
+            maxRotation: 0,
+            minRotation: 0,
+            autoSkip: false,
+            callback: function(value) {
+              return wrapCategoryLabel(this.getLabelForValue(value), (this.chart.width - 70) / Math.max(1, labels.length) - 6, 11);
+            }
           }
         },
         y: {
           beginAtZero: false,
+          title: {
+            display: !!(rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label),
+            text: (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || '',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           suggestedMin,
           suggestedMax,
           grid: { color: tokens.gridColor },
@@ -8461,6 +9251,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     }]
   };
 
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
+
   function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
     const canvas = typeof canvasTarget === 'string'
       ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -8559,8 +9363,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             ctx.beginPath();
             ctx.fillStyle = isOutlier
               ? (tokens.emphasis?.anomaly || '#D01C8B')
-              : hexToRgba(color, 0.85);
-            ctx.arc(xCenter + xOffset, yPt, isOutlier ? 3.5 : 2.5, 0, Math.PI * 2);
+              : (isDark ? 'rgba(236,239,244,0.85)' : hexToRgba(color, 0.9));
+            ctx.arc(xCenter + xOffset, yPt, isOutlier ? 4 : 3, 0, Math.PI * 2);
             ctx.fill();
 
             if (isOutlier) {
@@ -8626,12 +9430,22 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         scales: {
           x: {
             ...defaultOpts.scales.x,
-            grid: { display: false }
+            ticks: {
+              ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
+              maxRotation: 0,
+              minRotation: 0,
+              autoSkip: false,
+              callback: function(value) {
+                return wrapCategoryLabel(this.getLabelForValue(value), (this.chart.width - 70) / Math.max(1, labels.length) - 6, 11);
+              }
+            },
+            grid: { display: false },
+            border: { display: true, color: tokens.gridColor }
           },
           y: {
             ...defaultOpts.scales.y,
-            min: Math.floor(globalMin - yPad),
-            max: Math.ceil(globalMax + yPad),
+            min: Math.floor((globalMin - yPad) / 10) * 10,
+            max: Math.ceil((globalMax + yPad) / 10) * 10,
             title: {
               display: true,
               text: (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Valeur',
@@ -8703,7 +9517,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
  * @param {number} [bandwidthFactor=1.0] - Facteur d'ajustement du lissage
  * @returns {{ labels: string[], data: number[], points: {x: number, y: number}[], bandwidth: number }}
  */
-function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0) {
+function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0, domain = null) {
   if (!Array.isArray(values) || values.length === 0) {
     return { labels: [], data: [], points: [], bandwidth: 0 };
   }
@@ -8724,8 +9538,14 @@ function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0) {
   const std = Math.sqrt(variance) || 1.0;
 
   // Calcul IQR
-  const q1 = sorted[Math.floor(n * 0.25)];
-  const q3 = sorted[Math.floor(n * 0.75)];
+  const quant = (p) => {
+    const idx = (n - 1) * p;
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  };
+  const q1 = quant(0.25);
+  const q3 = quant(0.75);
   const iqr = q3 - q1;
 
   // Règle de Silverman: h = 0.9 * min(std, IQR / 1.34) * n^(-1/5)
@@ -8734,8 +9554,8 @@ function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0) {
   if (h <= 0 || !Number.isFinite(h)) h = 1.0;
 
   // Plage d'évaluation étendue de [min - 3h, max + 3h]
-  const xStart = min - 2.5 * h;
-  const xEnd = max + 2.5 * h;
+  const xStart = domain && Number.isFinite(domain.min) ? domain.min : min - 2.5 * h;
+  const xEnd = domain && Number.isFinite(domain.max) ? domain.max : max + 2.5 * h;
   const step = (xEnd - xStart) / (numPoints - 1);
 
   const SQRT_2PI = Math.sqrt(2 * Math.PI);
@@ -8765,20 +9585,30 @@ function computeGaussianKDE(values, numPoints = 60, bandwidthFactor = 1.0) {
  * Données par défaut représentatives (Score d'évaluation de performance continue, N=200)
  */
 const DEFAULT_DATA = (() => {
-  // Génération synthétique bimodale représentative
-  const points = [];
-  for (let i = 0; i < 50; i++) {
-    const x = i * 2;
-    // Bimodal distribution (mix of 2 Gaussians)
-    const g1 = (0.6 / (12 * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - 40) / 12, 2));
-    const g2 = (0.4 / (10 * Math.sqrt(2 * Math.PI))) * Math.exp(-0.5 * Math.pow((x - 70) / 10, 2));
-    points.push({ x: x.toString(), y: g1 + g2 });
-  }
+  // Échantillon déterministe bimodal (N=200 : 120 obs. ~ N(35,9) et 80 obs. ~ N(75,8), PRNG seedé + Box-Muller)
+  let seed = 20240607;
+  const rnd = () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+  const gauss = (mean, std) => {
+    const u1 = Math.max(1e-9, rnd());
+    const u2 = rnd();
+    return mean + std * Math.sqrt(-2 * Math.log(u1)) * Math.cos(2 * Math.PI * u2);
+  };
+  const sample = [];
+  for (let i = 0; i < 120; i++) sample.push(gauss(35, 9));
+  for (let i = 0; i < 80; i++) sample.push(gauss(75, 8));
+  // Domaine d'évaluation commun, couvrant les queues du KDE jusqu'à une densité quasi nulle
+  const kde = computeGaussianKDE(sample, 56, 1.0, { min: 0, max: 110 });
   return {
-    labels: points.map(p => p.x),
+    labels: kde.labels.map(l => String(Math.round(parseFloat(l)))),
+    xLabel: "Score d'évaluation de performance",
     datasets: [{
       label: 'Densité de Probabilité (KDE)',
-      data: points.map(p => p.y)
+      data: kde.data.map(v => Math.round(v * 1e6) / 1e6)
     }]
   };
 })();
@@ -8855,10 +9685,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     }];
   } else {
     chartLabels = rawData.labels ? [...rawData.labels] : [];
+    // Domaine commun à toutes les séries brutes pour aligner les abscisses
+    const allRaw = (rawData.datasets || []).reduce((acc, d) => acc.concat(Array.isArray(d.rawValues) ? d.rawValues.filter(Number.isFinite) : []), []);
+    const commonDomain = allRaw.length ? (() => {
+      const ref = computeGaussianKDE(allRaw, 60, 1.0);
+      return { min: ref.points[0].x, max: ref.points[ref.points.length - 1].x };
+    })() : null;
     chartDatasets = (rawData.datasets || []).map((ds, idx) => {
       const style = resolveDensityDatasetStyle(ds, idx);
       if (Array.isArray(ds.rawValues) && ds.rawValues.length > 0) {
-        const kde = computeGaussianKDE(ds.rawValues);
+        const kde = computeGaussianKDE(ds.rawValues, 60, 1.0, commonDomain);
         chartLabels = kde.labels;
         return {
           label: ds.label || `Densité Série ${idx + 1}`,
@@ -8868,7 +9704,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           borderWidth: style.borderWidth,
           borderDash: style.borderDash,
           fill: ds.fill !== undefined ? ds.fill : 'origin',
-          tension: 0.35,
+          tension: 0,
           pointRadius: 0,
           pointHoverRadius: 5
         };
@@ -8882,7 +9718,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         borderWidth: style.borderWidth,
         borderDash: style.borderDash,
         fill: ds.fill !== undefined ? ds.fill : 'origin',
-        tension: 0.35,
+        tension: 0,
         pointRadius: 0,
         pointHoverRadius: 5
       };
@@ -8934,6 +9770,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       },
       scales: {
         x: {
+          title: {
+            display: !!rawData.xLabel,
+            text: rawData.xLabel || '',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           grid: {
             display: false,
             drawBorder: false
@@ -8950,6 +9792,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         },
         y: {
+          title: {
+            display: true,
+            text: 'Densité',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           beginAtZero: true,
           grid: {
             color: tokens.gridColor,
@@ -9193,6 +10041,60 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       }
     };
 
+    // Couleur de texte choisie selon la luminance relative réelle du fond (WCAG), pas en dur.
+    const kcRgb = (c) => {
+      if (typeof c !== 'string') return [255, 255, 255];
+      const m = c.match(/[\d.]+/g);
+      if (c.trim().startsWith('rgb') && m && m.length >= 3) return [Number(m[0]), Number(m[1]), Number(m[2])];
+      let h = c.trim().replace(/^#/, '');
+      if (h.length === 3) h = h.split('').map(x => x + x).join('');
+      if (h.length < 6) return [255, 255, 255];
+      return [parseInt(h.slice(0, 2), 16) || 0, parseInt(h.slice(2, 4), 16) || 0, parseInt(h.slice(4, 6), 16) || 0];
+    };
+    const kcLum = (c) => {
+      const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      const [r, g, b] = kcRgb(c);
+      return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b);
+    };
+    const kcReadableOn = (bg) => {
+      const dark = '#0F172A';
+      const light = '#FFFFFF';
+      const lb = kcLum(bg);
+      const cDark = (lb + 0.05) / (kcLum(dark) + 0.05);
+      const cLight = (kcLum(light) + 0.05) / (lb + 0.05);
+      return cDark >= cLight ? dark : light;
+    };
+
+    // Légende continue de l'échelle séquentielle (barre de dégradé + bornes)
+    const heatmapLegendPlugin = {
+      id: 'kitChartsHeatmapLegend',
+      afterDraw(chart) {
+        const { ctx, chartArea } = chart;
+        if (!chartArea) return;
+        const barW = Math.min(220, chartArea.width * 0.4);
+        const barH = 8;
+        const x0 = chartArea.left + (chartArea.width - barW) / 2;
+        const y0 = chart.height - 20;
+        ctx.save();
+        const steps = 24;
+        for (let i = 0; i < steps; i++) {
+          ctx.fillStyle = getSequentialColor(tokens, i / (steps - 1));
+          ctx.fillRect(x0 + (barW / steps) * i, y0, barW / steps + 0.5, barH);
+        }
+        ctx.strokeStyle = tokens.gridColor || '#94A3B8';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x0, y0, barW, barH);
+        ctx.fillStyle = tokens.textSecondary || '#475569';
+        ctx.font = `500 11px ${tokens.fontMono || 'monospace'}`;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'right';
+        ctx.fillText(`${Math.round(minVal)}%`, x0 - 6, y0 + barH / 2);
+        ctx.textAlign = 'left';
+        ctx.fillText(`${Math.round(maxVal)}%`, x0 + barW + 6, y0 + barH / 2);
+        ctx.restore();
+      }
+    };
+
     const heatmapValueLabelsPlugin = {
       id: 'kitChartsHeatmapValuesPlugin',
       afterDatasetsDraw(chart) {
@@ -9209,7 +10111,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           const item = data.datasets[0].data[i];
           if (!item || item.v === undefined) return;
           const ratio = maxVal > minVal ? (item.v - minVal) / (maxVal - minVal) : 0.5;
-          ctx.fillStyle = ratio > 0.45 ? '#FFFFFF' : (tokens.textPrimary || '#0F172A');
+          const cellBg = getSequentialColor(tokens, Math.max(0, Math.min(1, ratio)));
+          ctx.fillStyle = kcReadableOn(cellBg);
           const cp = typeof element.getCenterPoint === 'function'
             ? element.getCenterPoint()
             : { x: element.x + (element.width || 0) / 2, y: element.y + (element.height || 0) / 2 };
@@ -9235,7 +10138,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           padding: {
             top: 20,
             right: 20,
-            bottom: 34,
+            bottom: 56,
             left: 12
           }
         },
@@ -9282,6 +10185,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           y: {
             type: 'category',
             labels: yLabels,
+            reverse: true,
             position: 'left',
             grid: { display: false },
             border: { display: false },
@@ -9297,7 +10201,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         }
       },
-      plugins: [heatmapValueLabelsPlugin]
+      plugins: [heatmapValueLabelsPlugin, heatmapLegendPlugin]
     };
 
     if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function' && typeof Chart === 'function') {
@@ -9364,7 +10268,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
  * @file 03-distribution/histogramme/template.js
  * @description Template Chart.js v4+ pour Histogramme de Fréquence (Histogram).
  * Psychophysique: Encodage de distribution continue via surfaces de barres contiguës (Rang 1/2 Cleveland-McGill).
- * Règle d'or: beginAtZero: true absolu sur l'axe Y, espacement contigu (barPercentage: 1.0, categoryPercentage: 0.98),
+ * Règle d'or: beginAtZero: true absolu sur l'axe Y, espacement contigu (barPercentage: 1.0, categoryPercentage: 1.0),
  * algorithme de binning Freedman-Diaconis déterministe pour découpage optimal en classes de fréquence.
  */
 
@@ -9404,8 +10308,14 @@ function computeFreedmanDiaconisBins(values, maxBins = 20) {
   }
 
   // Calcul Quartiles et IQR
-  const q1 = sorted[Math.floor(n * 0.25)];
-  const q3 = sorted[Math.floor(n * 0.75)];
+  const quant = (p) => {
+    const idx = (n - 1) * p;
+    const lo = Math.floor(idx);
+    const hi = Math.ceil(idx);
+    return sorted[lo] + (sorted[hi] - sorted[lo]) * (idx - lo);
+  };
+  const q1 = quant(0.25);
+  const q3 = quant(0.75);
   const iqr = q3 - q1;
 
   // Largeur de bin selon Freedman-Diaconis ou Sturges fallback si IQR nul
@@ -9442,6 +10352,8 @@ function computeFreedmanDiaconisBins(values, maxBins = 20) {
  * Données par défaut représentatives (Temps de réponse serveur en ms, N=320 requêtes)
  */
 const DEFAULT_DATA = {
+  xLabel: 'Temps de réponse (ms)',
+  yLabel: 'Effectif (requêtes)',
   labels: ['[10-25[', '[25-40[', '[40-55[', '[55-70[', '[70-85[', '[85-100[', '[100-115[', '[115-130['],
   datasets: [{
     label: 'Distribution Latence Serveur (ms)',
@@ -9549,7 +10461,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           borderColor: colors.border,
           borderWidth: colors.borderWidth,
           borderRadius: 0,
-          categoryPercentage: 0.98,
+          categoryPercentage: 1.0,
           barPercentage: 1.0
         };
       }
@@ -9562,7 +10474,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         borderColor: colors.border,
         borderWidth: colors.borderWidth,
         borderRadius: 0, // Pas de bordure arrondie pour signifier la continuité physique des bins
-        categoryPercentage: 0.98,
+        categoryPercentage: 1.0,
         barPercentage: 1.0
       };
     });
@@ -9585,7 +10497,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       ...spatialOpts,
       animation: animOpts,
       // Encodage continu Gestalt : barres contiguës sans interstices parasites
-      categoryPercentage: 0.98,
+      categoryPercentage: 1.0,
       barPercentage: 1.0,
       plugins: {
         ...defaultOpts.plugins,
@@ -9619,6 +10531,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       },
       scales: {
         x: {
+          title: {
+            display: !!rawData.xLabel,
+            text: rawData.xLabel || '',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           grid: {
             display: false,
             drawBorder: false
@@ -9628,7 +10546,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             color: tokens.textSecondary,
             font: {
               family: tokens.fontFamily,
-              size: 10
+              size: 11
             },
             maxRotation: 45,
             minRotation: 0,
@@ -9636,6 +10554,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         },
         y: {
+          title: {
+            display: true,
+            text: rawData.yLabel || 'Effectif (observations)',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage par hauteur de bin
           grid: {
             color: tokens.gridColor,
@@ -9752,7 +10676,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     }
 
     const span = max - min;
-    const binCount = Math.max(3, Math.min(50, Math.ceil(span / binWidth)));
+    // Nombre de classes : max(Freedman-Diaconis, Sturges) pour ne pas écraser une distribution multimodale
+    const sturges = Math.ceil(Math.log2(n) + 1);
+    const binCount = Math.max(5, Math.min(50, Math.max(Math.ceil(span / binWidth), sturges)));
     const actualWidth = span / binCount;
 
     const bins = [];
@@ -9797,7 +10723,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     return (h > 0 && !isNaN(h)) ? h : 1.0;
   }
 
-  function computeGaussianKDE(data, bandwidth = null, gridPoints = 128) {
+  function computeGaussianKDE(data, bandwidth = null, gridPoints = 128, domain = null) {
     const clean = Array.isArray(data) ? data.map(Number).filter(v => !isNaN(v)).sort((a, b) => a - b) : [];
     const n = clean.length;
     if (n === 0) return { grid: [], density: [], maxDensity: 0, h: 1, min: 0, max: 0 };
@@ -9805,8 +10731,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const h = (typeof bandwidth === 'number' && bandwidth > 0) ? bandwidth : computeSilvermanBandwidth(clean);
     const minVal = clean[0];
     const maxVal = clean[clean.length - 1];
-    const spanMin = minVal - 2.5 * h;
-    const spanMax = maxVal + 2.5 * h;
+    const spanMin = domain && Number.isFinite(domain.min) ? domain.min : minVal - 2.5 * h;
+    const spanMax = domain && Number.isFinite(domain.max) ? domain.max : maxVal + 2.5 * h;
     const step = (spanMax - spanMin) / (gridPoints - 1);
 
     const SQRT_2PI = Math.sqrt(2 * Math.PI);
@@ -9830,16 +10756,26 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     return { grid, density, maxDensity, h, min: spanMin, max: spanMax, n };
   }
 
-  const DEFAULT_DATA = {
-    datasets: [{
-      label: 'Temps de Réponse API (ms)',
-      data: [
-        42, 45, 48, 50, 52, 53, 55, 56, 58, 59, 60, 61, 62, 63, 65, 66,
-        68, 70, 71, 72, 73, 75, 76, 78, 80, 82, 85, 88, 92, 95, 110, 115,
-        120, 125, 130, 132, 135, 138, 140, 142, 145, 148, 150, 155, 160, 175
-      ]
-    }]
-  };
+  const DEFAULT_DATA = (() => {
+    // Temps de réponse API (ms), N=60 : cache chaud (~N(55,9)) et cache froid (~N(140,15)), PRNG seedé déterministe
+    let seed = 7321;
+    const rnd = () => {
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+    const gauss = (m, sd) => m + sd * Math.sqrt(-2 * Math.log(Math.max(1e-9, rnd()))) * Math.cos(2 * Math.PI * rnd());
+    const values = [];
+    for (let i = 0; i < 40; i++) values.push(Math.round(gauss(55, 9)));
+    for (let i = 0; i < 20; i++) values.push(Math.round(gauss(140, 15)));
+    return {
+      datasets: [{
+        label: 'Temps de Réponse API (ms)',
+        data: values.sort((a, b) => a - b)
+      }]
+    };
+  })();
 
   function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
     const canvas = typeof canvasTarget === 'string'
@@ -9868,59 +10804,101 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Distribution';
 
     const binAnalysis = computeFreedmanDiaconisBins(seriesData);
-    const kdeAnalysis = computeGaussianKDE(seriesData);
+    const kdeAnalysis = computeGaussianKDE(seriesData, null, 160, { min: binAnalysis.min, max: binAnalysis.max });
 
     const mainColor = getColor(tokens, 0);
     const kdeColor = tokens.emphasis?.focal || tokens.palette[1] || '#E66101';
 
     const countScaleFactor = binAnalysis.n * binAnalysis.binWidth;
     const kdePoints = kdeAnalysis.grid.map((x, idx) => ({
-      x: Math.round(x * 10) / 10,
+      x: x,
       y: kdeAnalysis.density[idx] * countScaleFactor
     }));
 
     const barLabels = binAnalysis.bins.map(b => `${Math.round(b.min)}–${Math.round(b.max)}`);
     const barData = binAnalysis.bins.map(b => b.count);
 
+    // Étiquettes d'effectif locales : au-dessus de la barre, ou dans la barre si la courbe KDE traverse l'emplacement.
+    const barLabelsPlugin = {
+      id: 'kitChartsHistKdeBarLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const { ctx, chartArea, scales } = chart;
+        const yS = scales.y;
+        const xK = scales.xKde;
+        const barMeta = chart.getDatasetMeta(0);
+        if (!yS || !xK || !barMeta) return;
+        const curve = kdePoints.map(p => ({ px: xK.getPixelForValue(p.x), py: yS.getPixelForValue(p.y) }));
+        const fs = chart.width < 460 ? 10 : 11;
+        ctx.save();
+        ctx.font = `600 ${fs}px ${tokens.fontMono || 'monospace'}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        const hits = (r) => {
+          for (let i = 1; i < curve.length; i++) {
+            const a = curve[i - 1], b = curve[i];
+            if (Math.max(a.px, b.px) < r.x0 || Math.min(a.px, b.px) > r.x1) continue;
+            // échantillonnage du segment : tout point dans le rectangle compte
+            for (let k = 0; k <= 4; k++) {
+              const px = a.px + (b.px - a.px) * k / 4;
+              const py = a.py + (b.py - a.py) * k / 4;
+              if (px >= r.x0 && px <= r.x1 && py >= r.y0 && py <= r.y1) return true;
+            }
+          }
+          return false;
+        };
+        barMeta.data.forEach((el, i) => {
+          const v = barData[i];
+          if (!el || !(v > 0)) return;
+          const text = String(v);
+          const w = ctx.measureText(text).width + 4;
+          const h = fs + 2;
+          const above = { x0: el.x - w / 2, x1: el.x + w / 2, y0: el.y - 3 - h, y1: el.y - 3 };
+          const barH = el.base - el.y;
+          const inside = { x0: el.x - w / 2, x1: el.x + w / 2, y0: el.y + 4, y1: el.y + 4 + h };
+          let r = null;
+          if (above.y0 >= chartArea.top - 2 && !hits(above)) r = above;
+          else if (barH >= h + 8 && !hits(inside)) r = inside;
+          else if (above.y0 >= chartArea.top - 2) r = null; // aucune place libre : valeur lisible dans l'infobulle
+          if (!r) return;
+          ctx.fillStyle = tokens.textPrimary;
+          ctx.fillText(text, el.x, (r.y0 + r.y1) / 2);
+        });
+        ctx.restore();
+      }
+    };
+
     const defaultOpts = getChartDefaultOptions(tokens);
     const config = {
+      plugins: [barLabelsPlugin],
       type: 'bar',
       data: {
         labels: barLabels,
         datasets: [
           {
             type: 'bar',
+            xAxisID: 'x',
             label: `Histogramme (${seriesLabel})`,
             data: barData,
             backgroundColor: hexToRgba(mainColor, isDark ? 0.40 : 0.30),
             borderColor: mainColor,
-            borderWidth: 1.5,
-            borderRadius: 3,
-            datalabels: {
-              display: showDataLabels
-            },
+            borderWidth: 1,
+            borderRadius: 0,
+            categoryPercentage: 1.0,
+            barPercentage: 1.0,
+            datalabels: { display: false },
             order: 2
           },
           {
             type: 'line',
             label: `Densité KDE (Silverman h=${kdeAnalysis.h.toFixed(1)})`,
-            data: binAnalysis.bins.map(b => {
-              let bestY = 0;
-              let minDiff = Infinity;
-              kdePoints.forEach(p => {
-                const diff = Math.abs(p.x - b.mid);
-                if (diff < minDiff) {
-                  minDiff = diff;
-                  bestY = p.y;
-                }
-              });
-              return Math.round(bestY * 100) / 100;
-            }),
+            data: kdePoints.map(p => ({ x: p.x, y: Math.round(p.y * 1000) / 1000 })),
+            xAxisID: 'xKde',
             borderColor: kdeColor,
             borderWidth: 2.5,
             pointRadius: 0,
             pointHoverRadius: 4,
-            tension: 0.35,
+            tension: 0,
             fill: false,
             datalabels: {
               display: false
@@ -9941,7 +10919,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         plugins: {
           ...defaultOpts.plugins,
           datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
+            display: false, // étiquettes gérées par le plugin local (évitement de la courbe KDE)
             formatter: (v, ctx) => {
               if (ctx && ctx.dataset && ctx.dataset.type === 'bar' && v > 0) {
                 return String(v);
@@ -9951,15 +10929,33 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }),
           legend: {
             display: true,
-            position: 'top',
-            align: 'end',
+            position: 'bottom',
+            align: 'center',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              boxWidth: 14,
+              padding: 10,
+              generateLabels: (chart) => {
+                const base = (typeof Chart !== 'undefined' && Chart.defaults && Chart.defaults.plugins.legend.labels.generateLabels)
+                  ? Chart.defaults.plugins.legend.labels.generateLabels(chart) : [];
+                return base.map(item => {
+                  const ds = chart.data.datasets[item.datasetIndex] || {};
+                  const isLine = ds.type === 'line';
+                  return Object.assign(item, {
+                    pointStyle: isLine ? 'line' : 'rect',
+                    fontColor: tokens.textPrimary,
+                    fillStyle: isLine ? 'transparent' : item.fillStyle,
+                    lineWidth: isLine ? 2.5 : 1.5
+                  });
+                });
+              }
             }
           },
           tooltip: {
             ...defaultOpts.plugins.tooltip,
+            filter: (item) => item.dataset.type === 'bar',
             callbacks: {
               title: (items) => `Classe : ${items[0].label} ms`,
               label: (ctx) => {
@@ -9973,6 +10969,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         },
         scales: {
+          xKde: {
+            type: 'linear',
+            display: false,
+            offset: false,
+            position: 'bottom',
+            min: binAnalysis.min,
+            max: binAnalysis.max,
+            grid: { display: false }
+          },
           x: {
             ...defaultOpts.scales.x,
             title: {
@@ -10070,8 +11075,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const h = (typeof bandwidth === 'number' && bandwidth > 0) ? bandwidth : computeSilvermanBandwidth(clean);
     const minVal = clean[0];
     const maxVal = clean[clean.length - 1];
-    const spanMin = minVal - 2.5 * h;
-    const spanMax = maxVal + 2.5 * h;
+    const spanMin = minVal; // KDE tronquée au domaine des données (cut=0)
+    const spanMax = maxVal;
     const step = (spanMax - spanMin) / (gridPoints - 1);
 
     const SQRT_2PI = Math.sqrt(2 * Math.PI);
@@ -10131,6 +11136,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     }]
   };
 
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
+
   function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
     const canvas = typeof canvasTarget === 'string'
       ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -10169,6 +11188,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       if (a.kde.max > globalMax) globalMax = a.kde.max;
     });
     if (globalMin === Infinity) { globalMin = 0; globalMax = 100; }
+    // Largeur commune : même échelle de densité pour tous les groupes (comparabilité des amplitudes)
+    const globalMaxDensity = analysis.reduce((m, e) => Math.max(m, e.kde.maxDensity || 0), 0) || 1;
     const span = globalMax - globalMin || 10;
     const yPad = span * 0.08;
 
@@ -10193,7 +11214,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           for (let j = 0; j < kde.grid.length; j++) {
             const yVal = kde.grid[j];
             const yPx = y.getPixelForValue(yVal);
-            const wRatio = kde.density[j] / kde.maxDensity;
+            const wRatio = kde.density[j] / globalMaxDensity;
             const xPx = xCenter + wRatio * maxCloudWidth;
             ctx.lineTo(xPx, yPx);
           }
@@ -10225,7 +11246,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             ctx.fillRect(xCenter - boxW / 2, yQ3, boxW, yQ1 - yQ3);
 
             ctx.beginPath();
-            ctx.fillStyle = '#FFFFFF';
+            ctx.fillStyle = isDark ? '#2E3440' : '#FFFFFF';
             ctx.arc(xCenter, yMed, 2.5, 0, Math.PI * 2);
             ctx.fill();
           }
@@ -10235,7 +11256,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             const yPt = y.getPixelForValue(val);
             const jitterOffset = -8 - (((pIdx * phi) % 1) * (maxCloudWidth * 0.6));
             ctx.beginPath();
-            ctx.fillStyle = hexToRgba(color, 0.80);
+            ctx.fillStyle = isDark ? 'rgba(236,239,244,0.85)' : hexToRgba(color, 0.85);
             ctx.arc(xCenter + jitterOffset, yPt, 2.5, 0, Math.PI * 2);
             ctx.fill();
           });
@@ -10295,12 +11316,22 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         scales: {
           x: {
             ...defaultOpts.scales.x,
-            grid: { display: false }
+            ticks: {
+              ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
+              maxRotation: 0,
+              minRotation: 0,
+              autoSkip: false,
+              callback: function(value) {
+                return wrapCategoryLabel(this.getLabelForValue(value), (this.chart.width - 70) / Math.max(1, labels.length) - 6, 11);
+              }
+            },
+            grid: { display: false },
+            border: { display: true, color: tokens.gridColor }
           },
           y: {
             ...defaultOpts.scales.y,
-            min: Math.floor(globalMin - yPad),
-            max: Math.ceil(globalMax + yPad),
+            min: Math.floor((globalMin - yPad) / 10) * 10,
+            max: Math.ceil((globalMax + yPad) / 10) * 10,
             title: {
               display: true,
               text: (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Valeur',
@@ -10418,6 +11449,7 @@ const DEFAULT_DATA = (() => {
 
   return {
     categories: ['Groupe A (Témoin)', 'Groupe B (Traitement 1)', 'Groupe C (Traitement 2)'],
+    yLabel: 'Score de récupération clinique',
     datasets: [
       {
         label: 'Groupe A (Témoin)',
@@ -10443,6 +11475,20 @@ const DEFAULT_DATA = (() => {
  * @param {string} [themeName='colorbrewer-accessible'] - Identifiant du thème cognitif
  * @returns {Object} Instance Chart.js initialisée
  */
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
+
 function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
   const canvas = typeof canvasTarget === 'string'
     ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -10574,7 +11620,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ...defaultOpts.plugins,
         legend: {
           ...defaultOpts.plugins?.legend,
-          display: datasets.length > 1 && !isTufte
+          display: datasets.length > 1 && !isTufte && datasets.length !== categories.length
         },
         tooltip: {
           ...defaultOpts.plugins?.tooltip,
@@ -10600,13 +11646,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       scales: {
         x: {
           type: 'linear',
-          min: 0.5,
+          min: 0.4,
           max: (categories.length || datasets.length) + 0.5,
-          grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
-            drawBorder: false
-          },
+          grid: { display: false },
           border: { display: false },
           ticks: {
             stepSize: 1,
@@ -10617,13 +11659,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
               size: 11
             },
             padding: 8,
-            callback: (val) => {
+            maxRotation: 0,
+            minRotation: 0,
+            autoSkip: false,
+            callback: function(val) {
               const idx = Math.round(val) - 1;
-              return categories[idx] || '';
+              const n = Math.max(1, categories.length || datasets.length);
+              return wrapCategoryLabel(categories[idx] || '', (this.chart.width - 70) / n - 6, 11);
             }
           }
         },
         y: {
+          title: {
+            display: !!rawData.yLabel,
+            text: rawData.yLabel || '',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          },
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -10744,8 +11796,8 @@ var factory = function(KitChartsTheme) {
     const h = (typeof bandwidth === 'number' && bandwidth > 0) ? bandwidth : computeScottBandwidth(clean);
     const minVal = clean[0];
     const maxVal = clean[clean.length - 1];
-    const spanMin = minVal - 3 * h;
-    const spanMax = maxVal + 3 * h;
+    const spanMin = minVal; // KDE tronquée au domaine des données (cut=0)
+    const spanMax = maxVal;
     const step = (spanMax - spanMin) / (gridPoints - 1);
 
     const SQRT_2PI = Math.sqrt(2 * Math.PI);
@@ -10816,6 +11868,20 @@ var factory = function(KitChartsTheme) {
    * @param {Object} [options={}] - Options (showInnerBox, showRawPoints)
    * @returns {Object} Instance Chart.js
    */
+  // Libellé de catégorie sur plusieurs lignes : ni rotation, ni saut de graduation, ni rognage.
+  function wrapCategoryLabel(label, slotPx, fontPx) {
+    const text = String(label == null ? '' : label);
+    const maxCh = Math.max(6, Math.floor(slotPx / (fontPx * 0.58)));
+    const lines = [];
+    let cur = '';
+    text.split(' ').forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && t.length > maxCh) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines.length > 1 ? lines : (lines[0] || '');
+  }
+
   function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
     const canvas = typeof canvasTarget === 'string'
       ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
@@ -10860,6 +11926,8 @@ var factory = function(KitChartsTheme) {
       if (ga.kde.max > globalMax) globalMax = ga.kde.max;
     });
     if (globalMin === Infinity) { globalMin = 0; globalMax = 100; }
+    // Largeur commune : même échelle de densité pour tous les groupes (comparabilité des amplitudes)
+    const globalMaxDensity = groupAnalysis.reduce((m, e) => Math.max(m, e.kde.maxDensity || 0), 0) || 1;
     const span = globalMax - globalMin || 10;
     const yPad = span * 0.05;
 
@@ -10886,7 +11954,7 @@ var factory = function(KitChartsTheme) {
           for (let j = 0; j < kde.grid.length; j++) {
             const yVal = kde.grid[j];
             const yPx = y.getPixelForValue(yVal);
-            const wRatio = kde.density[j] / kde.maxDensity;
+            const wRatio = kde.density[j] / globalMaxDensity;
             const xOffset = wRatio * maxViolinHalfWidth;
             const xPx = xCenter + xOffset;
             if (j === 0) ctx.moveTo(xPx, yPx);
@@ -10896,7 +11964,7 @@ var factory = function(KitChartsTheme) {
           for (let j = kde.grid.length - 1; j >= 0; j--) {
             const yVal = kde.grid[j];
             const yPx = y.getPixelForValue(yVal);
-            const wRatio = kde.density[j] / kde.maxDensity;
+            const wRatio = kde.density[j] / globalMaxDensity;
             const xOffset = wRatio * maxViolinHalfWidth;
             const xPx = xCenter - xOffset;
             ctx.lineTo(xPx, yPx);
@@ -11015,12 +12083,22 @@ var factory = function(KitChartsTheme) {
         scales: {
           x: {
             ...defaultOpts.scales.x,
-            grid: { display: false }
+            ticks: {
+              ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
+              maxRotation: 0,
+              minRotation: 0,
+              autoSkip: false,
+              callback: function(value) {
+                return wrapCategoryLabel(this.getLabelForValue(value), (this.chart.width - 70) / Math.max(1, labels.length) - 6, 11);
+              }
+            },
+            grid: { display: false },
+            border: { display: true, color: tokens.gridColor }
           },
           y: {
             ...defaultOpts.scales.y,
-            min: Math.floor(globalMin - yPad),
-            max: Math.ceil(globalMax + yPad),
+            min: Math.floor((globalMin - yPad) / 10) * 10,
+            max: Math.ceil((globalMax + yPad) / 10) * 10,
             title: {
               display: true,
               text: (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Valeur',
@@ -11113,8 +12191,8 @@ function computeBubbleRadii(points, minRadius = 4, maxRadius = 28) {
   return valid.map(p => {
     let r = minRadius;
     if (rangeZ > 0) {
-      const normSqrt = Math.sqrt((p.z - minZ) / rangeZ);
-      r = minRadius + (maxRadius - minRadius) * normSqrt;
+      // Aire proportionnelle à Z : r = rMax * sqrt(z / zMax), plancher à minRadius
+      r = Math.max(minRadius, maxRadius * Math.sqrt(Math.max(0, p.z) / (maxZ || 1)));
     } else if (typeof p.r === 'number' && p.r > 0) {
       r = p.r;
     } else {
@@ -11266,6 +12344,122 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   });
 
   const chartData = { datasets };
+  const xTitle = (rawData.axes && rawData.axes.x) || 'PIB par habitant (k$)';
+  const yTitle = (rawData.axes && rawData.axes.y) || 'Espérance de vie (ans)';
+  const zTitle = (rawData.axes && rawData.axes.z) || 'Population (M)';
+  const allPts = datasets.flatMap(d => d.data);
+  const maxZAll = Math.max(1, ...allPts.map(p => p.z || 0));
+  const labelsOn = allPts.length <= 12;
+  const rawZ = (p) => (typeof p.z === 'number' ? Math.max(0, p.z) : 0);
+  const maxRadiusFor = (w) => Math.max(12, Math.min(28, Math.round((w || 600) * 0.055)));
+  const rectsHit = (a, b) => a.x0 < b.x1 && a.x1 > b.x0 && a.y0 < b.y1 && a.y1 > b.y0;
+  const circleHitsRect = (cx, cy, r, q) => {
+    const nx = Math.max(q.x0, Math.min(cx, q.x1));
+    const ny = Math.max(q.y0, Math.min(cy, q.y1));
+    return (cx - nx) * (cx - nx) + (cy - ny) * (cy - ny) < r * r;
+  };
+  const bubbleAnnotationPlugin = {
+    id: 'kitChartsBubbleAnnotations',
+    // Rayons proportionnels à la largeur du graphique (aire proportionnelle à Z conservée)
+    beforeUpdate(chart) {
+      const maxR = maxRadiusFor(chart.width);
+      chart.data.datasets.forEach((ds) => {
+        const pts = ds.data || [];
+        const mz = Math.max(1, ...pts.map(rawZ));
+        pts.forEach((p) => {
+          if (p && typeof p.z === 'number') p.r = Math.max(Math.round(maxR / 5), Math.round(maxR * Math.sqrt(rawZ(p) / mz) * 10) / 10);
+        });
+      });
+    },
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      const narrow = chart.width < 460;
+      const maxR = maxRadiusFor(chart.width);
+      const fs = narrow ? 10 : 11;
+      const fam = tokens.fontFamily || 'sans-serif';
+      ctx.save();
+      // Obstacles : bulles
+      const bubbles = [];
+      chart.data.datasets.forEach((ds, di) => {
+        chart.getDatasetMeta(di).data.forEach((el, i) => {
+          const raw = ds.data[i];
+          if (raw) bubbles.push({ x: el.x, y: el.y, r: raw.r || 5, raw });
+        });
+      });
+      // Légende de taille (aire proportionnelle à Z) : coin libre de toute bulle
+      const refs = (narrow ? [maxZAll, maxZAll / 4] : [maxZAll, maxZAll / 4, maxZAll / 16])
+        .map(z => ({ z, r: Math.max(3, maxR * Math.sqrt(z / maxZAll)) }));
+      const nf = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 });
+      ctx.font = `500 ${narrow ? 9 : 10}px ${fam}`;
+      const lw = 2 * refs[0].r + 4 + Math.max(ctx.measureText(zTitle).width, 38 + Math.max(...refs.map(r => ctx.measureText(nf.format(Math.round(r.z))).width)) - 0);
+      const lh = 2 * refs[0].r + 20;
+      const m = 6;
+      const corners = [
+        { x0: chartArea.right - lw - m, y0: chartArea.bottom - lh - m },
+        { x0: chartArea.left + m, y0: chartArea.bottom - lh - m },
+        { x0: chartArea.right - lw - m, y0: chartArea.top + m },
+        { x0: chartArea.left + m, y0: chartArea.top + m }
+      ].map(c => ({ x0: c.x0, y0: c.y0, x1: c.x0 + lw, y1: c.y0 + lh }));
+      let box = corners.find(c => !bubbles.some(b => circleHitsRect(b.x, b.y, b.r + 3, c))) || corners[0];
+      const bx = box.x0 + refs[0].r;
+      const by = box.y1 - 2;
+      ctx.strokeStyle = tokens.textSecondary || '#64748B';
+      ctx.lineWidth = 1;
+      refs.forEach(ref => {
+        ctx.beginPath();
+        ctx.arc(bx, by - ref.r, ref.r, 0, Math.PI * 2);
+        ctx.stroke();
+      });
+      ctx.fillStyle = tokens.textSecondary || '#64748B';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      refs.forEach((ref) => {
+        const ty = by - 2 * ref.r;
+        ctx.beginPath();
+        ctx.moveTo(bx, ty);
+        ctx.lineTo(bx + refs[0].r + 8, ty);
+        ctx.stroke();
+        ctx.fillText(nf.format(Math.round(ref.z)), bx + refs[0].r + 11, ty);
+      });
+      ctx.textAlign = 'left';
+      ctx.fillText(zTitle, box.x0, box.y0 + 5);
+      // Étiquettes : placement glouton (droite, gauche, dessus, dessous), les plus grosses bulles d'abord ; omises si aucune place
+      if (labelsOn) {
+        ctx.font = `600 ${fs}px ${fam}`;
+        ctx.fillStyle = tokens.textPrimary || '#0F172A';
+        ctx.textBaseline = 'middle';
+        const placed = [box];
+        const order = bubbles.filter(b => b.raw.label).sort((a, b) => b.r - a.r);
+        order.forEach((b) => {
+          const w = ctx.measureText(b.raw.label).width;
+          const h = fs + 2;
+          const g = 3;
+          const cands = [
+            { x0: b.x + b.r + g, y0: b.y - h / 2, al: 'left', tx: b.x + b.r + g },
+            { x0: b.x - b.r - g - w, y0: b.y - h / 2, al: 'right', tx: b.x - b.r - g },
+            { x0: b.x - w / 2, y0: b.y - b.r - g - h, al: 'center', tx: b.x },
+            { x0: b.x - w / 2, y0: b.y + b.r + g, al: 'center', tx: b.x },
+            { x0: b.x + b.r * 0.7, y0: b.y - b.r * 0.7 - h, al: 'left', tx: b.x + b.r * 0.7 },
+            { x0: b.x - b.r * 0.7 - w, y0: b.y - b.r * 0.7 - h, al: 'right', tx: b.x - b.r * 0.7 },
+            { x0: b.x + b.r * 0.7, y0: b.y + b.r * 0.7, al: 'left', tx: b.x + b.r * 0.7 },
+            { x0: b.x - b.r * 0.7 - w, y0: b.y + b.r * 0.7, al: 'right', tx: b.x - b.r * 0.7 }
+          ];
+          for (const c of cands) {
+            const q = { x0: c.x0, y0: c.y0, x1: c.x0 + w, y1: c.y0 + h };
+            if (q.x0 < chartArea.left || q.x1 > chartArea.right || q.y0 < chartArea.top || q.y1 > chartArea.bottom) continue;
+            if (placed.some(p => rectsHit(p, q))) continue;
+            if (bubbles.some(o => o !== b && circleHitsRect(o.x, o.y, o.r, q))) continue;
+            placed.push(q);
+            ctx.textAlign = c.al;
+            ctx.fillText(b.raw.label, c.tx, q.y0 + h / 2);
+            break;
+          }
+        });
+      }
+      ctx.restore();
+    }
+  };
   const defaultOpts = getChartDefaultOptions(tokens);
   const spatialOpts = getSpatialInteractionOptions(tokens, { mode: 'nearest', axis: 'xy', hitRadius: 14, hoverRadius: 7 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' });
@@ -11273,10 +12467,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const config = {
     type: 'bubble',
     data: chartData,
+    plugins: [bubbleAnnotationPlugin],
     options: {
       ...defaultOpts,
       ...spatialOpts,
       animation: animOpts,
+      layout: { padding: { top: 12, right: 12, bottom: 4, left: 4 } },
       plugins: {
         ...defaultOpts.plugins,
         legend: {
@@ -11311,6 +12507,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       scales: {
         x: {
           type: 'linear',
+          title: { display: true, text: xTitle, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '600' } },
+          grace: '8%',
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -11328,6 +12526,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         },
         y: {
           type: 'linear',
+          title: { display: true, text: yTitle, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '600' } },
+          grace: '12%',
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -11571,11 +12771,115 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       pointHitRadius: 12,
       fill: false,
       showLine: true,
-      tension: 0.15
+      tension: 0
     };
   });
 
   const chartData = { datasets };
+  const xTitle = (rawData.axes && rawData.axes.x) || 'Chômage (%)';
+  const yTitle = (rawData.axes && rawData.axes.y) || 'Inflation (%)';
+  const trajectoryPlugin = {
+    id: 'kitChartsTrajectoryMarks',
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      ctx.save();
+      chart.data.datasets.forEach((ds, di) => {
+        const meta = chart.getDatasetMeta(di);
+        const pts = meta.data;
+        const n = pts.length;
+        if (!n) return;
+        const col = Array.isArray(ds.borderColor) ? ds.borderColor[0] : ds.borderColor;
+        // Flèches de direction au milieu de chaque segment
+        ctx.fillStyle = col;
+        for (let i = 0; i < n - 1; i++) {
+          const a = pts[i], b = pts[i + 1];
+          const dx = b.x - a.x, dy = b.y - a.y;
+          const len = Math.hypot(dx, dy);
+          if (len < 26) continue;
+          const mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+          const ang = Math.atan2(dy, dx);
+          ctx.save();
+          ctx.translate(mx, my);
+          ctx.rotate(ang);
+          ctx.beginPath();
+          ctx.moveTo(6, 0);
+          ctx.lineTo(-5, -4.5);
+          ctx.lineTo(-5, 4.5);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        }
+        // Départ (plein) et arrivée (anneau épais)
+        pts.forEach((el, i) => {
+          if (i === 0 || i === n - 1) {
+            ctx.beginPath();
+            ctx.arc(el.x, el.y, 6.5, 0, Math.PI * 2);
+            if (i === 0) { ctx.fillStyle = col; ctx.fill(); }
+            else { ctx.lineWidth = 3.5; ctx.strokeStyle = col; ctx.stroke(); }
+          }
+        });
+        // Étiquettes temporelles : placement glouton sans chevauchement (8 positions autour du point,
+        // en évitant les autres étiquettes, les points et la trajectoire) ; extrémités prioritaires.
+        const fs = chart.width < 460 ? 10 : 11;
+        ctx.font = `600 ${fs}px ${tokens.fontFamily || 'sans-serif'}`;
+        ctx.textBaseline = 'middle';
+        const h = fs + 2;
+        const tagOf = (i) => {
+          const raw = ds.data[i] || {};
+          return raw.year !== undefined ? raw.year : (raw.label !== undefined ? raw.label : raw.t);
+        };
+        const order = [];
+        for (let i = 0; i < n; i++) {
+          if (tagOf(i) === undefined) continue;
+          if (n > 12 && i !== 0 && i !== n - 1) continue;
+          order.push(i);
+        }
+        order.sort((p, q) => ((p === 0 || p === n - 1) ? 0 : 1) - ((q === 0 || q === n - 1) ? 0 : 1) || p - q);
+        const placed = [];
+        const segHits = (r) => {
+          for (let i = 0; i < n - 1; i++) {
+            const a = pts[i], b = pts[i + 1];
+            if (Math.max(a.x, b.x) < r.x0 || Math.min(a.x, b.x) > r.x1 || Math.max(a.y, b.y) < r.y0 || Math.min(a.y, b.y) > r.y1) continue;
+            for (let k = 0; k <= 8; k++) {
+              const px = a.x + (b.x - a.x) * k / 8, py = a.y + (b.y - a.y) * k / 8;
+              if (px >= r.x0 && px <= r.x1 && py >= r.y0 && py <= r.y1) return true;
+            }
+          }
+          return false;
+        };
+        order.forEach((i) => {
+          const el = pts[i];
+          const text = String(tagOf(i));
+          const w = ctx.measureText(text).width;
+          const g = 7;
+          const cands = [
+            { x0: el.x + g, y0: el.y - g - h, al: 'left' },
+            { x0: el.x + g, y0: el.y + g, al: 'left' },
+            { x0: el.x - g - w, y0: el.y - g - h, al: 'right' },
+            { x0: el.x - g - w, y0: el.y + g, al: 'right' },
+            { x0: el.x + g + 2, y0: el.y - h / 2, al: 'left' },
+            { x0: el.x - g - 2 - w, y0: el.y - h / 2, al: 'right' },
+            { x0: el.x - w / 2, y0: el.y - g - h - 2, al: 'center' },
+            { x0: el.x - w / 2, y0: el.y + g + 2, al: 'center' }
+          ];
+          for (const c of cands) {
+            const r = { x0: c.x0, x1: c.x0 + w, y0: c.y0, y1: c.y0 + h };
+            if (r.x0 < chartArea.left || r.x1 > chartArea.right || r.y0 < chartArea.top || r.y1 > chartArea.bottom) continue;
+            if (placed.some(p => r.x0 < p.x1 && r.x1 > p.x0 && r.y0 < p.y1 && r.y1 > p.y0)) continue;
+            if (pts.some((q, j) => j !== i && q.x > r.x0 - 5 && q.x < r.x1 + 5 && q.y > r.y0 - 5 && q.y < r.y1 + 5)) continue;
+            if (segHits(r)) continue;
+            placed.push(r);
+            ctx.fillStyle = tokens.textPrimary || '#0F172A';
+            ctx.textAlign = c.al;
+            ctx.fillText(text, c.al === 'left' ? r.x0 : c.al === 'right' ? r.x1 : (r.x0 + r.x1) / 2, (r.y0 + r.y1) / 2);
+            break;
+          }
+        });
+      });
+      ctx.restore();
+    }
+  };
   const defaultOpts = getChartDefaultOptions(tokens);
   const spatialOpts = getSpatialInteractionOptions(tokens, { mode: 'nearest', axis: 'xy', hitRadius: 14, hoverRadius: 7 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuad' });
@@ -11583,6 +12887,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const config = {
     type: 'line',
     data: chartData,
+    plugins: [trajectoryPlugin],
     options: {
       ...defaultOpts,
       ...spatialOpts,
@@ -11622,6 +12927,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       scales: {
         x: {
           type: 'linear',
+          title: { display: true, text: xTitle, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '600' } },
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -11639,6 +12945,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         },
         y: {
           type: 'linear',
+          title: { display: true, text: yTitle, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '600' } },
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -11748,22 +13055,28 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const stepY = (maxY - minY) / yBins || 6;
     const counts = new Map();
     let maxCount = 0;
-
+    // Affectation au centre hexagonal le plus proche (pavage pointy-top, rangées impaires décalées d'un demi-pas).
+    // Espace réel normalisé (R=1) : x = u * sqrt(3), y = v * 1.5.
+    const S3 = Math.sqrt(3);
     rawPoints.forEach(p => {
-      const row = Math.round((p.y - minY) / stepY);
-      const isOdd = row % 2 !== 0;
-      const xOffset = isOdd ? stepX * 0.5 : 0;
-      const col = Math.round((p.x - minX - xOffset) / stepX);
-
-      const hx = Math.round((minX + col * stepX + xOffset) * 10) / 10;
+      const u = (p.x - minX) / stepX;
+      const v = (p.y - minY) / stepY;
+      // Réseau pair : centres (i, 2j) ; réseau impair : centres (i + 0.5, 2j + 1)
+      const rowA = 2 * Math.round(v / 2);
+      const colA = Math.round(u);
+      const rowB = 2 * Math.round((v - 1) / 2) + 1;
+      const colB = Math.round(u - 0.5) + 0.5;
+      const dA = Math.pow((u - colA) * S3, 2) + Math.pow((v - rowA) * 1.5, 2);
+      const dB = Math.pow((u - colB) * S3, 2) + Math.pow((v - rowB) * 1.5, 2);
+      const row = dA <= dB ? rowA : rowB;
+      const colF = dA <= dB ? colA : colB;
+      const hx = Math.round((minX + colF * stepX) * 10) / 10;
       const hy = Math.round((minY + row * stepY) * 10) / 10;
       const key = `${hx}_${hy}`;
-
       const count = (counts.get(key) || 0) + 1;
       counts.set(key, count);
       if (count > maxCount) maxCount = count;
     });
-
     const bins = [];
     counts.forEach((v, key) => {
       const [xStr, yStr] = key.split('_');
@@ -11780,7 +13093,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const compute2DBins = computeHexBins;
 
   /**
-   * Données de démonstration bivariées (N = 1800 mesures réelles Taille cm × Poids kg)
+   * Données de démonstration bivariées : alvéoles pré-agrégées (Taille cm × Poids kg), N total affiché dans la légende
    */
   const DEFAULT_DATA = (() => {
     const bins = [];
@@ -11871,8 +13184,34 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       if (b.y < minY) minY = b.y;
       if (b.y > maxY) maxY = b.y;
     });
-    const padX = (maxX - minX) * 0.08 || 4;
-    const padY = (maxY - minY) * 0.08 || 4;
+    // Pas réels du pavage (plus petits écarts positifs entre centres)
+    const uniq = (arr) => Array.from(new Set(arr)).sort((a, b) => a - b);
+    const minGap = (arr, fb) => { const u = uniq(arr); let g = Infinity; for (let i = 1; i < u.length; i++) g = Math.min(g, u[i] - u[i - 1]); return Number.isFinite(g) && g > 0 ? g : fb; };
+    const yStepBin = minGap(bins.map(b => b.y), 4.8);
+    const xStepBin = 2 * minGap(bins.map(b => b.x), 1.8);
+    const niceFloor = (v, q) => Math.floor(v / q) * q;
+    const niceCeil = (v, q) => Math.ceil(v / q) * q;
+    const axMinX = niceFloor(minX - xStepBin * 0.6, 5);
+    const axMaxX = niceCeil(maxX + xStepBin * 0.6, 5);
+    const axMinY = niceFloor(minY - yStepBin * 0.8, 5);
+    const axMaxY = niceCeil(maxY + yStepBin * 0.8, 5);
+    const srgbLum = (c) => {
+      let m = /^#?([0-9a-f]{6})$/i.exec(String(c).trim());
+      let rgb;
+      if (m) { const n = parseInt(m[1], 16); rgb = [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+      else { const t = /rgba?\(([^)]+)\)/.exec(String(c)); rgb = t ? t[1].split(',').slice(0, 3).map(Number) : [128, 128, 128]; }
+      const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      return 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]);
+    };
+    const textOn = (bg) => {
+      const L = srgbLum(bg);
+      const cLight = 1.05 / (L + 0.05);
+      const cDark = (L + 0.05) / (0.0185 + 0.05);
+      return cLight >= cDark ? '#FFFFFF' : '#0F172A';
+    };
+    // Étiquettes : jamais au-delà de 12 alvéoles ; sinon seulement les 3 plus denses (points focaux)
+    const labelAll = bins.length <= 12;
+    const focalSet = new Set(bins.map((b, i) => ({ i, v: b.v })).sort((a, b) => b.v - a.v).slice(0, 3).map(o => o.i));
 
     const hexbinCustomPlugin = {
       id: 'kitChartsHexbinHoneycombPainter',
@@ -11883,41 +13222,34 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ctx.save();
         ctx.lineJoin = 'round';
 
-        // Calcul dynamique du rayon optimal de l'alvéole hexagonale
-        const pxStepX = Math.abs(x.getPixelForValue(minX + 3.6) - x.getPixelForValue(minX)) || 30;
-        const hexRadius = Math.max(12, Math.min(26, pxStepX * 0.58));
-
-        // 1. Tracé de toutes les alvéoles hexagonales
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(chartArea.left, chartArea.top, chartArea.right - chartArea.left, chartArea.bottom - chartArea.top);
+        ctx.clip();
+        // Rayons elliptiques déduits des pas réels : pavage exact (pointy-top, rangées décalées)
+        const pxStepX = Math.abs(x.getPixelForValue(minX + xStepBin) - x.getPixelForValue(minX));
+        const pxStepY = Math.abs(y.getPixelForValue(minY + yStepBin) - y.getPixelForValue(minY));
+        const hexRx = (pxStepX / Math.sqrt(3)) * 0.97;
+        const hexRy = (pxStepY / 1.5) * 0.97;
         bins.forEach((bin, idx) => {
           const px = x.getPixelForValue(bin.x);
           const py = y.getPixelForValue(bin.y);
-
-          // Hors zone du graphique ?
-          if (px < chartArea.left - 10 || px > chartArea.right + 10 || py < chartArea.top - 10 || py > chartArea.bottom + 10) {
-            return;
-          }
-
-          // Échelle séquentielle logarithmique pour optimiser le contraste perçu
-          const logRatio = Math.log(Math.max(1, bin.v - minCount + 1)) / Math.log(Math.max(2, maxCount - minCount + 1));
-          const fillColor = getSequentialColor(tokens, Math.min(1, Math.max(0.06, logRatio)));
-
+          // Échelle séquentielle linéaire, cohérente avec la légende
+          const ratio = maxCount > minCount ? (bin.v - minCount) / (maxCount - minCount) : 1;
+          const fillColor = getSequentialColor(tokens, Math.min(1, Math.max(0.06, ratio)));
           const isHovered = (idx === activeHoverIdx);
-
-          // Tracé de l'hexagone régulier (6 sommets)
+          const k = isHovered ? 1.12 : 1;
           ctx.beginPath();
-          for (let k = 0; k < 6; k++) {
-            const angle = (Math.PI / 6) + (k * Math.PI / 3);
-            const vx = px + (isHovered ? hexRadius * 1.15 : hexRadius) * Math.cos(angle);
-            const vy = py + (isHovered ? hexRadius * 1.15 : hexRadius) * Math.sin(angle);
-            if (k === 0) ctx.moveTo(vx, vy);
+          for (let q = 0; q < 6; q++) {
+            const angle = (Math.PI / 6) + (q * Math.PI / 3);
+            const vx = px + hexRx * k * Math.cos(angle);
+            const vy = py + hexRy * k * Math.sin(angle);
+            if (q === 0) ctx.moveTo(vx, vy);
             else ctx.lineTo(vx, vy);
           }
           ctx.closePath();
-
           ctx.fillStyle = fillColor;
           ctx.fill();
-
-          // Bordure
           if (isHovered) {
             ctx.strokeStyle = tokens.emphasis?.focal || tokens.textPrimary || '#FFFFFF';
             ctx.lineWidth = 2.5;
@@ -11929,22 +13261,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             ctx.lineWidth = isTufte ? 0.75 : 1.5;
             ctx.stroke();
           }
-
-          // Affichage du chiffre de densité au centre si l'alvéole est assez grande
-          if (hexRadius >= 16 && bin.v >= 10) {
-            ctx.fillStyle = logRatio > 0.55 ? '#FFFFFF' : (tokens.textPrimary || '#0F172A');
-            ctx.font = `600 10px ${tokens.fontMono || 'monospace'}`;
+          if ((labelAll || focalSet.has(idx)) && hexRx >= 11) {
+            ctx.fillStyle = textOn(fillColor);
+            ctx.font = `700 11px ${tokens.fontMono || 'monospace'}`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
             ctx.fillText(String(bin.v), px, py);
           }
         });
-
+        ctx.restore();
         // 2. Échelle de Légende Continue en haut à droite
-        const barW = 120;
+        const barW = Math.max(90, Math.min(120, Math.round((chartArea.right - chartArea.left) * 0.4)));
         const barH = 10;
-        const barX = chartArea.right - barW - 10;
-        const barY = chartArea.top + 12;
+        const barX = chartArea.right - barW - 6;
+        const barY = chartArea.top - 26;
 
         // Boîtier de fond
         ctx.fillStyle = isDark ? 'rgba(36, 41, 51, 0.85)' : 'rgba(255, 255, 255, 0.85)';
@@ -11966,7 +13296,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         // Barre dégradée
         const legendGrad = ctx.createLinearGradient(barX, 0, barX + barW, 0);
         legendGrad.addColorStop(0, getSequentialColor(tokens, 0.08));
+        legendGrad.addColorStop(0.25, getSequentialColor(tokens, 0.25));
         legendGrad.addColorStop(0.5, getSequentialColor(tokens, 0.5));
+        legendGrad.addColorStop(0.75, getSequentialColor(tokens, 0.75));
         legendGrad.addColorStop(1, getSequentialColor(tokens, 1.0));
 
         ctx.fillStyle = legendGrad;
@@ -11980,7 +13312,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ctx.textAlign = 'left';
         ctx.fillText(String(minCount), barX, barY + barH + 11);
         ctx.textAlign = 'right';
-        ctx.fillText(`${maxCount}+`, barX + barW, barY + barH + 11);
+        ctx.fillText(`${maxCount}`, barX + barW, barY + barH + 11);
 
         ctx.restore();
       }
@@ -12003,7 +13335,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         ...defaultOpts,
         layout: {
           padding: {
-            top: 20,
+            top: 56,
             right: 24,
             bottom: 12,
             left: 12
@@ -12031,9 +13363,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             position: 'bottom',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' },
+              font: { family: tokens.fontFamily, size: 11, weight: '500' },
               usePointStyle: true,
-              boxWidth: 8
+              boxWidth: 8,
+              // Libellé abrégé en carte étroite : jamais rogné
+              generateLabels: (chart) => {
+                const full = chart.data.datasets[0].label;
+                const text = chart.width < 460 ? `N ≈ ${totalObs} obs` : full;
+                return [{ text, fillStyle: 'transparent', strokeStyle: 'transparent', lineWidth: 0, fontColor: tokens.textPrimary, hidden: false, datasetIndex: 0, pointStyle: 'rect' }];
+              }
             }
           },
           tooltip: {
@@ -12056,8 +13394,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           x: {
             type: 'linear',
             ...defaultOpts.scales.x,
-            min: Math.floor(minX - padX),
-            max: Math.ceil(maxX + padX),
+            min: axMinX,
+            max: axMaxX,
             grid: { color: tokens.gridColor },
             title: {
               display: true,
@@ -12069,8 +13407,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           y: {
             type: 'linear',
             ...defaultOpts.scales.y,
-            min: Math.floor(minY - padY),
-            max: Math.ceil(maxY + padY),
+            min: axMinY,
+            max: axMaxY,
             grid: { color: tokens.gridColor },
             title: {
               display: true,
@@ -12146,7 +13484,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
-  function computeMarginalKDE(values, gridPoints = 64) {
+  function computeMarginalKDE(values, gridPoints = 64, range = null) {
     const clean = Array.isArray(values) ? values.map(Number).filter(v => !isNaN(v)).sort((a, b) => a - b) : [];
     const n = clean.length;
     if (n < 2) return { grid: [], density: [], maxDensity: 0, h: 1, min: 0, max: 0 };
@@ -12156,8 +13494,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const sigma = Math.sqrt(variance) || 1;
     const h = 1.06 * sigma * Math.pow(n, -0.2);
 
-    const min = clean[0] - 1.2 * h;
-    const max = clean[n - 1] + 1.2 * h;
+    const min = (range && Number.isFinite(range[0])) ? range[0] : clean[0] - 1.2 * h;
+    const max = (range && Number.isFinite(range[1])) ? range[1] : clean[n - 1] + 1.2 * h;
     const step = (max - min) / (gridPoints - 1);
 
     const SQRT_2PI = Math.sqrt(2 * Math.PI);
@@ -12249,7 +13587,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     return res.ellipsePoints || [];
   }
 
-  function computeMarginalKDEs(points, gridPoints = 64) {
+  function computeMarginalKDEs(points, gridPoints = 64, ranges = null) {
     const clean = points.filter(p => p && !isNaN(p.x) && !isNaN(p.y));
     const n = clean.length;
     if (n < 2) return { n, pearsonR: 0, rSquared: 0, xKde: { grid: [], density: [], maxDensity: 0 }, yKde: { grid: [], density: [], maxDensity: 0 } };
@@ -12257,8 +13595,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const xVals = clean.map(p => p.x);
     const yVals = clean.map(p => p.y);
 
-    const xKde = computeMarginalKDE(xVals, gridPoints);
-    const yKde = computeMarginalKDE(yVals, gridPoints);
+    const xKde = computeMarginalKDE(xVals, gridPoints, ranges && ranges.x);
+    const yKde = computeMarginalKDE(yVals, gridPoints, ranges && ranges.y);
     const pearsonR = computePearsonR(clean);
     const rSquared = Math.round(pearsonR * pearsonR * 1000) / 1000;
 
@@ -12309,13 +13647,32 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const points = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Observations';
 
-    const marginals = computeMarginalKDEs(points, 64);
+    const finitePts = points.filter(p => p && Number.isFinite(p.x) && Number.isFinite(p.y));
+    const niceMax = (v, q) => Math.ceil(v / q) * q;
+    const niceMin = (v, q) => Math.floor(v / q) * q;
+    const dMinX = Math.min(...finitePts.map(p => p.x));
+    const dMaxX = Math.max(...finitePts.map(p => p.x));
+    const dMinY = Math.min(...finitePts.map(p => p.y));
+    const dMaxY = Math.max(...finitePts.map(p => p.y));
+    const inPercent = dMinY >= 0 && dMaxY <= 100;
+    const ellipseData = computeCovarianceEllipse(points, 0.95, 64);
+    const ellipsePoints = ellipseData.ellipsePoints;
+    const ellX = ellipsePoints.map(p => p.x);
+    const ellY = ellipsePoints.map(p => p.y);
+    const eMinX = ellX.length ? Math.min(...ellX) : dMinX;
+    const eMaxX = ellX.length ? Math.max(...ellX) : dMaxX;
+    const eMinY = ellY.length ? Math.min(...ellY) : dMinY;
+    const eMaxY = ellY.length ? Math.max(...ellY) : dMaxY;
+    // Axes bornés pour contenir données ET ellipse de confiance (aucune coupe par le cadre)
+    const axisX = [Math.max(0, niceMin(Math.min(dMinX - 2, eMinX), 5)), niceMax(Math.max(dMaxX + 2, eMaxX), 5)];
+    const axisY = inPercent
+      ? [Math.min(0, niceMin(eMinY, 10)), Math.max(100, niceMax(eMaxY, 10))]
+      : [niceMin(Math.min(dMinY - 5, eMinY), 10), niceMax(Math.max(dMaxY + 5, eMaxY), 10)];
+    const marginals = computeMarginalKDEs(points, 64, { x: axisX, y: axisY });
     const kdeX = marginals.xKde;
     const kdeY = marginals.yKde;
     const pearsonR = marginals.pearsonR;
     const rSquared = marginals.rSquared;
-    const ellipseData = computeCovarianceEllipse(points, 0.95, 64);
-    const ellipsePoints = ellipseData.ellipsePoints;
 
     const mainColor = getColor(tokens, 0) || '#2B8CBE';
     const accentColor = tokens.emphasis?.focal || getColor(tokens, 1) || '#E66101';
@@ -12346,8 +13703,27 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       { x: Math.ceil(maxX), y: Math.round((intercept + slope * Math.ceil(maxX)) * 10) / 10 }
     ];
 
+    // Géométrie proportionnelle à la zone : marginales plus fines et sans texte en carte étroite
+    const jointGeom = (w, h) => {
+      const narrow = w < 460;
+      const mW = narrow ? Math.max(16, Math.round(w * 0.045)) : Math.max(24, Math.min(38, Math.round(w * 0.035)));
+      const mH = narrow ? Math.max(16, Math.round(h * 0.06)) : Math.max(24, Math.min(38, Math.round(h * 0.09)));
+      return { narrow, mW, mH, labels: !narrow };
+    };
     const jointplotPainterPlugin = {
       id: 'kitChartsJointMarginalsPainter',
+      beforeLayout(chart) {
+        const g = jointGeom(chart.width, chart.height);
+        const want = {
+          top: g.mH + (g.labels ? 18 : 12),
+          right: g.mW + (g.labels ? 28 : 14),
+          bottom: 4,
+          left: 4
+        };
+        const cur = chart.options.layout && chart.options.layout.padding;
+        if (cur && cur.top === want.top && cur.right === want.right) return;
+        chart.options.layout.padding = want;
+      },
       beforeDatasetsDraw(chart) {
         const { ctx, scales: { x, y } } = chart;
         if (!x || !y) return;
@@ -12355,6 +13731,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         // 1. Dessin de l'ellipse de confiance bivariée 95%
         if (ellipsePoints && ellipsePoints.length > 2) {
           ctx.save();
+          ctx.beginPath();
+          ctx.rect(chart.chartArea.left, chart.chartArea.top, chart.chartArea.right - chart.chartArea.left, chart.chartArea.bottom - chart.chartArea.top);
+          ctx.clip();
           ctx.beginPath();
           for (let i = 0; i < ellipsePoints.length; i++) {
             const px = x.getPixelForValue(ellipsePoints[i].x);
@@ -12371,14 +13750,6 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           ctx.stroke();
           ctx.setLineDash([]);
 
-          // Centre de gravité bivarié (μx, μy)
-          const cx = x.getPixelForValue(ellipseData.centerX);
-          const cy = y.getPixelForValue(ellipseData.centerY);
-          ctx.fillStyle = accentColor;
-          ctx.beginPath();
-          ctx.arc(cx, cy, 3.5, 0, Math.PI * 2);
-          ctx.fill();
-
           ctx.restore();
         }
       },
@@ -12392,7 +13763,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         // 2. DISTRIBUTION MARGINALE X (Haut)
         // -------------------------------------------------------------
         if (kdeX.grid.length && kdeX.maxDensity > 0) {
-          const topMarginH = 38;
+          const topMarginH = jointGeom(chart.width, chart.height).mH;
           const baseY = chartArea.top - 8;
 
           // Ligne de base
@@ -12425,20 +13796,28 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
           ctx.strokeStyle = hexToRgba(mainColor, 0.85);
           ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let j = 0; j < kdeX.grid.length; j++) {
+            const px = Math.max(chartArea.left, Math.min(chartArea.right, x.getPixelForValue(kdeX.grid[j])));
+            const py = baseY - (kdeX.density[j] / kdeX.maxDensity) * topMarginH;
+            if (j === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          }
           ctx.stroke();
 
           // Label indicateur
-          ctx.fillStyle = textMuted;
-          ctx.font = `600 10px ${tokens.fontFamily || 'Inter, sans-serif'}`;
-          ctx.textAlign = 'left';
-          ctx.fillText('▲ DENSITÉ MARGINALE X', chartArea.left + 2, baseY - topMarginH + 2);
+          if (jointGeom(chart.width, chart.height).labels) {
+            ctx.fillStyle = textMuted;
+            ctx.font = `600 10px ${tokens.fontFamily || 'Inter, sans-serif'}`;
+            ctx.textAlign = 'left';
+            ctx.fillText('Densité marginale X', chartArea.left + 2, baseY - topMarginH + 2);
+          }
         }
 
         // -------------------------------------------------------------
         // 3. DISTRIBUTION MARGINALE Y (Droite)
         // -------------------------------------------------------------
         if (kdeY.grid.length && kdeY.maxDensity > 0) {
-          const rightMarginW = 38;
+          const rightMarginW = jointGeom(chart.width, chart.height).mW;
           const baseX = chartArea.right + 8;
 
           // Ligne de base
@@ -12471,45 +13850,26 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
           ctx.strokeStyle = hexToRgba(mainColor, 0.85);
           ctx.lineWidth = 2;
+          ctx.beginPath();
+          for (let j = 0; j < kdeY.grid.length; j++) {
+            const py = Math.max(chartArea.top, Math.min(chartArea.bottom, y.getPixelForValue(kdeY.grid[j])));
+            const px = baseX + (kdeY.density[j] / kdeY.maxDensity) * rightMarginW;
+            if (j === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+          }
           ctx.stroke();
 
           // Label indicateur
-          ctx.fillStyle = textMuted;
-          ctx.font = `600 10px ${tokens.fontFamily || 'Inter, sans-serif'}`;
-          ctx.textAlign = 'left';
-          ctx.save();
-          ctx.translate(baseX + rightMarginW + 12, chartArea.bottom);
-          ctx.rotate(-Math.PI / 2);
-          ctx.fillText('▲ DENSITÉ MARGINALE Y', 0, 0);
-          ctx.restore();
+          if (jointGeom(chart.width, chart.height).labels) {
+            ctx.fillStyle = textMuted;
+            ctx.font = `600 10px ${tokens.fontFamily || 'Inter, sans-serif'}`;
+            ctx.textAlign = 'left';
+            ctx.save();
+            ctx.translate(baseX + rightMarginW + 12, chartArea.bottom);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Densité marginale Y', 0, 0);
+            ctx.restore();
+          }
         }
-
-        // -------------------------------------------------------------
-        // 4. BADGE STATISTIQUE DU COIN SUPÉRIEUR DROIT
-        // -------------------------------------------------------------
-        const statText = `r = ${pearsonR} • R² = ${rSquared}`;
-        ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
-        const textMetrics = ctx.measureText(statText);
-        const pillW = textMetrics.width + 16;
-        const pillH = 22;
-        const statX = chartArea.right - pillW;
-        const statY = chartArea.top - 20;
-
-        ctx.fillStyle = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.04)';
-        ctx.strokeStyle = gridColor;
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        if (ctx.roundRect) {
-          ctx.roundRect(statX, statY - 14, pillW, pillH, 5);
-        } else {
-          ctx.rect(statX, statY - 14, pillW, pillH);
-        }
-        ctx.fill();
-        ctx.stroke();
-
-        ctx.fillStyle = textColor;
-        ctx.textAlign = 'center';
-        ctx.fillText(statText, statX + pillW / 2, statY + 1);
 
         ctx.restore();
       }
@@ -12533,11 +13893,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           },
           {
             type: 'line',
-            label: `Régression OLS (r = ${pearsonR})`,
+            label: `Régression OLS (r = ${pearsonR}, R² = ${rSquared})`,
             data: regressionPoints,
             borderColor: hexToRgba(tokens.textSecondary || '#475569', 0.85),
             borderWidth: 2,
             borderDash: [5, 4],
+            pointStyle: 'line',
             pointRadius: 0,
             pointHoverRadius: 0,
             fill: false,
@@ -12549,12 +13910,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       options: {
         ...defaultOpts,
         layout: {
-          padding: {
-            top: 54,
-            right: 64,
-            bottom: 8,
-            left: 6
-          }
+          padding: { top: 54, right: 64, bottom: 4, left: 4 }
         },
         animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
         interaction: {
@@ -12570,10 +13926,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             align: 'center',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 },
+              font: { family: tokens.fontFamily, size: 11 },
               usePointStyle: true,
               boxWidth: 8,
-              padding: 16
+              padding: 10
             }
           },
           tooltip: {
@@ -12592,6 +13948,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           x: {
             type: 'linear',
             ...defaultOpts.scales.x,
+            min: axisX[0],
+            max: axisX[1],
             grid: { color: tokens.gridColor },
             title: {
               display: true,
@@ -12603,6 +13961,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           y: {
             type: 'linear',
             ...defaultOpts.scales.y,
+            min: axisY[0],
+            max: axisY[1],
+            ticks: {
+              ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks),
+              // Score borné à 100 : pas de graduation au-delà (l'ellipse peut dépasser)
+              callback: (v) => (inPercent && (v > 100 || v < 0)) ? '' : v
+            },
             grid: { color: tokens.gridColor },
             title: {
               display: true,
@@ -12698,17 +14063,31 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 function getDivergentCorrelationColor(r, tokens) {
   const clamped = Math.max(-1, Math.min(1, Number(r) || 0));
   const div = tokens.divergent || { neg: '#CA0020', mid: '#FFFFFF', pos: '#0571B0' };
+  const mid = div.mid || '#FFFFFF';
+  const end = clamped >= 0 ? (div.pos || (tokens.palette && tokens.palette[0]) || '#2B8CBE') : (div.neg || (tokens.semantic && tokens.semantic.negative) || '#CA0020');
+  return mixHex(mid, end, Math.abs(clamped));
+}
 
-  if (clamped >= 0) {
-    const alpha = Math.max(0.08, Math.min(1, clamped));
-    // Extraction ou fallback couleur positive
-    const posHex = div.pos || tokens.palette[0] || '#2B8CBE';
-    return hexToRgba(posHex, alpha);
-  } else {
-    const alpha = Math.max(0.08, Math.min(1, Math.abs(clamped)));
-    const negHex = div.neg || tokens.semantic?.negative || '#CA0020';
-    return hexToRgba(negHex, alpha);
-  }
+/** Interpolation linéaire opaque entre deux couleurs hex (t dans [0,1]). */
+function mixHex(c1, c2, t) {
+  const parse = (c) => {
+    const h = String(c || '#808080').replace('#', '');
+    const f = h.length === 3 ? h.split('').map(x => x + x).join('') : h;
+    const n = parseInt(f.slice(0, 6), 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  const A = parse(c1), B = parse(c2);
+  const m = A.map((v, i) => Math.round(v + (B[i] - v) * t));
+  return `rgb(${m[0]}, ${m[1]}, ${m[2]})`;
+}
+
+/** Couleur de texte (blanc ou encre) maximisant le contraste WCAG sur un fond rgb(...). */
+function textColorOn(bg) {
+  const m = /rgba?\(([^)]+)\)/.exec(String(bg));
+  const rgb = m ? m[1].split(',').slice(0, 3).map(Number) : [128, 128, 128];
+  const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * f(rgb[0]) + 0.7152 * f(rgb[1]) + 0.0722 * f(rgb[2]);
+  return (1.05 / (L + 0.05)) >= ((L + 0.05) / 0.0685) ? '#FFFFFF' : '#0F172A';
 }
 
 /**
@@ -12867,6 +14246,52 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   };
 
   const chartData = { datasets: [dataset] };
+  const showValues = rawPoints.length <= 36;
+  const matrixValuesPlugin = {
+    id: 'kitChartsMatrixValues',
+    afterDatasetsDraw(chart) {
+      const { ctx, chartArea } = chart;
+      if (!chartArea) return;
+      const meta = chart.getDatasetMeta(0);
+      ctx.save();
+      if (showValues) {
+        // Corps proportionnel à la largeur de cellule (5 caractères mono ≈ 3 × corps)
+        const cellW = (chartArea.right - chartArea.left) / Math.max(1, xLabels.length) - 3;
+        const vfs = Math.max(8, Math.min(12, Math.floor((cellW - 4) / 3)));
+        ctx.font = `600 ${vfs}px ${tokens.fontMono || 'monospace'}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        meta.data.forEach((el, i) => {
+          const raw = rawPoints[i];
+          const v = raw && (raw.v ?? raw.value);
+          if (typeof v !== 'number') return;
+          const bg = getDivergentCorrelationColor(v, tokens);
+          ctx.fillStyle = textColorOn(bg);
+          const c = (typeof el.getCenterPoint === 'function') ? el.getCenterPoint() : { x: el.x + (el.width || 0) / 2, y: el.y + (el.height || 0) / 2 };
+          ctx.fillText((v > 0 && v < 1 ? '+' : '') + v.toFixed(2), c.x, c.y);
+        });
+      }
+      // Légende : barre divergente -1 / 0 / +1
+      const bx = chartArea.right + 18;
+      const bw = 12;
+      const g = ctx.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+      g.addColorStop(0, getDivergentCorrelationColor(1, tokens));
+      g.addColorStop(0.5, getDivergentCorrelationColor(0, tokens));
+      g.addColorStop(1, getDivergentCorrelationColor(-1, tokens));
+      ctx.fillStyle = g;
+      ctx.fillRect(bx, chartArea.top, bw, chartArea.bottom - chartArea.top);
+      ctx.strokeStyle = tokens.gridColor || 'rgba(0,0,0,0.2)';
+      ctx.strokeRect(bx, chartArea.top, bw, chartArea.bottom - chartArea.top);
+      ctx.fillStyle = tokens.textPrimary || '#0F172A';
+      ctx.font = `500 11px ${tokens.fontMono || 'monospace'}`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('+1', bx + bw + 5, chartArea.top + 6);
+      ctx.fillText('0', bx + bw + 5, (chartArea.top + chartArea.bottom) / 2);
+      ctx.fillText('-1', bx + bw + 5, chartArea.bottom - 6);
+      ctx.restore();
+    }
+  };
   const defaultOpts = getChartDefaultOptions(tokens);
   const spatialOpts = getSpatialInteractionOptions(tokens, { mode: 'nearest', axis: 'xy', hitRadius: 10, hoverRadius: 5 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 350, easing: 'easeOutQuad' });
@@ -12874,8 +14299,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const config = {
     type: 'matrix',
     data: chartData,
+    plugins: [matrixValuesPlugin],
     options: {
       ...defaultOpts,
+      layout: { padding: { right: 48, top: 8 } },
       ...spatialOpts,
       animation: animOpts,
       plugins: {
@@ -12905,6 +14332,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         x: {
           type: 'category',
           labels: xLabels,
+          offset: true,
           grid: { display: false },
           border: { display: false },
           ticks: {
@@ -12920,6 +14348,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         y: {
           type: 'category',
           labels: yLabels,
+          offset: true,
+          reverse: false,
           grid: { display: false },
           border: { display: false },
           ticks: {
@@ -13232,6 +14662,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           borderColor: trendColor,
           borderWidth: isTufte ? 1.5 : 2,
           borderDash: [6, 6],
+          pointStyle: 'line',
           pointRadius: 0,
           pointHoverRadius: 0,
           fill: false,
@@ -13242,6 +14673,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   });
 
   const chartData = { datasets };
+  const xTitleText = (rawData.axes && rawData.axes.x) || 'Dépenses R&D (% du CA)';
+  const yTitleText = (rawData.axes && rawData.axes.y) || 'Croissance annuelle du CA (%)';
+  const axisTitle = (text) => ({ display: true, text, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '600' } });
   const defaultOpts = getChartDefaultOptions(tokens);
   const spatialOpts = getSpatialInteractionOptions(tokens, { mode: 'nearest', axis: 'xy', hitRadius: 14, hoverRadius: 7 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' });
@@ -13272,6 +14706,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       ...defaultOpts,
       ...spatialOpts,
       animation: animOpts,
+      layout: { padding: { top: 0 } },
       plugins: {
         ...defaultOpts.plugins,
         legend: {
@@ -13309,6 +14744,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           border: { display: false }
         } : {
           type: 'linear',
+          title: axisTitle(xTitleText),
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -13329,6 +14765,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           border: { display: false }
         } : {
           type: 'linear',
+          title: axisTitle(yTitleText),
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -13475,7 +14912,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const xMax = Math.max(...clean.map(p => p.x));
     const step = numPoints > 1 ? (xMax - xMin) / (numPoints - 1) : 0;
 
-    const tCrit = 1.96; // Approximation asymptotique normale
+    // Quantile de Student bilatéral 95% (ddl = n - 2), table exacte jusqu'à 30 puis développement de Cornish-Fisher
+    const T975 = [0, 12.706, 4.303, 3.182, 2.776, 2.571, 2.447, 2.365, 2.306, 2.262, 2.228, 2.201, 2.179, 2.160, 2.145, 2.131, 2.120, 2.110, 2.101, 2.093, 2.086, 2.080, 2.074, 2.069, 2.064, 2.060, 2.056, 2.052, 2.048, 2.045, 2.042];
+    const df = Math.max(1, reg.n - 2);
+    const tCrit = df <= 30 ? T975[df] : (1.95996 + (Math.pow(1.95996, 3) + 1.95996) / (4 * df) + (5 * Math.pow(1.95996, 5) + 16 * Math.pow(1.95996, 3) + 3 * 1.95996) / (96 * df * df));
     const line = [];
     const upper = [];
     const lower = [];
@@ -13486,9 +14926,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       const seFit = reg.se * Math.sqrt((1 / reg.n) + (Math.pow(x - reg.xMean, 2) / (reg.ssx || 1)));
       const margin = tCrit * seFit;
 
-      line.push({ x: Math.round(x * 10) / 10, y: Math.round(yHat * 10) / 10 });
-      upper.push({ x: Math.round(x * 10) / 10, y: Math.round((yHat + margin) * 10) / 10 });
-      lower.push({ x: Math.round(x * 10) / 10, y: Math.round((yHat - margin) * 10) / 10 });
+      const rd = (v) => Math.round(v * 1000) / 1000;
+      line.push({ x: rd(x), y: rd(yHat) });
+      upper.push({ x: rd(x), y: rd(yHat + margin) });
+      lower.push({ x: rd(x), y: rd(yHat - margin) });
     }
 
     return {
@@ -13509,11 +14950,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     datasets: [{
       label: "Budget R&D vs Chiffre d'Affaires (M€)",
       data: [
-        { x: 1.2, y: 14.5 }, { x: 1.8, y: 18.2 }, { x: 2.1, y: 19.8 },
-        { x: 2.5, y: 24.1 }, { x: 3.0, y: 28.5 }, { x: 3.4, y: 31.0 },
-        { x: 3.8, y: 33.2 }, { x: 4.2, y: 39.5 }, { x: 4.6, y: 41.8 },
-        { x: 5.0, y: 44.0 }, { x: 5.5, y: 49.2 }, { x: 6.0, y: 53.5 },
-        { x: 6.5, y: 56.8 }, { x: 7.0, y: 62.0 }, { x: 7.5, y: 64.5 }
+        { x: 1.2, y: 17.5 }, { x: 1.8, y: 15.2 }, { x: 2.1, y: 23.8 },
+        { x: 2.5, y: 21.1 }, { x: 3.0, y: 31.5 }, { x: 3.4, y: 27.0 },
+        { x: 3.8, y: 36.2 }, { x: 4.2, y: 35.5 }, { x: 4.6, y: 45.8 },
+        { x: 5.0, y: 40.0 }, { x: 5.5, y: 52.2 }, { x: 6.0, y: 49.5 },
+        { x: 6.5, y: 60.8 }, { x: 7.0, y: 56.0 }, { x: 7.5, y: 66.5 }
       ]
     }]
   };
@@ -13545,7 +14986,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const bands = computeConfidenceBand(points, reg);
 
     const pointColor = getColor(tokens, 0);
-    const regColor = tokens.emphasis?.focal || tokens.palette?.[1] || '#E66101';
+    const regColor = (tokens.emphasis && tokens.emphasis.benchmark && tokens.emphasis.benchmark !== pointColor) ? tokens.emphasis.benchmark : (getColor(tokens, 1) || '#E66101');
 
     const defaultOpts = getChartDefaultOptions(tokens);
     const config = {
@@ -13569,6 +15010,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             data: bands.line,
             borderColor: regColor,
             borderWidth: 2.5,
+            pointStyle: 'line',
             pointRadius: 0,
             fill: false,
             tension: 0,
@@ -13576,10 +15018,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           },
           {
             type: 'line',
-            label: 'IC 95% Supérieur',
+            label: 'Bande IC 95% (moyenne prédite)',
             data: bands.upper,
-            borderColor: 'transparent',
-            backgroundColor: hexToRgba(regColor, isDark ? 0.20 : 0.12),
+            borderColor: hexToRgba(regColor, 0.55),
+            borderWidth: 1,
+            borderDash: [4, 3],
+            pointStyle: 'rect',
+            backgroundColor: hexToRgba(regColor, isDark ? 0.28 : 0.20),
             pointRadius: 0,
             fill: '+1',
             tension: 0,
@@ -13589,7 +15034,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             type: 'line',
             label: 'IC 95% Inférieur',
             data: bands.lower,
-            borderColor: 'transparent',
+            borderColor: hexToRgba(regColor, 0.55),
+            borderWidth: 1,
+            borderDash: [4, 3],
             pointRadius: 0,
             fill: false,
             tension: 0,
@@ -13613,8 +15060,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             align: 'end',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 },
-              filter: (item) => !item.text.includes('Inférieur') && !item.text.includes('Supérieur')
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              boxWidth: 20,
+              padding: 8,
+              filter: (item) => !item.text.includes('Inférieur')
             }
           },
           tooltip: {
@@ -13639,7 +15089,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             grid: { color: tokens.gridColor },
             title: {
               display: true,
-              text: 'Variable X (Investissement R&D)',
+              text: 'Investissement R&D (M€)',
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }
@@ -13650,7 +15100,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             grid: { color: tokens.gridColor },
             title: {
               display: true,
-              text: 'Variable Y (Revenu)',
+              text: 'Chiffre d\'affaires (M€)',
               color: tokens.textSecondary,
               font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }
@@ -13789,7 +15239,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [5, 5] : []),
       tension: typeof ds.tension === 'number' ? ds.tension : 0.3,
       fill: ds.fill !== undefined ? ds.fill : 'origin',
-      pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : (emphasisStyle.pointRadius ?? 3),
+      pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : 0,
       pointHoverRadius: 6,
       pointStyle: ds.pointStyle || emphasisStyle.pointStyle || (isForecast ? 'crossRot' : 'circle'),
       pointBackgroundColor: ds.pointBackgroundColor || emphasisStyle.pointBackgroundColor || border,
@@ -14037,11 +15487,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       unchanged: isForecast ? hexToRgba(neutralColor, alpha) : neutralColor
     };
 
+    // Double encodage hors couleur : hausse = corps creux (fond léger), baisse = corps plein.
+    const fillConfig = {
+      up: hexToRgba(upColor, isForecast ? alpha * 0.3 : 0.18),
+      down: isForecast ? hexToRgba(downColor, alpha) : downColor,
+      unchanged: colorConfig.unchanged
+    };
+
     return {
       label: ds.label || `Série ${idx + 1}`,
       data: Array.isArray(ds.data) ? [...ds.data] : [],
       color: ds.color || colorConfig,
       borderColor: ds.borderColor || colorConfig,
+      borderColors: ds.borderColors || colorConfig,
+      backgroundColors: ds.backgroundColors || fillConfig,
       backgroundColor: ds.backgroundColor || (role === 'focal' ? getColor(tokens, idx) : tokens.emphasis?.context || '#CBD5E1')
     };
   });
@@ -14096,20 +15555,33 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       },
       plugins: {
         legend: {
-          display: datasets.length > 1 && !isTufte,
-          position: 'top',
-          align: 'end',
+          display: true,
+          position: 'bottom',
+          align: 'center',
+          // Légende statique : sens des bougies (hausse creuse, baisse pleine), couleurs lues sur la série focale.
+          onClick: () => {},
           labels: {
             color: tokens.textPrimary,
             font: {
               family: tokens.fontFamily,
-              size: 12,
+              size: 11,
               weight: '500'
             },
             usePointStyle: true,
-            boxWidth: 8,
-            boxHeight: 8,
-            padding: 14
+            pointStyle: 'rect',
+            boxWidth: 12,
+            boxHeight: 12,
+            padding: 12,
+            generateLabels: () => {
+              const d0 = datasets[0] || {};
+              const bc = d0.borderColors || {};
+              const bg = d0.backgroundColors || {};
+              const tx = tokens.textPrimary;
+              return [
+                { text: 'Hausse (creux)', fillStyle: bg.up, strokeStyle: bc.up, lineWidth: 2, fontColor: tx, pointStyle: 'rect', hidden: false, datasetIndex: 0 },
+                { text: 'Baisse (plein)', fillStyle: bg.down, strokeStyle: bc.down, lineWidth: 2, fontColor: tx, pointStyle: 'rect', hidden: false, datasetIndex: 0 }
+              ];
+            }
           }
         },
         tooltip: {
@@ -14301,6 +15773,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const pricePad = priceSpan * 0.05;
 
     let volMax = Math.max(...volumeList, 100);
+    const volTop = Math.ceil(volMax / 10000) * 10000;
 
     const bullColor = tokens.semantic?.positive || tokens.status?.success || '#2E7D32';
     const bearColor = tokens.semantic?.negative || tokens.status?.danger || '#C62828';
@@ -14345,7 +15818,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           const yTop = Math.min(yOpen, yClose);
           const yHeight = Math.max(2, Math.abs(yClose - yOpen));
 
-          ctx.fillStyle = isBull ? hexToRgba(color, 0.85) : color;
+          ctx.fillStyle = isBull ? hexToRgba(color, 0.18) : color; // haussier creux, baissier plein (second encodage hors couleur)
           ctx.fillRect(xCenter - bodyWidth / 2, yTop, bodyWidth, yHeight);
           ctx.strokeStyle = color;
           ctx.lineWidth = 1.5;
@@ -14406,12 +15879,22 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           ...defaultOpts.plugins,
           legend: {
             display: true,
-            position: 'top',
-            align: 'end',
+            position: 'bottom',
+            align: 'center',
+            // Légende statique : bougies (hausse creuse, baisse pleine) et moyenne mobile du volume (trait).
+            onClick: () => {},
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 },
-              filter: (item) => item.text !== 'Prix Clôture'
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              boxWidth: 12,
+              boxHeight: 12,
+              padding: 12,
+              generateLabels: () => [
+                { text: 'Hausse (creux)', fillStyle: hexToRgba(bullColor, 0.18), strokeStyle: bullColor, lineWidth: 2, fontColor: tokens.textPrimary, pointStyle: 'rect', hidden: false, datasetIndex: 0 },
+                { text: 'Baisse (plein)', fillStyle: bearColor, strokeStyle: bearColor, lineWidth: 2, fontColor: tokens.textPrimary, pointStyle: 'rect', hidden: false, datasetIndex: 0 },
+                { text: 'Volume MA (5j)', fillStyle: vmaColor, strokeStyle: vmaColor, lineWidth: 2, fontColor: tokens.textPrimary, pointStyle: 'line', hidden: false, datasetIndex: 1 }
+              ]
             }
           },
           tooltip: {
@@ -14445,13 +15928,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           yPrice: {
             type: 'linear',
             position: 'left',
+            stack: 'ohlcv',
+            stackWeight: 7,
             weight: 2,
-            min: Math.floor(priceMin - pricePad),
-            max: Math.ceil(priceMax + pricePad),
+            min: Math.floor((priceMin - pricePad) / 10) * 10,
+            max: Math.ceil((priceMax + pricePad) / 10) * 10,
             grid: { color: tokens.gridColor },
             ticks: {
               color: tokens.textSecondary,
-              font: { family: tokens.fontMono }
+              font: { family: tokens.fontMono },
+              stepSize: 10
             },
             title: {
               display: true,
@@ -14462,21 +15948,28 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           },
           yVolume: {
             type: 'linear',
-            position: 'right',
+            position: 'left',
+            stack: 'ohlcv',
+            stackWeight: 3,
             weight: 1,
+            offset: false,
             beginAtZero: true,
-            max: Math.ceil(volMax * 3.5),
-            grid: { display: false },
+            min: 0,
+            max: volTop,
+            grid: { color: tokens.gridColor },
             ticks: {
-              color: tokens.textMuted,
-              font: { family: tokens.fontMono, size: 10 },
-              callback: (val) => val > 0 && val <= volMax ? `${(val / 1000).toFixed(0)}k` : ''
+              color: tokens.textSecondary,
+              font: { family: tokens.fontMono, size: 11 },
+              stepSize: volTop / 4,
+              autoSkip: false,
+              maxTicksLimit: 6,
+              callback: (val) => (val === 0 ? '0' : (val >= volTop ? '' : `${(val / 1000).toFixed(0)}k`))
             },
             title: {
               display: true,
               text: 'Volume',
-              color: tokens.textMuted,
-              font: { family: tokens.fontFamily, size: 11 }
+              color: tokens.textSecondary,
+              font: { family: tokens.fontFamily, size: 12, weight: '500' }
             }
           }
         }
@@ -14544,13 +16037,48 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     return (d1 > 0 && d2 > 0) ? Math.round((num / Math.sqrt(d1 * d2)) * 1000) / 1000 : 0;
   }
 
+  // Bornes "propres" : 6 intervalles identiques sur les deux axes, zéros alignés,
+  // si bien que chaque graduation de l'axe droit tombe sur la grille de l'axe gauche.
+  const DUAL_AXIS_INTERVALS = 6;
+  function niceStep(rawStep) {
+    const exp = Math.pow(10, Math.floor(Math.log10(rawStep)));
+    const f = rawStep / exp;
+    const nice = f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10;
+    return nice * exp;
+  }
   function computeZeroAlignedBounds(s1, s2) {
     const max1 = Math.max(...s1, 10);
     const max2 = Math.max(...s2, 10);
+    const step1 = niceStep((max1 * 1.05) / DUAL_AXIS_INTERVALS);
+    const step2 = niceStep((max2 * 1.05) / DUAL_AXIS_INTERVALS);
     return {
-      y1: { min: 0, max: Math.ceil(max1 * 1.15) },
-      y2: { min: 0, max: Math.ceil(max2 * 1.15) }
+      y1: { min: 0, max: step1 * DUAL_AXIS_INTERVALS, step: step1 },
+      y2: { min: 0, max: step2 * DUAL_AXIS_INTERVALS, step: step2 }
     };
+  }
+
+
+  // Texte lisible (WCAG AA 4.5:1) : assombrit/éclaircit la couleur de série jusqu'au contraste requis sur la surface.
+  function legibleOn(color, surface) {
+    const hex = (c) => {
+      const m = /^#([0-9a-f]{6})$/i.exec(String(c || '').trim());
+      return m ? [0, 2, 4].map(i => parseInt(m[1].substr(i, 2), 16)) : null;
+    };
+    const lum = (rgb) => {
+      const ch = rgb.map(v => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+      return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+    };
+    const fg = hex(color);
+    const bg = hex(surface) || [255, 255, 255];
+    if (!fg) return color;
+    const target = lum(bg) > 0.4 ? 0 : 255;
+    let cur = fg;
+    for (let k = 0; k <= 20; k++) {
+      const l1 = lum(cur), l2 = lum(bg);
+      if ((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) >= 4.5) break;
+      cur = fg.map(v => Math.round(v + (target - v) * (k + 1) * 0.05));
+    }
+    return '#' + cur.map(v => v.toString(16).padStart(2, '0')).join('');
   }
 
   const DEFAULT_DATA = {
@@ -14602,9 +16130,40 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
     const color1 = getColor(tokens, 0);
     const color2 = getColor(tokens, 1);
+    const text1 = legibleOn(color1, tokens.surface);
+    const text2 = legibleOn(color2, tokens.surface);
+
+    // Étiquettes du dernier point de chaque série (plugin local) : série 1 au-dessus, série 2 en dessous, à droite du point.
+    const lastPointLabelsPlugin = {
+      id: 'kitChartsDualLastLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const { ctx, chartArea } = chart;
+        ctx.save();
+        ctx.font = `600 11px ${tokens.fontMono || 'monospace'}`;
+        ctx.textBaseline = 'middle';
+        ctx.textAlign = 'right';
+        [[0, text1], [1, text2]].forEach(([di, col]) => {
+          const meta = chart.getDatasetMeta(di);
+          const arr = chart.data.datasets[di].data;
+          const el = meta.data[arr.length - 1];
+          if (!el) return;
+          const text = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(arr[arr.length - 1]);
+          const prev = meta.data[arr.length - 2];
+          // Côté libre : à l'opposé de la direction d'arrivée de la courbe (aucun chevauchement avec le tracé).
+          const dy = prev && prev.y > el.y ? -12 : 12;
+          let y = el.y + dy;
+          y = Math.max(chartArea.top + 6, Math.min(chartArea.bottom - 6, y));
+          ctx.fillStyle = col;
+          ctx.fillText(text, el.x - 6, y);
+        });
+        ctx.restore();
+      }
+    };
 
     const defaultOpts = getChartDefaultOptions(tokens);
     const config = {
+      plugins: [lastPointLabelsPlugin],
       type: 'line',
       data: {
         labels,
@@ -14620,7 +16179,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             pointHoverRadius: 6,
             tension: 0.3,
             datalabels: {
-              display: showDataLabels,
+              display: false,
               color: color1,
               align: 'top',
               anchor: 'center',
@@ -14638,7 +16197,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             pointHoverRadius: 6,
             tension: 0.3,
             datalabels: {
-              display: showDataLabels,
+              display: false,
               color: color2,
               align: 'bottom',
               anchor: 'center',
@@ -14659,16 +16218,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         plugins: {
           ...defaultOpts.plugins,
           datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
+            display: false, // plugin commun désactivé : étiquettes gérées par le plugin local ci-dessous
             formatter: (v) => formatLabelValue(v)
           }),
           legend: {
             display: true,
-            position: 'top',
-            align: 'end',
+            position: 'bottom',
+            align: 'center',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              pointStyle: 'line',
+              boxWidth: 24,
+              padding: 10
             }
           },
           tooltip: {
@@ -14682,22 +16245,25 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         scales: {
           x: {
             ...defaultOpts.scales.x,
-            grid: { color: tokens.gridColor }
+            grid: { color: tokens.gridColor },
+            border: { color: tokens.border || tokens.gridColor }
           },
           y: {
             type: 'linear',
             position: 'left',
             min: bounds.y1.min,
             max: bounds.y1.max,
+            beginAtZero: true,
             grid: { color: tokens.gridColor },
             ticks: {
-              color: color1,
+              color: text1,
+              stepSize: bounds.y1.step,
               font: { family: tokens.fontMono, weight: '600' }
             },
             title: {
               display: true,
               text: label1,
-              color: color1,
+              color: text1,
               font: { family: tokens.fontFamily, size: 12, weight: '600' }
             }
           },
@@ -14706,15 +16272,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             position: 'right',
             min: bounds.y2.min,
             max: bounds.y2.max,
+            beginAtZero: true,
             grid: { display: false },
             ticks: {
-              color: color2,
+              color: text2,
+              stepSize: bounds.y2.step,
               font: { family: tokens.fontMono, weight: '600' }
             },
             title: {
               display: true,
               text: label2,
-              color: color2,
+              color: text2,
               font: { family: tokens.fontFamily, size: 12, weight: '600' }
             }
           }
@@ -15187,6 +16755,103 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   });
 
   const chartData = { labels, datasets };
+
+  // Texte lisible (WCAG AA 4.5:1) : assombrit/éclaircit la couleur de série jusqu'au contraste requis sur la surface.
+function legibleOn(color, surface) {
+  const hex = (c) => {
+    const m = /^#([0-9a-f]{6})$/i.exec(String(c || '').trim());
+    return m ? [0, 2, 4].map(i => parseInt(m[1].substr(i, 2), 16)) : null;
+  };
+  const lum = (rgb) => {
+    const ch = rgb.map(v => { const x = v / 255; return x <= 0.03928 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); });
+    return 0.2126 * ch[0] + 0.7152 * ch[1] + 0.0722 * ch[2];
+  };
+  const fg = hex(color);
+  const bg = hex(surface) || [255, 255, 255];
+  if (!fg) return color;
+  const target = lum(bg) > 0.4 ? 0 : 255;
+  let cur = fg;
+  for (let k = 0; k <= 20; k++) {
+    const l1 = lum(cur), l2 = lum(bg);
+    if ((Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05) >= 4.5) break;
+    cur = fg.map(v => Math.round(v + (target - v) * (k + 1) * 0.05));
+  }
+  return '#' + cur.map(v => v.toString(16).padStart(2, '0')).join('');
+}
+
+
+  // Étiquettes directes en fin de courbe (plugin local) : remplacent la légende.
+  const directLabels = options.directLabels !== false && datasets.length > 0;
+  // Découpe un libellé en lignes d'au plus maxW pixels (retour à la ligne aux espaces, jamais de rognage).
+  const wrapLabel = (ctx, text, maxW) => {
+    const words = String(text).split(' ');
+    const lines = [];
+    let cur = '';
+    words.forEach((w) => {
+      const t = cur ? cur + ' ' + w : w;
+      if (cur && ctx.measureText(t).width > maxW) { lines.push(cur); cur = w; } else { cur = t; }
+    });
+    if (cur) lines.push(cur);
+    return lines;
+  };
+  const labelFont = (chart) => (chart.width < 460 ? 11 : 12);
+  const directLabelPlugin = {
+    id: 'kitChartsDirectLabels',
+    beforeLayout(chart) {
+      if (!directLabels) return;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.font = `600 ${labelFont(chart)}px ${tokens.fontFamily || 'sans-serif'}`;
+      let w = 0;
+      (chart.data.datasets || []).forEach((d) => { w = Math.max(w, ctx.measureText(d.label || '').width); });
+      ctx.restore();
+      // Réservation proportionnelle à la largeur : au plus 36 % du graphique, le reste passe à la ligne.
+      const reserve = Math.ceil(Math.min(w, chart.width * 0.36)) + 16;
+      const pad = chart.options.layout && chart.options.layout.padding;
+      if (pad && typeof pad === 'object' && pad.right === reserve) return;
+      const base = (pad && typeof pad === 'object' && pad.left !== undefined) ? pad : { top: 4, bottom: 4, left: 4, right: 4 };
+      chart.options.layout = { ...(chart.options.layout || {}), padding: { ...base, right: reserve } };
+    },
+    afterDatasetsDraw(chart) {
+      if (!directLabels) return;
+      const { ctx, chartArea } = chart;
+      const fs = labelFont(chart);
+      const lineH = fs + 2;
+      const maxW = Math.max(40, chart.width - chartArea.right - 14);
+      ctx.save();
+      ctx.font = `600 ${fs}px ${tokens.fontFamily || 'sans-serif'}`;
+      const items = [];
+      chart.data.datasets.forEach((d, i) => {
+        if (!chart.isDatasetVisible(i)) return;
+        const meta = chart.getDatasetMeta(i);
+        let last = meta.data.length - 1;
+        while (last >= 0 && (meta.data[last] == null || d.data[last] == null)) last--;
+        if (last < 0) return;
+        const raw = (typeof d.borderColor === 'string' ? d.borderColor : tokens.textPrimary);
+        const lines = wrapLabel(ctx, d.label || '', maxW);
+        items.push({ lines, h: lines.length * lineH, color: legibleOn(raw, tokens.surface), x: meta.data[last].x, y: meta.data[last].y });
+      });
+      items.sort((a, b) => a.y - b.y);
+      // Centres des blocs : posés sur la courbe puis écartés pour ne jamais se chevaucher.
+      items.forEach((it, k) => {
+        it.cy = it.y;
+        if (k > 0) it.cy = Math.max(it.cy, items[k - 1].cy + (items[k - 1].h + it.h) / 2 + 2);
+      });
+      for (let k = items.length - 1; k >= 0; k--) {
+        const maxC = k === items.length - 1 ? chartArea.bottom + 4 - items[k].h / 2 : items[k + 1].cy - (items[k + 1].h + items[k].h) / 2 - 2;
+        if (items[k].cy > maxC) items[k].cy = maxC;
+      }
+      ctx.textBaseline = 'middle';
+      ctx.textAlign = 'left';
+      items.forEach((it) => {
+        ctx.fillStyle = it.color;
+        it.lines.forEach((ln, j) => {
+          ctx.fillText(ln, it.x + 10, it.cy - it.h / 2 + lineH * (j + 0.5));
+        });
+      });
+      ctx.restore();
+    }
+  };
   const baseOptions = getChartDefaultOptions(tokens);
   const temporalOpts = getTemporalInteractionOptions(tokens, { mode: 'index', axis: 'x', hitRadius: 12, hoverRadius: 6 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 700, easing: 'easeOutCubic' });
@@ -15194,6 +16859,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const config = {
     type: 'line',
     data: chartData,
+    plugins: [directLabelPlugin],
     options: {
       ...baseOptions,
       ...temporalOpts,
@@ -15241,7 +16907,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       plugins: {
         legend: {
-          display: !isTufte,
+          display: !isTufte && !directLabels,
           position: 'top',
           align: 'end',
           labels: {
@@ -15263,6 +16929,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 text: ds.label || ('Série ' + (i + 1)),
                 fillStyle: c,
                 strokeStyle: c,
+                fontColor: tokens.textPrimary,
                 lineWidth: 2,
                 pointStyle: 'line',
                 hidden: !chart.isDatasetVisible(i),
@@ -15372,10 +17039,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   function computeSMA(prices, period = 20) {
     if (!Array.isArray(prices)) return [];
     return prices.map((val, idx, arr) => {
-      if (idx < period - 1) {
-        const slice = arr.slice(0, idx + 1);
-        return Math.round((slice.reduce((s, v) => s + v, 0) / slice.length) * 100) / 100;
-      }
+      // Moyenne mobile indéfinie tant que la fenêtre n'est pas complète (pas de fenêtre partielle trompeuse).
+      if (idx < period - 1) return null;
       const slice = arr.slice(idx - period + 1, idx + 1);
       return Math.round((slice.reduce((s, v) => s + v, 0) / period) * 100) / 100;
     });
@@ -15397,6 +17062,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const lower = [];
 
     prices.forEach((val, idx, arr) => {
+      if (idx < period - 1) {
+        upper.push(null);
+        lower.push(null);
+        return;
+      }
       const start = Math.max(0, idx - period + 1);
       const slice = arr.slice(start, idx + 1);
       const mean = sma[idx];
@@ -15474,23 +17144,25 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             order: 1
           },
           {
-            label: 'Moyenne Mobile (SMA 10)',
+            label: 'Moyenne mobile SMA 10',
             data: bollinger.sma,
             borderColor: smaColor,
             borderWidth: 1.5,
             borderDash: [3, 3],
+            pointStyle: 'line',
             pointRadius: 0,
             tension: 0.3,
             order: 2
           },
           {
-            label: 'Bollinger Supérieure (+2σ)',
+            label: 'Bollinger ±2σ',
             data: bollinger.upper,
             borderColor: hexToRgba(bandColor, 0.60),
             borderWidth: 1,
             pointRadius: 0,
             fill: '+1',
-            backgroundColor: hexToRgba(bandColor, isDark ? 0.18 : 0.10),
+            pointStyle: 'rect',
+            backgroundColor: hexToRgba(bandColor, isDark ? 0.22 : 0.18),
             tension: 0.3,
             order: 3
           },
@@ -15517,11 +17189,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           ...defaultOpts.plugins,
           legend: {
             display: true,
-            position: 'top',
-            align: 'end',
+            position: 'bottom',
+            align: 'center',
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 },
+              font: { family: tokens.fontFamily, size: 11 },
+              usePointStyle: true,
+              boxWidth: 22,
+              boxHeight: 8,
+              padding: 10,
               filter: (item) => !item.text.includes('Inférieure')
             }
           },
@@ -15530,7 +17206,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             callbacks: {
               title: (items) => `Jour : ${items[0].label}`,
               label: (ctx) => {
-                return `${ctx.dataset.label} : ${ctx.parsed.y.toFixed(2)} €`;
+                return ctx.parsed.y == null ? `${ctx.dataset.label} : n/d` : `${ctx.dataset.label} : ${ctx.parsed.y.toFixed(2)} €`;
               }
             }
           }
@@ -15538,7 +17214,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         scales: {
           x: {
             ...defaultOpts.scales.x,
-            grid: { color: tokens.gridColor }
+            grid: { color: tokens.gridColor },
+            border: { color: tokens.border || tokens.gridColor }
           },
           y: {
             ...defaultOpts.scales.y,
@@ -15622,7 +17299,7 @@ const DEFAULT_DATA = {
  * @param {string} [themeName='colorbrewer-accessible'] - Theme identifier
  * @returns {Object} Initialized Chart.js instance or mock instance
  */
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string' && typeof document !== 'undefined'
     ? document.getElementById(canvasTarget)
     : canvasTarget;
@@ -15686,6 +17363,51 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   });
 
   const chartData = { labels, datasets };
+
+  // Étiquettes min, max et dernier point uniquement (plugin local, indépendant du plugin datalabels commun).
+  const extremaPlugin = {
+    id: 'kitChartsSparkExtrema',
+    afterDatasetsDraw(chart) {
+      if ((options && options.showDataLabels === false) || (customData && customData.showDataLabels === false)) return;
+      const { ctx, chartArea } = chart;
+      const meta = chart.getDatasetMeta(0);
+      const data = (chart.data.datasets[0] && chart.data.datasets[0].data) || [];
+      if (!meta || !data.length) return;
+      const nums = data.map((v) => (typeof v === 'number' ? v : NaN));
+      const max = Math.max(...nums.filter((v) => !isNaN(v)));
+      const min = Math.min(...nums.filter((v) => !isNaN(v)));
+      const iMax = nums.indexOf(max);
+      const iMin = nums.indexOf(min);
+      const iLast = nums.length - 1;
+      const fmt = (v) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(v);
+      const spots = [];
+      [[iMax, 'above'], [iMin, 'below'], [iLast, iLast === iMax ? 'above' : (iLast === iMin ? 'below' : 'above')]].forEach(([i, pos]) => {
+        if (!spots.some((s) => s.i === i)) spots.push({ i, pos });
+      });
+      ctx.save();
+      ctx.font = `600 11px ${tokens.fontMono || tokens.fontFamily || 'monospace'}`;
+      ctx.fillStyle = tokens.textPrimary;
+      ctx.textBaseline = 'middle';
+      spots.forEach(({ i, pos }) => {
+        const el = meta.data[i];
+        if (!el) return;
+        const text = fmt(nums[i]);
+        const w = ctx.measureText(text).width;
+        let x = el.x - w / 2;
+        x = Math.max(chartArea.left, Math.min(x, chartArea.right - w));
+        const y = pos === 'above' ? el.y - 11 : el.y + 11;
+        ctx.fillText(text, x, y);
+        if (i !== iLast) {
+          ctx.beginPath();
+          ctx.arc(el.x, el.y, 2.5, 0, Math.PI * 2);
+          ctx.fillStyle = (data === null ? tokens.textPrimary : (datasets[0] && datasets[0].borderColor) || tokens.textPrimary);
+          ctx.fill();
+          ctx.fillStyle = tokens.textPrimary;
+        }
+      });
+      ctx.restore();
+    }
+  };
   const baseOptions = getChartDefaultOptions(tokens);
   const temporalOpts = getTemporalInteractionOptions(tokens, { mode: 'index', axis: 'x', hitRadius: 10, hoverRadius: 5 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 550, easing: 'easeOutCubic' });
@@ -15693,6 +17415,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const config = {
     type: 'line',
     data: chartData,
+    plugins: [extremaPlugin],
     options: {
       ...baseOptions,
       ...temporalOpts,
@@ -15701,7 +17424,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       maintainAspectRatio: false,
       events: ['mousemove', 'mouseout', 'touchstart', 'touchmove'],
       layout: {
-        padding: { top: 4, bottom: 4, left: 2, right: 6 }
+        padding: { top: 18, bottom: 18, left: 18, right: 30 }
       },
       scales: {
         x: {
@@ -15891,7 +17614,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : emphasisStyle.borderWidth,
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [5, 5] : []),
       tension: typeof ds.tension === 'number' ? ds.tension : 0.3,
-      fill: ds.fill !== undefined ? ds.fill : true,
+      fill: ds.fill !== undefined ? ds.fill : (idx === 0 ? 'origin' : '-1'),
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : 0,
       pointHoverRadius: 5,
       pointStyle: ds.pointStyle || emphasisStyle.pointStyle || (isForecast ? 'crossRot' : 'circle'),
@@ -15961,6 +17684,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           display: true && !isTufte,
           position: 'top',
           align: 'end',
+          reverse: true,
           labels: {
             color: tokens.textPrimary,
             font: {
@@ -15980,6 +17704,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
                 text: ds.label || ('Série ' + (i + 1)),
                 fillStyle: c,
                 strokeStyle: c,
+                fontColor: tokens.textPrimary,
                 lineWidth: 2,
                 pointStyle: 'line',
                 hidden: !chart.isDatasetVisible(i),
@@ -16089,7 +17814,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
  * @file 05-evolution-temporelle/streamgraph/template.js
  * @description Standardized Streamgraph template for kit-charts.
  * Visualizes qualitative shifts in thematic volume over continuous time using organic, fluid splines.
- * Employs smooth Bézier tension (0.4), stacked area layers, and semantic emphasis tokens.
+ * Employs smooth Bézier tension (0.4), layered areas around a computed wiggle baseline (Byron & Wattenberg), and semantic emphasis tokens.
  */
 
 /**
@@ -16100,26 +17825,74 @@ const DEFAULT_DATA = {
   datasets: [
     {
       label: 'Intelligence Artificielle',
-      data: [20, 32, 45, 68, 92, 115, 130, 142, 160, 175],
+      data: [30, 45, 70, 110, 140, 120, 90, 75, 85, 105],
       role: 'focal'
     },
     {
       label: 'Cybersécurité & Privacy',
-      data: [45, 50, 48, 55, 62, 70, 75, 80, 82, 85],
+      data: [60, 75, 100, 90, 70, 60, 80, 115, 130, 110],
       role: 'context'
     },
     {
       label: 'Cloud & DevOps',
-      data: [60, 58, 55, 52, 48, 45, 42, 40, 38, 35],
+      data: [80, 70, 55, 50, 65, 90, 110, 95, 70, 55],
       role: 'context'
     },
     {
       label: 'Blockchain & Web3',
-      data: [35, 42, 38, 25, 20, 18, 15, 12, 10, 8],
+      data: [40, 55, 65, 50, 30, 25, 35, 50, 45, 30],
       role: 'context'
     }
   ]
 };
+
+/**
+ * Calcule la baseline (bord inférieur) d'un streamgraph.
+ * 'wiggle' : algorithme de Byron & Wattenberg (minimise la variation de pente, équivalent d3.stackOffsetWiggle).
+ * 'silhouette' : couches centrées autour de 0.
+ * Dans les deux cas le résultat est recentré pour que la silhouette soit symétrique autour de 0.
+ *
+ * @param {number[][]} series - valeurs par couche (couche x temps)
+ * @param {string} [offset='wiggle']
+ * @returns {number[]} baseline par pas de temps
+ */
+function computeStreamBaseline(series, offset = 'wiggle') {
+  const m = series.length ? series[0].length : 0;
+  const n = series.length;
+  const num = (v) => (typeof v === 'number' && isFinite(v) ? v : 0);
+  const totals = [];
+  for (let j = 0; j < m; j++) {
+    let t = 0;
+    for (let i = 0; i < n; i++) t += num(series[i][j]);
+    totals.push(t);
+  }
+  const base = new Array(m).fill(0);
+  if (offset === 'silhouette') {
+    for (let j = 0; j < m; j++) base[j] = -totals[j] / 2;
+    return base;
+  }
+  let y = 0;
+  for (let j = 1; j < m; j++) {
+    let s1 = 0;
+    let s2 = 0;
+    for (let i = 0; i < n; i++) {
+      const cur = num(series[i][j]);
+      const prev = num(series[i][j - 1]);
+      let s3 = (cur - prev) / 2;
+      for (let k = 0; k < i; k++) s3 += num(series[k][j]) - num(series[k][j - 1]);
+      s1 += cur;
+      s2 += s3 * cur;
+    }
+    base[j - 1] = y;
+    if (s1) y -= s2 / s1;
+  }
+  if (m) base[m - 1] = y;
+  // Recentrage : la ligne médiane moyenne de la silhouette est ramenée à 0.
+  let meanMid = 0;
+  for (let j = 0; j < m; j++) meanMid += base[j] + totals[j] / 2;
+  meanMid = m ? meanMid / m : 0;
+  return base.map((v) => v - meanMid);
+}
 
 /**
  * Creates and renders a Streamgraph in the specified canvas target.
@@ -16129,7 +17902,7 @@ const DEFAULT_DATA = {
  * @param {string} [themeName='colorbrewer-accessible'] - Theme identifier
  * @returns {Object} Initialized Chart.js instance or mock instance
  */
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string' && typeof document !== 'undefined'
     ? document.getElementById(canvasTarget)
     : canvasTarget;
@@ -16167,10 +17940,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       borderWidth: ds.borderWidth ?? (isTufte ? 1.0 : (role === 'focal' ? 2.0 : 1.0))
     });
 
-    const border = ds.borderColor || emphasisStyle.borderColor || baseColor;
-    const bg = ds.backgroundColor || (typeof emphasisStyle.backgroundColor === 'string'
-      ? emphasisStyle.backgroundColor
-      : hexToRgba(border, alpha));
+    // Streamgraph : teinte catégorielle par couche (pas de grisage 'contexte'), chaque couche reste identifiable.
+    const border = ds.borderColor || baseColor;
+    const bg = ds.backgroundColor || hexToRgba(baseColor, isTufte ? 0.55 : 0.85);
 
     return {
       label: ds.label || `Série ${idx + 1}`,
@@ -16189,7 +17961,37 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     };
   });
 
-  const chartData = { labels, datasets };
+  // Streamgraph : bords calculés ici (pas d'empilement Chart.js ancré à 0).
+  // Dataset 0 = baseline invisible (bord inférieur), puis une courbe par couche = bord supérieur cumulé.
+  const rawSeries = datasets.map((ds) => ds.data);
+  const offsetMode = (options && options.offset) || rawData.offset || 'silhouette';
+  const baseline = computeStreamBaseline(rawSeries, offsetMode);
+  const round2 = (v) => Math.round(v * 100) / 100;
+  const cumulative = baseline.slice();
+  const layerDatasets = datasets.map((ds, idx) => {
+    const upper = ds.data.map((v, j) => {
+      cumulative[j] += (typeof v === 'number' && isFinite(v) ? v : 0);
+      return round2(cumulative[j]);
+    });
+    return Object.assign({}, ds, {
+      data: upper,
+      rawValues: ds.data,
+      fill: '-1'
+    });
+  });
+  const baseDataset = {
+    label: '__baseline',
+    data: baseline.map(round2),
+    borderWidth: 0,
+    borderColor: 'transparent',
+    backgroundColor: 'transparent',
+    pointRadius: 0,
+    pointHoverRadius: 0,
+    fill: false,
+    tension: 0.4,
+    isStreamBaseline: true
+  };
+  const chartData = { labels, datasets: [baseDataset, ...layerDatasets] };
   const baseOptions = getChartDefaultOptions(tokens);
   const temporalOpts = getTemporalInteractionOptions(tokens, { mode: 'index', axis: 'x', hitRadius: 12, hoverRadius: 6 });
   const animOpts = getAccessibleAnimationOptions(tokens, { duration: 700, easing: 'easeOutCubic' });
@@ -16205,7 +18007,6 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       maintainAspectRatio: false,
       scales: {
         x: {
-          stacked: true,
           grid: {
             display: false,
             drawBorder: false
@@ -16221,21 +18022,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         },
         y: {
-          stacked: true,
-          grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
-            drawBorder: false
-          },
+          display: false,
+          grid: { display: false, drawBorder: false },
           border: { display: false },
-          ticks: {
-            color: tokens.textSecondary,
-            font: {
-              family: tokens.fontFamily,
-              size: 11
-            },
-            padding: 8
-          }
+          ticks: { display: false }
         }
       },
       plugins: {
@@ -16245,6 +18035,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           align: 'end',
           labels: {
             color: tokens.textPrimary,
+            filter: (item, chartData) => !(chartData.datasets[item.datasetIndex] || {}).isStreamBaseline,
             font: {
               family: tokens.fontFamily,
               size: 12,
@@ -16264,6 +18055,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           borderWidth: 1,
           padding: 10,
           cornerRadius: 6,
+          filter: (item) => !item.dataset.isStreamBaseline,
           titleFont: {
             family: tokens.fontFamily,
             size: 12,
@@ -16276,9 +18068,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           },
           callbacks: {
             label: (context) => {
-              const val = context.parsed.y !== null && context.parsed.y !== undefined
+              const rv = context.dataset.rawValues;
+              const val = rv ? rv[context.dataIndex] : (context.parsed.y !== null && context.parsed.y !== undefined
                 ? context.parsed.y
-                : context.raw;
+                : context.raw);
               const formatted = typeof val === 'number'
                 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val)
                 : val;
@@ -16311,6 +18104,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
   const moduleExports = {
     DEFAULT_DATA: typeof DEFAULT_DATA !== 'undefined' ? DEFAULT_DATA : (typeof defaultData !== 'undefined' ? defaultData : {}),
+    computeStreamBaseline: computeStreamBaseline,
     createChart: typeof createChart === 'function' ? createChart : null,
     getEmphasisStyle: typeof getEmphasisStyle === 'function' ? getEmphasisStyle : null,
     getValenceColor: typeof getValenceColor === 'function' ? getValenceColor : null,
@@ -16360,27 +18154,36 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 /**
  * @file 06-flux-processus/alluvial-diagram/template.js
  * @description Standardized Alluvial Diagram template for kit-charts.
- * Visualizes multi-stage categorical cohort migrations and redistributions across discrete states.
- * Employs chartjs-chart-sankey plugin, flow conservation, dynamic theme tokens, and semantic valence ribbons.
+ * Les mêmes catégories sont répétées à chaque étape (strates alignées en colonnes) ; chaque flux
+ * prend la couleur de sa catégorie d'origine. Chart.js + chartjs-chart-sankey, plugin d'en-têtes d'étapes.
  */
 
 /**
- * Données par défaut représentatives (Parcours & Migration des Cohortes Utilisateurs avec valence métier)
+ * Données par défaut : migration d'une cohorte de 1 500 utilisateurs entre les mêmes
+ * états (Gratuit, Pro, Entreprise, Désabonné) sur trois trimestres. Conservation par étape.
  */
 const DEFAULT_DATA = {
+  stages: ['T1 2025', 'T2 2025', 'T3 2025'],
   datasets: [{
-    label: 'Parcours & Migration des Cohortes Utilisateurs',
+    label: 'Migration de la cohorte (utilisateurs)',
     data: [
-      { from: 'Acquisition Organique', to: 'Plan Gratuit', flow: 600, valence: 'neutral' },
-      { from: 'Acquisition Organique', to: 'Plan Pro', flow: 250, valence: 'positive' },
-      { from: 'Acquisition Payante (Ads)', to: 'Plan Gratuit', flow: 400, valence: 'neutral' },
-      { from: 'Acquisition Payante (Ads)', to: 'Plan Pro', flow: 450, valence: 'positive' },
-      { from: 'Plan Gratuit', to: 'Désabonné (Churn)', flow: 350, valence: 'negative' },
-      { from: 'Plan Gratuit', to: 'Plan Pro (Upgrade)', flow: 450, valence: 'positive' },
-      { from: 'Plan Gratuit', to: 'Plan Gratuit (Actif)', flow: 200, valence: 'neutral' },
-      { from: 'Plan Pro', to: 'Plan Entreprise (Expansion)', flow: 280, valence: 'positive' },
-      { from: 'Plan Pro', to: 'Plan Pro (Renouvelé)', flow: 360, valence: 'positive' },
-      { from: 'Plan Pro', to: 'Désabonné (Churn)', flow: 60, valence: 'negative' }
+      { from: 'Gratuit', to: 'Gratuit', fromStage: 'T1 2025', toStage: 'T2 2025', flow: 650 },
+      { from: 'Gratuit', to: 'Pro', fromStage: 'T1 2025', toStage: 'T2 2025', flow: 200 },
+      { from: 'Gratuit', to: 'Désabonné', fromStage: 'T1 2025', toStage: 'T2 2025', flow: 150, valence: 'negative' },
+      { from: 'Pro', to: 'Pro', fromStage: 'T1 2025', toStage: 'T2 2025', flow: 330 },
+      { from: 'Pro', to: 'Entreprise', fromStage: 'T1 2025', toStage: 'T2 2025', flow: 40 },
+      { from: 'Pro', to: 'Désabonné', fromStage: 'T1 2025', toStage: 'T2 2025', flow: 30, valence: 'negative' },
+      { from: 'Entreprise', to: 'Entreprise', fromStage: 'T1 2025', toStage: 'T2 2025', flow: 95 },
+      { from: 'Entreprise', to: 'Désabonné', fromStage: 'T1 2025', toStage: 'T2 2025', flow: 5, valence: 'negative' },
+      { from: 'Gratuit', to: 'Gratuit', fromStage: 'T2 2025', toStage: 'T3 2025', flow: 480 },
+      { from: 'Gratuit', to: 'Pro', fromStage: 'T2 2025', toStage: 'T3 2025', flow: 120 },
+      { from: 'Gratuit', to: 'Désabonné', fromStage: 'T2 2025', toStage: 'T3 2025', flow: 50, valence: 'negative' },
+      { from: 'Pro', to: 'Pro', fromStage: 'T2 2025', toStage: 'T3 2025', flow: 440 },
+      { from: 'Pro', to: 'Entreprise', fromStage: 'T2 2025', toStage: 'T3 2025', flow: 50 },
+      { from: 'Pro', to: 'Désabonné', fromStage: 'T2 2025', toStage: 'T3 2025', flow: 40, valence: 'negative' },
+      { from: 'Entreprise', to: 'Entreprise', fromStage: 'T2 2025', toStage: 'T3 2025', flow: 128 },
+      { from: 'Entreprise', to: 'Désabonné', fromStage: 'T2 2025', toStage: 'T3 2025', flow: 7, valence: 'negative' },
+      { from: 'Désabonné', to: 'Désabonné', fromStage: 'T2 2025', toStage: 'T3 2025', flow: 185, valence: 'negative' }
     ]
   }]
 };
@@ -16391,9 +18194,10 @@ const DEFAULT_DATA = {
  * @param {string|HTMLCanvasElement} canvasTarget - DOM Canvas ID or Canvas Element
  * @param {Object} [customData] - Optional user data payload
  * @param {string} [themeName='colorbrewer-accessible'] - Theme identifier
+ * @param {Object} [options] - Options (showDataLabels)
  * @returns {Object} Initialized Chart.js instance or mock instance
  */
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string' && typeof document !== 'undefined'
     ? document.getElementById(canvasTarget)
     : canvasTarget;
@@ -16408,52 +18212,178 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const container = canvas && canvas.parentElement ? canvas.parentElement : null;
   const tokens = getThemeTokens(themeName, container);
   const isTufte = tokens.name === 'tufte-minimalist-executive';
-  const reduceMotion = isReducedMotionPreferred();
+  const showDataLabels = (customData && customData.showDataLabels !== undefined)
+    ? customData.showDataLabels
+    : (options && options.showDataLabels !== undefined ? options.showDataLabels : true);
 
   const rawData = customData || DEFAULT_DATA;
   const rawDatasets = rawData.datasets || [];
+  const stages = Array.isArray(rawData.stages) ? rawData.stages : [];
+  const fmt = (v) => (typeof v === 'number' ? v.toLocaleString('fr-FR') : v);
 
   const datasets = rawDatasets.map((ds, dsIdx) => {
-    const flowData = Array.isArray(ds.data) ? ds.data : [];
+    const flowItems = Array.isArray(ds.data) ? ds.data : [];
+    const keyOf = (name, stage) => (stage === undefined || stage === null ? name : `${name}@${stage}`);
+    const flowData = flowItems.map(it => ({
+      ...it,
+      from: keyOf(it.from, it.fromStage),
+      to: keyOf(it.to, it.toStage),
+      fromName: it.from,
+      toName: it.to
+    }));
 
-    const defaultColorFrom = (ctx) => {
-      const palette = tokens.palette || ['#2B8CBE', '#E66101', '#5E3C99', '#4DAC26'];
-      const item = ctx.dataset?.data?.[ctx.dataIndex];
-      if (item && item.valence) {
-        if (item.valence === 'positive' || item.valence === 'gain') return getValenceColor(tokens, 'up', 'gain');
-        if (item.valence === 'negative' || item.valence === 'churn') return getValenceColor(tokens, 'down', 'gain');
-      }
-      const fromNode = item?.from || '';
-      let hash = 0;
-      for (let i = 0; i < fromNode.length; i++) hash += fromNode.charCodeAt(i);
-      return palette[Math.abs(hash) % palette.length];
-    };
+    // Catégories (ordre d'apparition) et couleur par catégorie ; catégorie "négative" = destination de flux négatifs
+    const categories = [];
+    const negative = new Set();
+    flowItems.forEach(it => {
+      [it.from, it.to].forEach(c => { if (categories.indexOf(c) < 0) categories.push(c); });
+      if (it.valence === 'negative') negative.add(it.to);
+    });
+    categories.sort((a, b) => (negative.has(a) ? 1 : 0) - (negative.has(b) ? 1 : 0));
+    const negColor = (tokens.semantic && tokens.semantic.negative) || '#C62828';
+    let paletteIdx = 0;
+    const catColor = {};
+    categories.forEach(c => {
+      catColor[c] = negative.has(c) ? negColor : getColor(tokens, paletteIdx++);
+    });
 
-    const defaultColorTo = (ctx) => {
-      const palette = tokens.palette || ['#2B8CBE', '#E66101', '#5E3C99', '#4DAC26'];
-      const item = ctx.dataset?.data?.[ctx.dataIndex];
-      if (item && item.valence) {
-        if (item.valence === 'positive' || item.valence === 'gain') return getValenceColor(tokens, 'up', 'gain');
-        if (item.valence === 'negative' || item.valence === 'churn') return getValenceColor(tokens, 'down', 'gain');
-      }
-      const toNode = item?.to || '';
-      let hash = 0;
-      for (let i = 0; i < toNode.length; i++) hash += toNode.charCodeAt(i);
-      return palette[Math.abs(hash) % palette.length];
-    };
+    // Colonnes et ordre vertical identique à chaque étape
+    const column = {};
+    const priority = {};
+    const labels = {};
+    const nodeTotals = {};
+    flowData.forEach(f => {
+      [['from', 'fromStage', 'fromName'], ['to', 'toStage', 'toName']].forEach(([k, s, n]) => {
+        const key = f[k];
+        const stageIdx = stages.indexOf(f[s]);
+        if (stageIdx >= 0) column[key] = stageIdx;
+        priority[key] = categories.indexOf(f[n]);
+        labels[key] = f[n];
+      });
+    });
+    const outSum = {}, inSum = {};
+    flowData.forEach(f => {
+      outSum[f.from] = (outSum[f.from] || 0) + (Number(f.flow) || 0);
+      inSum[f.to] = (inSum[f.to] || 0) + (Number(f.flow) || 0);
+    });
+    const shortLabels = {};
+    Object.keys(labels).forEach(key => {
+      shortLabels[key] = labels[key];
+      nodeTotals[key] = Math.max(outSum[key] || 0, inSum[key] || 0);
+      if (showDataLabels) labels[key] = `${labels[key]} · ${fmt(nodeTotals[key])}`;
+    });
 
     return {
       label: ds.label || `Flux ${dsIdx + 1}`,
       data: flowData,
-      colorFrom: ds.colorFrom || defaultColorFrom,
-      colorTo: ds.colorTo || defaultColorTo,
-      colorMode: ds.colorMode || 'gradient',
-      borderWidth: ds.borderWidth ?? 0,
+      colorFrom: (ctx) => {
+        const item = ctx.dataset && ctx.dataset.data && ctx.dataset.data[ctx.dataIndex];
+        return catColor[item && item.fromName] || getColor(tokens, 0);
+      },
+      colorTo: (ctx) => {
+        const item = ctx.dataset && ctx.dataset.data && ctx.dataset.data[ctx.dataIndex];
+        return catColor[item && item.toName] || getColor(tokens, 0);
+      },
+      colorMode: 'from',
+      borderWidth: 0,
       nodeWidth: ds.nodeWidth ?? 16,
       nodePadding: ds.nodePadding ?? 18,
+      color: tokens.textPrimary,
+      font: { family: tokens.fontFamily, size: 12, weight: '600' },
+      ...(Object.keys(column).length ? { column } : {}),
+      priority,
+      labels: Object.keys(labels).reduce((m, k) => { m[k] = ' '; return m; }, {}),
+      kcLabels: labels,
+      kcShort: shortLabels,
       backgroundColor: ds.backgroundColor || getColor(tokens, dsIdx)
     };
   });
+
+  // Libellés de nœuds dessinés ici (et non par chartjs-chart-sankey) : halo de la couleur de fond pour
+  // garantir le contraste sur les rubans, et résolution des chevauchements verticaux par colonne.
+  const nodeLabelPlugin = {
+    id: 'kitChartsSankeyNodeLabels',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      const ctrl = meta && meta.controller;
+      const nodes = ctrl && ctrl._nodes;
+      const xs = meta && meta.xScale, ys = meta && meta.yScale;
+      const ds = chart.data.datasets[0];
+      if (!nodes || !xs || !ys || !ds || !chart.chartArea) return;
+      const { ctx, chartArea } = chart;
+      const size = chart.width < 460 ? 11 : 12;
+      const lineH = size + 3;
+      const nodeW = ds.nodeWidth || 14;
+      const texts = ds.kcLabels || {};
+      const shorts = ds.kcShort || {};
+      const halo = tokens.surfaceRaised || tokens.bg || '#FFFFFF';
+      const groups = {};
+      nodes.forEach((n) => {
+        const px = xs.getPixelForValue(n.x);
+        const top = ys.getPixelForValue(n.y);
+        const h = Math.abs(ys.getPixelForValue(n.y + Math.max(n.in || n.out, n.out || n.in)) - top);
+        const left = px < chartArea.left + (chartArea.right - chartArea.left) / 2;
+        const key = (left ? 'L' : 'R') + Math.round(px);
+        (groups[key] = groups[key] || []).push({
+          text: String(chart.width < 460 && h < 26 && shorts[n.key] !== undefined ? shorts[n.key] : (texts[n.key] !== undefined ? texts[n.key] : n.key)),
+          left, y: top + h / 2, x: left ? px + nodeW + 4 : px - 4
+        });
+      });
+      ctx.save();
+      ctx.font = `600 ${size}px ${tokens.fontFamily}`;
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3;
+      Object.keys(groups).forEach((k) => {
+        const g = groups[k].sort((a, b) => a.y - b.y);
+        for (let i = 1; i < g.length; i++) if (g[i].y < g[i - 1].y + lineH) g[i].y = g[i - 1].y + lineH;
+        const maxY = chartArea.bottom - lineH / 2;
+        if (g.length && g[g.length - 1].y > maxY) {
+          g[g.length - 1].y = maxY;
+          for (let i = g.length - 2; i >= 0; i--) if (g[i].y > g[i + 1].y - lineH) g[i].y = g[i + 1].y - lineH;
+        }
+        g.forEach((it) => {
+          ctx.textAlign = it.left ? 'left' : 'right';
+          ctx.strokeStyle = halo;
+          ctx.strokeText(it.text, it.x, it.y);
+          ctx.fillStyle = tokens.textPrimary;
+          ctx.fillText(it.text, it.x, it.y);
+        });
+      });
+      ctx.restore();
+    }
+  };
+
+  const stageHeadersPlugin = {
+    id: 'kitChartsAlluvialStages',
+    afterDatasetsDraw(chart) {
+      if (!stages.length) return;
+      const meta = chart.getDatasetMeta(0);
+      const ctrl = meta && meta.controller;
+      const nodes = ctrl && ctrl._nodes;
+      const xScale = meta && meta.xScale;
+      const ds = chart.data.datasets[0];
+      if (!nodes || !xScale || !ds || !ds.column) return;
+      const { ctx, chartArea } = chart;
+      const nodeWidth = ds.nodeWidth || 16;
+      ctx.save();
+      ctx.font = `700 ${chart.width < 460 ? 11 : 12}px ${tokens.fontFamily}`;
+      ctx.fillStyle = tokens.textSecondary || tokens.textPrimary;
+      ctx.textBaseline = 'bottom';
+      const done = {};
+      nodes.forEach((node) => {
+        if (!(node.key in ds.column) || done[node.x]) return;
+        done[node.x] = true;
+        const px = xScale.getPixelForValue(node.x);
+        const stage = stages[ds.column[node.key]];
+        const first = ds.column[node.key] === 0;
+        const last = ds.column[node.key] === stages.length - 1;
+        ctx.textAlign = first ? 'left' : (last ? 'right' : 'center');
+        ctx.fillText(stage, first ? px : (last ? px + nodeWidth : px + nodeWidth / 2), chartArea.top - 8);
+      });
+      ctx.restore();
+    }
+  };
 
   const chartData = { datasets };
   const baseOptions = getChartDefaultOptions(tokens);
@@ -16466,26 +18396,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       ...baseOptions,
       responsive: true,
       maintainAspectRatio: false,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 450,
-        easing: 'easeOutQuart'
-      }),
-      interaction: {
-        mode: 'nearest',
-        intersect: true
-      },
-      hover: {
-        mode: 'nearest',
-        intersect: true,
-        animationDuration: (isTufte || reduceMotion) ? 0 : 100
-      },
-      layout: {
-        padding: { top: 16, bottom: 16, left: 16, right: 16 }
-      },
+      animation: false,
+      interaction: { mode: 'nearest', intersect: true },
+      layout: { padding: { top: 34, bottom: 16, left: 16, right: 16 } },
       plugins: {
-        legend: {
-          display: false
-        },
+        legend: { display: false },
         tooltip: {
           backgroundColor: tokens.tooltipBg || '#0F172A',
           titleColor: tokens.tooltipText || '#F8FAFC',
@@ -16495,28 +18410,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           padding: { top: 10, bottom: 10, left: 14, right: 14 },
           cornerRadius: isTufte ? 0 : 6,
           boxPadding: 6,
-          titleFont: {
-            family: tokens.fontFamily,
-            size: 12,
-            weight: '600'
-          },
-          bodyFont: {
-            family: tokens.fontMono,
-            size: 12,
-            weight: '400'
-          },
+          titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
+          bodyFont: { family: tokens.fontMono, size: 12, weight: '400' },
           callbacks: {
             label: (ctx) => {
               const item = ctx.raw;
               if (!item) return '';
-              const valTag = item.valence === 'positive' ? ' (Favorable / Progression)' : (item.valence === 'negative' ? ' (Alerte / Churn)' : '');
-              const formattedFlow = typeof item.flow === 'number' ? item.flow.toLocaleString('fr-FR') : item.flow;
-              return ` ${item.from} → ${item.to} : ${formattedFlow} utilisateurs${valTag}`;
+              const st = (s) => (s === undefined || s === null ? '' : ` (${s})`);
+              return ` ${item.fromName}${st(item.fromStage)} → ${item.toName}${st(item.toStage)} : ${fmt(item.flow)} utilisateurs`;
             }
           }
         }
       }
-    }
+    },
+    plugins: [stageHeadersPlugin, nodeLabelPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
@@ -16535,6 +18442,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     resize: () => {}
   };
 }
+
 
   const moduleExports = {
     DEFAULT_DATA: typeof DEFAULT_DATA !== 'undefined' ? DEFAULT_DATA : (typeof defaultData !== 'undefined' ? defaultData : {}),
@@ -16583,169 +18491,213 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
  * @file 06-flux-processus/chord-diagram/template.js
  * @description Standardized Chord Diagram / Circular Matrix Flow template for kit-charts.
  * Visualizes bilateral inter-entity quantitative exchanges around a circular radial topology.
- * Employs circular matrix projection, dynamic theme palette tokens, semantic emphasis, and tabular numeric tooltips.
+ * Arcs de cercle proportionnels aux flux émis et rubans de Bézier dessinés par un plugin canvas.
  */
 
+
 /**
- * Données par défaut représentatives (Matrice de flux économiques inter-régionaux avec entité focale)
+ * Données par défaut : matrice de flux (en M€) entre quatre régions.
+ * Chaque dataset est une LIGNE de la matrice : flux émis par l'entité `labels[i]`
+ * vers chaque entité `labels[j]` (la diagonale est ignorée).
  */
 const DEFAULT_DATA = {
   labels: ['Région Nord (Focal)', 'Région Sud', 'Région Est', 'Région Ouest'],
   datasets: [
-    {
-      label: 'Flux Émis — Nord (Focal)',
-      data: [0, 25, 18, 12],
-      role: 'focal'
-    },
-    {
-      label: 'Flux Émis — Sud',
-      data: [20, 0, 15, 30],
-      role: 'context'
-    },
-    {
-      label: 'Flux Émis — Est',
-      data: [14, 16, 0, 22],
-      role: 'context'
-    },
-    {
-      label: 'Flux Émis — Ouest',
-      data: [10, 28, 20, 0],
-      role: 'context'
-    }
+    { label: 'Flux émis par Région Nord (Focal)', data: [0, 25, 18, 12], role: 'focal' },
+    { label: 'Flux émis par Région Sud', data: [20, 0, 15, 30], role: 'context' },
+    { label: 'Flux émis par Région Est', data: [14, 16, 0, 22], role: 'context' },
+    { label: 'Flux émis par Région Ouest', data: [10, 28, 20, 0], role: 'context' }
   ]
 };
 
-/**
- * Creates and renders a Chord Diagram (Radial Matrix Flow) in the specified canvas target.
- *
- * @param {string|HTMLCanvasElement} canvasTarget - DOM Canvas ID or Canvas Element
- * @param {Object} [customData] - Optional user data payload
- * @param {string} [themeName='colorbrewer-accessible'] - Theme identifier
- * @returns {Object} Initialized Chart.js instance or mock instance
- */
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function buildMatrix(labels, datasets) {
+  const n = labels.length;
+  const m = [];
+  for (let i = 0; i < n; i++) {
+    const row = [];
+    const src = datasets[i] && Array.isArray(datasets[i].data) ? datasets[i].data : [];
+    for (let j = 0; j < n; j++) {
+      const d = src[j];
+      const v = typeof d === 'object' && d !== null ? (d.value ?? d.flow ?? d.v ?? 0) : Number(d);
+      row.push(i === j || !isFinite(v) || v < 0 ? 0 : v);
+    }
+    m.push(row);
+  }
+  return m;
+}
+
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string' && typeof document !== 'undefined'
     ? document.getElementById(canvasTarget)
     : canvasTarget;
 
   if (typeof Chart !== 'undefined' && canvas) {
     const existing = Chart.getChart(canvas);
-    if (existing) {
-      existing.destroy();
-    }
+    if (existing) existing.destroy();
   }
 
   const container = canvas && canvas.parentElement ? canvas.parentElement : null;
   const tokens = getThemeTokens(themeName, container);
   const isTufte = tokens.name === 'tufte-minimalist-executive';
-  const reduceMotion = isReducedMotionPreferred();
+  const showDataLabels = (customData && customData.showDataLabels !== undefined)
+    ? customData.showDataLabels
+    : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
   const rawData = customData || DEFAULT_DATA;
-  const labels = rawData.labels || ['Région Nord', 'Région Sud', 'Région Est', 'Région Ouest'];
+  const labels = (rawData.labels || []).slice();
+  const datasets = rawData.datasets || [];
+  const n = labels.length;
+  const matrix = buildMatrix(labels, datasets);
+  const rowSum = matrix.map(r => r.reduce((a, b) => a + b, 0));
+  const colSum = labels.map((_, j) => matrix.reduce((a, r) => a + r[j], 0));
+  const focalIdx = datasets.findIndex((d, i) => (d.role || (i === 0 ? 'focal' : 'context')) === 'focal');
+  const colors = labels.map((_, i) => getColor(tokens, i));
+  const fmt = (v) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(v);
 
-  const datasets = (rawData.datasets || []).map((ds, idx) => {
-    const role = ds.role || (idx === 0 ? 'focal' : 'context');
-    const isFocal = role === 'focal';
+  // Taille d'arc = flux émis (somme de ligne), plancher pour éviter un arc nul
+  const arcValues = rowSum.map(v => (v > 0 ? v : 0.0001));
 
-    let baseColor = getColor(tokens, idx);
-    if (ds.valence && ds.metricType) {
-      baseColor = getValenceColor(tokens, ds.valence, ds.metricType);
-    }
-
-    const cleanData = Array.isArray(ds.data)
-      ? ds.data.map(d => typeof d === 'object' && d !== null ? (d.value ?? d.flow ?? d.v ?? 10) : Number(d) || 0)
-      : [10, 20, 15, 25];
-
-    const alpha = ds.alpha ?? (isTufte ? 0.15 : (isFocal ? 0.35 : 0.18));
-    const border = ds.borderColor || (isFocal ? (tokens.emphasis?.focal || baseColor) : baseColor);
-    const bg = ds.backgroundColor || hexToRgba(border, alpha);
-
+  // Métriques de libellés selon la largeur du graphique (compact sous ~460 px)
+  const labelMetrics = (w) => {
+    const width = w > 0 ? w : 800;
+    const compact = width < 460;
     return {
-      label: ds.label || `Flux Émis — ${labels[idx] || `Entité ${idx + 1}`}`,
-      data: cleanData,
-      borderColor: border,
-      backgroundColor: bg,
-      borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : (isFocal ? 2.5 : 1.5),
-      fill: ds.fill ?? true,
-      pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : (isFocal ? 4 : 2),
-      pointHitRadius: 12,
-      pointHoverRadius: isFocal ? 7 : 5,
-      pointBackgroundColor: border,
-      pointBorderColor: tokens.bg
+      compact,
+      nameSize: compact ? 11 : 12,
+      subSize: compact ? 10 : 11,
+      padX: compact ? Math.round(width * 0.26) : Math.round(Math.min(150, Math.max(110, width * 0.18))),
+      padY: compact ? 30 : 36
     };
-  });
+  };
+  const fitText = (ctx, text, maxW) => {
+    if (ctx.measureText(text).width <= maxW) return text;
+    let t = text;
+    while (t.length > 1 && ctx.measureText(t + '…').width > maxW) t = t.slice(0, -1);
+    return t.trimEnd() + '…';
+  };
 
-  const chartData = { labels, datasets };
+  const chordPlugin = {
+    id: 'kitChartsChordRibbons',
+    beforeDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data || meta.data.length !== n) return;
+      const { ctx } = chart;
+      const arcs = meta.data.map(a => a.getProps(['x', 'y', 'startAngle', 'endAngle', 'innerRadius'], true));
+      const cx = arcs[0].x, cy = arcs[0].y, r = arcs[0].innerRadius - 2;
+      if (!(r > 0)) return;
+
+      // Sous-arcs : pour l'entité i, un segment par destination j, de largeur proportionnelle à m[i][j]
+      const sub = arcs.map((a, i) => {
+        const span = a.endAngle - a.startAngle;
+        let cur = a.startAngle;
+        return labels.map((_, j) => {
+          const w = rowSum[i] > 0 ? (matrix[i][j] / rowSum[i]) * span : 0;
+          const seg = [cur, cur + w];
+          cur += w;
+          return seg;
+        });
+      });
+
+      const pt = (ang) => [cx + r * Math.cos(ang), cy + r * Math.sin(ang)];
+      const ribbon = (s0, s1, t0, t1) => {
+        ctx.beginPath();
+        let p = pt(s0);
+        ctx.moveTo(p[0], p[1]);
+        ctx.arc(cx, cy, r, s0, s1);
+        p = pt(t0);
+        ctx.quadraticCurveTo(cx, cy, p[0], p[1]);
+        ctx.arc(cx, cy, r, t0, t1);
+        p = pt(s0);
+        ctx.quadraticCurveTo(cx, cy, p[0], p[1]);
+        ctx.closePath();
+      };
+
+      ctx.save();
+      for (let i = 0; i < n; i++) {
+        for (let j = i + 1; j < n; j++) {
+          const a = matrix[i][j], b = matrix[j][i];
+          if (a <= 0 && b <= 0) continue;
+          const dominant = a >= b ? i : j; // couleur = entité d'origine du flux dominant
+          const touchesFocal = focalIdx >= 0 && (i === focalIdx || j === focalIdx);
+          const alpha = isTufte ? 0.35 : (focalIdx < 0 ? 0.55 : (touchesFocal ? 0.7 : 0.3));
+          const si = sub[i][j], sj = sub[j][i];
+          ribbon(si[0], Math.max(si[1], si[0] + 0.004), sj[0], Math.max(sj[1], sj[0] + 0.004));
+          ctx.fillStyle = hexToRgba(colors[dominant], alpha);
+          ctx.fill();
+          ctx.lineWidth = 0.8;
+          ctx.strokeStyle = hexToRgba(colors[dominant], 0.9);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    },
+    beforeLayout(chart) {
+      // Réservation proportionnelle à la largeur : le cercle garde l'essentiel de la place
+      const m = labelMetrics(chart.width);
+      const pad = chart.options.layout && chart.options.layout.padding;
+      if (pad) { pad.left = m.padX; pad.right = m.padX; pad.top = m.padY; pad.bottom = m.padY; }
+    },
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data || meta.data.length !== n) return;
+      const { ctx } = chart;
+      const m = labelMetrics(chart.width);
+      ctx.save();
+      meta.data.forEach((arc, i) => {
+        const p = arc.getProps(['x', 'y', 'startAngle', 'endAngle', 'outerRadius'], true);
+        const mid = (p.startAngle + p.endAngle) / 2;
+        const rr = p.outerRadius + (m.compact ? 14 : 12);
+        const x = p.x + rr * Math.cos(mid);
+        const y = p.y + rr * Math.sin(mid);
+        const right = Math.cos(mid) >= 0;
+        ctx.textAlign = right ? 'left' : 'right';
+        ctx.textBaseline = showDataLabels ? 'bottom' : 'middle';
+        ctx.fillStyle = tokens.textPrimary;
+        ctx.font = `${i === focalIdx ? '700' : '600'} ${m.nameSize}px ${tokens.fontFamily}`;
+        ctx.fillText(fitText(ctx, m.compact ? String(labels[i]).replace(/\s*\(.*\)\s*$/, '') : labels[i], m.padX - 8), x, y);
+        if (showDataLabels) {
+          ctx.textBaseline = 'top';
+          ctx.fillStyle = tokens.textSecondary || tokens.textPrimary;
+          ctx.font = `500 ${m.subSize}px ${tokens.fontMono || tokens.fontFamily}`;
+          if (m.compact) {
+            ctx.fillText(`${fmt(rowSum[i])} émis`, x, y + 2);
+            ctx.fillText(`${fmt(colSum[i])} reçu`, x, y + 2 + m.subSize + 1);
+          } else {
+            ctx.fillText(`émis ${fmt(rowSum[i])} / reçu ${fmt(colSum[i])}`, x, y + 2);
+          }
+        }
+      });
+      ctx.restore();
+    }
+  };
+
+  const chartData = {
+    labels,
+    datasets: [{
+      label: 'Flux émis',
+      data: arcValues,
+      backgroundColor: colors,
+      borderColor: tokens.surface || tokens.bg,
+      borderWidth: 3,
+      hoverOffset: 0
+    }]
+  };
   const baseOptions = getChartDefaultOptions(tokens);
 
   const config = {
-    type: 'radar',
+    type: 'doughnut',
     data: chartData,
     options: {
-      scales: {},
       ...baseOptions,
       responsive: true,
       maintainAspectRatio: false,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 450,
-        easing: 'easeOutQuart'
-      }),
-      interaction: {
-        mode: 'nearest',
-        intersect: false,
-        axis: 'r'
-      },
-      hover: {
-        mode: 'nearest',
-        intersect: false,
-        animationDuration: (isTufte || reduceMotion) ? 0 : 100
-      },
-      scales: {
-        r: {
-          grid: {
-            color: tokens.gridColor,
-            lineWidth: 1
-          },
-          angleLines: {
-            color: tokens.gridColor,
-            lineWidth: 1
-          },
-          pointLabels: {
-            color: tokens.textPrimary,
-            font: {
-              family: tokens.fontFamily,
-              size: 11,
-              weight: '500'
-            }
-          },
-          ticks: {
-            color: tokens.textSecondary,
-            backdropColor: 'transparent',
-            font: {
-              family: tokens.fontFamily,
-              size: 10
-            }
-          }
-        }
-      },
+      animation: false,
+      cutout: '90%',
+      rotation: 0,
+      layout: { padding: { top: 36, bottom: 36, left: 150, right: 150 } },
+      scales: {},
       plugins: {
-        legend: {
-          display: true && !isTufte,
-          position: 'top',
-          align: 'end',
-          labels: {
-            color: tokens.textPrimary,
-            font: {
-              family: tokens.fontFamily,
-              size: 12,
-              weight: '500'
-            },
-            usePointStyle: true,
-            boxWidth: 8,
-            boxHeight: 8,
-            padding: 14
-          }
-        },
+        legend: { display: false },
         tooltip: {
           backgroundColor: tokens.tooltipBg || '#0F172A',
           titleColor: tokens.tooltipText || '#F8FAFC',
@@ -16754,29 +18706,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           borderWidth: 1,
           padding: { top: 10, bottom: 10, left: 14, right: 14 },
           cornerRadius: isTufte ? 0 : 6,
-          boxPadding: 6,
-          titleFont: {
-            family: tokens.fontFamily,
-            size: 12,
-            weight: '600'
-          },
-          bodyFont: {
-            family: tokens.fontMono,
-            size: 12,
-            weight: '400'
-          },
+          titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
+          bodyFont: { family: tokens.fontMono, size: 12, weight: '400' },
           callbacks: {
+            title: (items) => (items[0] ? items[0].label : ''),
             label: (ctx) => {
-              const val = ctx.raw;
-              const formatted = typeof val === 'number'
-                ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(val)
-                : val;
-              return ` ${ctx.dataset.label || ''} → ${ctx.label || ''} : ${formatted} flux`;
+              const i = ctx.dataIndex;
+              const lines = [` Émis : ${fmt(rowSum[i])}  |  Reçu : ${fmt(colSum[i])}`];
+              labels.forEach((l, j) => {
+                if (matrix[i][j] > 0) lines.push(` ${labels[i]} → ${l} : ${fmt(matrix[i][j])}`);
+              });
+              return lines;
             }
           }
         }
       }
-    }
+    },
+    plugins: [chordPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
@@ -16789,12 +18735,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     config,
     data: chartData,
     options: config.options,
+    matrix,
     ctx: canvas?.getContext ? canvas.getContext('2d') : {},
     destroy: () => {},
     update: () => {},
     resize: () => {}
   };
 }
+
 
   const moduleExports = {
     DEFAULT_DATA: typeof DEFAULT_DATA !== 'undefined' ? DEFAULT_DATA : (typeof defaultData !== 'undefined' ? defaultData : {}),
@@ -16849,6 +18797,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
  * Enforces horizontal orientation (indexAxis: 'y'), strict X=0 baseline, sorted stages, semantic emphasis, and Gestalt spacing.
  */
 
+
 /**
  * Données par défaut représentatives (Entonnoir d'acquisition et de conversion SaaS)
  */
@@ -16858,7 +18807,7 @@ const DEFAULT_DATA = {
     '2. Inscriptions Gratuites',
     '3. Utilisateurs Actifs (WAU)',
     '4. Souscriptions Payantes',
-    '5. Renouvellements Annuels'
+    '5. Abonnés actifs à 3 mois'
   ],
   datasets: [{
     label: 'Volume Utilisateurs',
@@ -16868,7 +18817,9 @@ const DEFAULT_DATA = {
 };
 
 /**
- * Creates and renders a Funnel Chart in the specified canvas target.
+ * Creates and renders a centered Funnel Chart in the specified canvas target.
+ * Chaque étape est une barre centrée de longueur proportionnelle à son effectif (axe symétrique),
+ * avec le taux de rétention d'étape à étape affiché entre les barres.
  *
  * @param {string|HTMLCanvasElement} canvasTarget - DOM Canvas ID or Canvas Element
  * @param {Object} [customData] - Optional user data payload
@@ -16891,39 +18842,103 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const container = canvas && canvas.parentElement ? canvas.parentElement : null;
   const tokens = getThemeTokens(themeName, container);
   const isTufte = tokens.name === 'tufte-minimalist-executive';
-  const reduceMotion = isReducedMotionPreferred();
   const showDataLabels = (customData && customData.showDataLabels !== undefined) ? customData.showDataLabels : (options.showDataLabels !== undefined ? options.showDataLabels : true);
 
   const rawData = customData || DEFAULT_DATA;
   const labels = rawData.labels ? [...rawData.labels] : [];
-
-  const datasets = (rawData.datasets || []).map((ds, idx) => {
-    const dataLen = Array.isArray(ds.data) ? ds.data.length : 5;
-    
-    // Dynamic sequential palette generation from theme tokens
-    const defaultColors = (ds.data || []).map((_, i) => {
-      if (tokens.sequential && tokens.sequential.length > 0) {
-        const factor = dataLen > 1 ? i / (dataLen - 1) : 1;
-        return getSequentialColor(tokens, 0.4 + factor * 0.6);
-      }
-      return getColor(tokens, i);
-    });
-
-    const bgColors = ds.backgroundColor || defaultColors;
-
-    return {
-      label: ds.label || `Étape ${idx + 1}`,
-      data: Array.isArray(ds.data) ? [...ds.data] : [],
-      backgroundColor: bgColors,
-      borderColor: ds.borderColor || (isTufte ? tokens.borderStrong : tokens.bg),
-      borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : 1,
-      borderRadius: isTufte ? 0 : 4,
-      categoryPercentage: typeof ds.categoryPercentage === 'number' ? ds.categoryPercentage : 0.8,
-      barPercentage: typeof ds.barPercentage === 'number' ? ds.barPercentage : 0.85
-    };
+  const ds0 = (rawData.datasets && rawData.datasets[0]) || { data: [] };
+  const values = (Array.isArray(ds0.data) ? ds0.data : []).map(v => {
+    const n = typeof v === 'object' && v !== null ? (v.value ?? v.x ?? 0) : Number(v);
+    return isFinite(n) && n > 0 ? n : 0;
   });
+  const maxV = values.reduce((a, b) => Math.max(a, b), 0) || 1;
+  const fmt = (v) => new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 0 }).format(v);
+  const pctFmt = (p) => `${new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format(p)} %`;
 
-  const chartData = { labels, datasets };
+  const barColor = ds0.backgroundColor && typeof ds0.backgroundColor === 'string' ? ds0.backgroundColor : getColor(tokens, 0);
+
+  // Luminance relative (WCAG) pour choisir le texte lisible sur la couleur de barre
+  const toRgb = (c) => {
+    if (typeof c !== 'string') return [0, 0, 0];
+    const h = c.trim();
+    if (h[0] === '#') {
+      const x = h.length === 4 ? h.slice(1).split('').map(ch => ch + ch).join('') : h.slice(1, 7);
+      return [parseInt(x.slice(0, 2), 16), parseInt(x.slice(2, 4), 16), parseInt(x.slice(4, 6), 16)];
+    }
+    const m = h.match(/\d+(\.\d+)?/g);
+    return m ? m.slice(0, 3).map(Number) : [0, 0, 0];
+  };
+  const luminance = (c) => {
+    const [r, g, b] = toRgb(c).map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  };
+  const contrast = (a, b) => { const l1 = luminance(a), l2 = luminance(b); return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05); };
+  const textOnBar = contrast('#0F172A', barColor) >= contrast('#FFFFFF', barColor) ? '#0F172A' : '#FFFFFF';
+
+  const funnelPlugin = {
+    id: 'kitChartsFunnelLabels',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data) return;
+      const { ctx } = chart;
+      ctx.save();
+      ctx.textBaseline = 'middle';
+      meta.data.forEach((bar, i) => {
+        const p = bar.getProps(['x', 'y', 'base', 'height'], true);
+        const left = Math.min(p.x, p.base), right = Math.max(p.x, p.base);
+        const cx = (left + right) / 2;
+        const w = right - left;
+        if (showDataLabels) {
+          const txt = fmt(values[i]);
+          ctx.font = `700 12px ${tokens.fontMono || tokens.fontFamily}`;
+          ctx.textAlign = 'center';
+          if (ctx.measureText(txt).width + 10 <= w) {
+            ctx.fillStyle = textOnBar;
+            ctx.fillText(txt, cx, p.y);
+          } else {
+            ctx.fillStyle = tokens.textPrimary;
+            ctx.textAlign = 'left';
+            ctx.fillText(txt, right + 8, p.y);
+          }
+        }
+        // Taux de rétention vers l'étape suivante (toujours affiché) : placé entre cette barre et la suivante
+        if (i < values.length - 1 && values[i] > 0) {
+          const next = meta.data[i + 1].getProps(['y', 'height'], true);
+          const yMid = (p.y + p.height / 2 + next.y - next.height / 2) / 2;
+          const compact = chart.width < 460;
+          ctx.font = `600 ${compact ? 10 : 11}px ${tokens.fontMono || tokens.fontFamily}`;
+          ctx.fillStyle = tokens.textSecondary || tokens.textPrimary;
+          ctx.textAlign = 'center';
+          const rate = pctFmt((values[i + 1] / values[i]) * 100);
+          const full = `↓ ${rate} passent à l'étape suivante`;
+          const short = `↓ ${rate} passent`;
+          const ca = chart.chartArea;
+          const avail = ca ? ca.right - ca.left : chart.width;
+          const txt = ctx.measureText(full).width <= avail ? full : short;
+          const tw = ctx.measureText(txt).width;
+          // Centré sur la barre, mais jamais hors de la zone du tracé
+          let tx = cx;
+          if (ca) tx = Math.min(Math.max(cx, ca.left + tw / 2), ca.right - tw / 2);
+          ctx.fillText(txt, tx, yMid);
+        }
+      });
+      ctx.restore();
+    }
+  };
+
+  const chartData = {
+    labels,
+    datasets: [{
+      label: ds0.label || 'Étape',
+      data: values.map(v => [-v / 2, v / 2]),
+      backgroundColor: barColor,
+      borderColor: isTufte ? tokens.borderStrong : tokens.bg,
+      borderWidth: 1,
+      borderRadius: isTufte ? 0 : 4,
+      categoryPercentage: 0.9,
+      barPercentage: 0.62
+    }]
+  };
   const baseOptions = getChartDefaultOptions(tokens);
 
   const config = {
@@ -16931,84 +18946,39 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     data: chartData,
     options: {
       ...baseOptions,
-      indexAxis: 'y', // Horizontal layout for natural top-to-bottom reading
+      indexAxis: 'y', // Barres horizontales centrées (axe de valeur symétrique autour de 0)
       responsive: true,
       maintainAspectRatio: false,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 400,
-        easing: 'easeOutQuart'
-      }),
-      interaction: {
-        mode: 'index',
-        intersect: false,
-        axis: 'y'
-      },
-      hover: {
-        mode: 'index',
-        intersect: false,
-        axis: 'y',
-        animationDuration: (isTufte || reduceMotion) ? 0 : 100
-      },
-      categoryPercentage: 0.8,
-      barPercentage: 0.85,
-      layout: {
-        padding: {
-          right: 28
-        }
-      },
+      animation: false,
+      interaction: { mode: 'index', intersect: false, axis: 'y' },
+      layout: { padding: { right: 12 } },
       scales: {
         x: {
-          beginAtZero: true, // Strict length-encoding origin rule on X axis
-          grace: '15%',
-          grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
-            drawBorder: false
-          },
-          border: { display: false },
-          ticks: {
-            color: tokens.textSecondary,
-            font: {
-              family: tokens.fontFamily,
-              size: 11
-            },
-            padding: 6
-          }
+          type: 'linear',
+          beginAtZero: true,
+          min: -maxV / 2,
+          max: maxV / 2,
+          display: false,
+          grid: { display: false }
         },
         y: {
-          grid: {
-            display: false,
-            drawBorder: false
-          },
+          reverse: false,
+          grid: { display: false },
           border: { display: false },
           ticks: {
             color: tokens.textPrimary,
-            font: {
-              family: tokens.fontFamily,
-              size: 11,
-              weight: '500'
-            },
-            padding: 8
+            font: { family: tokens.fontFamily, size: 12, weight: '500' },
+            padding: 8,
+            callback(v) {
+              const t = this.getLabelForValue(v);
+              return this.chart.width < 460 && String(t).length > 22 ? String(t).replace(/\s*\(.*\)\s*$/, '') : t;
+            }
           }
         }
       },
       plugins: {
-        datalabels: getDataLabelOptions(tokens, {
-          display: showDataLabels,
-          align: 'right',
-          anchor: 'end',
-          formatter: (val, ctx) => {
-            const raw0 = ctx && ctx.dataset && ctx.dataset.data ? ctx.dataset.data[0] : null;
-            const firstNum = typeof raw0 === 'object' && raw0 !== null ? (raw0.value ?? raw0.x ?? 1) : (Number(raw0) || 1);
-            const num = typeof val === 'object' && val !== null ? (val.value ?? val.x ?? 0) : (Number(val) || 0);
-            const pct = firstNum > 0 ? ((num / firstNum) * 100).toFixed(0) : '0';
-            const formattedVal = formatLabelValue(num);
-            return `${formattedVal} (${pct}%)`;
-          }
-        }),
-        legend: {
-          display: false // High Data-Ink ratio: labels are on Y axis
-        },
+        datalabels: { display: false },
+        legend: { display: false },
         tooltip: {
           backgroundColor: tokens.tooltipBg || '#0F172A',
           titleColor: tokens.tooltipText || '#F8FAFC',
@@ -17018,38 +18988,27 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           padding: { top: 10, bottom: 10, left: 14, right: 14 },
           cornerRadius: isTufte ? 0 : 6,
           boxPadding: 6,
-          titleFont: {
-            family: tokens.fontFamily,
-            size: 12,
-            weight: '600'
-          },
-          bodyFont: {
-            family: tokens.fontMono,
-            size: 12,
-            weight: '400'
-          },
+          titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
+          bodyFont: { family: tokens.fontMono, size: 12, weight: '400' },
           callbacks: {
             label: (ctx) => {
-              const dataset = ctx.dataset;
-              const currentVal = Number(ctx.raw) || 0;
-              const firstVal = Number(dataset.data[0]) || currentVal || 1;
-              const prevVal = ctx.dataIndex > 0 ? (Number(dataset.data[ctx.dataIndex - 1]) || currentVal) : currentVal;
-              
-              const conversionTotal = ((currentVal / firstVal) * 100).toFixed(1);
-              const stepRate = ctx.dataIndex > 0 ? ((currentVal / prevVal) * 100).toFixed(1) : '100.0';
-              const dropOff = ctx.dataIndex > 0 ? (100 - Number(stepRate)).toFixed(1) : '0.0';
-              
+              const i = ctx.dataIndex;
+              const cur = values[i];
+              const prev = i > 0 ? values[i - 1] : cur;
+              const first = values[0] || cur || 1;
+              const step = i > 0 && prev > 0 ? (cur / prev) * 100 : 100;
               return [
-                ` Effectif: ${currentVal.toLocaleString('fr-FR')}`,
-                ` Taux de conversion global: ${conversionTotal}%`,
-                ` Rétention étape précédente: ${stepRate}%`,
-                ` Déperdition (Chute): ${dropOff}%`
+                ` Effectif : ${fmt(cur)}`,
+                ` Conversion globale : ${pctFmt((cur / first) * 100)}`,
+                ` Rétention étape précédente : ${pctFmt(step)}`,
+                ` Déperdition : ${pctFmt(100 - step)}`
               ];
             }
           }
         }
       }
-    }
+    },
+    plugins: [funnelPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
@@ -17229,7 +19188,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           const xStart = x.getPixelForValue(t.start);
           const xEnd = x.getPixelForValue(t.end);
           const xDone = x.getPixelForValue(t.doneTime);
-          const color = getColor(tokens, t.category || 0);
+          const color = t.status === 'delayed' ? ((tokens.semantic && tokens.semantic.negative) || '#C62828') : getColor(tokens, t.category || 0);
 
           // Barre d'avancement réel (opacité forte)
           if (t.progress > 0) {
@@ -17243,7 +19202,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             ctx.fillStyle = isDark ? '#ECEFF4' : '#0F172A';
             ctx.textAlign = 'left';
             ctx.textBaseline = 'middle';
-            ctx.fillText(`${t.progress}%`, xEnd + 8, yCenter);
+            const pctTxt = `${t.progress}%`;
+            const pctW = ctx.measureText(pctTxt).width;
+            const xToday0 = x.getPixelForValue(todayWeek);
+            // Évite la collision avec la ligne "Aujourd'hui" : le libellé passe après la ligne
+            let xTxt = xEnd + 8;
+            if (xToday0 > xTxt - 4 && xToday0 < xTxt + pctW + 4) xTxt = xToday0 + 6;
+            ctx.fillText(pctTxt, xTxt, yCenter);
           }
         });
 
@@ -17261,7 +19226,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ctx.font = `600 11px ${tokens.fontFamily}`;
         ctx.fillStyle = todayColor;
         ctx.textAlign = 'center';
-        ctx.fillText("Aujourd'hui (S6.5)", xToday, chartArea.top - 6);
+        const todayTxt = chart.width < 460 ? `Auj. S${todayWeek}` : `Aujourd'hui (S${todayWeek})`;
+        const todayW = ctx.measureText(todayTxt).width;
+        const todayX = Math.min(Math.max(xToday, chartArea.left + todayW / 2), chart.width - todayW / 2 - 2);
+        ctx.fillText(todayTxt, todayX, chartArea.top - 6);
 
         ctx.restore();
       }
@@ -17294,7 +19262,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             top: 16
           }
         },
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+        onResize(chart, size) {
+          // Marge droite pour le libellé de pourcentage, proportionnelle à la largeur
+          const pad = chart.options.layout.padding;
+          pad.right = size.width < 460 ? 24 : 30;
+        },
+        animation: false,
         interaction: {
           mode: 'index',
           intersect: false
@@ -17329,8 +19302,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             max: 15,
             grid: { color: tokens.gridColor },
             ticks: {
+              color: tokens.textPrimary,
               stepSize: 1,
-              callback: (val) => `S${val}`
+              autoSkip: true,
+              maxRotation: 0,
+              minRotation: 0,
+              font: { size: 11 },
+              callback: function(val) {
+                // Sous ~460 px : une semaine sur deux, sans rotation
+                if (this.chart.width < 460 && val % 2 !== 0) return '';
+                return `S${val}`;
+              }
             },
             title: {
               display: true,
@@ -17341,7 +19323,19 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           },
           y: {
             ...defaultOpts.scales.y,
-            grid: { display: false }
+            grid: { display: false },
+            ticks: {
+              ...((defaultOpts.scales.y && defaultOpts.scales.y.ticks) || {}),
+              color: tokens.textPrimary,
+              font: { family: tokens.fontFamily, size: 11, weight: '500' },
+              callback: function(val) {
+                const t = String(this.getLabelForValue(val));
+                if (this.chart.width >= 460) return t;
+                // Étroit : numéro retiré, libellé abrégé avec ellipse
+                const s = t.replace(/^\d+\.\s*/, '');
+                return s.length > 25 ? s.slice(0, 24).trimEnd() + '…' : s;
+              }
+            }
           }
         }
       },
@@ -17501,30 +19495,28 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const datasets = rawDatasets.map((ds, dsIdx) => {
     const flowData = Array.isArray(ds.data) ? ds.data : [];
 
+    // Couleur par noeud (source unique) : sinon le plugin Sankey colore chaque noeud avec le dernier flux qui le touche.
+    // Noeud puits dont tous les flux entrants sont négatifs (pertes) = rouge sémantique ; autres = palette catégorielle.
+    const nodeOrder = [];
+    const incomingAllNegative = {};
+    flowData.forEach((it) => {
+      [it.from, it.to].forEach((n) => { if (nodeOrder.indexOf(n) < 0) nodeOrder.push(n); });
+      const neg = it.valence === 'negative' || it.valence === 'cost' || it.valence === 'loss';
+      incomingAllNegative[it.to] = incomingAllNegative[it.to] === undefined ? neg : (incomingAllNegative[it.to] && neg);
+    });
+    const negColor = (tokens.semantic && tokens.semantic.negative) || '#C62828';
+    const nodeColor = {};
+    let colorIdx = 0;
+    nodeOrder.forEach((n) => {
+      nodeColor[n] = incomingAllNegative[n] ? negColor : getColor(tokens, colorIdx++);
+    });
     const defaultColorFrom = (ctx) => {
-      const palette = tokens.palette || ['#2B8CBE', '#E66101', '#5E3C99', '#4DAC26'];
       const item = ctx.dataset?.data?.[ctx.dataIndex];
-      if (item && item.valence) {
-        if (item.valence === 'positive' || item.valence === 'gain') return getValenceColor(tokens, 'up', 'gain');
-        if (item.valence === 'negative' || item.valence === 'cost' || item.valence === 'loss') return getValenceColor(tokens, 'up', 'cost');
-      }
-      const fromNode = item?.from || '';
-      let hash = 0;
-      for (let i = 0; i < fromNode.length; i++) hash += fromNode.charCodeAt(i);
-      return palette[Math.abs(hash) % palette.length];
+      return nodeColor[item?.from] || getColor(tokens, 0);
     };
-
     const defaultColorTo = (ctx) => {
-      const palette = tokens.palette || ['#2B8CBE', '#E66101', '#5E3C99', '#4DAC26'];
       const item = ctx.dataset?.data?.[ctx.dataIndex];
-      if (item && item.valence) {
-        if (item.valence === 'positive' || item.valence === 'gain') return getValenceColor(tokens, 'up', 'gain');
-        if (item.valence === 'negative' || item.valence === 'cost' || item.valence === 'loss') return getValenceColor(tokens, 'up', 'cost');
-      }
-      const toNode = item?.to || '';
-      let hash = 0;
-      for (let i = 0; i < toNode.length; i++) hash += toNode.charCodeAt(i);
-      return palette[Math.abs(hash) % palette.length];
+      return nodeColor[item?.to] || getColor(tokens, 0);
     };
 
     return {
@@ -17532,16 +19524,78 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       data: flowData,
       colorFrom: ds.colorFrom || defaultColorFrom,
       colorTo: ds.colorTo || defaultColorTo,
-      colorMode: ds.colorMode || 'gradient',
+      colorMode: ds.colorMode || 'from',
+      color: tokens.textPrimary,
+      font: isNarrowViewport ? { size: 10 } : { family: tokens.fontFamily, size: 12, weight: '600' },
       borderWidth: ds.borderWidth ?? 0,
       nodeWidth: ds.nodeWidth ?? 14,
       nodePadding: ds.nodePadding ?? (isNarrowViewport ? 10 : 16),
       // Mode compact (viewport étroit uniquement) : police réduite + libellés
       // abrégés lus par chartjs-chart-sankey à chaque `draw()`. Absent sinon.
-      ...(isNarrowViewport ? { font: { size: 10 }, labels: buildShortLabels(flowData) } : {}),
+      ...(() => {
+        const map = isNarrowViewport ? buildShortLabels(flowData) : {};
+        const blank = {};
+        flowData.forEach((it) => { [it.from, it.to].forEach((n) => { blank[n] = ' '; if (map[n] === undefined) map[n] = n; }); });
+        return { labels: blank, kcLabels: map };
+      })(),
       backgroundColor: ds.backgroundColor || getColor(tokens, dsIdx)
     };
   });
+
+  // Libellés de nœuds dessinés ici (et non par chartjs-chart-sankey) : halo de la couleur de fond pour
+  // garantir le contraste sur les rubans, et résolution des chevauchements verticaux par colonne.
+  const nodeLabelPlugin = {
+    id: 'kitChartsSankeyNodeLabels',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      const ctrl = meta && meta.controller;
+      const nodes = ctrl && ctrl._nodes;
+      const xs = meta && meta.xScale, ys = meta && meta.yScale;
+      const ds = chart.data.datasets[0];
+      if (!nodes || !xs || !ys || !ds || !chart.chartArea) return;
+      const { ctx, chartArea } = chart;
+      const size = chart.width < 460 ? 11 : 12;
+      const lineH = size + 3;
+      const nodeW = ds.nodeWidth || 14;
+      const texts = ds.kcLabels || {};
+      const shorts = ds.kcShort || {};
+      const halo = tokens.surfaceRaised || tokens.bg || '#FFFFFF';
+      const groups = {};
+      nodes.forEach((n) => {
+        const px = xs.getPixelForValue(n.x);
+        const top = ys.getPixelForValue(n.y);
+        const h = Math.abs(ys.getPixelForValue(n.y + Math.max(n.in || n.out, n.out || n.in)) - top);
+        const left = px < chartArea.left + (chartArea.right - chartArea.left) / 2;
+        const key = (left ? 'L' : 'R') + Math.round(px);
+        (groups[key] = groups[key] || []).push({
+          text: String(chart.width < 460 && h < 26 && shorts[n.key] !== undefined ? shorts[n.key] : (texts[n.key] !== undefined ? texts[n.key] : n.key)),
+          left, y: top + h / 2, x: left ? px + nodeW + 4 : px - 4
+        });
+      });
+      ctx.save();
+      ctx.font = `600 ${size}px ${tokens.fontFamily}`;
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3;
+      Object.keys(groups).forEach((k) => {
+        const g = groups[k].sort((a, b) => a.y - b.y);
+        for (let i = 1; i < g.length; i++) if (g[i].y < g[i - 1].y + lineH) g[i].y = g[i - 1].y + lineH;
+        const maxY = chartArea.bottom - lineH / 2;
+        if (g.length && g[g.length - 1].y > maxY) {
+          g[g.length - 1].y = maxY;
+          for (let i = g.length - 2; i >= 0; i--) if (g[i].y > g[i + 1].y - lineH) g[i].y = g[i + 1].y - lineH;
+        }
+        g.forEach((it) => {
+          ctx.textAlign = it.left ? 'left' : 'right';
+          ctx.strokeStyle = halo;
+          ctx.strokeText(it.text, it.x, it.y);
+          ctx.fillStyle = tokens.textPrimary;
+          ctx.fillText(it.text, it.x, it.y);
+        });
+      });
+      ctx.restore();
+    }
+  };
 
   const chartData = { datasets };
   const baseOptions = getChartDefaultOptions(tokens);
@@ -17554,10 +19608,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       ...baseOptions,
       responsive: true,
       maintainAspectRatio: false,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 450,
-        easing: 'easeOutQuart'
-      }),
+      animation: false,
       interaction: {
         mode: 'nearest',
         intersect: true
@@ -17604,7 +19655,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }
         }
       }
-    }
+    },
+    plugins: [nodeLabelPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
@@ -17766,17 +19818,43 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const chartData = { labels, datasets };
   const baseOptions = getChartDefaultOptions(tokens);
 
+  // Lignes de liaison : niveau atteint par une étape = début de la suivante
+  const connectorPlugin = {
+    id: 'kitChartsWaterfallConnectors',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      const ds = chart.data.datasets[0];
+      const y = chart.scales && chart.scales.y;
+      if (!meta || !meta.data || !y || !ds) return;
+      const { ctx } = chart;
+      ctx.save();
+      ctx.strokeStyle = tokens.textSecondary || '#64748B';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      for (let i = 0; i < meta.data.length - 1; i++) {
+        const v = ds.data[i];
+        if (!Array.isArray(v)) continue;
+        const yy = y.getPixelForValue(v[1]);
+        const a = meta.data[i].getProps(['x', 'width'], true);
+        const b = meta.data[i + 1].getProps(['x', 'width'], true);
+        ctx.beginPath();
+        ctx.moveTo(a.x + a.width / 2, yy);
+        ctx.lineTo(b.x - b.width / 2, yy);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+  };
+
   const config = {
     type: 'bar',
+    plugins: [connectorPlugin],
     data: chartData,
     options: {
       ...baseOptions,
       responsive: true,
       maintainAspectRatio: false,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 400,
-        easing: 'easeOutQuart'
-      }),
+      animation: false,
       interaction: {
         mode: 'index',
         intersect: false,
@@ -17808,11 +19886,27 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               family: tokens.fontFamily,
               size: 11
             },
-            padding: 6
+            padding: 6,
+            callback: function(val) {
+              const t = String(this.getLabelForValue(val));
+              if (this.chart.width >= 460) return t;
+              // Carte étroite : libellé sur 3 lignes maximum, mots abrégés, sans rotation
+              const max = 8;
+              const lines = [];
+              t.replace(/\s*\(.*?\)\s*/g, ' ').trim().split(/\s+/).forEach((w) => {
+                const last = lines[lines.length - 1];
+                if (last && (last + ' ' + w).length <= max) lines[lines.length - 1] = last + ' ' + w;
+                else lines.push(w);
+              });
+              return lines.slice(0, 3).map(w => (w.length > max ? w.slice(0, max - 1) + '.' : w));
+            },
+            maxRotation: 0,
+            autoSkip: false
           }
         },
         y: {
           beginAtZero: true, // Strict psychophysical mandate for waterfall baseline
+          title: { display: true, text: 'M€', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '500' } },
           grace: '10%',
           grid: {
             color: tokens.gridColor,
@@ -18000,24 +20094,24 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   const DEFAULT_DATA = {
     labels: [
-      'CA Brut Initial',
+      'Solde Initial',
       'Nouveaux Contrats',
       'Expansion Comptes',
       'Remises Commerciales',
       'Désabonnements (Churn)',
       "Frais d'Infrastructure",
-      'EBITDA Net'
+      'Solde Final'
     ],
     datasets: [{
       label: 'Pont Financier (k€)',
       data: [
-        { label: 'CA Brut Initial', value: 500, isTotal: false },
+        { label: 'Solde Initial', value: 500, isTotal: false },
         { label: 'Nouveaux Contrats', value: 180, isTotal: false },
         { label: 'Expansion Comptes', value: 75, isTotal: false },
         { label: 'Remises Commerciales', value: -45, isTotal: false },
         { label: 'Désabonnements (Churn)', value: -60, isTotal: false },
         { label: "Frais d'Infrastructure", value: -110, isTotal: false },
-        { label: 'EBITDA Net', value: 0, isTotal: true }
+        { label: 'Solde Final', value: 0, isTotal: true }
       ]
     }]
   };
@@ -18050,6 +20144,24 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     const analysis = computeWaterfallBalances(steps);
 
+    // Mode compact : largeur disponible sous ~420 px (carte d'aperçu) ; libellés abrégés sur 2 lignes, légende réduite
+    const availW = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
+    const compact = availW > 0 && availW < 460;
+    // Retour à la ligne des libellés d'axe : 2 lignes de `max` caractères (abrégé en carte étroite)
+    const wrapTick = (text, max, abbreviate) => {
+      const src = abbreviate ? String(text).replace(/\s*\(.*?\)\s*/g, ' ').trim() : String(text);
+      const words = src.split(/\s+/);
+      const cut = (w) => (abbreviate && w.length > max ? w.slice(0, max - 1) + '.' : w);
+      const lines = [];
+      words.forEach((w) => {
+        const last = lines[lines.length - 1];
+        if (last && (last + ' ' + w).length <= max) lines[lines.length - 1] = last + ' ' + w;
+        else lines.push(w);
+      });
+      return lines.map(cut);
+    };
+    const nf = (v) => new Intl.NumberFormat('fr-FR').format(v);
+
     const posColor = tokens.semantic?.positive || tokens.status?.success || '#2E7D32';
     const negColor = tokens.semantic?.negative || tokens.status?.danger || '#C62828';
     const totalColor = tokens.emphasis?.focal || tokens.palette?.[0] || '#2B8CBE';
@@ -18062,8 +20174,40 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     });
 
     const defaultOpts = getChartDefaultOptions(tokens);
+    const labelsPlugin = {
+      id: 'kitChartsWaterfallLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const meta = chart.getDatasetMeta(0);
+        const y = chart.scales && chart.scales.y;
+        if (!meta || !meta.data || !y) return;
+        const { ctx } = chart;
+        ctx.save();
+        ctx.font = `700 ${compact ? 10 : 11}px ${tokens.fontMono || tokens.fontFamily}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.lineJoin = 'round';
+        meta.data.forEach((bar, i) => {
+          const st = steps[i];
+          if (!st) return;
+          const unit = compact ? '' : ' k€';
+          const txt = st.isTotal || i === 0
+            ? `${nf(analysis.balances[i])}${unit}`
+            : `${st.value >= 0 ? '+' : '\u2212'}${nf(Math.abs(st.value))}${unit}`;
+          const top = Math.min(bar.y, bar.base, y.getPixelForValue(analysis.balances[i]));
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = tokens.surface || tokens.bg;
+          ctx.strokeText(txt, bar.x, top - 8);
+          ctx.fillStyle = tokens.textPrimary;
+          ctx.fillText(txt, bar.x, top - 8);
+        });
+        ctx.restore();
+      }
+    };
+
     const config = {
       type: 'bar',
+      plugins: [labelsPlugin],
       data: {
         labels,
         datasets: [
@@ -18075,15 +20219,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             borderColor: barColors,
             borderWidth: 1.5,
             borderRadius: 4,
-            datalabels: {
-              display: showDataLabels,
-              formatter: (val, ctx) => {
-                const s = steps[ctx.dataIndex];
-                if (!s) return '';
-                if (s.isTotal) return `${analysis.balances[ctx.dataIndex]} k€`;
-                return `${s.value >= 0 ? '+' : ''}${s.value} k€`;
-              }
-            },
+            datalabels: { display: false },
             order: 2
           },
           {
@@ -18093,9 +20229,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             borderColor: lineColor,
             backgroundColor: lineColor,
             borderWidth: 2.5,
-            pointRadius: 4,
+            pointRadius: 3,
             pointHoverRadius: 6,
-            tension: 0.15,
+            tension: 0,
             datalabels: {
               display: false
             },
@@ -18112,29 +20248,31 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             top: 16
           }
         },
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+        animation: false,
         interaction: {
           mode: 'index',
           intersect: false
         },
         plugins: {
           ...defaultOpts.plugins,
-          datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
-            formatter: (val, ctx) => {
-              const s = steps[ctx.dataIndex];
-              if (!s) return '';
-              if (s.isTotal) return `${analysis.balances[ctx.dataIndex]} k€`;
-              return `${s.value >= 0 ? '+' : ''}${s.value} k€`;
-            }
-          }),
+          datalabels: { display: false },
           legend: {
             display: true,
             position: 'top',
             align: 'end',
+            onClick: null,
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: compact ? 10 : 12 },
+              boxWidth: compact ? 10 : 40,
+              boxHeight: compact ? 10 : 12,
+              padding: compact ? 8 : 10,
+              generateLabels: () => [
+                { text: 'Hausse', fillStyle: posColor, strokeStyle: posColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+                { text: 'Baisse', fillStyle: negColor, strokeStyle: negColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+                { text: compact ? 'Initial / final' : 'Solde initial / final', fillStyle: totalColor, strokeStyle: totalColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+                { text: compact ? 'Cumulé' : 'Solde cumulé', fillStyle: lineColor, strokeStyle: lineColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 2, hidden: false }
+              ]
             }
           },
           tooltip: {
@@ -18160,20 +20298,25 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             grid: { display: false },
             ticks: {
               color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 11 },
-              maxRotation: 25
+              font: { family: tokens.fontFamily, size: compact ? 10 : 11 },
+              maxRotation: 0, autoSkip: false,
+              callback: function(val) {
+                const t = this.getLabelForValue(val);
+                return compact ? wrapTick(t, 7, true).slice(0, 2) : wrapTick(t, 16, false);
+              }
             }
           },
           y: {
             ...defaultOpts.scales.y,
             beginAtZero: true,
-            grace: '12%',
+            ticks: { ...((defaultOpts.scales.y && defaultOpts.scales.y.ticks) || {}), font: { family: tokens.fontMono || tokens.fontFamily, size: compact ? 10 : 11 }, padding: compact ? 4 : 6, maxTicksLimit: compact ? 5 : 8 },
+            grace: compact ? '18%' : '12%',
             grid: { color: tokens.gridColor },
             title: {
               display: true,
               text: 'Solde Net (k€)',
               color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
+              font: { family: tokens.fontFamily, size: compact ? 10 : 12, weight: '500' }, padding: compact ? 2 : 4
             }
           }
         }
@@ -18328,7 +20471,7 @@ const arcDiagramLinksPlugin = {
       if (radius <= 0) continue;
 
       const sourceIdx = typeof link.source === 'number' ? link.source : i;
-      let color = palette[sourceIdx % palette.length];
+      let color = palette[0];
       let isDashed = false;
       let strokeWidth = Math.max(1, Math.min(5, (link.value || link.weight || 2) * 0.6));
 
@@ -18340,7 +20483,7 @@ const arcDiagramLinksPlugin = {
         color = (tokens.emphasis && tokens.emphasis.focal) || color;
         strokeWidth = Math.max(2.5, strokeWidth + 1);
       } else if (link.role === 'context') {
-        color = (tokens.emphasis && tokens.emphasis.context) || '#CBD5E1';
+        color = tokens.textSecondary || (tokens.emphasis && tokens.emphasis.context) || '#64748B';
         strokeWidth = 1;
       }
 
@@ -18350,7 +20493,9 @@ const arcDiagramLinksPlugin = {
       } else {
         ctx.setLineDash([]);
       }
-      ctx.arc(cx, y0, radius, Math.PI, 0, false);
+      // Arc semi-elliptique : le rayon vertical est plafonné pour ne jamais sortir de la zone de tracé
+      const ry = Math.min(radius, Math.max(10, y0 - chart.chartArea.top - 6));
+      ctx.ellipse(cx, y0, radius, ry, 0, Math.PI, 0, false);
       ctx.strokeStyle = color;
       ctx.lineWidth = strokeWidth;
       ctx.stroke();
@@ -18409,7 +20554,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       if (node.role === 'focal') {
         nodeRadius = Math.max(nodeRadius, 12);
       } else if (node.role === 'context') {
-        nodeRadius = Math.min(nodeRadius, 6);
+        nodeRadius = Math.max(7, Math.min(nodeRadius, 8));
       }
     } else if (node.valence !== undefined || node.delta !== undefined) {
       nodeColor = getValenceColor(tokens, node.valence !== undefined ? node.valence : node.delta, node.metricType || 'gain');
@@ -18556,8 +20701,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           min: -0.5,
           max: 6,
           grid: {
-            color: tokens.gridColor,
-            lineWidth: 1,
+            display: false,
             drawBorder: false
           },
           border: { display: false },
@@ -18657,36 +20801,37 @@ const DEFAULT_DATA = {
     'Grands Comptes B2B'
   ],
   datasets: [
-    // Cluster 1 : Retail B2C (Feuilles 1 & 2)
+    // Cluster B2C : fusions (1,2) h=14, (3,4) h=18, puis les deux ensemble h=32.
+    // Chaque fusion = connecteur orthogonal en U : feuille, palier horizontal, trait vertical, palier, feuille.
     {
       label: 'Cluster B2C Grand Public',
       role: 'context',
       data: [
         { x: 0, y: 1 }, { x: 14, y: 1 }, { x: 14, y: 2 }, { x: 0, y: 2 },
-        { x: 14, y: 1.5 }, { x: 32, y: 1.5 }, { x: 32, y: 3 }, { x: 18, y: 3 },
-        { x: 18, y: 3 }, { x: 0, y: 3 }, { x: 18, y: 4 }, { x: 0, y: 4 }
+        { x: 14, y: 2 }, { x: 14, y: 1.5 }, { x: 32, y: 1.5 }, { x: 32, y: 3.5 },
+        { x: 18, y: 3.5 }, { x: 18, y: 3 }, { x: 0, y: 3 }, { x: 18, y: 3 },
+        { x: 18, y: 4 }, { x: 0, y: 4 }
       ]
     },
-    // Cluster 2 : Entreprises B2B (Feuilles 5 & 6) - Cible focale haute valeur
+    // Cluster B2B : fusion (5,6) h=22, cible focale haute valeur
     {
       label: 'Cluster B2B Professionnel (Cible Focale)',
       role: 'focal',
       data: [
-        { x: 0, y: 5 }, { x: 22, y: 5 }, { x: 22, y: 6 }, { x: 0, y: 6 },
-        { x: 22, y: 5.5 }, { x: 48, y: 5.5 }
+        { x: 0, y: 5 }, { x: 22, y: 5 }, { x: 22, y: 6 }, { x: 0, y: 6 }
       ]
     },
-    // Tronc principal reliant les méta-clusters
+    // Tronc : fusion finale des deux clusters à h=65 (U entre y=2.5 et y=5.5)
     {
       label: 'Jonction Hiérarchique Principale',
       role: 'context',
       data: [
-        { x: 32, y: 2.25 }, { x: 65, y: 2.25 }, { x: 65, y: 5.5 }, { x: 48, y: 5.5 }
+        { x: 32, y: 2.5 }, { x: 65, y: 2.5 }, { x: 65, y: 5.5 }, { x: 22, y: 5.5 }
       ]
     },
-    // Ligne de coupe de seuil K=2 clusters (Benchmark de partition)
+    // Ligne de coupe K=2 clusters : traverse uniquement la fusion finale (h=65)
     {
-      label: 'Seuil de Partition (Cutoff Benchmark)',
+      label: 'Seuil de Partition (K=2)',
       role: 'benchmark',
       data: [
         { x: 40, y: 0.5 }, { x: 40, y: 6.5 }
@@ -18741,9 +20886,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       color = emp.borderColor || emp.backgroundColor || color;
       borderWidth = emp.borderWidth !== undefined ? emp.borderWidth : borderWidth;
       borderDash = emp.borderDash || borderDash;
-      if (ds.role === 'benchmark') {
-        pointRadius = 0;
+      if (ds.role === 'context') {
+        color = tokens.textSecondary || color;
       }
+      pointRadius = 0;
     } else if (ds.valence !== undefined || ds.delta !== undefined) {
       color = getValenceColor(tokens, ds.valence !== undefined ? ds.valence : ds.delta, ds.metricType || 'gain');
     } else if (isCutoff) {
@@ -18782,6 +20928,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       pointHoverRadius: 6,
       fill: false,
       stepped: false,
+      tension: 0,
       showLine: true
     };
   });
@@ -18798,6 +20945,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
   const config = {
     type: 'line',
+    plugins: [{
+      id: 'dendroCutoffLabel',
+      afterDatasetsDraw(chart) {
+        const di = chart.data.datasets.findIndex(d => /seuil|cutoff/i.test(d.label || ''));
+        if (di < 0) return;
+        const pts = chart.getDatasetMeta(di).data;
+        if (!pts || !pts.length) return;
+        const top = pts[pts.length - 1];
+        const c = chart.ctx;
+        c.save();
+        c.fillStyle = tokens.textPrimary;
+        c.font = `600 11px ${tokens.fontFamily}`;
+        c.textAlign = 'left';
+        c.fillText('Coupe K = 2', top.x + 6, top.y + 12);
+        c.restore();
+      }
+    }],
     data: chartData,
     options: {
       scales: {},
@@ -18819,7 +20983,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       plugins: {
         ...defaultOpts.plugins,
         legend: {
-          display: datasets.length > 1 && !isTufte,
+          display: false,
           position: 'top',
           align: 'end',
           labels: {
@@ -18874,6 +21038,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       scales: {
         x: {
           type: 'linear',
+          min: 0,
+          beginAtZero: true,
           title: {
             display: true,
             text: 'Distance de Dissimilarité (Indice de Ward / Hauteur)',
@@ -18997,7 +21163,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
  * @file 07-hierarchie-reseau/marimekko-chart/template.js
  * @description Template Chart.js v4+ pour Graphique Marimekko / Mosaïque (Marimekko / Mekko / Mosaic Chart).
  * Psychophysique: Encodage bidimensionnel proportionnel (Cleveland-McGill: aire 2D = largeur de colonne x hauteur de segment).
- * Règle cognitive: Tri décroissant des colonnes et des segments, bordures blanches nettes, repères de pourcentages.
+ * Règle cognitive: Tri décroissant des colonnes, ordre des séries fixe et identique dans chaque colonne, bordures blanches nettes, repères de pourcentages.
  */
 
 /**
@@ -19026,66 +21192,68 @@ const DEFAULT_DATA = {
 };
 
 /**
- * Normalise un jeu de données quelconque en matrice Mekko avec calculs des coordonnées et dimensions.
+ * Couleur de texte lisible (WCAG) selon la luminance du fond.
+ */
+function readableTextOn(bg) {
+  const fn = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) || (typeof window !== 'undefined' && window.getContrastingTextColor);
+  if (typeof fn === 'function') {
+    try { return fn(bg); } catch (e) { /* repli ci-dessous */ }
+  }
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(bg || '').trim());
+  if (!m) return '#0F172A';
+  const n = parseInt(m[1], 16);
+  const lin = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  return L > 0.4 ? '#0F172A' : '#FFFFFF';
+}
+
+/**
+ * Normalise un jeu de données en matrice Mekko : colonnes triées par poids décroissant,
+ * segments dans l'ordre fixe des séries, coordonnées en pourcentage (0-100).
  *
  * @param {Array} rawItems
- * @returns {Array} Éléments normalisés avec { x, y, w, h, v, col, sub, label, subIndex, role, growth }
+ * @returns {Array} Éléments { x0, x1, y0, y1, w, h, v, col, sub, label, role, growth, ... } (x/y en %)
  */
 function normalizeMekkoData(rawItems) {
   if (!Array.isArray(rawItems) || !rawItems.length) return [];
 
-  // Vérification si données déjà au format Mekko (avec colWeight ou w/h)
   const columnsMap = new Map();
-
+  const subOrder = [];
   for (const item of rawItems) {
     const colName = item.col || (typeof item.x === 'string' ? item.x : `Col-${item.x ?? 0}`);
     const subName = item.sub || (typeof item.y === 'string' ? item.y : `Sub-${item.y ?? 0}`);
     const val = typeof item.v === 'number' ? item.v : (typeof item.value === 'number' ? item.value : (Number(item.y) || 10));
     const widthHint = typeof item.colWeight === 'number' ? item.colWeight : (typeof item.width === 'number' ? item.width / 100 : (typeof item.w === 'number' ? item.w : null));
-
-    if (!columnsMap.has(colName)) {
-      columnsMap.set(colName, { name: colName, widthHint, items: [] });
-    }
-    columnsMap.get(colName).items.push({
-      colName,
-      subName,
-      val,
-      rawItem: item
-    });
+    if (subOrder.indexOf(subName) < 0) subOrder.push(subName);
+    if (!columnsMap.has(colName)) columnsMap.set(colName, { name: colName, widthHint, items: [] });
+    columnsMap.get(colName).items.push({ colName, subName, val, rawItem: item });
   }
 
-  // Calcul du poids de chaque colonne
   const columns = Array.from(columnsMap.values());
   let totalColumnWeight = 0;
   for (const col of columns) {
-    if (col.widthHint !== null && col.widthHint > 0) {
-      col.weight = col.widthHint;
-    } else {
-      col.weight = col.items.reduce((sum, it) => sum + Math.max(0, it.val), 0) || 1;
-    }
+    col.total = col.items.reduce((s, it) => s + Math.max(0, it.val), 0) || 1;
+    col.weight = (col.widthHint !== null && col.widthHint > 0) ? col.widthHint : col.total;
     totalColumnWeight += col.weight;
   }
+  columns.sort((a, b) => b.weight - a.weight);
 
-  // Normalisation des largeurs de colonnes sur [0, 1]
-  let currentCumX = 0;
+  let cumX = 0;
   const result = [];
-  const distinctSubs = Array.from(new Set(rawItems.map(it => it.sub || (typeof it.y === 'string' ? it.y : `Sub-${it.y ?? 0}`))));
-
   for (const col of columns) {
-    const colFraction = totalColumnWeight > 0 ? (col.weight / totalColumnWeight) : (1 / columns.length);
-    const colCenterX = currentCumX + colFraction / 2;
-
-    const colTotalVal = col.items.reduce((sum, it) => sum + Math.max(0, it.val), 0) || 1;
-    let currentCumY = 0;
-
-    for (const item of col.items) {
-      const segFraction = Math.max(0, item.val) / colTotalVal;
-      const segCenterY = currentCumY + segFraction / 2;
-      const subIdx = distinctSubs.indexOf(item.subName);
-
+    const colFraction = totalColumnWeight > 0 ? col.weight / totalColumnWeight : 1 / columns.length;
+    // Ordre des séries identique dans toutes les colonnes (ordre de première apparition = ordre de la légende)
+    const items = col.items.slice().sort((a, b) => subOrder.indexOf(a.subName) - subOrder.indexOf(b.subName));
+    let cumY = 0;
+    for (const item of items) {
+      const segFraction = Math.max(0, item.val) / col.total;
       result.push({
-        x: colCenterX,
-        y: segCenterY,
+        x0: cumX * 100,
+        x1: (cumX + colFraction) * 100,
+        y0: cumY * 100,
+        y1: (cumY + segFraction) * 100,
+        x: (cumX + colFraction / 2) * 100,
+        y: (cumY + segFraction / 2) * 100,
         w: colFraction,
         h: segFraction,
         v: item.val,
@@ -19097,17 +21265,80 @@ function normalizeMekkoData(rawItems) {
         marketShare: (colFraction * segFraction * 100).toFixed(1),
         subSharePct: (segFraction * 100).toFixed(1),
         colWeightPct: (colFraction * 100).toFixed(1),
-        subIndex: subIdx >= 0 ? subIdx : 0
+        subIndex: subOrder.indexOf(item.subName)
       });
-
-      currentCumY += segFraction;
+      cumY += segFraction;
     }
-
-    currentCumX += colFraction;
+    cumX += colFraction;
   }
-
   return result;
 }
+
+/**
+ * Plugin canvas : dessine les rectangles Mekko (largeur = poids de colonne, hauteur = part du segment),
+ * les libellés de colonnes au-dessus et les libellés de segments à l'intérieur.
+ */
+const mekkoRectsPlugin = {
+  id: 'mekkoRectsPlugin',
+  beforeDatasetsDraw(chart) {
+    const meta = chart.options.plugins.mekkoMeta;
+    if (!meta) return;
+    const { ctx, chartArea, scales } = chart;
+    const xs = scales.x, ys = scales.y;
+    if (!xs || !ys || !chartArea) return;
+    const { tokens, items, showLabels } = meta;
+    ctx.save();
+    const seen = new Set();
+    for (const it of items) {
+      const px0 = xs.getPixelForValue(it.x0);
+      const px1 = xs.getPixelForValue(it.x1);
+      const py0 = ys.getPixelForValue(it.y0);
+      const py1 = ys.getPixelForValue(it.y1);
+      const w = px1 - px0;
+      const h = py0 - py1;
+      if (!(w > 0) || !(h > 0)) continue;
+      ctx.fillStyle = it.color;
+      ctx.fillRect(px0, py1, w, h);
+      ctx.lineWidth = it.borderWidth;
+      ctx.strokeStyle = it.borderColor;
+      ctx.strokeRect(px0 + 0.5, py1 + 0.5, w - 1, h - 1);
+
+      if (showLabels && w > 40 && h > 30) {
+        const txt = readableTextOn(it.color);
+        ctx.fillStyle = txt;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.font = `600 11px ${tokens.fontFamily || 'sans-serif'}`;
+        let name = it.sub;
+        if (ctx.measureText(name).width > w - 8) name = name.replace(/\s*\(.*\)\s*$/, '');
+        while (name.length > 3 && ctx.measureText(name).width > w - 8) name = name.slice(0, -2) + '…';
+        ctx.fillText(name, px0 + w / 2, py1 + h / 2 - 7);
+        ctx.font = `400 11px ${tokens.fontMono || tokens.fontFamily || 'monospace'}`;
+        ctx.fillText(`${Math.round(Number(it.subSharePct))} %`, px0 + w / 2, py1 + h / 2 + 8);
+      }
+
+      if (!seen.has(it.col)) {
+        seen.add(it.col);
+        ctx.fillStyle = tokens.textPrimary || '#0F172A';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.font = `600 11px ${tokens.fontFamily || 'sans-serif'}`;
+        const colName = it.col.replace(/\s*\(\d+\s*%\)\s*$/, '');
+        const colPct = `${Math.round(Number(it.colWeightPct))} %`;
+        const fit = (t, max) => { let r = t; while (r.length > 3 && ctx.measureText(r).width > max) r = r.slice(0, -2).trimEnd() + '…'; return r; };
+        const oneLine = `${colName} (${colPct})`;
+        if (ctx.measureText(oneLine).width <= w - 4) {
+          ctx.fillText(oneLine, px0 + w / 2, chartArea.top - 6);
+        } else {
+          // Colonne étroite : nom sur une ligne, part sur la ligne du dessous
+          ctx.fillText(fit(colName, w - 4), px0 + w / 2, chartArea.top - 20);
+          ctx.fillText(colPct, px0 + w / 2, chartArea.top - 6);
+        }
+      }
+    }
+    ctx.restore();
+  }
+};
 
 /**
  * Crée et initialise un graphique Marimekko dans le canvas cible.
@@ -19117,7 +21348,7 @@ function normalizeMekkoData(rawItems) {
  * @param {string} [themeName='colorbrewer-accessible'] - Identifiant du thème cognitif
  * @returns {Object} Instance Chart.js initialisée
  */
-function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME) {
+function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
   const canvas = typeof canvasTarget === 'string'
     ? (typeof document !== 'undefined' ? document.getElementById(canvasTarget) : null)
     : canvasTarget;
@@ -19126,7 +21357,6 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     throw new Error(`Canvas element "${canvasTarget}" not found`);
   }
 
-  // Destruction propre de l'instance précédente
   if (typeof Chart !== 'undefined' && Chart.getChart) {
     const existing = Chart.getChart(canvas);
     if (existing) existing.destroy();
@@ -19136,110 +21366,76 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const tokens = getThemeTokens(themeName, container);
   const isTufte = tokens.name === 'tufte-minimalist-executive';
   const isDark = Boolean(tokens.isDark);
-  const reduceMotion = isReducedMotionPreferred();
+  const showLabels = !(customData && customData.showDataLabels === false) && !(options && options.showDataLabels === false);
 
   const rawData = customData || DEFAULT_DATA;
   const rawItems = (rawData.datasets && rawData.datasets[0]?.data) || (Array.isArray(rawData) ? rawData : []);
   const normalizedData = normalizeMekkoData(rawItems);
 
+  const availW = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
+  const compact = availW > 0 && availW < 460;
   const distinctSubNames = Array.from(new Set(normalizedData.map(d => d.sub)));
+  const surfaceBorder = isDark ? (tokens.surface || '#2E3440') : '#FFFFFF';
+
+  // Couleur = catégorie (stable) ; le rôle ne joue que sur la bordure.
+  for (const it of normalizedData) {
+    it.color = getColor(tokens, it.subIndex);
+    it.borderColor = surfaceBorder;
+    it.borderWidth = isTufte ? 1 : 2;
+    // Seule l'anomalie est soulignée (bordure rouge, expliquée en infobulle) ; le focal se lit par sa couleur
+    if (it.role === 'anomaly') {
+      it.borderColor = (tokens.status && tokens.status.danger) || '#C62828';
+      it.borderWidth = 3;
+    }
+  }
 
   const datasets = distinctSubNames.map((subName, sIdx) => {
     const itemsOfSub = normalizedData.filter(d => d.sub === subName);
-    let baseColor = getColor(tokens, sIdx);
-
-    const dataPoints = itemsOfSub.map(it => {
-      let color = baseColor;
-      let borderColor = isDark ? tokens.surface : '#FFFFFF';
-      let borderWidth = isTufte ? 1 : 2;
-
-      if (it.role) {
-        const emp = getEmphasisStyle(tokens, it.role);
-        color = emp.backgroundColor || color;
-        borderColor = emp.borderColor || borderColor;
-        borderWidth = emp.borderWidth !== undefined ? emp.borderWidth : borderWidth;
-      } else if (it.growth !== null) {
-        if (it.growth > 25) {
-          color = getValenceColor(tokens, 'up', 'gain');
-        } else if (it.growth < -20) {
-          color = getValenceColor(tokens, 'down', 'gain');
-        }
-      }
-
-      return {
-        x: it.x,
-        y: it.y,
-        w: it.w,
-        h: it.h,
-        v: it.v,
-        col: it.col,
-        sub: it.sub,
-        label: it.label,
-        role: it.role,
-        growth: it.growth,
-        marketShare: it.marketShare,
-        subSharePct: it.subSharePct,
-        colWeightPct: it.colWeightPct,
-        color,
-        borderColor,
-        borderWidth
-      };
-    });
-
+    const color = getColor(tokens, itemsOfSub.length ? itemsOfSub[0].subIndex : sIdx);
     return {
       label: subName,
-      data: dataPoints,
-      backgroundColor: dataPoints.map(d => d.color),
-      borderColor: dataPoints.map(d => d.borderColor),
-      borderWidth: dataPoints.map(d => d.borderWidth),
-      pointRadius: (ctx) => {
-        const item = ctx.raw;
-        return item ? 8 : 4;
-      },
-      pointHoverRadius: 10,
-      pointHitRadius: 12
+      data: itemsOfSub.map(it => ({ ...it })),
+      backgroundColor: color,
+      borderColor: color,
+      pointStyle: 'rect',
+      pointRadius: 0,
+      pointHoverRadius: 0,
+      pointHitRadius: 40
     };
   });
 
-  const chartData = {
-    datasets
-  };
-
+  const chartData = { datasets };
   const defaultOpts = getChartDefaultOptions(tokens);
+
+  const axisTick = {
+    color: tokens.textSecondary,
+    font: { family: tokens.fontFamily, size: 11 },
+    callback: (v) => `${v} %`,
+    stepSize: 25
+  };
 
   const config = {
     type: 'scatter',
     data: chartData,
     options: {
-      scales: {},
       ...defaultOpts,
-      animation: getAccessibleAnimationOptions(tokens, {
-        duration: (isTufte || reduceMotion) ? 0 : 400,
-        easing: 'easeOutQuart'
-      }),
-      interaction: {
-        mode: 'nearest',
-        intersect: true
-      },
-      hover: {
-        mode: 'nearest',
-        intersect: true,
-        animationDuration: (isTufte || reduceMotion) ? 0 : 100
-      },
+      animation: false,
+      layout: { padding: { top: 40 } },
+      interaction: { mode: 'nearest', intersect: false },
+      hover: { mode: 'nearest', intersect: false, animationDuration: 0 },
       plugins: {
         ...defaultOpts.plugins,
+        mekkoMeta: { tokens, items: normalizedData, showLabels },
         legend: {
           display: !isTufte && distinctSubNames.length > 1,
-          position: 'top',
-          align: 'end',
+          position: 'bottom',
           labels: {
             color: tokens.textPrimary,
             usePointStyle: true,
-            boxWidth: 8,
-            font: {
-              family: tokens.fontFamily,
-              size: 11
-            }
+            pointStyle: 'rect',
+            boxWidth: 10,
+            boxHeight: 10,
+            font: { family: tokens.fontFamily, size: 11 }
           }
         },
         tooltip: {
@@ -19252,46 +21448,51 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           padding: { top: 10, bottom: 10, left: 14, right: 14 },
           cornerRadius: isTufte ? 0 : 6,
           boxPadding: 6,
-          titleFont: {
-            family: tokens.fontFamily,
-            size: 12,
-            weight: '600'
-          },
-          bodyFont: {
-            family: tokens.fontMono,
-            size: 12,
-            weight: '400'
-          },
+          titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
+          bodyFont: { family: tokens.fontMono, size: 12, weight: '400' },
           callbacks: {
-            title: (items) => {
-              if (!items.length) return '';
-              return items[0].raw?.label || 'Segment Mekko';
-            },
+            title: (items) => (items.length ? (items[0].raw?.label || 'Segment Mekko') : ''),
             label: (item) => {
               const raw = item.raw;
               if (!raw) return '';
               const growthInfo = typeof raw.growth === 'number'
                 ? ` Évolution A/A-1 : ${raw.growth > 0 ? '+' : ''}${raw.growth}%`
                 : '';
-              const roleInfo = raw.role ? ` [${raw.role.toUpperCase()}]` : '';
               return [
                 ` Segment : ${raw.col} (Poids: ${raw.colWeightPct}%)`,
-                ` Catégorie : ${raw.sub} (Part: ${raw.subSharePct}%)${roleInfo}`,
+                ` Catégorie : ${raw.sub} (Part: ${raw.subSharePct}%)`,
                 ` Volume Global : ${raw.marketShare}% du marché total`,
-                ...(growthInfo ? [growthInfo] : [])
+                ...(growthInfo ? [growthInfo] : []),
+                ...(raw.role === 'anomaly' ? [' Bordure rouge : segment atypique'] : [])
               ];
             }
           }
         }
+      },
+      scales: {
+        x: {
+          type: 'linear', min: 0, max: 100,
+          title: { display: true, text: compact ? 'Part cumulée du marché (largeur)' : 'Part cumulée des segments de marché (largeur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
+          grid: { display: false },
+          border: { display: false },
+          ticks: axisTick
+        },
+        y: {
+          type: 'linear', min: 0, max: 100, beginAtZero: true,
+          title: { display: true, text: compact ? 'Part dans le segment (hauteur)' : 'Part de chaque motorisation dans le segment (hauteur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
+          grid: { display: false },
+          border: { display: false },
+          ticks: axisTick
+        }
       }
-    }
+    },
+    plugins: [mekkoRectsPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
     return new Chart(canvas, config);
   }
 
-  // Simulation mock pour environnement Node.js headless
   return {
     canvas,
     config,
@@ -19445,7 +21646,7 @@ const networkLinksPlugin = {
         continue;
       }
 
-      let strokeColor = isDark ? 'rgba(216, 222, 233, 0.28)' : 'rgba(71, 85, 105, 0.25)';
+      let strokeColor = isDark ? 'rgba(216, 222, 233, 0.5)' : 'rgba(71, 85, 105, 0.45)';
       let strokeWidth = Math.max(1, Math.min(4, link.weight || 1.5));
       let isDashed = false;
 
@@ -19471,6 +21672,121 @@ const networkLinksPlugin = {
       ctx.stroke();
     }
 
+    ctx.restore();
+  }
+};
+
+/**
+ * Plugin Canvas : libellés des nœuds (N <= 12), halo de la couleur de surface pour le contraste.
+ */
+const networkLabelsPlugin = {
+  id: 'networkLabelsPlugin',
+  afterDatasetsDraw(chart) {
+    const meta = chart.getDatasetMeta(0);
+    const tokens = chart.options?.plugins?.networkMeta?.tokens || {};
+    const isDark = chart.options?.plugins?.networkMeta?.isDark;
+    if (!meta || !meta.data) return;
+    const ctx = chart.ctx;
+    const compact = chart.width < 460;
+    const fontSize = compact ? 10.5 : 11;
+    ctx.save();
+    ctx.font = `600 ${fontSize}px ${tokens.fontFamily || 'sans-serif'}`;
+    ctx.textBaseline = 'middle';
+    ctx.lineJoin = 'round';
+    ctx.lineWidth = 3;
+
+    // Nœuds en pixels
+    const nodes = [];
+    meta.data.forEach((el, i) => {
+      const raw = chart.data.datasets[0].data[i];
+      if (!el || !raw || !Number.isFinite(el.x)) return;
+      nodes.push({ i, raw, x: el.x, y: el.y, r: (el.options && el.options.radius) || raw.r || 8 });
+    });
+    // Arêtes en pixels (pour éviter qu'un libellé soit traversé)
+    const xs = chart.scales.x, ys = chart.scales.y;
+    const segs = [];
+    (chart.data.links || []).forEach((l) => {
+      const pick = (k) => (typeof k === 'number' ? chart.data.datasets[0].data[k]
+        : (typeof k === 'string' ? chart.data.datasets[0].data.find(n => n.id === k || n.label === k) : k));
+      const a = pick(l.source), b = pick(l.target);
+      if (!a || !b) return;
+      segs.push([xs.getPixelForValue(a.x), ys.getPixelForValue(a.y), xs.getPixelForValue(b.x), ys.getPixelForValue(b.y)]);
+    });
+
+    const H = fontSize + 4;
+    const rectHitsSeg = (rc, sg) => {
+      const n = Math.max(2, Math.ceil(Math.hypot(sg[2] - sg[0], sg[3] - sg[1]) / 3));
+      let hits = 0;
+      for (let k = 0; k <= n; k++) {
+        const px = sg[0] + (sg[2] - sg[0]) * k / n, py = sg[1] + (sg[3] - sg[1]) * k / n;
+        if (px >= rc.x0 && px <= rc.x0 + rc.w && py >= rc.y0 && py <= rc.y0 + rc.h) hits++;
+      }
+      return hits;
+    };
+    const overlapArea = (p, q) => {
+      const w = Math.min(p.x0 + p.w, q.x0 + q.w) - Math.max(p.x0, q.x0);
+      const h = Math.min(p.y0 + p.h, q.y0 + q.h) - Math.max(p.y0, q.y0);
+      return w > 0 && h > 0 ? w * h : 0;
+    };
+    const rectHitsCircle = (rc, c) => {
+      const cx = Math.max(rc.x0, Math.min(c.x, rc.x0 + rc.w)), cy = Math.max(rc.y0, Math.min(c.y, rc.y0 + rc.h));
+      return Math.hypot(c.x - cx, c.y - cy) < c.r + 1;
+    };
+
+    const placed = [];
+    // Les plus gros nœuds d'abord : ils obtiennent leur meilleure position
+    nodes.slice().sort((p, q) => q.r - p.r).forEach((nd) => {
+      const text = nd.raw.label;
+      if (!text) return;
+      const w = ctx.measureText(text).width + 4;
+      const gap = 3;
+      const cands = [
+        { x0: nd.x - w / 2, y0: nd.y + nd.r + gap },
+        { x0: nd.x - w / 2, y0: nd.y - nd.r - gap - H },
+        { x0: nd.x + nd.r + gap, y0: nd.y - H / 2 },
+        { x0: nd.x - nd.r - gap - w, y0: nd.y - H / 2 }
+      ];
+      let best = null;
+      cands.forEach((c, ci) => {
+        const rc = { x0: Math.max(2, Math.min(c.x0, chart.width - 2 - w)), y0: c.y0, w, h: H };
+        let cost = ci * 0.5;
+        if (rc.y0 < 2 || rc.y0 + H > chart.height - 2) cost += 60;
+        placed.forEach((p) => { cost += overlapArea(rc, p) * 0.5; });
+        segs.forEach((sg) => { cost += rectHitsSeg(rc, sg) * 2.5; });
+        nodes.forEach((o) => { if (rectHitsCircle(rc, o)) cost += 40; });
+        if (!best || cost < best.cost) best = { cost, rc };
+      });
+      placed.push(best.rc);
+      ctx.textAlign = 'left';
+      ctx.strokeStyle = isDark ? (tokens.surface || '#2E3440') : '#FFFFFF';
+      ctx.fillStyle = tokens.textPrimary || (isDark ? '#ECEFF4' : '#0F172A');
+      ctx.strokeText(text, best.rc.x0 + 2, best.rc.y0 + H / 2);
+      ctx.fillText(text, best.rc.x0 + 2, best.rc.y0 + H / 2);
+    });
+
+    // Légende des communautés (couleurs de nœuds), hors carte étroite
+    if (!compact) {
+      const clusters = [];
+      chart.data.datasets[0].data.forEach((d, i) => {
+        if (clusters.findIndex(c => c.cluster === d.cluster) < 0) clusters.push({ cluster: d.cluster, color: d.color });
+      });
+      clusters.sort((a, b) => a.cluster - b.cluster);
+      if (clusters.length > 1) {
+        ctx.font = `500 11px ${tokens.fontFamily || 'sans-serif'}`;
+        ctx.lineWidth = 0;
+        let lx = 8;
+        const ly = chart.height - 10;
+        ctx.textAlign = 'left';
+        clusters.forEach((c) => {
+          const t = `Communauté ${c.cluster + 1}`;
+          ctx.fillStyle = c.color;
+          ctx.beginPath(); ctx.arc(lx + 5, ly, 5, 0, Math.PI * 2); ctx.fill();
+          ctx.fillStyle = tokens.textSecondary || tokens.textPrimary;
+          ctx.fillText(t, lx + 14, ly);
+          lx += 14 + ctx.measureText(t).width + 14;
+        });
+      }
+    }
     ctx.restore();
   }
 };
@@ -19516,9 +21832,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
     if (node.role) {
       const emp = getEmphasisStyle(tokens, node.role, { radius: nodeRadius });
-      nodeColor = emp.backgroundColor || nodeColor;
-      nodeBorderColor = emp.borderColor || nodeBorderColor;
-      nodeBorderWidth = emp.borderWidth !== undefined ? emp.borderWidth : 2;
+      // La couleur de communauté est conservée ; le rôle ne joue que sur la bordure (focal) ou la couleur d'alerte (anomalie).
+      if (node.role === 'anomaly') nodeColor = emp.backgroundColor || nodeColor;
+      if (node.role === 'focal') {
+        nodeBorderColor = tokens.textPrimary || '#0F172A';
+        nodeBorderWidth = 3;
+      }
     } else if (node.valence !== undefined || node.delta !== undefined) {
       nodeColor = getValenceColor(tokens, node.valence !== undefined ? node.valence : node.delta, node.metricType || 'gain');
     }
@@ -19568,6 +21887,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     options: {
       scales: {},
       ...defaultOpts,
+      layout: { padding: { top: 8, bottom: 22, left: 6, right: 6 } },
       animation: getAccessibleAnimationOptions(tokens, {
         duration: (isTufte || reduceMotion) ? 0 : 400,
         easing: 'easeOutQuart'
@@ -19630,6 +21950,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       },
       scales: {
         x: {
+          display: false,
+          min: 0,
+          max: 100,
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -19646,6 +21969,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           }
         },
         y: {
+          display: false,
+          min: 0,
+          max: 100,
           grid: {
             color: tokens.gridColor,
             lineWidth: 1,
@@ -19663,7 +21989,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         }
       }
     },
-    plugins: [networkLinksPlugin]
+    plugins: [networkLinksPlugin, networkLabelsPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
@@ -19789,7 +22115,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const isTufte = tokens.name === 'tufte-minimalist-executive';
 
   const rawData = customData || DEFAULT_DATA;
-  const bubbles = (rawData && rawData.bubbles) ? rawData.bubbles : DEFAULT_GLOBAL_BUBBLES;
+  const showDataLabels = !(options && options.showDataLabels === false) && !(rawData && rawData.showDataLabels === false);
+  const bubblesRaw = (rawData && rawData.bubbles) ? rawData.bubbles : DEFAULT_GLOBAL_BUBBLES;
+  const valOf = (b) => (b.val !== undefined ? b.val : (b.value !== undefined ? b.value : 0));
+  // Tri décroissant : les grandes bulles sont dessinées d'abord, les petites restent visibles au-dessus.
+  const bubbles = bubblesRaw.slice().sort((a, b) => valOf(b) - valOf(a));
   const unit = rawData.unit || 'Mds $';
   const projectionType = rawData.projection || 'equalEarth';
 
@@ -19812,7 +22142,102 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     features = EUROPE_DATA.features;
   }
 
+  features = features.filter(f => !(f.properties && f.properties.name === 'Antarctica'));
+
   const defaultBubbleColor = getColor(tokens, 0);
+
+  const labelsPlugin = {
+    id: 'bubbleCityLabels',
+    afterDatasetsDraw(chart) {
+      if (!showDataLabels) return;
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data) return;
+      const ctx = chart.ctx;
+      ctx.save();
+      ctx.font = `600 11px ${tokens.fontFamily || 'sans-serif'}`;
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.lineJoin = 'round';
+      ctx.lineWidth = 3;
+      const compact = chart.width < 460;
+      ctx.font = `600 ${compact ? 10.5 : 11}px ${tokens.fontFamily || 'sans-serif'}`;
+      const H = compact ? 13 : 14;
+      const items = [];
+      meta.data.forEach((el, i) => {
+        const b = bubbles[i];
+        if (!b || !el || !Number.isFinite(el.x) || !Number.isFinite(el.y)) return;
+        items.push({ b, x: el.x, y: el.y, r: (el.options && el.options.radius) || 8 });
+      });
+      const area = (p, q) => {
+        const w = Math.min(p.x0 + p.w, q.x0 + q.w) - Math.max(p.x0, q.x0);
+        const h = Math.min(p.y0 + p.h, q.y0 + q.h) - Math.max(p.y0, q.y0);
+        return w > 0 && h > 0 ? w * h : 0;
+      };
+      const hitsCircle = (rc, c) => {
+        const cx = Math.max(rc.x0, Math.min(c.x, rc.x0 + rc.w)), cy = Math.max(rc.y0, Math.min(c.y, rc.y0 + rc.h));
+        return Math.hypot(c.x - cx, c.y - cy) < c.r;
+      };
+      const placed = [];
+      // Légende de taille : plus petite et plus grande bulle, avec l'unité (bandeau en bas à gauche)
+      if (items.length > 1) {
+        const byR = items.slice().sort((p, q) => p.r - q.r);
+        const sm = byR[0], lg = byR[byR.length - 1];
+        const fv = (it) => Number(valOf(it.b)).toLocaleString('fr-FR');
+        const fs = compact ? 10.5 : 11;
+        ctx.save();
+        ctx.font = `500 ${fs}px ${tokens.fontFamily || 'sans-serif'}`;
+        const t1 = fv(sm), t2 = fv(lg);
+        const w1 = ctx.measureText(t1).width, w2 = ctx.measureText(t2).width, wu = ctx.measureText(unit).width;
+        const cy = chart.height - lg.r - 4;
+        let x = 8;
+        ctx.fillStyle = tokens.textSecondary || tokens.textPrimary;
+        ctx.strokeStyle = tokens.isDark ? '#ECEFF4' : '#0F172A';
+        ctx.lineWidth = 1;
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.beginPath(); ctx.arc(x + sm.r, cy, sm.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillText(t1, x + sm.r * 2 + 4, cy);
+        x += sm.r * 2 + 4 + w1 + 12;
+        ctx.beginPath(); ctx.arc(x + lg.r, cy, lg.r, 0, Math.PI * 2); ctx.stroke();
+        ctx.fillText(t2, x + lg.r * 2 + 4, cy);
+        x += lg.r * 2 + 4 + w2 + 8;
+        ctx.fillText(unit, x, cy);
+        placed.push({ x0: 4, y0: cy - lg.r - 2, w: x + wu - 4, h: lg.r * 2 + 4 });
+        ctx.restore();
+        ctx.lineWidth = 3;
+      }
+      // Les plus grandes bulles sont étiquetées en premier ; chaque étiquette choisit la position la moins gênante
+      items.forEach((it) => {
+        const text = it.b.city || it.b.name || '';
+        const w = ctx.measureText(text).width + 4;
+        const g = 2;
+        const cands = [
+          { x0: it.x + it.r + g, y0: it.y - H / 2 },
+          { x0: it.x - it.r - g - w, y0: it.y - H / 2 },
+          { x0: it.x - w / 2, y0: it.y - it.r - g - H },
+          { x0: it.x - w / 2, y0: it.y + it.r + g }
+        ];
+        let best = null;
+        cands.forEach((c, ci) => {
+          // Jamais rogné : l'étiquette reste dans le canvas
+          const rc = { x0: Math.max(2, Math.min(c.x0, chart.width - 2 - w)), y0: Math.max(2, Math.min(c.y0, chart.height - 2 - H)), w, h: H };
+          let cost = ci * 0.4 + (Math.abs(rc.x0 - c.x0) + Math.abs(rc.y0 - c.y0)) * 0.6;
+          placed.forEach((p) => { cost += area(rc, p) * 0.6; });
+          items.forEach((o) => { if (o !== it && hitsCircle(rc, o)) cost += 14; });
+          if (hitsCircle(rc, it)) cost += 30;
+          if (!best || cost < best.cost) best = { cost, rc };
+        });
+        placed.push(best.rc);
+        ctx.textAlign = 'left';
+        // Halo de la couleur de surface pour garantir le contraste sur tout fond
+        ctx.strokeStyle = tokens.isDark ? '#2E3440' : '#FFFFFF';
+        ctx.fillStyle = tokens.textPrimary || (tokens.isDark ? '#ECEFF4' : '#0F172A');
+        ctx.strokeText(text, best.rc.x0 + 2, best.rc.y0 + H / 2);
+        ctx.fillText(text, best.rc.x0 + 2, best.rc.y0 + H / 2);
+      });
+      ctx.restore();
+    }
+  };
 
   const hasBubbleMap = typeof Chart !== 'undefined' && (
     (Chart.registry && Chart.registry.controllers && Chart.registry.controllers.get('bubbleMap')) ||
@@ -19831,14 +22256,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           label: rawData.title || 'Investissements',
           outline: features,
           showOutline: true,
-          outlineBackgroundColor: tokens.isDark ? '#1E293B' : '#F8FAFC',
-          outlineBorderColor: tokens.isDark ? '#475569' : '#CBD5E1',
+          outlineBackgroundColor: tokens.isDark ? '#434C5E' : '#E2E8F0',
+          outlineBorderColor: tokens.isDark ? '#2E3440' : '#FFFFFF',
           outlineBorderWidth: 0.5,
           backgroundColor(context) {
             if (context.dataIndex == null) return defaultBubbleColor;
             const b = context.dataset.data[context.dataIndex];
             if (!b) return defaultBubbleColor;
-            if (b.role === 'focal') return tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB');
+            if (b.role === 'focal') return hexToRgba(tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB'), 0.8);
             if (b.role === 'anomaly') return (tokens.status && tokens.status.danger) || '#DC2626';
             return hexToRgba(defaultBubbleColor, tokens.isDark ? 0.8 : 0.65);
           },
@@ -19855,6 +22280,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }))
         }]
       },
+      plugins: [labelsPlugin, {
+        id: 'bubbleSizeByWidth',
+        beforeLayout(chart) {
+          // Rayon maximal proportionnel à la largeur : 26 px en grand, ~11 px sur une carte étroite
+          const sc = chart.options.scales && chart.options.scales.size;
+          if (sc) sc.range = [0, Math.max(10, Math.min(26, Math.round(chart.width * 0.042)))];
+        }
+      }],
       options: {
         responsive: true,
         maintainAspectRatio: false,
@@ -19892,7 +22325,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           },
           size: {
             axis: 'x',
-            range: [5, 26]
+            mode: 'area',
+            range: [0, 26],
+            // Légende de taille dessinée par le plugin d'étiquettes (valeurs min/max + unité)
+            display: false,
+            legend: { display: false }
           }
         }
       }
@@ -20137,6 +22574,22 @@ const DEFAULT_DATA = {
 };
 
 /**
+ * Couleur de texte lisible (WCAG) selon la luminance du fond.
+ */
+function readableTextOn(bg) {
+  const fn = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) || (typeof window !== 'undefined' && window.getContrastingTextColor);
+  if (typeof fn === 'function') {
+    try { return fn(bg); } catch (e) { /* repli ci-dessous */ }
+  }
+  const m = /^#?([0-9a-f]{6})$/i.exec(String(bg || '').trim());
+  if (!m) return '#0F172A';
+  const n = parseInt(m[1], 16);
+  const lin = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4); };
+  const L = 0.2126 * lin((n >> 16) & 255) + 0.7152 * lin((n >> 8) & 255) + 0.0722 * lin(n & 255);
+  return L > 0.4 ? '#0F172A' : '#FFFFFF';
+}
+
+/**
  * Plugin Canvas Chart.js pour afficher les sigles régionaux centrés en gras dans chaque tuile.
  */
 const tileLabelsPlugin = {
@@ -20165,17 +22618,68 @@ const tileLabelsPlugin = {
       const { x, y } = element.getCenterPoint ? element.getCenterPoint() : { x: element.x, y: element.y };
       if (!Number.isFinite(x) || !Number.isFinite(y)) continue;
 
-      // Calcul de contraste pour lisibilité du texte
-      ctx.fillStyle = '#FFFFFF';
-      ctx.shadowColor = 'rgba(0, 0, 0, 0.6)';
-      ctx.shadowBlur = 3;
-      ctx.fillText(code, x, y);
-      ctx.shadowBlur = 0;
+      // Texte noir ou blanc selon la luminance réelle de la tuile (WCAG >= 4.5:1)
+      const bg = raw.color || '#FFFFFF';
+      ctx.fillStyle = readableTextOn(bg);
+      const tileH = Number.isFinite(element.height) ? element.height : 40;
+      const tileW = Number.isFinite(element.width) ? element.width : 50;
+      const valTxt = typeof raw.v === 'number' ? String(Math.round(raw.v * 10) / 10) : '';
+      ctx.font = `700 11px ${fontMono}`;
+      if (valTxt && tileH < 34) {
+        // Tuile basse (carte étroite) : sigle et valeur sur une seule ligne, centrés
+        const wCode = ctx.measureText(code).width;
+        ctx.font = `400 11px ${fontMono}`;
+        const wVal = ctx.measureText(valTxt).width;
+        const gap = 5;
+        if (wCode + gap + wVal <= tileW - 4) {
+          const x0 = x - (wCode + gap + wVal) / 2;
+          ctx.textAlign = 'left';
+          ctx.font = `700 11px ${fontMono}`;
+          ctx.fillText(code, x0, y);
+          ctx.font = `400 11px ${fontMono}`;
+          ctx.fillText(valTxt, x0 + wCode + gap, y);
+          ctx.textAlign = 'center';
+          continue;
+        }
+      }
+      ctx.fillText(code, x, y - (valTxt ? 7 : 0));
+      if (valTxt) {
+        ctx.font = `400 11px ${fontMono}`;
+        ctx.fillText(valTxt, x, y + 8);
+      }
     }
-
     ctx.restore();
   }
 };
+
+/**
+ * Légende : dégradé séquentiel de l'indice (min à max) sous la grille.
+ */
+const makeTileLegendPlugin = (meta) => ({
+  id: 'tileLegendPlugin',
+  afterDraw(chart) {
+    const area = chart.chartArea;
+    if (!meta || !area || !meta.getColor) return;
+    const { tokens } = meta;
+    const ctx = chart.ctx;
+    const w = 180, h = 10;
+    const x0 = area.left + (area.right - area.left - w) / 2;
+    const y0 = chart.height - 22;
+    ctx.save();
+    for (let i = 0; i < w; i++) {
+      ctx.fillStyle = meta.getColor(i / (w - 1));
+      ctx.fillRect(x0 + i, y0, 1.5, h);
+    }
+    ctx.fillStyle = tokens.textSecondary || '#475569';
+    ctx.font = `11px ${tokens.fontFamily || 'sans-serif'}`;
+    ctx.textBaseline = 'middle';
+    ctx.textAlign = 'right';
+    ctx.fillText(String(Math.round(meta.min)), x0 - 6, y0 + h / 2);
+    ctx.textAlign = 'left';
+    ctx.fillText(`${Math.round(meta.max)}  (indice /100)`, x0 + w + 6, y0 + h / 2);
+    ctx.restore();
+  }
+});
 
 /**
  * Crée et initialise un Cartogramme / Tilegramme dans le canvas cible.
@@ -20230,10 +22734,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       borderWidth = emp.borderWidth !== undefined ? emp.borderWidth : (item.role === 'focal' ? 3 : borderWidth);
     }
 
+    const ratio = (v - minVal) / valRange;
+    const color = getSequentialColor(tokens, ratio);
+
     return {
       x,
       y,
       v,
+      color,
       label: code,
       name,
       role: item.role || null,
@@ -20251,23 +22759,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       data: processedData,
       borderColor: processedData.map(d => d.borderColor),
       borderWidth: processedData.map(d => d.borderWidth),
-      backgroundColor: (ctx) => {
-        const raw = ctx.raw;
-        if (raw && raw.role === 'focal') {
-          const emp = getEmphasisStyle(tokens, 'focal');
-          if (emp.backgroundColor) return emp.backgroundColor;
-        }
-        if (raw && raw.role === 'anomaly') {
-          const emp = getEmphasisStyle(tokens, 'anomaly');
-          if (emp.backgroundColor) return emp.backgroundColor;
-        }
-        if (raw && typeof raw.growth === 'number' && raw.role !== 'context') {
-          return getValenceColor(tokens, raw.growth, 'gain');
-        }
-        const v = raw && typeof raw.v === 'number' ? raw.v : 50;
-        const ratio = (v - minVal) / valRange;
-        return getSequentialColor(tokens, ratio);
-      },
+      // La luminance encode toujours la valeur ; le rôle ne modifie que la bordure.
+      backgroundColor: (ctx) => (ctx.raw && ctx.raw.color) || getSequentialColor(tokens, 0.5),
       width: ({ chart }) => {
         const area = chart.chartArea;
         const w = area ? area.width / 5.2 : 55;
@@ -20293,6 +22786,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     data: chartData,
     options: {
       ...defaultOpts,
+      layout: { padding: { bottom: 28 } },
       animation: getAccessibleAnimationOptions(tokens, {
         duration: (isTufte || reduceMotion) ? 0 : 400,
         easing: 'easeOutQuart'
@@ -20312,7 +22806,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
           display: false
         },
         tileMeta: {
-          tokens
+          tokens,
         },
         tooltip: {
           ...defaultOpts.plugins.tooltip,
@@ -20369,14 +22863,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
         y: {
           min: minY,
           max: maxY,
-          reverse: false,
+          reverse: true,
           grid: { display: false, drawBorder: false },
           border: { display: false },
           ticks: { display: false }
         }
       }
     },
-    plugins: [tileLabelsPlugin]
+    plugins: [tileLabelsPlugin, makeTileLegendPlugin({ tokens, min: minVal, max: maxVal, getColor: (r) => getSequentialColor(tokens, r) })]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
@@ -20447,24 +22941,26 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 
   const WORLD_ATLAS = (typeof KitChartsWorldAtlas !== 'undefined' && KitChartsWorldAtlas) || (typeof window !== 'undefined' && window.KitChartsWorldAtlas) || null;
 
+  // PIB par habitant (milliers de $ courants, ordre de grandeur 2022) : ratio normalisé par la population,
+  // donc comparable d'un pays à l'autre (pas de biais de taille du pays).
   const DEFAULT_WORLD_VALUES = {
-    'United States of America': 25400, 'China': 17900, 'Japan': 4200, 'Germany': 4100,
-    'India': 3400, 'United Kingdom': 3100, 'France': 2800, 'Italy': 2100, 'Canada': 2100,
-    'Brazil': 1900, 'Australia': 1700, 'Spain': 1500, 'Mexico': 1400, 'South Korea': 1700,
-    'Netherlands': 1050, 'Saudi Arabia': 1100, 'Switzerland': 870, 'Turkey': 900, 'Poland': 750,
-    'Sweden': 590, 'Belgium': 580, 'Norway': 520, 'Ireland': 500, 'Austria': 480,
-    'South Africa': 400, 'Egypt': 470, 'Argentina': 630, 'Chile': 300, 'Nigeria': 475,
-    'Indonesia': 1300, 'Russia': 2200, 'Colombia': 340, 'Portugal': 260, 'Denmark': 390,
-    'Finland': 280, 'Greece': 220, 'New Zealand': 250, 'Morocco': 130, 'Algeria': 190,
-    'Vietnam': 410, 'Thailand': 500, 'Malaysia': 400, 'Philippines': 400, 'Singapore': 470,
-    'Israel': 520, 'United Arab Emirates': 500
+    'United States of America': 76, 'China': 12.7, 'Japan': 34, 'Germany': 48.7,
+    'India': 2.4, 'United Kingdom': 46, 'France': 40.9, 'Italy': 35.6, 'Canada': 52,
+    'Brazil': 8.9, 'Australia': 65, 'Spain': 30, 'Mexico': 11, 'South Korea': 32,
+    'Netherlands': 56, 'Saudi Arabia': 30, 'Switzerland': 93, 'Turkey': 10.6, 'Poland': 18,
+    'Sweden': 56, 'Belgium': 51, 'Norway': 108, 'Ireland': 100, 'Austria': 52,
+    'South Africa': 6.8, 'Egypt': 3.6, 'Argentina': 13.6, 'Chile': 16, 'Nigeria': 2.2,
+    'Indonesia': 4.8, 'Russia': 15.3, 'Colombia': 6.1, 'Portugal': 25, 'Denmark': 67,
+    'Finland': 50, 'Greece': 20, 'New Zealand': 48, 'Morocco': 3.7, 'Algeria': 4.1,
+    'Vietnam': 4.1, 'Thailand': 7.1, 'Malaysia': 12, 'Philippines': 3.5, 'Singapore': 82,
+    'Israel': 54, 'United Arab Emirates': 50
   };
 
-const EUROPE_DATA = {"type":"FeatureCollection","features":[{"type":"Feature","id":"FRA","properties":{"name":"France","value":2800,"capital":"Paris","lat":48.8566,"lon":2.3522,"code":"FR","role":"focal","growth":1.2},"geometry":{"type":"Polygon","coordinates":[[[-4.8,48.4],[-1.9,49.7],[0.1,49.4],[1.6,50.1],[2.5,51.1],[4.2,49.9],[6.2,49.5],[7.7,49],[7.5,47.6],[6.8,45.9],[7.2,43.7],[5.3,43.3],[3.1,42.4],[1.8,42.5],[-1.8,43.4],[-1.2,46],[-3,47.6],[-4.8,48.4]]]}},{"type":"Feature","id":"DEU","properties":{"name":"Allemagne","value":4100,"capital":"Berlin","lat":52.52,"lon":13.405,"code":"DE","role":"focal","growth":0.8},"geometry":{"type":"Polygon","coordinates":[[[6,50.8],[6.9,53.6],[8.6,54.9],[10,54.4],[13.7,54.3],[14.2,53.9],[14.8,51.8],[15,51.1],[12.1,50.3],[13,47.7],[10,47.5],[7.6,49],[6.2,49.5],[6,50.8]]]}},{"type":"Feature","id":"GBR","properties":{"name":"Royaume-Uni","value":3100,"capital":"Londres","lat":51.5074,"lon":-0.1278,"code":"UK","role":"context","growth":1.1},"geometry":{"type":"Polygon","coordinates":[[[-5.7,50],[-3,50.6],[1.4,51.2],[1.7,52.5],[0.1,53.8],[-1.8,55.8],[-2,57.5],[-3,58.6],[-5,58.6],[-5.6,55.4],[-3,53.4],[-5,51.5],[-5.7,50]]]}},{"type":"Feature","id":"ITA","properties":{"name":"Italie","value":2100,"capital":"Rome","lat":41.9028,"lon":12.4964,"code":"IT","role":"context","growth":0.7},"geometry":{"type":"Polygon","coordinates":[[[6.8,45.9],[10.5,46.5],[13.8,46.5],[13,45.6],[12.3,44],[15,41.9],[18.5,40.2],[16.8,38.9],[15.8,38],[15.6,38.2],[14.8,40.8],[11.5,42.5],[9.5,44],[7.5,44.2],[6.8,45.9]]]}},{"type":"Feature","id":"ESP","properties":{"name":"Espagne","value":1500,"capital":"Madrid","lat":40.4168,"lon":-3.7038,"code":"ES","role":"context","growth":2.3},"geometry":{"type":"Polygon","coordinates":[[[-9.3,43],[-1.8,43.4],[3.1,42.4],[3.3,41.9],[0.2,38.8],[-0.8,37.8],[-2.2,36.7],[-5.6,36],[-7.4,37.2],[-6.9,38],[-6.5,42],[-8.9,41.8],[-9.3,43]]]}},{"type":"Feature","id":"PRT","properties":{"name":"Portugal","value":260,"capital":"Lisbonne","lat":38.7223,"lon":-9.1393,"code":"PT","role":"context","growth":2.1},"geometry":{"type":"Polygon","coordinates":[[[-8.9,41.8],[-6.5,42],[-6.9,38],[-7.4,37.2],[-9,37],[-9.5,38.7],[-8.9,41.8]]]}},{"type":"Feature","id":"NLD","properties":{"name":"Pays-Bas","value":1050,"capital":"Amsterdam","lat":52.3676,"lon":4.9041,"code":"NL","role":"context","growth":1.4},"geometry":{"type":"Polygon","coordinates":[[[3.4,51.4],[4.7,52.9],[6.9,53.6],[7.1,53.2],[6,51.8],[5,51.4],[3.4,51.4]]]}},{"type":"Feature","id":"BEL","properties":{"name":"Belgique","value":580,"capital":"Bruxelles","lat":50.8503,"lon":4.3517,"code":"BE","role":"context","growth":1.0},"geometry":{"type":"Polygon","coordinates":[[[2.5,51.1],[3.4,51.4],[5.9,50.8],[6.4,50.3],[5.8,49.5],[4.2,49.9],[2.5,51.1]]]}},{"type":"Feature","id":"CHE","properties":{"name":"Suisse","value":870,"capital":"Berne","lat":46.948,"lon":7.4474,"code":"CH","role":"context","growth":1.5},"geometry":{"type":"Polygon","coordinates":[[[6,46.2],[6,47.5],[8.6,47.8],[10.5,46.9],[9,45.8],[6.8,45.9],[6,46.2]]]}},{"type":"Feature","id":"POL","properties":{"name":"Pologne","value":750,"capital":"Varsovie","lat":52.2297,"lon":21.0122,"code":"PL","role":"context","growth":3.1},"geometry":{"type":"Polygon","coordinates":[[[14.2,53.9],[18.6,54.8],[22.8,54.3],[24.1,52.7],[23.5,50],[22.7,49],[18.9,49.5],[15,51.1],[14.2,53.9]]]}},{"type":"Feature","id":"AUT","properties":{"name":"Autriche","value":480,"capital":"Vienne","lat":48.2082,"lon":16.3738,"code":"AT","role":"context","growth":1.3},"geometry":{"type":"Polygon","coordinates":[[[9.5,47.5],[13,47.7],[15,48.8],[17,48],[16,46.8],[13.8,46.5],[10.5,46.9],[9.5,47.5]]]}},{"type":"Feature","id":"SWE","properties":{"name":"Suède","value":590,"capital":"Stockholm","lat":59.3293,"lon":18.0686,"code":"SE","role":"context","growth":1.7},"geometry":{"type":"Polygon","coordinates":[[[11.2,58.9],[12.8,56.3],[14.5,55.4],[16,56.5],[19,60],[24.1,65.8],[20.6,68.5],[14,64],[12,63.5],[11.2,58.9]]]}},{"type":"Feature","id":"NOR","properties":{"name":"Norvège","value":520,"capital":"Oslo","lat":59.9139,"lon":10.7522,"code":"NO","role":"context","growth":1.9},"geometry":{"type":"Polygon","coordinates":[[[5,62],[6,58.5],[10,58],[11.2,58.9],[12,63.5],[14,64],[20.6,68.5],[28,71],[14,68],[5,62]]]}},{"type":"Feature","id":"IRL","properties":{"name":"Irlande","value":500,"capital":"Dublin","lat":53.3498,"lon":-6.2603,"code":"IE","role":"anomaly","growth":5.8},"geometry":{"type":"Polygon","coordinates":[[[-10.5,51.5],[-6,52.2],[-6,54],[-7.5,55.3],[-10,54.2],[-10.5,51.5]]]}}]};
+const EUROPE_DATA = {"type":"FeatureCollection","features":[{"type":"Feature","id":"FRA","properties":{"name":"France","value":40.9,"capital":"Paris","lat":48.8566,"lon":2.3522,"code":"FR","role":"focal","growth":1.2},"geometry":{"type":"Polygon","coordinates":[[[-4.8,48.4],[-1.9,49.7],[0.1,49.4],[1.6,50.1],[2.5,51.1],[4.2,49.9],[6.2,49.5],[7.7,49],[7.5,47.6],[6.8,45.9],[7.2,43.7],[5.3,43.3],[3.1,42.4],[1.8,42.5],[-1.8,43.4],[-1.2,46],[-3,47.6],[-4.8,48.4]]]}},{"type":"Feature","id":"DEU","properties":{"name":"Allemagne","value":48.7,"capital":"Berlin","lat":52.52,"lon":13.405,"code":"DE","role":"focal","growth":0.8},"geometry":{"type":"Polygon","coordinates":[[[6,50.8],[6.9,53.6],[8.6,54.9],[10,54.4],[13.7,54.3],[14.2,53.9],[14.8,51.8],[15,51.1],[12.1,50.3],[13,47.7],[10,47.5],[7.6,49],[6.2,49.5],[6,50.8]]]}},{"type":"Feature","id":"GBR","properties":{"name":"Royaume-Uni","value":46,"capital":"Londres","lat":51.5074,"lon":-0.1278,"code":"UK","role":"context","growth":1.1},"geometry":{"type":"Polygon","coordinates":[[[-5.7,50],[-3,50.6],[1.4,51.2],[1.7,52.5],[0.1,53.8],[-1.8,55.8],[-2,57.5],[-3,58.6],[-5,58.6],[-5.6,55.4],[-3,53.4],[-5,51.5],[-5.7,50]]]}},{"type":"Feature","id":"ITA","properties":{"name":"Italie","value":35.6,"capital":"Rome","lat":41.9028,"lon":12.4964,"code":"IT","role":"context","growth":0.7},"geometry":{"type":"Polygon","coordinates":[[[6.8,45.9],[10.5,46.5],[13.8,46.5],[13,45.6],[12.3,44],[15,41.9],[18.5,40.2],[16.8,38.9],[15.8,38],[15.6,38.2],[14.8,40.8],[11.5,42.5],[9.5,44],[7.5,44.2],[6.8,45.9]]]}},{"type":"Feature","id":"ESP","properties":{"name":"Espagne","value":30,"capital":"Madrid","lat":40.4168,"lon":-3.7038,"code":"ES","role":"context","growth":2.3},"geometry":{"type":"Polygon","coordinates":[[[-9.3,43],[-1.8,43.4],[3.1,42.4],[3.3,41.9],[0.2,38.8],[-0.8,37.8],[-2.2,36.7],[-5.6,36],[-7.4,37.2],[-6.9,38],[-6.5,42],[-8.9,41.8],[-9.3,43]]]}},{"type":"Feature","id":"PRT","properties":{"name":"Portugal","value":25,"capital":"Lisbonne","lat":38.7223,"lon":-9.1393,"code":"PT","role":"context","growth":2.1},"geometry":{"type":"Polygon","coordinates":[[[-8.9,41.8],[-6.5,42],[-6.9,38],[-7.4,37.2],[-9,37],[-9.5,38.7],[-8.9,41.8]]]}},{"type":"Feature","id":"NLD","properties":{"name":"Pays-Bas","value":56,"capital":"Amsterdam","lat":52.3676,"lon":4.9041,"code":"NL","role":"context","growth":1.4},"geometry":{"type":"Polygon","coordinates":[[[3.4,51.4],[4.7,52.9],[6.9,53.6],[7.1,53.2],[6,51.8],[5,51.4],[3.4,51.4]]]}},{"type":"Feature","id":"BEL","properties":{"name":"Belgique","value":51,"capital":"Bruxelles","lat":50.8503,"lon":4.3517,"code":"BE","role":"context","growth":1.0},"geometry":{"type":"Polygon","coordinates":[[[2.5,51.1],[3.4,51.4],[5.9,50.8],[6.4,50.3],[5.8,49.5],[4.2,49.9],[2.5,51.1]]]}},{"type":"Feature","id":"CHE","properties":{"name":"Suisse","value":93,"capital":"Berne","lat":46.948,"lon":7.4474,"code":"CH","role":"context","growth":1.5},"geometry":{"type":"Polygon","coordinates":[[[6,46.2],[6,47.5],[8.6,47.8],[10.5,46.9],[9,45.8],[6.8,45.9],[6,46.2]]]}},{"type":"Feature","id":"POL","properties":{"name":"Pologne","value":18,"capital":"Varsovie","lat":52.2297,"lon":21.0122,"code":"PL","role":"context","growth":3.1},"geometry":{"type":"Polygon","coordinates":[[[14.2,53.9],[18.6,54.8],[22.8,54.3],[24.1,52.7],[23.5,50],[22.7,49],[18.9,49.5],[15,51.1],[14.2,53.9]]]}},{"type":"Feature","id":"AUT","properties":{"name":"Autriche","value":52,"capital":"Vienne","lat":48.2082,"lon":16.3738,"code":"AT","role":"context","growth":1.3},"geometry":{"type":"Polygon","coordinates":[[[9.5,47.5],[13,47.7],[15,48.8],[17,48],[16,46.8],[13.8,46.5],[10.5,46.9],[9.5,47.5]]]}},{"type":"Feature","id":"SWE","properties":{"name":"Suède","value":56,"capital":"Stockholm","lat":59.3293,"lon":18.0686,"code":"SE","role":"context","growth":1.7},"geometry":{"type":"Polygon","coordinates":[[[11.2,58.9],[12.8,56.3],[14.5,55.4],[16,56.5],[19,60],[24.1,65.8],[20.6,68.5],[14,64],[12,63.5],[11.2,58.9]]]}},{"type":"Feature","id":"NOR","properties":{"name":"Norvège","value":108,"capital":"Oslo","lat":59.9139,"lon":10.7522,"code":"NO","role":"context","growth":1.9},"geometry":{"type":"Polygon","coordinates":[[[5,62],[6,58.5],[10,58],[11.2,58.9],[12,63.5],[14,64],[20.6,68.5],[28,71],[14,68],[5,62]]]}},{"type":"Feature","id":"IRL","properties":{"name":"Irlande","value":100,"capital":"Dublin","lat":53.3498,"lon":-6.2603,"code":"IE","role":"anomaly","growth":5.8},"geometry":{"type":"Polygon","coordinates":[[[-10.5,51.5],[-6,52.2],[-6,54],[-7.5,55.3],[-10,54.2],[-10.5,51.5]]]}}]};
 
 const DEFAULT_DATA = {
-  title: 'PIB Mondial par Pays (Mds $)',
-  unit: 'Mds $'
+  title: 'PIB par habitant (k$)',
+  unit: 'k$ / hab.'
 };
 
 function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME, options = {}) {
@@ -20498,7 +22994,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const isTufte = tokens.name === 'tufte-minimalist-executive';
 
   const rawData = customData || DEFAULT_DATA;
-  const unit = rawData.unit || 'Mds $';
+  const unit = rawData.unit || 'k$ / hab.';
   const projectionType = rawData.projection || 'equalEarth';
 
   let features;
@@ -20520,21 +23016,135 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     features = EUROPE_DATA.features;
   }
 
-  const dataPoints = features.map(f => {
+  features = features.filter(f => !(f.properties && f.properties.name === 'Antarctica'));
+
+  const hasValue = (v) => typeof v === 'number' && Number.isFinite(v);
+
+  const allPoints = features.map(f => {
     const name = (f.properties && f.properties.name) || f.id || '';
     let val = (f.properties && f.properties.value !== undefined) ? f.properties.value : (f.value !== undefined ? f.value : DEFAULT_WORLD_VALUES[name]);
-    if (val === undefined) {
-      val = Math.floor(Math.abs(Math.sin(name.length * 13.37)) * 250 + 20);
-    }
+    // Aucune valeur inventée : un pays sans donnée reste null (gris « sans donnée »).
+    if (!hasValue(val)) val = null;
     return {
       feature: f,
       value: val
     };
   });
 
+  const dataPoints = allPoints.filter(d => d.value !== null);
   const values = dataPoints.map(d => d.value);
-  const minVal = Math.min(...values);
-  const maxVal = Math.max(...values);
+  const minVal = values.length ? Math.min(...values) : 0;
+  const maxVal = values.length ? Math.max(...values) : 1;
+
+  // Classes par quantiles (5 classes) : lisible malgré une distribution très asymétrique.
+  const NB_CLASSES = 5;
+  const sortedVals = values.slice().sort((a, b) => a - b);
+  const breaks = [];
+  for (let i = 1; i < NB_CLASSES; i++) {
+    const pos = (sortedVals.length - 1) * (i / NB_CLASSES);
+    const lo = Math.floor(pos), hi = Math.ceil(pos);
+    breaks.push(sortedVals.length ? sortedVals[lo] + (sortedVals[hi] - sortedVals[lo]) * (pos - lo) : 0);
+  }
+  const classOf = (v) => {
+    let c = 0;
+    while (c < breaks.length && v >= breaks[c]) c++;
+    return c;
+  };
+  // Rampe par interpolation entre deux butées de la séquentielle du thème : 5 classes toujours distinctes
+  // (le choix par indice dans une séquentielle de 6 couleurs donnait deux classes identiques en sombre).
+  const parseHex = (h) => {
+    const m = /^#?([0-9a-f]{6})$/i.exec(String(h || '').trim());
+    if (!m) return null;
+    const n = parseInt(m[1], 16);
+    return [(n >> 16) & 255, (n >> 8) & 255, n & 255];
+  };
+  const seq = Array.isArray(tokens.sequential) ? tokens.sequential : [];
+  const rampStart = parseHex(seq[tokens.isDark ? 2 : 1]);
+  const rampEnd = parseHex(seq[tokens.isDark ? seq.length - 1 : seq.length - 1]);
+  const rampAt = (k) => {
+    if (!rampStart || !rampEnd) return getSequentialColor(tokens, 0.2 + 0.7 * (k / (NB_CLASSES - 1)));
+    const t = k / (NB_CLASSES - 1);
+    const c = rampStart.map((v, i) => Math.round(v + (rampEnd[i] - v) * t));
+    return '#' + c.map(v => v.toString(16).padStart(2, '0')).join('');
+  };
+  const classColor = (v) => rampAt(classOf(v));
+  const noDataColor = tokens.isDark ? '#4C566A' : '#D1D5DB';
+  const fmtNum = (v) => (Math.round(v * 10) / 10).toLocaleString('fr-FR');
+
+  const legendPlugin = {
+    id: 'choroplethClassLegend',
+    beforeLayout(chart) {
+      // Carte étroite : la légende passe en bandeau sous la carte, qui rétrécit en conséquence
+      const pad = chart.options.layout && chart.options.layout.padding;
+      if (pad) pad.bottom = chart.width < 460 ? 46 : 0;
+    },
+    afterDraw(chart) {
+      const area = chart.chartArea;
+      if (!area) return;
+      const c = chart.ctx;
+      if (chart.width < 460) {
+        const swW = Math.min(42, Math.max(24, (chart.width - 110) / NB_CLASSES));
+        const x0 = 10;
+        const yTitle = chart.height - 38;
+        c.save();
+        c.textBaseline = 'middle';
+        c.fillStyle = tokens.textPrimary || '#0F172A';
+        c.font = `600 10.5px ${tokens.fontFamily || 'sans-serif'}`;
+        c.textAlign = 'left';
+        c.fillText(`${rawData.title || 'PIB par habitant (k$)'}`, x0, yTitle);
+        const yBar = chart.height - 28;
+        for (let k = 0; k < NB_CLASSES; k++) {
+          c.fillStyle = rampAt(k);
+          c.fillRect(x0 + k * swW, yBar, swW, 10);
+        }
+        c.strokeStyle = tokens.isDark ? '#4C566A' : '#94A3B8';
+        c.lineWidth = 0.5;
+        c.strokeRect(x0 + 0.25, yBar + 0.25, swW * NB_CLASSES - 0.5, 9.5);
+        c.fillStyle = tokens.textSecondary || tokens.textPrimary || '#0F172A';
+        c.font = `10.5px ${tokens.fontFamily || 'sans-serif'}`;
+        c.textAlign = 'center';
+        const edges = [minVal].concat(breaks, [maxVal]);
+        edges.forEach((v, k) => c.fillText(fmtNum(v), x0 + k * swW, yBar + 19));
+        const xn = x0 + swW * NB_CLASSES + 18;
+        c.fillStyle = noDataColor;
+        c.fillRect(xn, yBar, 12, 10);
+        c.strokeRect(xn + 0.25, yBar + 0.25, 11.5, 9.5);
+        c.fillStyle = tokens.textPrimary || '#0F172A';
+        c.textAlign = 'left';
+        c.fillText('Sans donnée', xn + 17, yBar + 5);
+        c.restore();
+        return;
+      }
+      const sw = 16;
+      const entries = [];
+      for (let k = 0; k < NB_CLASSES; k++) {
+        const lo = k === 0 ? minVal : breaks[k - 1];
+        const hi = k === NB_CLASSES - 1 ? maxVal : breaks[k];
+        entries.push({ color: rampAt(k), text: `${fmtNum(lo)} à ${fmtNum(hi)}` });
+      }
+      entries.push({ color: noDataColor, text: 'Sans donnée' });
+      c.save();
+      c.font = `11px ${tokens.fontFamily || 'sans-serif'}`;
+      c.textBaseline = 'middle';
+      const x0 = area.left + 8;
+      let y = area.bottom - entries.length * 18 - 4;
+      c.fillStyle = tokens.textPrimary || '#0F172A';
+      c.font = `600 11px ${tokens.fontFamily || 'sans-serif'}`;
+      c.fillText(`${rawData.title || 'PIB par habitant (k$)'}`, x0, y - 10);
+      c.font = `11px ${tokens.fontFamily || 'sans-serif'}`;
+      for (const e of entries) {
+        c.fillStyle = e.color;
+        c.fillRect(x0, y, sw, 12);
+        c.strokeStyle = tokens.isDark ? '#4C566A' : '#94A3B8';
+        c.lineWidth = 0.5;
+        c.strokeRect(x0 + 0.25, y + 0.25, sw - 0.5, 11.5);
+        c.fillStyle = tokens.textPrimary || '#0F172A';
+        c.fillText(e.text, x0 + sw + 6, y + 6);
+        y += 18;
+      }
+      c.restore();
+    }
+  };
 
   const hasChoropleth = typeof Chart !== 'undefined' && (
     (Chart.registry && Chart.registry.controllers && Chart.registry.controllers.get('choropleth')) ||
@@ -20550,20 +23160,32 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       data: {
         labels: features.map(f => (f.properties && f.properties.name) || f.id || ''),
         datasets: [{
-          label: rawData.title || 'PIB Mondial (Mds $)',
+          label: rawData.title || 'PIB par habitant (k$)',
           outline: features,
           showOutline: true,
+          outlineBackgroundColor: noDataColor,
+          outlineBorderColor: tokens.isDark ? '#2E3440' : '#FFFFFF',
+          outlineBorderWidth: 0.5,
           data: dataPoints,
           backgroundColor(context) {
             if (context.dataIndex == null) return null;
             const item = context.dataset.data[context.dataIndex];
             const val = item?.value;
-            if (val === undefined || val === null) return tokens.isDark ? '#334155' : '#E2E8F0';
-            const ratio = (val - minVal) / (maxVal - minVal || 1);
-            return getSequentialColor(tokens, ratio);
+            if (!hasValue(val)) return noDataColor;
+            return classColor(val);
           },
-          borderColor: tokens.isDark ? '#4C566A' : '#CBD5E1',
-          borderWidth: 0.6,
+          borderColor(context) {
+            const item = context.dataset.data[context.dataIndex];
+            const role = item && item.feature && item.feature.properties && item.feature.properties.role;
+            if (role === 'focal') return tokens.emphasis?.focal || (tokens.isDark ? '#ECEFF4' : '#0F172A');
+            if (role === 'anomaly') return (tokens.status && tokens.status.danger) || '#C62828';
+            return tokens.isDark ? '#2E3440' : '#FFFFFF';
+          },
+          borderWidth(context) {
+            const item = context.dataset.data[context.dataIndex];
+            const role = item && item.feature && item.feature.properties && item.feature.properties.role;
+            return role === 'focal' || role === 'anomaly' ? 2 : 0.5;
+          },
           hoverBackgroundColor: tokens.palette[0] || '#2B8CBE',
           hoverBorderColor: tokens.isDark ? '#ECEFF4' : '#0F172A',
           hoverBorderWidth: 1.5
@@ -20573,6 +23195,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
+        layout: { padding: { bottom: 0 } },
         plugins: {
           legend: {
             display: false
@@ -20605,12 +23228,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           },
           color: {
             axis: 'x',
-            display: true,
-            position: 'bottom',
+            display: false,
             interpolate: (v) => getSequentialColor(tokens, v)
           }
         }
-      }
+      },
+      plugins: [legendPlugin]
     };
   } else {
     // Fallback vector map plugin for offline/mock environments without ChartGeo
@@ -20645,9 +23268,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         };
 
         features.forEach((feature) => {
-          const val = (feature.properties && feature.properties.value !== undefined) ? feature.properties.value : (feature.value || 0);
-          const ratio = (val - minVal) / (maxVal - minVal || 1);
-          let fillColor = getSequentialColor(tokens, ratio);
+          const val = (feature.properties && feature.properties.value !== undefined) ? feature.properties.value : feature.value;
+          let fillColor = hasValue(val) ? classColor(val) : noDataColor;
           let strokeColor = tokens.isDark ? '#4C566A' : '#CBD5E1';
           let strokeWidth = 1.0;
 
@@ -20687,11 +23309,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     config = {
       type: 'scatter',
       data: { datasets: [{ data: [] }] },
-      plugins: [mapPlugin],
+      plugins: [mapPlugin, legendPlugin],
       options: {
         responsive: true,
         maintainAspectRatio: false,
         animation: false,
+        layout: { padding: { bottom: 0 } },
         scales: {
           x: { display: false, grid: { display: false } },
           y: { display: false, grid: { display: false } }
@@ -20830,6 +23453,38 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   }
 
   /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
+  }
+
+  /**
    * Crée et initialise un Tableau Comparatif avec Barres Intégrées
    *
    * @param {string|HTMLElement} target - ID ou élément DOM cible
@@ -20885,6 +23540,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : colonnes secondaires masquées, paddings réduits, barres plus courtes
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const pad = compact ? '7px 8px' : '10px 14px';
+      const hiddenKeys = compact ? ['category', 'volume', 'completion'] : [];
 
       const primaryColor = getColor(tokens, 0);
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -20932,10 +23592,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 640}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -20947,15 +23608,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       `;
 
       data.columns.forEach(col => {
+        if (hiddenKeys.indexOf(col.key) >= 0) return;
         const isSorted = sortColumn === col.key;
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
           <th data-key="${escapeHtml(col.key)}" style="
-            padding: 10px 14px;
+            padding: ${pad};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.675rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${isSorted ? primaryColor : textSecondary};
@@ -20963,7 +23625,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${escapeHtml(col.label)}${sortIcon}
+            ${escapeHtml(compact && col.key === 'bullet' ? 'Réalisé / cible' : (compact && col.key === 'revenue' ? 'CA' : col.label))}${sortIcon}
           </th>
         `;
       });
@@ -20984,6 +23646,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         const bulletColor = isOverTarget
           ? (tokens.status?.success || '#2E7D32')
           : (tokens.status?.warning || '#D97706');
+        const bulletTextColor = readableOn(bulletColor, bgSurface, 4.5);
+        const bulletSymbol = isOverTarget ? '▲' : '▼';
 
         html += `
           <tr class="kc-table-row" style="
@@ -20991,10 +23655,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             border-bottom: ${borderBottom};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
+            <td style="padding: ${pad}; text-align: left; vertical-align: middle;">
               <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.product)}</div>
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${pad}; text-align: center; vertical-align: middle;">
               <span style="
                 display: inline-block;
                 padding: 2px 7px;
@@ -21004,36 +23668,36 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
               ">${escapeHtml(row.category)}</span>
-            </td>
-            <td style="padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;">
-              <div style="display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
-                ${generateDataBarSVG(row.revenue, maxRevenueCol, 95, 14, primaryColor, isDark, isTufte)}
+            </td>`}
+            <td style="padding: ${pad}; text-align: right; vertical-align: middle; white-space: nowrap;">
+              <div style="display: flex; align-items: center; justify-content: flex-end; gap: ${compact ? 4 : 8}px;">
+                ${generateDataBarSVG(row.revenue, maxRevenueCol, compact ? 44 : 95, 14, primaryColor, isDark, isTufte)}
                 <span style="font-family: ${fontMono}; font-weight: 600; color: ${textPrimary};">
                   ${(row.revenue / 1000000).toFixed(2)} M€
                 </span>
               </div>
             </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${pad}; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${escapeHtml(row.volume.toLocaleString('fr-FR'))}
-            </td>
-            <td style="padding: 10px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
-              <div style="display: flex; align-items: center; gap: 8px;">
-                ${generateBulletGraphSVG(row.actualRate, row.targetRate, 110, 16, bulletColor, isDark, isTufte)}
-                <span style="font-size: 0.7rem; color: ${textMuted}; font-family: ${fontMono};">
+            </td>`}
+            <td style="padding: ${pad}; text-align: left; vertical-align: middle; white-space: nowrap;">
+              <div style="display: flex; align-items: center; gap: ${compact ? 4 : 8}px;">
+                ${generateBulletGraphSVG(row.actualRate, row.targetRate, compact ? 56 : 110, 16, bulletColor, isDark, isTufte)}
+                ${compact ? `<span style="font-family: ${fontMono}; font-weight: 700; color: ${bulletTextColor};">${bulletSymbol} ${escapeHtml(row.actualRate)}%</span>` : `<span style="font-size: 0.7rem; color: ${textMuted}; font-family: ${fontMono};">
                   Cible: ${escapeHtml(row.targetRate)}%
-                </span>
+                </span>`}
               </div>
             </td>
-            <td style="padding: 10px 14px; text-align: right; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${pad}; text-align: right; vertical-align: middle;">
               <span style="
                 font-family: ${fontMono};
                 font-weight: 700;
                 font-size: 0.8125rem;
-                color: ${bulletColor};
+                color: ${bulletTextColor};
               ">
-                ${escapeHtml(row.actualRate)}%
+                ${bulletSymbol} ${escapeHtml(row.actualRate)}%
               </span>
-            </td>
+            </td>`}
           </tr>
         `;
       });
@@ -21186,12 +23850,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   /**
    * Génère une micro-barre divergente de variance IBCS à axe zéro central
    */
-  function generateIBCSVarianceBarSVG(deltaPct, metricType = 'revenue', width = 120, height = 16, tokens = {}, isDark = false, isTufte = false) {
-    const maxScalePct = 25; // Axe de -25% à +25%
+  function generateIBCSVarianceBarSVG(deltaPct, metricType = 'revenue', width = 120, height = 16, tokens = {}, isDark = false, isTufte = false, favorableOverride, scalePct) {
+    const maxScalePct = scalePct > 0 ? scalePct : 25; // Axe symétrique -max à +max (adapté aux données)
     const midX = width / 2;
 
     // Règle de valence financière : delta >= 0 est Favorable (Vert), delta < 0 est Défavorable / Perte (Rouge)
-    const isFavorable = deltaPct >= 0;
+    const isFavorable = typeof favorableOverride === 'boolean' ? favorableOverride : deltaPct >= 0;
     const barColor = isFavorable
       ? (tokens.status?.success || '#2E7D32')
       : (tokens.status?.danger || '#C62828');
@@ -21215,6 +23879,38 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         <rect x="${startX}" y="3" width="${barLength}" height="${height - 6}" fill="${barColor}" rx="${isTufte ? 0 : 2}" />
       </svg>
     `;
+  }
+
+  /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
   }
 
   /**
@@ -21270,6 +23966,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : colonnes budget, N-1 et écart absolu masquées, unités retirées (rappelées dans le titre)
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const hiddenKeys = compact ? ['budget', 'priorYear', 'varAbs'] : [];
+      const unitK = compact ? '' : ' k€';
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
       const bgHeader = isDark ? '#1F232B' : (isTufte ? '#FFFFFF' : '#F8FAFC');
@@ -21280,6 +23981,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       const textMuted = tokens.textMuted || (isDark ? '#9EABC0' : '#64748B');
       const fontSans = tokens.fontFamily || "'Inter', sans-serif";
       const fontMono = tokens.fontMono || "'JetBrains Mono', monospace";
+
+      const barScalePct = Math.max(5, Math.ceil(Math.max(...data.rows.map(r => r.budget !== 0 ? Math.abs((r.actual - r.budget) / Math.abs(r.budget)) * 100 : 0)) / 5) * 5);
 
       let html = `
         <div class="kc-dataviz-financial-container" style="
@@ -21295,10 +23998,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 860}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -21309,20 +24013,25 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               ">
       `;
 
-      data.columns.forEach(col => {
+      const visCols = data.columns.filter(col => hiddenKeys.indexOf(col.key) < 0);
+      visCols.forEach((col, ci) => {
+        const isLast = ci === visCols.length - 1;
+        const shortLabels = { item: 'Poste', actual: 'Réalisé', varPct: 'Écart %', varBar: 'Variance' };
         html += `
           <th style="
-            padding: 10px 14px;
+            padding: ${compact ? '8px 6px' : '10px 10px'}${isLast ? '; padding-right: 14px' : ''};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.65rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${textSecondary};
             border: none;
-            white-space: nowrap;
+            white-space: ${compact ? 'nowrap' : 'normal'};
+            line-height: 1.25;
+            vertical-align: bottom;
           ">
-            ${escapeHtml(col.label)}
+            ${escapeHtml(compact && shortLabels[col.key] ? shortLabels[col.key] : col.label)}
           </th>
         `;
       });
@@ -21350,13 +24059,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           rowBg = isDark ? 'rgba(255,255,255,0.015)' : 'rgba(15,23,42,0.01)';
         }
 
+        const cp = compact ? '6px 6px' : '8px 10px';
         const deltaAbs = row.actual - row.budget;
         const deltaPct = row.budget !== 0 ? (deltaAbs / Math.abs(row.budget)) * 100 : 0;
 
-        const isFavorable = deltaAbs >= 0;
-        const deltaColor = isFavorable
+        // Polarité : convention comptable (charges négatives) => delta >= 0 favorable.
+        // Charge saisie en positif (metricType 'cost') => LOWER_IS_BETTER : hausse défavorable.
+        const isPositiveCost = row.metricType === 'cost' && row.actual >= 0 && row.budget >= 0;
+        const isFavorable = isPositiveCost ? deltaAbs <= 0 : deltaAbs >= 0;
+        const deltaColor = readableOn(isFavorable
           ? (tokens.status?.success || '#2E7D32')
-          : (tokens.status?.danger || '#C62828');
+          : (tokens.status?.danger || '#C62828'), bgSurface, 4.5);
 
         const arrow = deltaAbs > 0 ? '+' : '';
         const fontWeight = isSummaryRow ? '700' : (isHeaderRow ? '600' : '400');
@@ -21370,28 +24083,28 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             font-weight: ${fontWeight};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 8px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
-              <span style="padding-left: ${indentPx}px; color: ${textColor};">
-                ${escapeHtml(row.item)}
+            <td style="padding: ${cp}; text-align: left; vertical-align: middle; white-space: ${compact ? 'normal' : 'nowrap'};">
+              <span style="padding-left: ${compact ? Math.round(indentPx * 0.6) : indentPx}px; color: ${textColor};">
+                ${escapeHtml(compact ? String(row.item).trim() : row.item)}
               </span>
             </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
-              ${escapeHtml(formatAccounting(row.actual))}
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
+              ${escapeHtml(formatAccounting(row.actual, unitK))}
             </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${escapeHtml(formatAccounting(row.budget))}
             </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${textMuted}; vertical-align: middle;">
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${textMuted}; vertical-align: middle;">
               ${escapeHtml(formatAccounting(row.priorYear))}
             </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaAbs.toLocaleString('fr-FR')} k€
-            </td>
-            <td style="padding: 8px 14px; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaPct.toFixed(1)}%
             </td>
-            <td style="padding: 6px 10px; text-align: center; vertical-align: middle;">
-              ${generateIBCSVarianceBarSVG(deltaPct, row.metricType, 110, 16, tokens, isDark, isTufte)}
+            <td style="padding: ${compact ? '5px 6px' : '6px 10px'}; padding-right: 14px; text-align: center; vertical-align: middle;">
+              ${generateIBCSVarianceBarSVG(deltaPct, row.metricType, compact ? 60 : 100, 16, tokens, isDark, isTufte, isFavorable, barScalePct)}
             </td>
           </tr>
         `;
@@ -21610,6 +24323,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : mois en initiales, régions en code, totaux et moyennes masqués
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
       const bgHeader = isDark ? '#1F232B' : (isTufte ? '#FFFFFF' : '#F8FAFC');
@@ -21620,7 +24336,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       const textMuted = tokens.textMuted || (isDark ? '#9EABC0' : '#64748B');
       const fontSans = tokens.fontFamily || "'Inter', sans-serif";
       const fontMono = tokens.fontMono || "'JetBrains Mono', monospace";
-      const sequentialPalette = tokens.sequential || ['#EFF3FF', '#C6DBEF', '#9ECAE1', '#6BAED6', '#3182BD', '#08519C'];
+      let sequentialPalette = tokens.sequential || ['#EFF3FF', '#C6DBEF', '#9ECAE1', '#6BAED6', '#3182BD', '#08519C'];
+      // Le premier cran ne doit pas se confondre avec le fond de la carte (thèmes sombres)
+      if (isDark && sequentialPalette.length > 2 && String(sequentialPalette[0]).toLowerCase() === String(tokens.surface || '').toLowerCase()) {
+        sequentialPalette = sequentialPalette.slice(1);
+      }
 
       // Calcul des min et max globaux pour l'échelle d'intensité
       let allValues = [];
@@ -21655,41 +24375,41 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           font-family: ${fontSans};
           color: ${textPrimary};
           box-sizing: border-box;
-          padding: 12px 14px;
+          padding: ${compact ? '8px 8px' : '12px 14px'};
         ">
           <!-- Légende de l'échelle de gradient continue -->
           <div style="
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 12px;
-            padding-bottom: 10px;
+            margin-bottom: ${compact ? 6 : 12}px;
+            padding-bottom: ${compact ? 6 : 10}px;
             border-bottom: 1px solid ${borderCol};
             flex-wrap: wrap;
             gap: 8px;
           ">
             <div>
-              <div style="font-weight: 600; font-size: 0.8125rem; color: ${textPrimary};">${escapeHtml(data.title || 'Tableau Heatmap')}</div>
-              ${data.subtitle ? `<div style="font-size: 0.7rem; color: ${textMuted};">${escapeHtml(data.subtitle)}</div>` : ''}
+              <div style="font-weight: 600; font-size: ${compact ? '0.75rem' : '0.8125rem'}; color: ${textPrimary};">${escapeHtml(data.title || 'Tableau Heatmap')}</div>
+              ${data.subtitle && !compact ? `<div style="font-size: 0.7rem; color: ${textMuted};">${escapeHtml(data.subtitle)}</div>` : ''}
             </div>
             <div style="display: flex; align-items: center; gap: 8px; font-size: 0.725rem; color: ${textSecondary};">
-              <span style="font-family: ${fontMono}; font-weight: 600;">Min (${escapeHtml(globalMin)}${escapeHtml(data.unit || '')})</span>
+              <span style="font-family: ${fontMono}; font-weight: 600;">${compact ? '' : 'Min ('}${escapeHtml(globalMin)}${compact ? '' : escapeHtml(data.unit || '') + ')'}</span>
               <div style="
-                width: 120px;
+                width: ${compact ? 90 : 120}px;
                 height: 10px;
                 border-radius: 4px;
                 background: linear-gradient(to right, ${sequentialPalette[0] || '#EFF3FF'}, ${sequentialPalette[sequentialPalette.length - 1] || '#08519C'});
                 border: 1px solid ${borderCol};
               "></div>
-              <span style="font-family: ${fontMono}; font-weight: 600;">Max (${escapeHtml(globalMax)}${escapeHtml(data.unit || '')})</span>
+              <span style="font-family: ${fontMono}; font-weight: 600;">${compact ? '' : 'Max ('}${escapeHtml(globalMax)}${escapeHtml(data.unit || '')}${compact ? '' : ')'}</span>
             </div>
           </div>
 
           <table style="
             width: 100%;
             border-collapse: separate;
-            border-spacing: 2px;
-            font-size: 0.775rem;
+            border-spacing: ${compact ? 1 : 2}px;
+            font-size: ${compact ? '0.7rem' : '0.775rem'};
             line-height: 1.35;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
@@ -21697,7 +24417,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             <thead>
               <tr>
                 <th style="
-                  padding: 8px 12px;
+                  padding: ${compact ? '5px 4px' : '8px 12px'};
                   text-align: left;
                   font-weight: 600;
                   font-size: 0.7rem;
@@ -21716,8 +24436,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
       data.columns.forEach(col => {
         html += `
-          <th style="
-            padding: 8px 6px;
+          <th title="${escapeHtml(col)}" style="
+            padding: ${compact ? '5px 0' : '8px 6px'};
             text-align: center;
             font-weight: 600;
             font-size: 0.7rem;
@@ -21726,15 +24446,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             color: ${textSecondary};
             background: ${bgHeader};
             border-bottom: 1.5px solid ${borderStrong};
-            min-width: 44px;
+            min-width: ${compact ? 0 : 44}px;
           ">
-            ${escapeHtml(col)}
+            ${escapeHtml(compact ? String(col).charAt(0) : col)}
           </th>
         `;
       });
 
       html += `
-                <th style="
+                ${compact ? '' : `<th style="
                   padding: 8px 10px;
                   text-align: right;
                   font-weight: 700;
@@ -21757,7 +24477,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                   border-bottom: 1.5px solid ${borderStrong};
                 ">
                   Moy.
-                </th>
+                </th>`}
               </tr>
             </thead>
             <tbody>
@@ -21766,8 +24486,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       data.rows.forEach((row, rIdx) => {
         html += `
           <tr>
-            <td style="
-              padding: 7px 12px;
+            <td title="${escapeHtml(row.label)}" style="
+              padding: ${compact ? '4px 4px' : '7px 12px'};
               text-align: left;
               font-weight: 600;
               color: ${textPrimary};
@@ -21778,7 +24498,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               z-index: 1;
               white-space: nowrap;
             ">
-              ${escapeHtml(row.label)}
+              ${escapeHtml(compact && row.id ? String(row.id).toUpperCase() : row.label)}
             </td>
         `;
 
@@ -21786,17 +24506,19 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           const ratio = (val - globalMin) / globalRange;
           const rgb = getSequentialColorForRatio(ratio, sequentialPalette, isDark);
           const lum = getRelativeLuminance(rgb.r, rgb.g, rgb.b);
-          // Règle d'inversion WCAG AAA : Si fond sombre (lum < 0.38), texte clair
-          const cellTextColor = lum < 0.38 ? '#FFFFFF' : (isDark && lum < 0.5 ? '#F8FAFC' : '#0F172A');
+                    // Texte noir ou blanc : celui qui offre le meilleur contraste réel (pivot WCAG, lum ~ 0.18)
+          const contrastWhite = 1.05 / (lum + 0.05);
+          const contrastDark = (lum + 0.05) / (getRelativeLuminance(15, 23, 42) + 0.05);
+          const cellTextColor = contrastWhite >= contrastDark ? '#FFFFFF' : '#0F172A';
           const cellBg = `rgb(${rgb.r}, ${rgb.g}, ${rgb.b})`;
 
           html += `
             <td style="
-              padding: 7px 4px;
+              padding: ${compact ? '4px 0' : '7px 4px'};
               text-align: center;
               font-family: ${fontMono};
               font-weight: 500;
-              font-size: 0.75rem;
+              font-size: ${compact ? '0.65rem' : '0.75rem'};
               background-color: ${cellBg};
               color: ${cellTextColor};
               border-radius: 3px;
@@ -21809,7 +24531,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         });
 
         const stats = rowStats[rIdx];
-        html += `
+        html += compact ? '</tr>' : `
             <td style="
               padding: 7px 10px;
               text-align: right;
@@ -21840,7 +24562,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       const grandTotal = colSums.reduce((acc, v) => acc + v, 0);
       const grandAvg = grandTotal / (data.rows.length * data.columns.length);
 
-      html += `
+      if (!compact) html += `
               <tr style="border-top: 1.5px solid ${borderStrong}; font-weight: 700;">
                 <td style="
                   padding: 9px 12px;
@@ -21856,7 +24578,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 </td>
       `;
 
-      colSums.forEach(cSum => {
+      if (!compact) colSums.forEach(cSum => {
         html += `
           <td style="
             padding: 9px 4px;
@@ -21871,7 +24593,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         `;
       });
 
-      html += `
+      if (compact) html += `
+            </tbody>
+          </table>
+        </div>
+      `; else html += `
                 <td style="
                   padding: 9px 10px;
                   text-align: right;
@@ -22106,6 +24832,52 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   }
 
   /**
+   * Mélange une couleur hex avec un fond hex (alpha 0..1) et renvoie un hex opaque.
+   */
+  function blendHex(fg, alpha, bg) {
+    const parse = (h) => {
+      let c = String(h || '').replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      return /^[0-9a-fA-F]{6}$/.test(c) ? [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)) : null;
+    };
+    const f = parse(fg), b = parse(bg);
+    if (!f || !b) return bg;
+    return '#' + f.map((v, i) => Math.round(v * alpha + b[i] * (1 - alpha)).toString(16).padStart(2, '0')).join('');
+  }
+
+  /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
+  }
+
+  /**
    * Crée et initialise un Tableau Hiérarchique & Arborescent
    *
    * @param {string|HTMLElement} target - ID ou élément DOM cible
@@ -22171,6 +24943,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : effectifs, dépenses et badge masqués (statut porté par la couleur du taux), retrait réduit
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const hiddenKeys = compact ? ['headcount', 'spent', 'status'] : [];
+      const cp = compact ? '7px 6px' : '9px 14px';
 
       const primaryColor = getColor(tokens, 0);
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -22210,10 +24987,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 620}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -22224,20 +25002,21 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               ">
       `;
 
-      data.columns.forEach(col => {
+      data.columns.filter(col => hiddenKeys.indexOf(col.key) < 0).forEach(col => {
+        const shortLabels = { name: 'Équipe', budget: 'Budget', burnRate: 'Exécution' };
         html += `
           <th style="
-            padding: 10px 14px;
+            padding: ${compact ? '8px 6px' : '10px 14px'};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.65rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${textSecondary};
             border: none;
             white-space: nowrap;
           ">
-            ${escapeHtml(col.label)}
+            ${escapeHtml(compact && shortLabels[col.key] ? shortLabels[col.key] : col.label)}
           </th>
         `;
       });
@@ -22251,7 +25030,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       flatRows.forEach((row, idx) => {
         const isParent = row.level === 0;
         const isSubParent = row.level === 1;
-        const indentPx = row.level * 22;
+        const indentPx = row.level * (compact ? 12 : 22);
 
         let rowBg = 'transparent';
         if (isParent) {
@@ -22266,21 +25045,22 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
         const burnRate = row.budget > 0 ? (row.spent / row.budget) * 100 : 0;
         const isOverBudget = burnRate > 100;
-        const isWarning = burnRate >= 95 && burnRate <= 100;
+        const warnThreshold = typeof options.warningThreshold === 'number' ? options.warningThreshold : 95;
+        const isWarning = burnRate >= warnThreshold && burnRate <= 100;
 
-        let statusBg = isDark ? 'rgba(46, 125, 50, 0.2)' : 'rgba(46, 125, 50, 0.12)';
-        let statusColor = isDark ? '#81C784' : '#2E7D32';
+        // Statut TARGET_BASED : dans la cible = vert, tension = orange, dépassement = rouge (couleurs du thème)
+        let statusBase = tokens.status?.success || '#2E7D32';
         let statusLabel = 'Maîtrisé';
-
         if (isOverBudget) {
-          statusBg = isDark ? 'rgba(198, 40, 40, 0.25)' : 'rgba(198, 40, 40, 0.12)';
-          statusColor = isDark ? '#E57373' : '#C62828';
+          statusBase = tokens.status?.danger || '#C62828';
           statusLabel = 'Dépassement';
         } else if (isWarning) {
-          statusBg = isDark ? 'rgba(239, 108, 0, 0.25)' : 'rgba(239, 108, 0, 0.12)';
-          statusColor = isDark ? '#FFB74D' : '#D97706';
+          statusBase = tokens.status?.warning || '#EF6C00';
           statusLabel = 'Sous tension';
         }
+        const statusBgAlpha = isDark ? 0.25 : 0.14;
+        const statusBg = blendHex(statusBase, statusBgAlpha, bgSurface);
+        const statusColor = readableOn(statusBase, statusBg, 4.5);
 
         const chevron = row.hasChildren
           ? `<span class="kc-tree-toggle" data-node-id="${escapeHtml(row.id)}" style="
@@ -22290,13 +25070,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               line-height: 16px;
               text-align: center;
               font-size: 0.65rem;
-              margin-right: 6px;
+              margin-right: ${compact ? 2 : 6}px;
               cursor: pointer;
               user-select: none;
               color: ${primaryColor};
               font-weight: 700;
             ">${row.isExpanded ? '▼' : '▶'}</span>`
-          : `<span style="display: inline-block; width: 22px;"></span>`;
+          : `<span style="display: inline-block; width: ${compact ? 18 : 22}px;"></span>`;
 
         html += `
           <tr class="kc-table-row" style="
@@ -22305,22 +25085,22 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             font-weight: ${fontWeight};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 9px 14px; text-align: left; vertical-align: middle; white-space: nowrap;">
+            <td style="padding: ${cp}; text-align: left; vertical-align: middle; white-space: ${compact ? 'normal' : 'nowrap'};">
               <div style="padding-left: ${indentPx}px; display: flex; align-items: center;">
                 ${chevron}
                 <span style="color: ${textColor};">${escapeHtml(row.name)}</span>
               </div>
             </td>
-            <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
               ${escapeHtml(row.headcount)} ETP
-            </td>
-            <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle; white-space: nowrap;">
               ${(row.budget / 1000000).toFixed(2)} M€
             </td>
-            <td style="padding: 9px 14px; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textColor}; vertical-align: middle;">
               ${(row.spent / 1000000).toFixed(2)} M€
-            </td>
-            <td style="padding: 9px 14px; text-align: right; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; text-align: right; vertical-align: middle; white-space: nowrap;" title="${statusLabel}">
               <span style="
                 font-family: ${fontMono};
                 font-weight: ${isParent ? '700' : '600'};
@@ -22329,7 +25109,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 ${burnRate.toFixed(1)}%
               </span>
             </td>
-            <td style="padding: 9px 14px; text-align: center; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: center; vertical-align: middle;">
               <span style="
                 display: inline-block;
                 padding: 2px 7px;
@@ -22341,7 +25121,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 border: ${isTufte ? `1px solid ${statusColor}` : 'none'};
                 white-space: nowrap;
               ">${statusLabel}</span>
-            </td>
+            </td>`}
           </tr>
         `;
       });
@@ -22353,24 +25133,24 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 background: ${bgHeader};
                 font-weight: 700;
               ">
-                <td style="padding: 11px 14px; text-align: left; color: ${textPrimary};">
-                  TOTAL ORGANISATION
+                <td style="padding: ${compact ? '8px 6px' : '11px 14px'}; text-align: left; color: ${textPrimary};">
+                  ${compact ? 'TOTAL' : 'TOTAL ORGANISATION'}
                 </td>
-                <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
+                ${compact ? '' : `<td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
                   ${escapeHtml(totalHeadcount)} ETP
-                </td>
-                <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
+                </td>`}
+                <td style="padding: ${compact ? '8px 6px' : '11px 14px'}; text-align: right; font-family: ${fontMono}; color: ${textPrimary}; white-space: nowrap;">
                   ${(totalBudget / 1000000).toFixed(2)} M€
                 </td>
-                <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
+                ${compact ? '' : `<td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary};">
                   ${(totalSpent / 1000000).toFixed(2)} M€
-                </td>
-                <td style="padding: 11px 14px; text-align: right; font-family: ${fontMono}; color: ${grandBurnRate <= 100 ? (tokens.status?.success || '#2E7D32') : (tokens.status?.danger || '#C62828')};">
+                </td>`}
+                <td style="padding: ${compact ? '8px 6px' : '11px 14px'}; text-align: right; font-family: ${fontMono}; color: ${readableOn(grandBurnRate <= 100 ? (tokens.status?.success || '#2E7D32') : (tokens.status?.danger || '#C62828'), bgSurface, 4.5)};">
                   ${grandBurnRate.toFixed(1)}%
                 </td>
-                <td style="padding: 11px 14px; text-align: center; color: ${textPrimary}; font-size: 0.725rem;">
+                ${compact ? '' : `<td style="padding: 11px 14px; text-align: center; color: ${textPrimary}; font-size: 0.725rem;">
                   100% Alloué
-                </td>
+                </td>`}
               </tr>
             </tbody>
           </table>
@@ -22513,7 +25293,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         metricType: 'revenue',
         trend: [108.0, 108.5, 109.2, 110.0, 109.8, 111.0, 111.8, 112.5, 113.0, 113.8, 114.0, 114.2],
         status: 'success',
-        statusText: 'Conforme'
+        statusText: 'Dépassé'
       },
       {
         kpi: 'Coût d\'Acquisition Client (CAC)',
@@ -22568,7 +25348,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         statusText: 'Alerte'
       },
       {
-        kpi: 'Latence API Médiane (p95)',
+        kpi: 'Latence API (p95)',
         desc: 'Temps de réponse des requêtes de production',
         category: 'Tech',
         actual: 118,
@@ -22591,19 +25371,19 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const absVal = Math.abs(val);
     let formatted = '';
     if (absVal >= 1000000) {
-      formatted = (val / 1000000).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' M';
+      formatted = (val / 1000000).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + '\u00A0M';
     } else if (absVal >= 1000) {
       formatted = val.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 1 });
     } else {
       formatted = Number.isInteger(val) ? val.toString() : val.toLocaleString('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 2 });
     }
-    return formatted + unit;
+    return formatted + String(unit).replace(/ /g, '\u00A0');
   }
 
   /**
    * Génère le SVG inline de la sparkline de tendance (Edward Tufte)
    */
-  function generateSparklineSVG(values, width = 110, height = 28, strokeColor = '#2B8CBE', isTufte = false) {
+  function generateSparklineSVG(values, width = 110, height = 28, strokeColor = '#2B8CBE', isTufte = false, lowerIsBetter = false, goodColor = '#2E7D32', badColor = '#C62828') {
     if (!values || values.length < 2) return '<span style="color:#94A3B8;">—</span>';
     const min = Math.min(...values);
     const max = Math.max(...values);
@@ -22638,11 +25418,57 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" style="overflow:visible; display:block; margin:0 auto;" aria-label="${escapeHtml(titleText)}">
         <title>${escapeHtml(titleText)}</title>
         <polyline fill="none" stroke="${strokeColor}" stroke-width="${isTufte ? '1.25' : '1.75'}" stroke-linecap="round" stroke-linejoin="round" points="${points.join(' ')}" />
-        ${!isTufte ? `<circle cx="${minX}" cy="${minY}" r="2" fill="#C62828" opacity="0.85"><title>Min: ${escapeHtml(min)}</title></circle>` : ''}
-        ${!isTufte ? `<circle cx="${maxX}" cy="${maxY}" r="2" fill="#2E7D32" opacity="0.85"><title>Max: ${escapeHtml(max)}</title></circle>` : ''}
+        ${!isTufte ? `<circle cx="${minX}" cy="${minY}" r="2.5" fill="${lowerIsBetter ? goodColor : badColor}" opacity="0.95"><title>Min: ${escapeHtml(min)}</title></circle>` : ''}
+        ${!isTufte ? `<circle cx="${maxX}" cy="${maxY}" r="2.5" fill="${lowerIsBetter ? badColor : goodColor}" opacity="0.95"><title>Max: ${escapeHtml(max)}</title></circle>` : ''}
         <circle cx="${lastX}" cy="${lastY}" r="${isTufte ? '2' : '2.5'}" fill="${strokeColor}"><title>Dernier: ${escapeHtml(values[lastIdx])}</title></circle>
       </svg>
     `;
+  }
+
+  /**
+   * Mélange une couleur hex avec un fond hex (alpha 0..1) et renvoie un hex opaque.
+   */
+  function blendHex(fg, alpha, bg) {
+    const parse = (h) => {
+      let c = String(h || '').replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      return /^[0-9a-fA-F]{6}$/.test(c) ? [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16)) : null;
+    };
+    const f = parse(fg), b = parse(bg);
+    if (!f || !b) return bg;
+    return '#' + f.map((v, i) => Math.round(v * alpha + b[i] * (1 - alpha)).toString(16).padStart(2, '0')).join('');
+  }
+
+  /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
   }
 
   /**
@@ -22703,6 +25529,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : domaine et cible masqués, sparkline réduite, statut en pastille symbole
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const hiddenKeys = compact ? ['category', 'target'] : [];
+      const cp = compact ? '7px 5px' : '10px 14px';
 
       const primaryColor = getColor(tokens, 0);
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -22747,10 +25578,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 760}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -22761,16 +25593,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               ">
       `;
 
-      data.columns.forEach(col => {
+      data.columns.filter(col => hiddenKeys.indexOf(col.key) < 0).forEach(col => {
+        const shortLabels = { kpi: 'KPI', delta: 'Écart', trend: '12M', status: '' };
         const isSorted = sortColumn === col.key;
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
           <th data-key="${escapeHtml(col.key)}" style="
-            padding: 10px 14px;
+            padding: ${compact ? '8px 5px' : '10px 14px'};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.65rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${isSorted ? primaryColor : textSecondary};
@@ -22778,7 +25611,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${escapeHtml(col.label)}${sortIcon}
+            ${escapeHtml(compact && shortLabels[col.key] !== undefined ? shortLabels[col.key] : col.label)}${sortIcon}
           </th>
         `;
       });
@@ -22802,7 +25635,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         }
         const hasDelta = typeof deltaVal === 'number' && !isNaN(deltaVal);
         const effectiveDelta = hasDelta ? deltaVal : 0;
-        const deltaColor = hasDelta ? getValenceColor(tokens, effectiveDelta, row.metricType || 'revenue') : textSecondary;
+        const deltaColor = hasDelta ? readableOn(getValenceColor(tokens, effectiveDelta, row.metricType || 'revenue'), bgSurface, 4.5) : textSecondary;
         const arrow = effectiveDelta > 0 ? '↑' : (effectiveDelta < 0 ? '↓' : '=');
         const plusSign = effectiveDelta > 0 ? '+' : '';
         const deltaFormatted = hasDelta ? `${plusSign}${effectiveDelta.toFixed(2)}%` : '—';
@@ -22812,18 +25645,13 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         let statusColor = textSecondary;
         let statusSymbol = '●';
 
-        if (row.status === 'success') {
-          statusBg = isDark ? 'rgba(46, 125, 50, 0.25)' : 'rgba(46, 125, 50, 0.12)';
-          statusColor = isDark ? '#81C784' : '#2E7D32';
-          statusSymbol = '✓';
-        } else if (row.status === 'warning') {
-          statusBg = isDark ? 'rgba(239, 108, 0, 0.25)' : 'rgba(239, 108, 0, 0.12)';
-          statusColor = isDark ? '#FFB74D' : '#D97706';
-          statusSymbol = '▲';
-        } else if (row.status === 'danger') {
-          statusBg = isDark ? 'rgba(198, 40, 40, 0.25)' : 'rgba(198, 40, 40, 0.12)';
-          statusColor = isDark ? '#E57373' : '#C62828';
-          statusSymbol = '■';
+        const statusBase = row.status === 'success' ? (tokens.status?.success || '#2E7D32')
+          : row.status === 'warning' ? (tokens.status?.warning || '#EF6C00')
+          : row.status === 'danger' ? (tokens.status?.danger || '#C62828') : null;
+        if (statusBase) {
+          statusBg = blendHex(statusBase, isDark ? 0.25 : 0.14, bgSurface);
+          statusColor = readableOn(statusBase, statusBg, 4.5);
+          statusSymbol = row.status === 'success' ? '✓' : (row.status === 'warning' ? '▲' : '■');
         }
 
         html += `
@@ -22832,11 +25660,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             border-bottom: ${borderBottom};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: left; vertical-align: middle;">
               <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.kpi)}</div>
-              ${row.desc ? `<div style="font-size: 0.7rem; color: ${textMuted}; margin-top: 1px;">${escapeHtml(row.desc)}</div>` : ''}
+              ${row.desc && !compact ? `<div style="font-size: 0.7rem; color: ${textMuted}; margin-top: 1px;">${escapeHtml(row.desc)}</div>` : ''}
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: center; vertical-align: middle;">
               <span style="
                 display: inline-block;
                 padding: 2px 7px;
@@ -22846,36 +25674,36 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
               ">${escapeHtml(row.category)}</span>
-            </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; font-weight: 600; color: ${textPrimary}; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; font-weight: 600; color: ${textPrimary}; vertical-align: middle;">
               ${escapeHtml(formatNumber(row.actual, row.unit || ''))}
             </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${escapeHtml(formatNumber(row.target, row.unit || ''))}
-            </td>
-            <td style="padding: 10px 14px; text-align: right; vertical-align: middle;">
+            </td>`}
+            <td style="padding: ${cp}; text-align: right; vertical-align: middle; white-space: nowrap;">
               <span style="
                 display: inline-flex;
                 align-items: center;
                 gap: 3px;
                 font-family: ${fontMono};
                 font-weight: 600;
-                font-size: 0.775rem;
+                font-size: ${compact ? '0.7rem' : '0.775rem'};
                 color: ${deltaColor};
               ">
                 <span>${hasDelta ? arrow : ''}</span>
                 <span>${deltaFormatted}</span>
               </span>
             </td>
-            <td style="padding: 6px 10px; text-align: center; vertical-align: middle;">
-              ${generateSparklineSVG(row.trend, 105, 26, primaryColor, isTufte)}
+            <td style="padding: ${compact ? '4px 4px' : '6px 10px'}; text-align: center; vertical-align: middle;">
+              ${generateSparklineSVG(row.trend, compact ? 48 : 105, compact ? 22 : 26, primaryColor, isTufte, ['cost', 'churn', 'risk', 'loss', 'latency', 'cac', 'expense', 'debt', 'defect'].includes(String(row.metricType || 'revenue').toLowerCase().trim()), tokens.status?.success || '#2E7D32', tokens.status?.danger || '#C62828')}
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
-              <span style="
+            <td style="padding: ${cp}; text-align: center; vertical-align: middle;">
+              <span title="${escapeHtml(row.statusText || row.status)}" style="
                 display: inline-flex;
                 align-items: center;
                 gap: 4px;
-                padding: 3px 8px;
+                padding: 3px ${compact ? 6 : 8}px;
                 border-radius: ${isTufte ? '0' : '4px'};
                 font-size: 0.725rem;
                 font-weight: 600;
@@ -22885,7 +25713,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 white-space: nowrap;
               ">
                 <span aria-hidden="true" style="font-size: 0.65rem;">${statusSymbol}</span>
-                <span>${escapeHtml(row.statusText || row.status)}</span>
+                ${compact ? `<span style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);">${escapeHtml(row.statusText || row.status)}</span>` : `<span>${escapeHtml(row.statusText || row.status)}</span>`}
               </span>
             </td>
           </tr>
@@ -23025,6 +25853,38 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   };
 
   /**
+   * Ajuste une couleur de texte jusqu'à atteindre un contraste >= minRatio sur le fond (WCAG AA).
+   * Éclaircit sur fond sombre, assombrit sur fond clair. Retourne la couleur d'origine si non-hex.
+   */
+  function readableOn(fg, bg, minRatio) {
+    const min = minRatio || 4.5;
+    const parse = (h) => {
+      if (typeof h !== 'string') return null;
+      let c = h.replace('#', '');
+      if (c.length === 3) c = c.split('').map(x => x + x).join('');
+      if (!/^[0-9a-fA-F]{6}$/.test(c)) return null;
+      return [0, 2, 4].map(i => parseInt(c.substr(i, 2), 16));
+    };
+    const lum = (rgb) => {
+      const a = rgb.map(v => { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
+      return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+    };
+    const f = parse(fg);
+    const b = parse(bg);
+    if (!f || !b) return fg;
+    const lb = lum(b);
+    const towardWhite = lb < 0.3;
+    const target = towardWhite ? 255 : 0;
+    for (let t = 0; t <= 1.0001; t += 0.05) {
+      const m = f.map(v => Math.round(v + (target - v) * t));
+      const lf = lum(m);
+      const ratio = (Math.max(lf, lb) + 0.05) / (Math.min(lf, lb) + 0.05);
+      if (ratio >= min) return '#' + m.map(v => v.toString(16).padStart(2, '0')).join('');
+    }
+    return towardWhite ? '#FFFFFF' : '#000000';
+  }
+
+  /**
    * Génère une micro-jauge de score proportionnelle à la première place
    */
   function generateScoreBarSVG(score, maxScore = 100, width = 100, height = 12, color = '#2B8CBE', isDark = false, isTufte = false) {
@@ -23123,6 +25983,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     function render() {
       if (!container) return;
+      // Mode compact (zone < 460 px) : région, contrats, conversion et activité masqués, barre de score réduite
+      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      const compact = hostW > 0 && hostW < 460;
+      const hiddenKeys = compact ? ['region', 'deals', 'conversion', 'monthlyActivity'] : [];
+      const cp = compact ? '7px 5px' : '10px 9px';
 
       const primaryColor = getColor(tokens, 0);
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -23167,10 +26032,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         ">
           <table style="
             width: 100%;
+            min-width: ${compact ? 0 : 860}px;
             border-collapse: collapse;
             border-spacing: 0;
-            font-size: 0.8125rem;
-            line-height: 1.45;
+            font-size: ${compact ? '0.75rem' : '0.8125rem'};
+            line-height: 1.4;
             font-variant-numeric: tabular-nums lining-nums;
             font-feature-settings: 'tnum' 1, 'lnum' 1;
           ">
@@ -23181,16 +26047,17 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               ">
       `;
 
-      data.columns.forEach(col => {
+      data.columns.filter(col => hiddenKeys.indexOf(col.key) < 0).forEach(col => {
+        const shortLabels = { rank: '#', trendRank: 'Évol.', team: 'Équipe', score: 'Score' };
         const isSorted = sortColumn === col.key;
         const sortIcon = isSorted ? (sortDirection === 'asc' ? ' ▲' : ' ▼') : '';
         const cursor = col.sortable ? 'cursor: pointer; user-select: none;' : '';
         html += `
           <th data-key="${escapeHtml(col.key)}" style="
-            padding: 10px 14px;
+            padding: ${compact ? '8px 5px' : '10px 9px'};
             text-align: ${escapeHtml(col.align)};
             font-weight: 600;
-            font-size: 0.725rem;
+            font-size: ${compact ? '0.65rem' : '0.725rem'};
             text-transform: uppercase;
             letter-spacing: 0.05em;
             color: ${isSorted ? primaryColor : textSecondary};
@@ -23198,7 +26065,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             white-space: nowrap;
             ${cursor}
           " title="${col.sortable ? 'Cliquer pour trier' : ''}">
-            ${escapeHtml(col.label)}${sortIcon}
+            ${escapeHtml(compact && shortLabels[col.key] !== undefined ? shortLabels[col.key] : col.label)}${sortIcon}
           </th>
         `;
       });
@@ -23244,9 +26111,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         const deltaRank = (row.prevRank || row.rank) - row.rank;
         let trendHtml = `<span style="color: ${textMuted}; font-size: 0.75rem;">=</span>`;
         if (deltaRank > 0) {
-          trendHtml = `<span style="color: ${tokens.status?.success || '#2E7D32'}; font-weight: 700; font-size: 0.75rem;">▲ +${deltaRank}</span>`;
+          trendHtml = `<span style="color: ${readableOn(tokens.status?.success || '#2E7D32', bgSurface, 4.5)}; font-weight: 700; font-size: 0.75rem;">▲ +${deltaRank}</span>`;
         } else if (deltaRank < 0) {
-          trendHtml = `<span style="color: ${tokens.status?.danger || '#C62828'}; font-weight: 700; font-size: 0.75rem;">▼ ${deltaRank}</span>`;
+          trendHtml = `<span style="color: ${readableOn(tokens.status?.danger || '#C62828', bgSurface, 4.5)}; font-weight: 700; font-size: 0.75rem;">▼ ${deltaRank}</span>`;
         }
 
         html += `
@@ -23255,44 +26122,45 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             border-bottom: ${borderBottom};
             transition: background 0.15s ease;
           ">
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: center; vertical-align: middle;">
               ${rankBadge}
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: center; vertical-align: middle; white-space: nowrap;">
               ${trendHtml}
             </td>
-            <td style="padding: 10px 14px; text-align: left; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: left; vertical-align: middle;">
               <div style="font-weight: 600; color: ${textPrimary};">${escapeHtml(row.team)}</div>
-              ${row.leader ? `<div style="font-size: 0.7rem; color: ${textMuted};">Lead: ${escapeHtml(row.leader)}</div>` : ''}
+              ${row.leader && !compact ? `<div style="font-size: 0.7rem; color: ${textMuted};">Lead: ${escapeHtml(row.leader)}</div>` : ''}
             </td>
-            <td style="padding: 10px 14px; text-align: center; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: center; vertical-align: middle;">
               <span style="
                 display: inline-block;
                 padding: 2px 7px;
                 border-radius: 9999px;
                 font-size: 0.7rem;
                 font-weight: 500;
+                white-space: nowrap;
                 background: ${isDark ? 'rgba(255,255,255,0.06)' : 'rgba(15,23,42,0.05)'};
                 color: ${textSecondary};
               ">${escapeHtml(row.region)}</span>
-            </td>
-            <td style="padding: 10px 14px; text-align: right; vertical-align: middle; white-space: nowrap;">
+            </td>`}
+            <td style="padding: ${cp}; text-align: right; vertical-align: middle; white-space: nowrap;">
               <div style="display: flex; align-items: center; justify-content: flex-end;">
-                ${generateScoreBarSVG(row.score, 100, 75, 12, primaryColor, isDark, isTufte)}
+                ${generateScoreBarSVG(row.score, 100, compact ? 44 : 75, 12, primaryColor, isDark, isTufte)}
                 <span style="font-family: ${fontMono}; font-weight: 700; color: ${textPrimary}; width: 38px; text-align: right;">
                   ${row.score.toFixed(1)}
                 </span>
               </div>
             </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textPrimary}; vertical-align: middle;">
+            ${compact ? '' : `<td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textPrimary}; vertical-align: middle;">
               ${escapeHtml(row.deals)}
             </td>
-            <td style="padding: 10px 14px; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
+            <td style="padding: ${cp}; text-align: right; font-family: ${fontMono}; color: ${textSecondary}; vertical-align: middle;">
               ${row.conversion.toFixed(1)}%
             </td>
             <td style="padding: 6px 10px; text-align: center; vertical-align: middle;">
               ${generateSparkbarSVG(row.activity, 72, 22, textMuted, primaryColor, isTufte)}
-            </td>
+            </td>`}
           </tr>
         `;
       });

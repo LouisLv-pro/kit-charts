@@ -68,6 +68,8 @@
       if (typeof seg.label !== 'string' || !seg.label) return `formattedData.segments[${i}].label attendu en texte non vide, reçu ${kindOf(seg.label)}`;
       if (!isNum(seg.pct) || seg.pct < 0) return `formattedData.segments[${i}].pct attendu en nombre positif, reçu ${kindOf(seg.pct)}`;
     }
+    const total = d.segments.reduce((a, seg) => a + seg.pct, 0);
+    if (Math.abs(total - 100) > 0.5) return `formattedData.segments : la somme des pct doit valoir 100, reçu ${Math.round(total * 10) / 10}`;
     return null;
   }
 
@@ -113,7 +115,7 @@
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
-        animation: { duration: 400, easing: 'easeOutQuart' },
+        animation: false,
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -231,7 +233,7 @@
           </span>` : ''}
         </div>
 
-        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; margin-bottom: 0.5rem;">
           <div style="
             font-size: 2.1rem;
             font-weight: 800;

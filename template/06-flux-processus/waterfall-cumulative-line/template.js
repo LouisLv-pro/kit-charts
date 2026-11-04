@@ -69,24 +69,24 @@
 
   const DEFAULT_DATA = {
     labels: [
-      'CA Brut Initial',
+      'Solde Initial',
       'Nouveaux Contrats',
       'Expansion Comptes',
       'Remises Commerciales',
       'Désabonnements (Churn)',
       "Frais d'Infrastructure",
-      'EBITDA Net'
+      'Solde Final'
     ],
     datasets: [{
       label: 'Pont Financier (k€)',
       data: [
-        { label: 'CA Brut Initial', value: 500, isTotal: false },
+        { label: 'Solde Initial', value: 500, isTotal: false },
         { label: 'Nouveaux Contrats', value: 180, isTotal: false },
         { label: 'Expansion Comptes', value: 75, isTotal: false },
         { label: 'Remises Commerciales', value: -45, isTotal: false },
         { label: 'Désabonnements (Churn)', value: -60, isTotal: false },
         { label: "Frais d'Infrastructure", value: -110, isTotal: false },
-        { label: 'EBITDA Net', value: 0, isTotal: true }
+        { label: 'Solde Final', value: 0, isTotal: true }
       ]
     }]
   };
@@ -119,6 +119,24 @@
 
     const analysis = computeWaterfallBalances(steps);
 
+    // Mode compact : largeur disponible sous ~420 px (carte d'aperçu) ; libellés abrégés sur 2 lignes, légende réduite
+    const availW = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
+    const compact = availW > 0 && availW < 460;
+    // Retour à la ligne des libellés d'axe : 2 lignes de `max` caractères (abrégé en carte étroite)
+    const wrapTick = (text, max, abbreviate) => {
+      const src = abbreviate ? String(text).replace(/\s*\(.*?\)\s*/g, ' ').trim() : String(text);
+      const words = src.split(/\s+/);
+      const cut = (w) => (abbreviate && w.length > max ? w.slice(0, max - 1) + '.' : w);
+      const lines = [];
+      words.forEach((w) => {
+        const last = lines[lines.length - 1];
+        if (last && (last + ' ' + w).length <= max) lines[lines.length - 1] = last + ' ' + w;
+        else lines.push(w);
+      });
+      return lines.map(cut);
+    };
+    const nf = (v) => new Intl.NumberFormat('fr-FR').format(v);
+
     const posColor = tokens.semantic?.positive || tokens.status?.success || '#2E7D32';
     const negColor = tokens.semantic?.negative || tokens.status?.danger || '#C62828';
     const totalColor = tokens.emphasis?.focal || tokens.palette?.[0] || '#2B8CBE';
@@ -131,8 +149,40 @@
     });
 
     const defaultOpts = getChartDefaultOptions(tokens);
+    const labelsPlugin = {
+      id: 'kitChartsWaterfallLabels',
+      afterDatasetsDraw(chart) {
+        if (!showDataLabels) return;
+        const meta = chart.getDatasetMeta(0);
+        const y = chart.scales && chart.scales.y;
+        if (!meta || !meta.data || !y) return;
+        const { ctx } = chart;
+        ctx.save();
+        ctx.font = `700 ${compact ? 10 : 11}px ${tokens.fontMono || tokens.fontFamily}`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'bottom';
+        ctx.lineJoin = 'round';
+        meta.data.forEach((bar, i) => {
+          const st = steps[i];
+          if (!st) return;
+          const unit = compact ? '' : ' k€';
+          const txt = st.isTotal || i === 0
+            ? `${nf(analysis.balances[i])}${unit}`
+            : `${st.value >= 0 ? '+' : '\u2212'}${nf(Math.abs(st.value))}${unit}`;
+          const top = Math.min(bar.y, bar.base, y.getPixelForValue(analysis.balances[i]));
+          ctx.lineWidth = 4;
+          ctx.strokeStyle = tokens.surface || tokens.bg;
+          ctx.strokeText(txt, bar.x, top - 8);
+          ctx.fillStyle = tokens.textPrimary;
+          ctx.fillText(txt, bar.x, top - 8);
+        });
+        ctx.restore();
+      }
+    };
+
     const config = {
       type: 'bar',
+      plugins: [labelsPlugin],
       data: {
         labels,
         datasets: [
@@ -144,15 +194,7 @@
             borderColor: barColors,
             borderWidth: 1.5,
             borderRadius: 4,
-            datalabels: {
-              display: showDataLabels,
-              formatter: (val, ctx) => {
-                const s = steps[ctx.dataIndex];
-                if (!s) return '';
-                if (s.isTotal) return `${analysis.balances[ctx.dataIndex]} k€`;
-                return `${s.value >= 0 ? '+' : ''}${s.value} k€`;
-              }
-            },
+            datalabels: { display: false },
             order: 2
           },
           {
@@ -162,9 +204,9 @@
             borderColor: lineColor,
             backgroundColor: lineColor,
             borderWidth: 2.5,
-            pointRadius: 4,
+            pointRadius: 3,
             pointHoverRadius: 6,
-            tension: 0.15,
+            tension: 0,
             datalabels: {
               display: false
             },
@@ -181,29 +223,31 @@
             top: 16
           }
         },
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+        animation: false,
         interaction: {
           mode: 'index',
           intersect: false
         },
         plugins: {
           ...defaultOpts.plugins,
-          datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
-            formatter: (val, ctx) => {
-              const s = steps[ctx.dataIndex];
-              if (!s) return '';
-              if (s.isTotal) return `${analysis.balances[ctx.dataIndex]} k€`;
-              return `${s.value >= 0 ? '+' : ''}${s.value} k€`;
-            }
-          }),
+          datalabels: { display: false },
           legend: {
             display: true,
             position: 'top',
             align: 'end',
+            onClick: null,
             labels: {
               color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: 12 }
+              font: { family: tokens.fontFamily, size: compact ? 10 : 12 },
+              boxWidth: compact ? 10 : 40,
+              boxHeight: compact ? 10 : 12,
+              padding: compact ? 8 : 10,
+              generateLabels: () => [
+                { text: 'Hausse', fillStyle: posColor, strokeStyle: posColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+                { text: 'Baisse', fillStyle: negColor, strokeStyle: negColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+                { text: compact ? 'Initial / final' : 'Solde initial / final', fillStyle: totalColor, strokeStyle: totalColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+                { text: compact ? 'Cumulé' : 'Solde cumulé', fillStyle: lineColor, strokeStyle: lineColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 2, hidden: false }
+              ]
             }
           },
           tooltip: {
@@ -229,20 +273,25 @@
             grid: { display: false },
             ticks: {
               color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 11 },
-              maxRotation: 25
+              font: { family: tokens.fontFamily, size: compact ? 10 : 11 },
+              maxRotation: 0, autoSkip: false,
+              callback: function(val) {
+                const t = this.getLabelForValue(val);
+                return compact ? wrapTick(t, 7, true).slice(0, 2) : wrapTick(t, 16, false);
+              }
             }
           },
           y: {
             ...defaultOpts.scales.y,
             beginAtZero: true,
-            grace: '12%',
+            ticks: { ...((defaultOpts.scales.y && defaultOpts.scales.y.ticks) || {}), font: { family: tokens.fontMono || tokens.fontFamily, size: compact ? 10 : 11 }, padding: compact ? 4 : 6, maxTicksLimit: compact ? 5 : 8 },
+            grace: compact ? '18%' : '12%',
             grid: { color: tokens.gridColor },
             title: {
               display: true,
               text: 'Solde Net (k€)',
               color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
+              font: { family: tokens.fontFamily, size: compact ? 10 : 12, weight: '500' }, padding: compact ? 2 : 4
             }
           }
         }
