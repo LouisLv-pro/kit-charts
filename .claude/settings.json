@@ -1,0 +1,86 @@
+{
+  "autoCompactWindow": 250000,
+  "permissions": {
+    "allow": [
+      "Bash(npm test:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run format:*)",
+      "Bash(npm run typecheck:*)",
+      "Bash(npm run check:*)",
+      "Bash(npm run snapshots:*)",
+      "Bash(npm run test:render:*)",
+      "Bash(npm run test:cli:*)",
+      "Bash(npm run build:*)",
+      "Bash(node bin/kit-charts.js:*)",
+      "Bash(node test/run-integration-tests.js:*)",
+      "Bash(node test/snapshot-configs.js --check:*)",
+      "Bash(agent-browser:*)",
+      "Bash(python3 -m http.server 8123 --bind 127.0.0.1)",
+      "Bash(gh repo view:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr list:*)",
+      "Bash(gh pr diff:*)",
+      "Bash(gh issue view:*)",
+      "Bash(gh issue list:*)"
+    ],
+    "deny": [
+      "Read(**/.env)",
+      "Read(**/.env.*)",
+      "Edit(**/.env)",
+      "Edit(**/.env.*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git reset --hard:*)",
+      "mcp__claude_ai_Figma",
+      "mcp__claude_ai_Gmail",
+      "mcp__claude_ai_Google_Calendar",
+      "mcp__claude_ai_Google_Drive",
+      "mcp__claude_ai_Notion",
+      "mcp__claude_ai_Vercel",
+      "mcp__fdc0ded8-a170-47cc-b34b-04871db05a18"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-file.js\"",
+            "timeout": 60
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/stop-check.js\"",
+            "timeout": 300
+          }
+        ]
+      }
+    ],
+    "Notification": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "osascript -e 'display notification \"Claude attend ta réponse\" with title \"kit-charts\"'"
+          }
+        ]
+      }
+    ]
+  },
+  "enabledPlugins": {
+    "typescript-lsp@claude-plugins-official": true,
+    "context7@claude-plugins-official": true,
+    "frontend-design@claude-plugins-official": true,
+    "security-guidance@claude-plugins-official": true,
+    "chrome-devtools-mcp@claude-plugins-official": false,
+    "vercel@claude-plugins-official": false
+  }
+}

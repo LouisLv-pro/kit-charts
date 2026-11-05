@@ -58,7 +58,7 @@ function parseNumber(raw) {
   if (typeof raw === 'number') return Number.isFinite(raw) ? raw : undefined;
   let s = String(raw).trim();
   if (s === '' || /^(na|n\/a|null|-|—)$/i.test(s)) return null;
-  s = s.replace(/[\s  ]/g, '').replace(/(%|‰|[a-zA-Z€$£¥°]+)$/u, '').replace(/^[€$£¥]/, '');
+  s = s.replace(/[\s\u00A0\u202F]/g, '').replace(/(%|‰|[a-zA-Z€$£¥°]+)$/u, '').replace(/^[€$£¥]/, '');
   if (!/^[-+]?[\d.,]+$/.test(s)) return undefined;
   const lastComma = s.lastIndexOf(',');
   const lastDot = s.lastIndexOf('.');
@@ -91,7 +91,7 @@ function parseTable(input) {
     input.forEach(r => Object.keys(r).forEach(k => { if (!columns.includes(k)) columns.push(k); }));
     rows = input.map(r => Object.assign({}, r));
   } else {
-    const lines = String(input).replace(/^﻿/, '').split(/\r?\n/).filter(l => l.trim() !== '');
+    const lines = String(input).replace(/^\uFEFF/, '').split(/\r?\n/).filter(l => l.trim() !== '');
     if (lines.length < 2) throw new Error('CSV vide : une ligne d\'en-tête et au moins une ligne de données attendues.');
     const delimiter = detectDelimiter(lines[0]);
     columns = splitCsvLine(lines[0], delimiter);
