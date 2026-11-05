@@ -66,6 +66,56 @@ function generateId(prefix = 'kc') {
   return `${prefix}-${Math.random().toString(36).substring(2, 9)}`;
 }
 
+// Polarité de la spec traduite dans le vocabulaire que lisent les templates (décision 0002).
+const POLARITY_METRIC_TYPE = {
+  HIGHER_IS_BETTER: 'gain',
+  LOWER_IS_BETTER: 'cost',
+  NEUTRAL_CATEGORICAL: 'neutral'
+};
+const POLARITY_FIELD = {
+  HIGHER_IS_BETTER: 'higher-is-better',
+  LOWER_IS_BETTER: 'lower-is-better'
+};
+
+/**
+ * Complète formattedData depuis colorStrategy.metricPolarity, sans rien écraser : metricType à la
+ * racine, metricType des séries qui portent une valence, et `polarity` si le template la lit.
+ * Lignes, nœuds et indicateurs gardent leur propre nature. L'entrée n'est pas modifiée.
+ *
+ * @param {Object} data - formattedData de la spec
+ * @param {string} metricPolarity - HIGHER_IS_BETTER, LOWER_IS_BETTER, TARGET_BASED, NEUTRAL_CATEGORICAL
+ * @param {Object} [opts] - { polarityField: true si le schéma du template déclare `polarity` }
+ * @returns {Object} copie complétée (ou l'entrée telle quelle si rien à compléter)
+ */
+function applyMetricPolarity(data, metricPolarity, opts = {}) {
+  const metricType = POLARITY_METRIC_TYPE[metricPolarity];
+  if (!metricType || !data || typeof data !== 'object' || Array.isArray(data)) return data;
+  const out = Object.assign({}, data);
+  if (out.metricType === undefined) out.metricType = metricType;
+  if (opts.polarityField && out.polarity === undefined && POLARITY_FIELD[metricPolarity]) {
+    out.polarity = POLARITY_FIELD[metricPolarity];
+  }
+  if (Array.isArray(data.datasets)) {
+    out.datasets = data.datasets.map(ds => {
+      const hasValence = ds && (ds.valence !== undefined || Array.isArray(ds.valences) || ds.direction !== undefined);
+      return hasValence && ds.metricType === undefined ? Object.assign({}, ds, { metricType }) : ds;
+    });
+  }
+  return out;
+}
+
+/** Le schéma du template déclare-t-il formattedData.polarity ? */
+function schemaHasPolarity(templateEntry) {
+  if (!templateEntry.paths || !templateEntry.paths.schema) return false;
+  try {
+    const schema = JSON.parse(readFileSafe(templateEntry.paths.schema));
+    const props = (schema.properties && schema.properties.formattedData && schema.properties.formattedData.properties) || schema.properties || {};
+    return Object.prototype.hasOwnProperty.call(props, 'polarity');
+  } catch (e) {
+    return false;
+  }
+}
+
 /**
  * Prépare un graphique : validation, fragment DOM et script d'initialisation.
  * Partagé par la page à un graphique (compileChart) et la page à plusieurs (compilePage).
@@ -74,12 +124,12 @@ function generateId(prefix = 'kc') {
  * @param {Object} [options={}] - { strict, theme (impose le thème, pages multi-graphiques) }
  * @returns {Object} parties du graphique
  */
-function prepareChart(rawSpec, options = {}) {
+function prepareChart(userSpec, options = {}) {
   const registry = loadRegistry();
   const themeModule = loadThemeModule();
 
   // Résolution du template cible
-  const templateId = rawSpec.targetTemplateId || rawSpec.templateId || rawSpec.template || options.template;
+  const templateId = userSpec.targetTemplateId || userSpec.templateId || userSpec.template || options.template;
   if (!templateId) {
     throw new Error('Spécification invalide : aucun "targetTemplateId" spécifié.');
   }
@@ -88,6 +138,16 @@ function prepareChart(rawSpec, options = {}) {
   if (!templateEntry) {
     throw new Error(`Template "${templateId}" non trouvé dans le registre officiel (${registry.templates?.length || 0} templates).`);
   }
+
+  // La polarité de la spec complète les données avant validation et rendu (décision 0002).
+  // Copie : la spec de l'utilisateur (et sa copie spec.json) reste intacte.
+  const metricPolarity = userSpec.colorStrategy?.metricPolarity || userSpec.metricPolarity;
+  const dataKey = userSpec.formattedData ? 'formattedData' : (userSpec.data ? 'data' : null);
+  const rawSpec = metricPolarity && dataKey
+    ? Object.assign({}, userSpec, {
+      [dataKey]: applyMetricPolarity(userSpec[dataKey], metricPolarity, { polarityField: schemaHasPolarity(templateEntry) })
+    })
+    : userSpec;
 
   // Résolution du thème (imposé par la page dans une page à plusieurs graphiques)
   const themeName = options.theme || rawSpec.colorStrategy?.themeName || rawSpec.theme || themeModule.DEFAULT_THEME || 'colorbrewer-accessible';
@@ -780,6 +840,7 @@ Exemples:
 }
 
 module.exports = {
+  applyMetricPolarity,
   compileChart,
   compilePage,
   validatePageSpec,

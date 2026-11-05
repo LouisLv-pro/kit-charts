@@ -2655,6 +2655,30 @@ function hexToRgba(color, alpha = 1) {
  * @param {string} metricType 'gain' (revenue, profit), 'cost' (churn, risk, loss, latency, defect), or 'neutral'/'volume'
  * @returns {string} Resolved CSS color string
  */
+const COST_METRICS = [
+  'cost', 'churn', 'risk', 'loss', 'latency', 'defect', 'defects',
+  'defectrate', 'error', 'errors', 'co2', 'debt', 'expense', 'opex',
+  'cac', 'lowerisbetter', 'incident', 'incidents', 'bouncerate', 'downtime'
+];
+
+const NEUTRAL_METRICS = [
+  'neutral', 'volume', 'descriptive', 'share', 'marketshare',
+  'temperature', 'headcount', 'info'
+];
+
+/**
+ * Nature d'une métrique, telle que la lit getValenceColor : 'cost' (une hausse est défavorable),
+ * 'neutral' (sans jugement) ou 'gain' (une hausse est favorable, défaut).
+ * @param {string} metricType ex. 'gain', 'cost', 'churn', 'latency', 'volume'
+ * @returns {'gain'|'cost'|'neutral'}
+ */
+function getMetricRole(metricType) {
+  const m = String(metricType || 'gain').trim().toLowerCase().replace(/[-_]/g, '');
+  if (NEUTRAL_METRICS.includes(m)) return 'neutral';
+  if (COST_METRICS.includes(m)) return 'cost';
+  return 'gain';
+}
+
 function getValenceColor(tokens, direction = 0, metricType = 'gain') {
   const t = (typeof tokens === 'string' ? getThemeTokens(tokens) : tokens) || getThemeTokens(DEFAULT_THEME);
   const status = t.status || {};
@@ -2682,26 +2706,14 @@ function getValenceColor(tokens, direction = 0, metricType = 'gain') {
     }
   }
 
-  // Normalize metricType
-  const m = String(metricType || 'gain').trim().toLowerCase().replace(/[-_]/g, '');
-
-  const COST_METRICS = [
-    'cost', 'churn', 'risk', 'loss', 'latency', 'defect', 'defects',
-    'defectrate', 'error', 'errors', 'co2', 'debt', 'expense', 'opex',
-    'cac', 'lowerisbetter', 'incident', 'incidents', 'bouncerate', 'downtime'
-  ];
-
-  const NEUTRAL_METRICS = [
-    'neutral', 'volume', 'descriptive', 'share', 'marketshare',
-    'temperature', 'headcount', 'info'
-  ];
+  const metricRole = getMetricRole(metricType);
 
   let role = 'neutral';
-  if (NEUTRAL_METRICS.includes(m)) {
+  if (metricRole === 'neutral') {
     if (dir === 'up') role = 'info';
     else if (dir === 'down') role = 'neutral';
     else role = 'neutral';
-  } else if (COST_METRICS.includes(m)) {
+  } else if (metricRole === 'cost') {
     // Inverted polarity: up is danger, down is success
     if (dir === 'up') role = 'danger';
     else if (dir === 'down') role = 'success';
@@ -4260,6 +4272,7 @@ const KitChartsTheme = {
   getSemanticColor,
   getSequentialColor,
   getValenceColor,
+  getMetricRole,
   getEmphasisStyle,
   getThresholdStatus,
   resolveThresholds,
@@ -4341,6 +4354,7 @@ if (typeof window !== 'undefined') {
   window.getSemanticColor = getSemanticColor;
   window.getSequentialColor = getSequentialColor;
   window.getValenceColor = getValenceColor;
+  window.getMetricRole = getMetricRole;
   window.getEmphasisStyle = getEmphasisStyle;
   window.getThresholdStatus = getThresholdStatus;
   window.resolveThresholds = resolveThresholds;
@@ -4426,6 +4440,7 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.getSemanticColor = getSemanticColor;
   module.exports.getSequentialColor = getSequentialColor;
   module.exports.getValenceColor = getValenceColor;
+  module.exports.getMetricRole = getMetricRole;
   module.exports.getEmphasisStyle = getEmphasisStyle;
   module.exports.getThresholdStatus = getThresholdStatus;
   module.exports.resolveThresholds = resolveThresholds;
