@@ -122,6 +122,7 @@ affichées n'ont pas de suffixe : l'unité doit être dans le sous-titre ou le n
 | `PIE_DONUT_MAX_SLICES` trop de tranches (registre : pie 3, doughnut 4) | `bar-chart-horizontal` trié ou `treemap` |
 | `DATALABELS_OVERCROWDING` étiquettes avec N > 12 | `--no-labels`, détail dans l'infobulle |
 | `VALENCE_POLARITY_MISMATCH` | Corriger `--polarity`, jamais les couleurs à la main |
+| `METRIC_POLARITY_CONFLICT` | Retirer `metricType` ou `polarity` des données : `--polarity` les complète |
 | `WCAG_CONTRAST_*` | Changer de thème (`--theme`) |
 | `SCHEMA_FORMATTED_DATA` | Reprendre la forme de `kit-charts describe <id>` ; le message donne le chemin fautif |
 | `DATA_LENGTH_MISMATCH` | Une valeur par catégorie, `null` si manquante |

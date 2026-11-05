@@ -909,13 +909,103 @@ assert(meaningIds.includes('TITLE_IS_TOPIC') && !meaningIds.includes('MISSING_UN
   `HTML compilé : TITLE_IS_TOPIC lu dans layout.title, unité lue dans layout.subtitle (avertissements : ${meaningIds.join(', ') || 'aucun'})`);
 
 // ----------------------------------------------------------------------------
+// BLOC 15 : La polarité de la spec décide des couleurs (docs/specs/themes-et-polarite.md,
+// décision 0002). Même hausse, polarité inverse : couleur de variation inverse.
+// ----------------------------------------------------------------------------
+console.log('\n🔹 Bloc 15 : metricPolarity décide des couleurs de variation');
+const { applyMetricPolarity } = require('../.agents/skills/kit-charts/scripts/compile-chart.js');
+const polTokens = themeTokens.getThemeTokens('colorbrewer-accessible');
+const UP_GOOD = themeTokens.getValenceColor(polTokens, 1, 'gain');
+const UP_BAD = themeTokens.getValenceColor(polTokens, 1, 'cost');
+assert(UP_GOOD !== UP_BAD, `Le thème distingue hausse favorable (${UP_GOOD}) et défavorable (${UP_BAD})`);
+
+if (typeof applyMetricPolarity !== 'function') {
+  assert(false, 'compile-chart.js exporte applyMetricPolarity');
+} else {
+  // 15.1 Complète seulement ce qui manque, sans toucher l'entrée.
+  const input = {
+    value: 74, delta: 12,
+    datasets: [{ data: [1, 2], valences: [1, -1] }, { data: [3] }, { data: [4], valence: 1, metricType: 'gain' }]
+  };
+  const before = JSON.stringify(input);
+  const low = applyMetricPolarity(input, 'LOWER_IS_BETTER');
+  const fillFaults = [];
+  if (low.metricType !== 'cost') fillFaults.push(`racine=${low.metricType}`);
+  if (low.datasets[0].metricType !== 'cost') fillFaults.push(`série à valences=${low.datasets[0].metricType}`);
+  if ('metricType' in low.datasets[1]) fillFaults.push('série sans valence complétée');
+  if (low.datasets[2].metricType !== 'gain') fillFaults.push('valeur écrite remplacée');
+  if (JSON.stringify(input) !== before) fillFaults.push('entrée modifiée');
+  if (applyMetricPolarity({ delta: 1 }, 'HIGHER_IS_BETTER').metricType !== 'gain') fillFaults.push('HIGHER_IS_BETTER ≠ gain');
+  if (applyMetricPolarity({ delta: 1 }, 'NEUTRAL_CATEGORICAL').metricType !== 'neutral') fillFaults.push('NEUTRAL_CATEGORICAL ≠ neutral');
+  if ('metricType' in applyMetricPolarity({ delta: 1 }, 'TARGET_BASED')) fillFaults.push('TARGET_BASED a complété');
+  assert(fillFaults.length === 0, `applyMetricPolarity complète racine et séries à valence, rien d'autre${fillFaults.length ? ' | ' + fillFaults.join(' | ') : ''}`);
+
+  // 15.2 Couleur émise par les templates, même hausse, deux polarités.
+  const kpiMod = require('../template/00-kpi-card/kpi-standard/template.js');
+  const barMod = require('../template/01-comparaison/bar-chart-vertical/template.js');
+  const polCanvas = () => ({ width: 800, height: 400, getContext: () => new Proxy({}, { get: (t, p) => (p === 'canvas' ? {} : () => ({ addColorStop() {} })) }) });
+  const colorFaults = [];
+  for (const [pol, expected, other] of [['HIGHER_IS_BETTER', UP_GOOD, UP_BAD], ['LOWER_IS_BETTER', UP_BAD, UP_GOOD]]) {
+    const el = { innerHTML: '' };
+    kpiMod.renderCard(el, applyMetricPolarity({ title: 'Facture cloud', value: 74, unit: 'k€', delta: 12 }, pol), 'colorbrewer-accessible');
+    if (!el.innerHTML.includes(expected) || el.innerHTML.includes(other)) colorFaults.push(`kpi-standard sous ${pol}`);
+    const bar = barMod.createChart(polCanvas(), applyMetricPolarity({ labels: ['T1', 'T2'], datasets: [{ label: 'Coûts', data: [5, 6], valences: [1, 1] }] }, pol), 'colorbrewer-accessible', {});
+    const bg = bar && bar.data && bar.data.datasets[0].backgroundColor;
+    if (!Array.isArray(bg) || bg[0] !== expected) colorFaults.push(`bar-chart-vertical sous ${pol} (reçu ${JSON.stringify(bg)})`);
+  }
+  assert(colorFaults.length === 0, `Hausse en couleur favorable sous HIGHER_IS_BETTER, défavorable sous LOWER_IS_BETTER${colorFaults.length ? ' | ' + colorFaults.join(' | ') : ''}`);
+}
+
+// 15.3 Page compilée : données complétées, spec.json de l'utilisateur intacte.
+const polDir = path.join(OUTPUT_DIR, 'e2e-polarity');
+fs.rmSync(polDir, { recursive: true, force: true });
+const costSpec = {
+  targetTemplateId: 'kpi-standard',
+  layout: { title: 'La facture cloud a pris 12 % en un an', subtitle: 'Décembre 2024, en k€' },
+  colorStrategy: { themeName: 'colorbrewer-accessible', metricPolarity: 'LOWER_IS_BETTER' },
+  formattedData: { title: 'Facture cloud', value: 74, unit: 'k€', delta: 12 }
+};
+let costRes;
+try {
+  costRes = compileChart(costSpec, { output: path.join(polDir, 'cout', 'index.html'), strict: true });
+} catch (e) {
+  costRes = { error: e.message };
+}
+const costJson = costRes && costRes.outputPath ? fs.readFileSync(path.join(path.dirname(costRes.outputPath), 'spec.json'), 'utf8') : '';
+assert(Boolean(costRes && costRes.html && /"metricType":\s*"cost"/.test(costRes.html)) && !costJson.includes('metricType') && !('metricType' in costSpec.formattedData),
+  `Page LOWER_IS_BETTER : metricType "cost" sérialisé, spec.json et objet d'entrée intacts${costRes && costRes.error ? ' | ' + costRes.error : ''}`);
+
+// 15.4 kpi-status-alert : la polarité de la spec suffit.
+const alertMod = require('../template/00-kpi-card/kpi-status-alert/template.js');
+const alertData = Object.assign({}, alertMod.DEFAULT_DATA);
+const alertPol = alertData.polarity === 'higher-is-better' ? 'HIGHER_IS_BETTER' : 'LOWER_IS_BETTER';
+delete alertData.polarity;
+let alertRes;
+try {
+  alertRes = compileChart({ targetTemplateId: 'kpi-status-alert', colorStrategy: { metricPolarity: alertPol }, formattedData: alertData },
+    { output: path.join(polDir, 'alerte', 'index.html'), strict: true });
+} catch (e) {
+  alertRes = { error: e.message.split('\n').slice(0, 2).join(' ') };
+}
+assert(Boolean(alertRes && alertRes.success), `kpi-status-alert sans polarity dans ses données compile avec ${alertPol}${alertRes && alertRes.error ? ' | ' + alertRes.error : ''}`);
+
+// 15.5 Contradiction refusée par le CLI : exit 1, règle citée, rien d'écrit.
+fs.mkdirSync(polDir, { recursive: true });
+const conflictSpec = path.join(polDir, 'conflit.json');
+fs.writeFileSync(conflictSpec, JSON.stringify(Object.assign({}, costSpec, { formattedData: Object.assign({}, costSpec.formattedData, { metricType: 'gain' }) })));
+const conflictOut = path.join(polDir, 'conflit', 'index.html');
+const conflictRun = spawnSync('node', [COMPILE_CLI, conflictSpec, '-o', conflictOut], { encoding: 'utf8' });
+assert(conflictRun.status === 1 && !fs.existsSync(conflictOut) && conflictRun.stderr.includes('METRIC_POLARITY_CONFLICT'),
+  `LOWER_IS_BETTER avec metricType "gain" refusé : exit ${conflictRun.status}, fichier écrit=${fs.existsSync(conflictOut)}, règle citée=${conflictRun.stderr.includes('METRIC_POLARITY_CONFLICT')}`);
+
+// ----------------------------------------------------------------------------
 // BLOC 8 : Nettoyage Déterministe des Artefacts de Test
 // ----------------------------------------------------------------------------
 try {
   const testSubdirs = [
     'e2e-kpi-standard', 'e2e-bar-vertical', 'e2e-box-plot',
     'e2e-bullet', 'e2e-multi-line', 'e2e-bar-horiz',
-    'e2e-choropleth', 'e2e-treemap', 'e2e-cli', 'e2e-schema', 'e2e-meaning'
+    'e2e-choropleth', 'e2e-treemap', 'e2e-cli', 'e2e-schema', 'e2e-meaning', 'e2e-polarity'
   ];
   testSubdirs.forEach(sub => {
     const subPath = path.join(OUTPUT_DIR, sub);

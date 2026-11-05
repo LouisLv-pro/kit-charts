@@ -684,6 +684,32 @@ function validateChartSpec(spec, options = {}) {
       });
     }
 
+    // Contradiction entre la polarité de la spec et la nature écrite dans les données
+    // (décision 0002) : l'une des deux est fausse, seul l'auteur sait laquelle.
+    const expectedRole = { HIGHER_IS_BETTER: 'gain', LOWER_IS_BETTER: 'cost', NEUTRAL_CATEGORICAL: 'neutral' }[metricPolarity];
+    const getMetricRole = getThemeTokensModule()?.getMetricRole;
+    if (expectedRole && typeof getMetricRole === 'function' && formattedData && typeof formattedData === 'object') {
+      const declared = [];
+      if (formattedData.metricType !== undefined) declared.push(['formattedData.metricType', formattedData.metricType]);
+      (Array.isArray(formattedData.datasets) ? formattedData.datasets : []).forEach((ds, i) => {
+        if (ds && ds.metricType !== undefined) declared.push([`formattedData.datasets[${i}].metricType`, ds.metricType]);
+      });
+      const fieldPolarity = { 'higher-is-better': 'gain', 'lower-is-better': 'cost' }[formattedData.polarity];
+      const conflicts = declared
+        .filter(([, value]) => getMetricRole(value) !== expectedRole)
+        .map(([at, value]) => `${at} = '${value}'`);
+      if (fieldPolarity && fieldPolarity !== expectedRole) conflicts.push(`formattedData.polarity = '${formattedData.polarity}'`);
+      if (conflicts.length > 0) {
+        errors.push({
+          ruleId: 'METRIC_POLARITY_CONFLICT',
+          category: 'Valence Semantics',
+          severity: 'ERROR',
+          message: `metricPolarity ${metricPolarity} contredit les données : ${conflicts.join(', ')}.`,
+          suggestion: `Garder une seule source : retirer ces champs (la polarité de la spec les complète), ou corriger metricPolarity si c'est elle qui est fausse.`
+        });
+      }
+    }
+
     // Vérification de cohérence delta vs couleur si des métriques explicites sont fournies
     if (typeof spec.delta === 'number' && spec.deltaColor) {
       const isPositiveDelta = spec.delta > 0;
