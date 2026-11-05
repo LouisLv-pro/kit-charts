@@ -127,18 +127,23 @@
       return w > 0 ? w < 460 : null;
     };
     let compact = measureCompact() === true;
-    // Retour à la ligne des libellés d'axe : 2 lignes de `max` caractères (abrégé en carte étroite)
-    const wrapTick = (text, max, abbreviate) => {
-      const src = abbreviate ? String(text).replace(/\s*\(.*?\)\s*/g, ' ').trim() : String(text);
-      const words = src.split(/\s+/);
-      const cut = (w) => (abbreviate && w.length > max ? w.slice(0, max - 1) + '.' : w);
+    // Libellés d'axe ajustés à la largeur d'une colonne : retour à la ligne par mots ; un mot trop
+    // long pour la colonne est abrégé (« Désabo. »), jamais sous 3 lettres. `measure` donne la
+    // largeur en pixels d'un texte, `slot` la place disponible.
+    const fitTick = (text, slot, measure, maxLines) => {
+      const shorten = (w) => {
+        if (measure(w) <= slot) return w;
+        let k = w.length - 1;
+        while (k > 3 && measure(w.slice(0, k) + '.') > slot) k--;
+        return w.slice(0, k) + '.';
+      };
       const lines = [];
-      words.forEach((w) => {
+      String(text).split(/\s+/).filter(Boolean).map(shorten).forEach((w) => {
         const last = lines[lines.length - 1];
-        if (last && (last + ' ' + w).length <= max) lines[lines.length - 1] = last + ' ' + w;
+        if (last && measure(last + ' ' + w) <= slot) lines[lines.length - 1] = last + ' ' + w;
         else lines.push(w);
       });
-      return lines.map(cut);
+      return maxLines ? lines.slice(0, maxLines) : lines;
     };
     const nf = (v) => new Intl.NumberFormat('fr-FR').format(v);
 
@@ -248,8 +253,18 @@
             font: { family: tokens.fontFamily, size: compact ? 10 : 11 },
             maxRotation: 0, autoSkip: false,
             callback: function(val) {
-              const t = this.getLabelForValue(val);
-              return compact ? wrapTick(t, 7, true).slice(0, 2) : wrapTick(t, 16, false);
+              const t = String(this.getLabelForValue(val));
+              // Carte étroite : précisions entre parenthèses retirées, 2 lignes au plus
+              const text = compact ? t.replace(/\s*\(.*?\)\s*/g, ' ').trim() : t;
+              const size = compact ? 10 : 11;
+              const ctx = this.ctx;
+              const count = (this.ticks && this.ticks.length) || labels.length || 1;
+              // Place d'une colonne moins 6 px d'écart entre voisins ; largeur inconnue : pas d'abréviation
+              const slot = this.width > 0 ? this.width / count - 6 : Infinity;
+              const measure = (ctx && typeof ctx.measureText === 'function')
+                ? (str) => { ctx.save(); ctx.font = `${size}px ${tokens.fontFamily}`; const w = ctx.measureText(str).width; ctx.restore(); return w; }
+                : (str) => str.length * size * 0.55;
+              return fitTick(text, slot, measure, compact ? 2 : 0);
             }
           }
         },

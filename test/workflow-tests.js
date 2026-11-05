@@ -105,6 +105,14 @@ try {
   check(blocked.code === 1 && /PIE_DONUT_MAX_SLICES|SCHEMA_FORMATTED_DATA/.test(blocked.out) && !fs.existsSync(path.join(tmp, 'output/camembert/index.html')) && fs.existsSync(path.join(tmp, 'output/camembert/spec.json')),
     `make sur une spec non conforme : exit 1, règle citée, pas de page, spec gardée pour update (exit ${blocked.code})`);
 
+  // Trop peu de points pour une corrélation : le refus dit le nombre requis et propose la comparaison,
+  // pas l'agrégation (conseil réservé aux données trop nombreuses).
+  const fewPoints = write('pib.csv', 'pays,pib,vie\nFrance,44,82\nItalie,35,83\nEspagne,30,83\nGrèce,20,81\n');
+  const few = cli(['make', fewPoints, '--intent', 'correlation', '--x', 'pib', '--y', 'vie', '--label', 'pays', '--title', 'Le PIB va avec la longévité', '--polarity', 'NEUTRAL_CATEGORICAL', '--no-check', '-o', 'output/peu']);
+  const fewHint = (few.out.match(/^piste : (.*)$/m) || [])[1] || '';
+  check(few.code === 1 && /4 points/.test(fewHint) && /5 au moins/.test(fewHint) && /--intent comparison/.test(fewHint) && !/Agréger/.test(fewHint),
+    `make corrélation sur 4 points : refus qui donne le minimum (5) et propose la comparaison (piste : ${fewHint})`);
+
   const kpi = write('kpi.json', JSON.stringify({ value: 148500, unit: '€', delta: 12.4, deltaLabel: 'vs octobre' }));
   const kpiMade = cli(['make', kpi, '--title', 'MRR de novembre', '--polarity', 'HIGHER_IS_BETTER', '--no-check', '-o', 'output/kpi']);
   check(kpiMade.code === 0 && readJson('output/kpi/spec.json').targetTemplateId === 'kpi-standard' && readJson('output/kpi/spec.json').formattedData.title === 'MRR de novembre',

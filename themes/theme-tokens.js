@@ -2192,9 +2192,10 @@ function animateSeriesBuildup(chart, options = {}) {
  * Pas d'écoute window.resize : l'observateur vit et meurt avec le conteneur.
  *
  * @param {HTMLElement} el Conteneur observé
- * @param {Function} measureCompact () => boolean|null (null : largeur inconnue, élément masqué)
- * @param {boolean} initialCompact État compact du premier rendu
- * @param {Function} onFlip (compact: boolean) => void
+ * @param {Function} measureCompact () => boolean|string|null (état compact ou nom de niveau ;
+ *   null : largeur inconnue, élément masqué)
+ * @param {boolean|string|null} initialCompact État du premier rendu
+ * @param {Function} onFlip (état: boolean|string) => void
  * @returns {Function} disconnect, à appeler dans destroy()
  */
 function observeCompactWidth(el, measureCompact, initialCompact, onFlip) {
@@ -2204,7 +2205,8 @@ function observeCompactWidth(el, measureCompact, initialCompact, onFlip) {
   if (el[KEY]) {
     try { el[KEY].disconnect(); } catch (e) { /* déjà libéré */ }
   }
-  let current = Boolean(initialCompact);
+  // État comparé tel quel : booléen (compact ou non) ou nom de niveau ('full', 'compact', 'narrow')
+  let current = initialCompact;
   let frame = 0;
   // Re-rendu différé d'une image : modifier le contenu dans le rappel même changerait la hauteur
   // observée et déclencherait « ResizeObserver loop completed » (même parade que Chart.js).
@@ -2215,7 +2217,7 @@ function observeCompactWidth(el, measureCompact, initialCompact, onFlip) {
       frame = 0;
       const next = measureCompact();
       if (next === null || next === undefined || next === current) return;
-      current = Boolean(next);
+      current = next;
       onFlip(current);
     });
   });

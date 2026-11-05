@@ -70,6 +70,7 @@ kit-charts check output/<slug>/index.html
 npm test             # intégration, parcours make, snapshots --check, benchmark tokens --assert
 npm run test:render  # rendu réel des 73 templates (Chrome + réseau)
 npm run test:export  # PNG, SVG, PDF (Chrome, pages hors ligne)
+npm run test:narrow  # petits écrans : libellés séparés, tableaux sans débordement (Chrome)
 npm run test:cli     # paquet installé
 npm run bench        # coût en tokens, pas à pas contre make, sur les 9 cas d'eval
 

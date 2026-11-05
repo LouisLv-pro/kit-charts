@@ -169,6 +169,7 @@ npm run build        # régénère catalog-bundle.js à partir des modèles
 npm test             # tests d'intégration, commande make, configurations de référence, mesure des tokens
 npm run test:render  # affiche les 73 modèles dans Chrome (connexion internet requise)
 npm run test:export  # export PNG, SVG et PDF dans Chrome (sans réseau)
+npm run test:narrow  # lisibilité sur téléphone et tablette dans Chrome (sans réseau)
 npm run test:cli     # installe le paquet et teste toutes les commandes
 npm run bench        # compare le coût en tokens : pas à pas contre make
 ```

@@ -828,6 +828,8 @@
     }
 
     .chart-card {
+      /* Élément de grille : sans min-width 0, un tableau large élargit la carte au-delà de sa colonne */
+      min-width: 0;
       background: var(--surface);
       border: 1px solid var(--border);
       border-radius: var(--radius-lg);
@@ -1241,7 +1243,7 @@
         padding: 0 1rem 3rem 1rem;
       }
       .gallery-grid {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
       }
       .toolbar-sticky {
         top: 70px;
