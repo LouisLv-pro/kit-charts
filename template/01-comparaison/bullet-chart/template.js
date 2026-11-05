@@ -40,6 +40,7 @@
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const getContrastingTextColor = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) || (typeof window !== 'undefined' && window.getContrastingTextColor) || function() { return '#FFFFFF'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -187,11 +188,71 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   const chartData = { labels, datasets };
 
+  // Étiquette de valeur de la mesure, posée par le template (le plugin commun place toujours
+  // le texte 8 px après la barre, même quand le trait de cible s'y trouve).
+  // Règle : à droite de la barre ; si le trait de cible tombe dans la zone du texte, le texte
+  // passe de l'autre côté du trait ; faute de place à droite, il rentre dans la barre.
+  const measureIdx = datasets.findIndex(d => d.type === 'bar' && d.order === 1);
+  const targetIdx = datasets.findIndex(d => d.type === 'scatter');
+  const labelFont = `600 11px ${tokens.fontMono || 'monospace'}`;
+  const labelColor = isDark ? '#ECEFF4' : '#0F172A';
+  const nfLabel = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
+  const valueLabelsPlugin = {
+    id: 'bulletValueLabels',
+    afterDatasetsDraw(chart) {
+      if (!showDataLabels || measureIdx < 0) return;
+      const area = chart.chartArea;
+      const meta = chart.getDatasetMeta(measureIdx);
+      if (!area || !meta || meta.hidden || !chart.isDatasetVisible(measureIdx)) return;
+      const tMeta = targetIdx >= 0 && chart.isDatasetVisible(targetIdx) ? chart.getDatasetMeta(targetIdx) : null;
+      const ds = chart.data.datasets[measureIdx];
+      const ctx = chart.ctx;
+      const GAP = 8;      // écart entre la barre (ou le trait) et le texte
+      const CLEAR = 6;    // demi-largeur protégée autour du trait de cible (trait de 3 px + marge)
+      ctx.save();
+      ctx.font = labelFont;
+      ctx.textBaseline = 'middle';
+      meta.data.forEach((el, i) => {
+        const raw = ds.data[i];
+        const v = typeof raw === 'object' && raw !== null ? (raw.x ?? raw.value) : raw;
+        if (!el || typeof v !== 'number' || !Number.isFinite(v)) return;
+        const p = el.getProps ? el.getProps(['x', 'y', 'base'], true) : el;
+        const barLeft = Math.min(p.base, p.x);
+        const barRight = Math.max(p.base, p.x);
+        const text = nfLabel.format(v);
+        const tw = ctx.measureText(text).width;
+        const tp = tMeta && tMeta.data && tMeta.data[i];
+        const tx = tp && Number.isFinite(tp.x) ? tp.x : null;
+        const hitsTarget = (x0) => tx !== null && x0 < tx + CLEAR && x0 + tw > tx - CLEAR;
+        const maxRight = chart.width - 2;
+        let x0 = barRight + GAP;
+        let color = labelColor;
+        if (hitsTarget(x0)) x0 = tx + CLEAR + GAP / 2;
+        if (x0 + tw > maxRight) {
+          // Pas de place à droite : dans la barre, calé avant la cible si elle y tombe
+          const end = (tx !== null && tx < barRight ? tx - CLEAR : barRight) - GAP / 2;
+          if (end - tw >= barLeft + 4) {
+            x0 = end - tw;
+            const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
+            color = getContrastingTextColor(bg);
+          } else {
+            x0 = Math.max(area.left, maxRight - tw);
+          }
+        }
+        ctx.fillStyle = color;
+        ctx.textAlign = 'left';
+        ctx.fillText(text, x0, p.y);
+      });
+      ctx.restore();
+    }
+  };
+
   // Options Chart.js v4+
   const defaultOpts = getChartDefaultOptions(tokens);
   const config = {
     type: 'bar',
     data: chartData,
+    plugins: [valueLabelsPlugin],
     options: {
       ...defaultOpts,
       indexAxis: 'y', // Orientation horizontale Stephen Few
@@ -211,8 +272,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       barPercentage: 0.9,
       plugins: {
         ...defaultOpts.plugins,
+        // Plugin commun désactivé : l'étiquette est posée par bulletValueLabels (évitement de la cible)
         datalabels: getDataLabelOptions(tokens, {
-          display: showDataLabels,
+          display: false,
           anchor: 'end',
           align: 'right',
           offset: 8,

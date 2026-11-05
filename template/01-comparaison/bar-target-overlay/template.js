@@ -23,6 +23,7 @@
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
@@ -120,8 +121,12 @@
 
     const analysis = computeVarianceDeltas(actuals, targets);
     // Carte étroite (< 420 px) : polices réduites, étiquettes compactes, légende courte.
-    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
-    const narrow = cw > 0 && cw < 420;
+    // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+    const measureNarrow = () => {
+      const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+      return cw > 0 ? cw < 420 : null;
+    };
+    let narrow = measureNarrow() === true;
 
     const successColor = tokens.semantic?.positive || tokens.status?.success || '#2E7D32';
     const warningColor = tokens.semantic?.warning || tokens.status?.warning || '#EF6C00';
@@ -179,6 +184,86 @@
     const showLabels = showDataLabels;
 
     const defaultOpts = getChartDefaultOptions(tokens);
+    // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+    const buildOptions = () => ({
+      ...defaultOpts,
+      indexAxis: 'y',
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      layout: {
+        padding: {
+          right: narrow ? 66 : 120 // place pour l'étiquette valeur + écart de la barre la plus longue
+        }
+      },
+      animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        ...defaultOpts.plugins,
+        datalabels: getDataLabelOptions(tokens, {
+          display: showDataLabels
+        }),
+        legend: {
+          display: true,
+          position: 'top',
+          align: narrow ? 'start' : 'end',
+          onClick: null,
+          labels: {
+            usePointStyle: true,
+            boxWidth: narrow ? 8 : 12,
+            boxHeight: narrow ? 8 : 12,
+            padding: narrow ? 8 : 10,
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 11, weight: '500' },
+            generateLabels: () => ([
+              { text: 'Objectif', fillStyle: targetMarkerColor, strokeStyle: targetMarkerColor, lineWidth: 3, pointStyle: 'line', rotation: 90, fontColor: tokens.textPrimary, hidden: false },
+              { text: narrow ? 'Atteint' : 'Objectif atteint', fillStyle: successColor, strokeStyle: successColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
+              { text: narrow ? 'Écart ≤ 10 %' : 'Écart jusqu\'à -10 %', fillStyle: warningColor, strokeStyle: warningColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
+              { text: narrow ? 'Écart > 10 %' : 'Écart pire que -10 %', fillStyle: dangerColor, strokeStyle: dangerColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false }
+            ])
+          }
+        },
+        tooltip: {
+          ...defaultOpts.plugins.tooltip,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (ctx) => {
+              const item = analysis[ctx.dataIndex];
+              if (!item) return '';
+              const sign = item.delta >= 0 ? '+' : '';
+              return [
+                `Réalisé : ${item.actual.toLocaleString('fr-FR')} k€`,
+                `Objectif : ${item.target.toLocaleString('fr-FR')} k€`,
+                `Écart : ${sign}${item.delta.toLocaleString('fr-FR')} k€ (${sign}${item.deltaPct}%)`
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ...defaultOpts.scales.x,
+          beginAtZero: true,
+          grace: '25%',
+          grid: { color: tokens.gridColor },
+          ticks: { ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks), maxTicksLimit: narrow ? 5 : 8, font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
+          title: {
+            display: !narrow,
+            text: 'Montant (k€)',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          }
+        },
+        y: {
+          ...defaultOpts.scales.y,
+          ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
+          grid: { display: false }
+        }
+      }
+    });
+
     const config = {
       type: 'bar',
       data: {
@@ -204,85 +289,11 @@
           }
         ]
       },
-      options: {
-        ...defaultOpts,
-        indexAxis: 'y',
-        _kitChartsTokens: tokens,
-        showDataLabels: showDataLabels,
-        layout: {
-          padding: {
-            right: narrow ? 66 : 120 // place pour l'étiquette valeur + écart de la barre la plus longue
-          }
-        },
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        plugins: {
-          ...defaultOpts.plugins,
-          datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels
-          }),
-          legend: {
-            display: true,
-            position: 'top',
-            align: narrow ? 'start' : 'end',
-            onClick: null,
-            labels: {
-              usePointStyle: true,
-              boxWidth: narrow ? 8 : 12,
-              boxHeight: narrow ? 8 : 12,
-              padding: narrow ? 8 : 10,
-              color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 11, weight: '500' },
-              generateLabels: () => ([
-                { text: 'Objectif', fillStyle: targetMarkerColor, strokeStyle: targetMarkerColor, lineWidth: 3, pointStyle: 'line', rotation: 90, fontColor: tokens.textPrimary, hidden: false },
-                { text: narrow ? 'Atteint' : 'Objectif atteint', fillStyle: successColor, strokeStyle: successColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
-                { text: narrow ? 'Écart ≤ 10 %' : 'Écart jusqu\'à -10 %', fillStyle: warningColor, strokeStyle: warningColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
-                { text: narrow ? 'Écart > 10 %' : 'Écart pire que -10 %', fillStyle: dangerColor, strokeStyle: dangerColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false }
-              ])
-            }
-          },
-          tooltip: {
-            ...defaultOpts.plugins.tooltip,
-            callbacks: {
-              title: (items) => items[0].label,
-              label: (ctx) => {
-                const item = analysis[ctx.dataIndex];
-                if (!item) return '';
-                const sign = item.delta >= 0 ? '+' : '';
-                return [
-                  `Réalisé : ${item.actual.toLocaleString('fr-FR')} k€`,
-                  `Objectif : ${item.target.toLocaleString('fr-FR')} k€`,
-                  `Écart : ${sign}${item.delta.toLocaleString('fr-FR')} k€ (${sign}${item.deltaPct}%)`
-                ];
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            ...defaultOpts.scales.x,
-            beginAtZero: true,
-            grace: '25%',
-            grid: { color: tokens.gridColor },
-            ticks: { ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks), maxTicksLimit: narrow ? 5 : 8, font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
-            title: {
-              display: !narrow,
-              text: 'Montant (k€)',
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
-            }
-          },
-          y: {
-            ...defaultOpts.scales.y,
-            ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
-            grid: { display: false }
-          }
-        }
-      },
-      plugins: [targetOverlayPlugin]
+      options: buildOptions(),
+      plugins: [createCompactResizePlugin(measureNarrow, narrow, (next, chart) => {
+        narrow = next;
+        chart.options = buildOptions();
+      }), targetOverlayPlugin]
     };
 
     if (typeof Chart === 'undefined') return Object.assign(config, { analysis, computeVarianceDeltas });

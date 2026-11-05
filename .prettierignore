@@ -8,6 +8,8 @@ package-lock.json
 eslint-suppressions.json
 catalog-bundle.js
 test/__snapshots__/
+# Fixtures du benchmark de tokens : leur taille exacte est mesurée.
+test/fixtures/
 .agents/skills/kit-charts/registry.json
 themes/world-atlas-110m.json
 

@@ -75,6 +75,15 @@ if (findChrome()) {
   console.log('  ⏭️  check sauté : Chrome introuvable (CHROME_PATH)');
 }
 
+// Parcours en un appel depuis le paquet installé : CSV -> page hors ligne (copies vendor/ du paquet).
+fs.writeFileSync(path.join(project, 'ventes.csv'), 'region;CA (k€)\nParis;120\nLyon;140\nLille;80\n');
+const made = run(bin, ['make', 'ventes.csv', '--title', 'Lyon dépasse Paris', '--subtitle', 'CA 2026, en k€', '--polarity', 'HIGHER_IS_BETTER',
+  '--offline', '-o', 'output/ventes', ...(findChrome() ? ['--export', 'png'] : ['--no-check'])], project);
+const madePage = path.join(project, 'output/ventes/index.html');
+check(made.status === 0 && fs.existsSync(madePage) && !/<script src="https:/.test(fs.readFileSync(madePage, 'utf8')),
+  `make --offline depuis le paquet installé : page sans dépendance réseau (exit ${made.status}${made.status ? ' : ' + made.stdout.trim() : ''})`);
+if (findChrome()) check(fs.existsSync(path.join(project, 'output/ventes/index.png')), 'make --export png depuis le paquet installé');
+
 const skill = run(bin, ['install-skill'], project);
 check(skill.status === 0 && fs.existsSync(path.join(project, '.claude/skills/kit-charts/SKILL.md')) && fs.existsSync(path.join(project, '.claude/agents/dataviz.md')),
   'install-skill copie le skill et l\'agent dans .claude/ du projet');

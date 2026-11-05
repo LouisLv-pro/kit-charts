@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
@@ -173,8 +174,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   });
 
   const total = levels[0] ? levels[0].data.reduce((a, b) => a + b, 0) : 0;
-  const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
-  const narrow = cw > 0 && cw < 420;
+  // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+  const measureNarrow = () => {
+    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+    return cw > 0 ? cw < 420 : null;
+  };
+  let narrow = measureNarrow() === true;
 
   // Étiquettes d'arcs locales : anneau extérieur = nom (sur 1 ou 2 lignes) + part quand l'arc est
   // assez grand, sinon la part seule ; anneaux intérieurs = part seule (noms en légende).
@@ -255,79 +260,85 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   // Options Chart.js v4+ avec capture de partition multi-niveaux
   const defaultOpts = getChartDefaultOptions(tokens);
-  const config = {
-    type: 'doughnut',
-    data: chartData,
-    plugins: [sunburstLabelsPlugin],
-    options: {
-      ...defaultOpts,
-      scales: {}, // AUCUN AXE CARTÉSIEN (après defaultOpts pour ne pas être écrasé)
-      cutout: 0, // Pas de trou central : la racine est le disque le plus interne
-      rotation: -90, // Départ à 12h
-      animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
-      interaction: {
-        mode: 'nearest',
-        intersect: true,
-        axis: 'xy'
-      },
-      hover: {
-        mode: 'nearest',
-        intersect: true,
-        animationDuration: (isTufte || isReducedMotionPreferred()) ? 0 : 120
-      },
-      plugins: {
-        ...defaultOpts.plugins,
-        // Étiquettes dessinées par kitChartsSunburstLabels (nom + part selon la place disponible)
-        datalabels: getDataLabelOptions(tokens, { display: () => false }),
-        legend: {
-          ...defaultOpts.plugins.legend,
-          display: !isTufte,
-          position: 'right',
-          align: 'center',
-          labels: {
-            color: tokens.textPrimary,
-            font: { family: tokens.fontFamily, size: narrow ? 11 : 12, weight: '500' },
-            boxWidth: narrow ? 8 : 12,
-            padding: narrow ? 8 : 12,
-            usePointStyle: true,
+  // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+  const buildOptions = () => ({
+    ...defaultOpts,
+    scales: {}, // AUCUN AXE CARTÉSIEN (après defaultOpts pour ne pas être écrasé)
+    cutout: 0, // Pas de trou central : la racine est le disque le plus interne
+    rotation: -90, // Départ à 12h
+    animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
+    interaction: {
+      mode: 'nearest',
+      intersect: true,
+      axis: 'xy'
+    },
+    hover: {
+      mode: 'nearest',
+      intersect: true,
+      animationDuration: (isTufte || isReducedMotionPreferred()) ? 0 : 120
+    },
+    plugins: {
+      ...defaultOpts.plugins,
+      // Étiquettes dessinées par kitChartsSunburstLabels (nom + part selon la place disponible)
+      datalabels: getDataLabelOptions(tokens, { display: () => false }),
+      legend: {
+        ...defaultOpts.plugins.legend,
+        display: !isTufte,
+        position: 'right',
+        align: 'center',
+        labels: {
+          color: tokens.textPrimary,
+          font: { family: tokens.fontFamily, size: narrow ? 11 : 12, weight: '500' },
+          boxWidth: narrow ? 8 : 12,
+          padding: narrow ? 8 : 12,
+          usePointStyle: true,
+          pointStyle: 'circle',
+          // Légende = niveau racine uniquement (les sous-niveaux héritent de sa teinte)
+          generateLabels: () => (levels[0] ? levels[0].labels : []).map((name, i) => ({
+            text: name,
+            fillStyle: levelColors[0][i],
+            strokeStyle: levelColors[0][i],
+            fontColor: tokens.textPrimary,
             pointStyle: 'circle',
-            // Légende = niveau racine uniquement (les sous-niveaux héritent de sa teinte)
-            generateLabels: () => (levels[0] ? levels[0].labels : []).map((name, i) => ({
-              text: name,
-              fillStyle: levelColors[0][i],
-              strokeStyle: levelColors[0][i],
-              fontColor: tokens.textPrimary,
-              pointStyle: 'circle',
-              hidden: false,
-              index: i
-            }))
-          },
-          onClick: () => {}
+            hidden: false,
+            index: i
+          }))
         },
-        tooltip: {
-          ...defaultOpts.plugins.tooltip,
-          padding: { top: 10, bottom: 10, left: 14, right: 14 },
-          cornerRadius: isTufte ? 0 : 6,
-          titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
-          bodyFont: { family: tokens.fontMono || 'monospace', size: 12, weight: '400' },
-          animation: (isTufte || isReducedMotionPreferred()) ? false : { duration: 150, easing: 'easeOutQuad' },
-          callbacks: {
-            title: (items) => {
-              const it = items && items[0];
-              if (!it) return '';
-              const names = it.dataset.kcLabels || [];
-              return names[it.dataIndex] || '';
-            },
-            label: (context) => {
-              const val = Number(context.parsed !== null && context.parsed !== undefined ? context.parsed : context.raw) || 0;
-              const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val);
-              const pct = total > 0 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format((val / total) * 100) : '0';
-              return ` ${context.dataset.label || ''} : ${formatted} (${pct}% du total)`;
-            }
+        onClick: () => {}
+      },
+      tooltip: {
+        ...defaultOpts.plugins.tooltip,
+        padding: { top: 10, bottom: 10, left: 14, right: 14 },
+        cornerRadius: isTufte ? 0 : 6,
+        titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
+        bodyFont: { family: tokens.fontMono || 'monospace', size: 12, weight: '400' },
+        animation: (isTufte || isReducedMotionPreferred()) ? false : { duration: 150, easing: 'easeOutQuad' },
+        callbacks: {
+          title: (items) => {
+            const it = items && items[0];
+            if (!it) return '';
+            const names = it.dataset.kcLabels || [];
+            return names[it.dataIndex] || '';
+          },
+          label: (context) => {
+            const val = Number(context.parsed !== null && context.parsed !== undefined ? context.parsed : context.raw) || 0;
+            const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val);
+            const pct = total > 0 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format((val / total) * 100) : '0';
+            return ` ${context.dataset.label || ''} : ${formatted} (${pct}% du total)`;
           }
         }
       }
     }
+  });
+
+  const config = {
+    type: 'doughnut',
+    data: chartData,
+    plugins: [createCompactResizePlugin(measureNarrow, narrow, (next, chart) => {
+      narrow = next;
+      chart.options = buildOptions();
+    }), sunburstLabelsPlugin],
+    options: buildOptions()
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {

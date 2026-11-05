@@ -5,6 +5,9 @@
  * Les templates, thèmes et scripts viennent du paquet installé ; specs et sorties restent
  * dans le dossier courant.
  *
+ *   kit-charts make <données.csv|json> --title "..." --polarity X [options]  (tout en un appel)
+ *   kit-charts update output/<slug> [--data ...] [--title ...]                 (refait sans repartir de zéro)
+ *   kit-charts export <page.html> [--format png,svg,pdf]
  *   kit-charts recommend <data.json> [--intent <intention>] [--json]
  *   kit-charts describe <templateId> [--json]
  *   kit-charts init-spec <templateId> [--data <data.json>] [-o output/<slug>/spec.json]
@@ -28,13 +31,33 @@ const REGISTRY_PATH = path.join(SKILL_DIR, 'registry.json');
 
 const HELP = `kit-charts : templates Chart.js fondés sur les sciences cognitives, pour agents.
 
-Commandes :
+En un appel (recommandé) :
+  make <données> --title T --polarity P   Données -> template -> page -> audit -> rendu (-> export)
+  update <output/slug> [--data D]         Refait un graphique : nouvelles données, titre, export...
+  export <page.html> [--format png,svg,pdf]  Export image ou PDF (Chrome)
+
+Options de make et update :
+  --title T --subtitle S --footnote F     Titre (le constat), unité et période, source
+  --polarity P                            HIGHER_IS_BETTER, LOWER_IS_BETTER, TARGET_BASED, NEUTRAL_CATEGORICAL
+  --intent I | --template ID              Intention (kpi, comparison, composition, distribution,
+                                          correlation, evolution, flow, hierarchy, geo, table) ou template imposé
+  --label C --value C1,C2 --series C      Colonnes du tableau : catégories, valeurs, série (format long)
+  --x C --y C --r C                       Colonnes d'un nuage de points ou de bulles
+  --transpose                             Échanger catégories et séries (slope-chart : automatique)
+  --start C --end C --progress C --today N  Planning gantt-progress (semaine du jour en --today)
+                                          waterfall-chart : total de départ, variations signées, total
+                                          d'arrivée ; les paires chaînées sont calculées
+  --theme X --height N --labels|--no-labels
+  --export png,svg,pdf --offline --no-check -o output/<slug>
+
+Pas à pas :
   recommend <data.json> [--intent X]   Templates éligibles et écartés pour ces données
   describe <templateId>                Forme exigée de formattedData (schema.json) et exemple
   init-spec <templateId>               Écrit une spec squelette à compléter (output/<slug>/spec.json)
   compile <spec.json> [-o page.html]   Compile en page HTML autonome (refus si spec non conforme)
   validate <spec.json|page.html>       Audit cognitif, WCAG et contrat de données
   check <page.html...>                 Rendu réel dans Chrome headless (data-kc-render)
+  compile <page.json>                  Page à plusieurs graphiques : { layout, colorStrategy, charts: [spec ou "chemin/spec.json"] }
   install-skill [--dir D]              Installe le skill et l'agent dataviz dans D/.claude/
   list [--family F]                    Liste les templates du registre
 
@@ -223,6 +246,135 @@ function installSkill(args) {
   console.log('Les agents de ce projet appellent désormais la commande kit-charts (recommend, describe, compile, validate, check).');
 }
 
+/** Options communes de make et update. */
+function makeOptions(args) {
+  const v = names => optionValue(args, names);
+  const mapping = {};
+  [['label', '--label'], ['value', '--value'], ['series', '--series'], ['x', '--x'], ['y', '--y'], ['r', '--r'],
+    ['start', '--start'], ['end', '--end'], ['progress', '--progress'], ['today', '--today']].forEach(([k, flag]) => {
+    const val = v([flag]);
+    if (val !== undefined) mapping[k] = val;
+  });
+  const opts = {
+    title: v(['--title']),
+    subtitle: v(['--subtitle']),
+    footnote: v(['--footnote']),
+    polarity: v(['--polarity']),
+    theme: v(['--theme']),
+    intent: v(['--intent', '-i']),
+    template: v(['--template', '-t']),
+    height: v(['--height']),
+    scale: v(['--scale']),
+    out: v(['-o', '--output']),
+    mapping,
+    exports: v(['--export']),
+    check: args.includes('--no-check') ? false : undefined
+  };
+  if (args.includes('--transpose')) opts.mapping.transpose = true;
+  if (args.includes('--offline')) opts.offline = true;
+  if (args.includes('--labels')) opts.dataLabels = true;
+  if (args.includes('--no-labels')) opts.dataLabels = false;
+  return opts;
+}
+
+const MAKE_VALUE_OPTIONS = ['--title', '--subtitle', '--footnote', '--polarity', '--theme', '--intent', '-i', '--template', '-t',
+  '--height', '--scale', '-o', '--output', '--label', '--value', '--series', '--x', '--y', '--r', '--export', '--data', '-d',
+  '--start', '--end', '--progress', '--today'];
+
+async function runMake(cmd, args) {
+  const { make, update, formatResult, MakeError } = require(path.join(SCRIPTS, 'make-chart.js'));
+  const opts = makeOptions(args);
+  const target = positional(args, MAKE_VALUE_OPTIONS)[0];
+  try {
+    let result;
+    if (cmd === 'make') {
+      opts.data = target || optionValue(args, ['--data', '-d']);
+      if (opts.data === undefined) fail('Usage : kit-charts make <données.csv|json> --title "le constat" --polarity HIGHER_IS_BETTER [options]', 2);
+      result = await make(opts);
+    } else {
+      if (!target) fail('Usage : kit-charts update output/<slug> [--data nouvelles-données] [--title ...]', 2);
+      opts.dir = target;
+      opts.data = optionValue(args, ['--data', '-d']);
+      if (opts.exports === undefined) delete opts.exports;
+      if (opts.offline === undefined) delete opts.offline;
+      result = await update(opts);
+    }
+    if (args.includes('--json')) console.log(JSON.stringify(result, null, 2));
+    else console.log(formatResult(result));
+    process.exit(result.ok ? 0 : 1);
+  } catch (err) {
+    if (err instanceof MakeError || err instanceof SyntaxError || /CSV|Colonne|colonne|Format long|Catégories|Valeur non numérique|Tableau JSON/.test(err.message)) {
+      const d = err.details || {};
+      const lines = [`ÉCHEC ${err.message}`];
+      if (d.rejected && d.rejected.length) lines.push(`écartés : ${d.rejected.join(' ; ')}`);
+      if (d.hint) lines.push(`piste : ${d.hint}`);
+      if (args.includes('--json')) console.log(JSON.stringify({ ok: false, error: err.message, details: d }, null, 2));
+      else console.log(lines.join('\n'));
+      process.exit(1);
+    }
+    throw err;
+  }
+}
+
+/**
+ * Page à plusieurs graphiques : les entrées de charts peuvent être des chemins vers des
+ * spec.json existantes (produites par make), résolus depuis le dossier de la page.
+ */
+function resolvePageCharts(spec, baseDir) {
+  if (!spec || !Array.isArray(spec.charts)) return spec;
+  return Object.assign({}, spec, {
+    charts: spec.charts.map(c => {
+      if (typeof c !== 'string') return c;
+      const file = path.resolve(baseDir, c);
+      if (!fs.existsSync(file)) fail(`Graphique de la page introuvable : ${c}`, 1);
+      return JSON.parse(fs.readFileSync(file, 'utf8'));
+    })
+  });
+}
+
+function compilePageCli(args) {
+  const file = positional(args, ['-o', '--output', '--format'])[0];
+  const abs = path.resolve(process.cwd(), file);
+  const spec = resolvePageCharts(JSON.parse(fs.readFileSync(abs, 'utf8')), path.dirname(abs));
+  const { compileChart } = require(path.join(SCRIPTS, 'compile-chart.js'));
+  const out = optionValue(args, ['-o', '--output']) || path.join(path.dirname(abs), 'index.html');
+  try {
+    const r = compileChart(spec, { strict: !args.includes('--force'), offline: args.includes('--offline'), output: out });
+    const rep = r.validationReport;
+    if (args.includes('--json')) {
+      console.log(JSON.stringify({ success: true, outputPath: r.outputPath, templates: r.templateIds, validation: rep }, null, 2));
+    } else {
+      console.log(`${rep.valid ? 'OK' : 'FORCÉ (non conforme)'} ${path.relative(process.cwd(), r.outputPath)}`);
+      console.log(`page : ${r.templateIds.length} graphique(s) (${r.templateIds.join(', ')}), thème ${r.themeName}`);
+      console.log(`audit : ${rep.errors.length} erreur(s), ${rep.warnings.length} avertissement(s)`);
+      rep.warnings.forEach(w => console.log(`  avert. [${w.ruleId}] ${w.message}${w.suggestion ? `\n    correctif : ${w.suggestion}` : ''}`));
+    }
+    process.exit(rep.valid ? 0 : 1);
+  } catch (err) {
+    console.error(err.message);
+    process.exit(1);
+  }
+}
+
+function readSpecIfJson(file) {
+  if (!file || !/\.json$/i.test(file)) return null;
+  const abs = path.resolve(process.cwd(), file);
+  if (!fs.existsSync(abs)) return null;
+  try { return { abs, spec: JSON.parse(fs.readFileSync(abs, 'utf8')) }; } catch (e) { return null; }
+}
+
+function validatePageCli(file, spec, args) {
+  const { validatePageSpec } = require(path.join(SCRIPTS, 'compile-chart.js'));
+  const rep = validatePageSpec(resolvePageCharts(spec, path.dirname(file)));
+  if (args.includes('--json')) console.log(JSON.stringify(rep, null, 2));
+  else {
+    console.log(rep.summary);
+    rep.errors.forEach(e => console.log(`  erreur [${e.ruleId}] ${e.message}${e.suggestion ? `\n    correctif : ${e.suggestion}` : ''}`));
+    rep.warnings.forEach(w => console.log(`  avert. [${w.ruleId}] ${w.message}${w.suggestion ? `\n    correctif : ${w.suggestion}` : ''}`));
+  }
+  process.exit(rep.valid ? 0 : 1);
+}
+
 function main() {
   const [cmd, ...args] = process.argv.slice(2);
   if (!cmd || cmd === '--help' || cmd === '-h' || cmd === 'help') {
@@ -234,9 +386,23 @@ function main() {
     return;
   }
   switch (cmd) {
+    case 'make':
+    case 'update': return runMake(cmd, args).catch(err => fail(err.stack || err.message));
+    case 'export': return delegate('export-chart.js', args);
     case 'recommend': return delegate('recommend-template.js', args);
-    case 'compile': return delegate('compile-chart.js', args);
-    case 'validate': return delegate('validate-chart.js', args);
+    case 'compile': {
+      const page = readSpecIfJson(positional(args, ['-o', '--output', '--format', '--template', '-t', '--data', '-d', '--theme', '--polarity', '--title', '--subtitle'])[0]);
+      if (page && Array.isArray(page.spec.charts)) return compilePageCli(args);
+      return delegate('compile-chart.js', args);
+    }
+    case 'validate': {
+      const target = positional(args)[0];
+      let page = readSpecIfJson(target);
+      // Une page compilée se valide par sa spec, enregistrée à côté.
+      if (!page && target && /\.html?$/i.test(target)) page = readSpecIfJson(path.join(path.dirname(target), 'spec.json'));
+      if (page && Array.isArray(page.spec.charts)) return validatePageCli(page.abs, page.spec, args);
+      return delegate('validate-chart.js', args);
+    }
     case 'check': return delegate('render-check.js', args);
     case 'describe': return describe(args);
     case 'init-spec': return initSpec(args);

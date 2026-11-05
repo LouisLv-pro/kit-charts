@@ -52,6 +52,13 @@ Décrivez simplement ce que vous voulez montrer :
 
 L'assistant choisit le bon modèle (ici une jauge linéaire, `bullet-chart`), applique les bonnes couleurs et enregistre la page dans `output/ventes-regions/index.html`.
 
+Il peut aussi :
+- **réunir plusieurs graphiques sur une page**, pour un tableau de bord ou un rapport ;
+- **les exporter en image (PNG, SVG) ou en PDF**, à coller dans une présentation ou un document ;
+- **produire une page qui s'ouvre sans connexion internet**.
+
+Pour mettre à jour un graphique avec les chiffres du mois, il suffit de redonner le fichier de données : le titre, les couleurs et le choix du modèle sont gardés.
+
 ### Utiliser le kit dans un autre projet
 
 Installez la commande une seule fois :
@@ -78,7 +85,9 @@ Un seul agent, `dataviz` ([`.agents/agents/dataviz.md`](.agents/agents/dataviz.m
 | :--- | :--- |
 | **Comprendre** | Quel message faire passer ? Une hausse est-elle une bonne ou une mauvaise nouvelle ? |
 | **Construire** | Choisit parmi les modèles adaptés à vos données, puis génère la page. Une configuration qui enfreint une règle est refusée. |
-| **Vérifier** | Contrôles automatiques (contraste, axe à zéro, nombre d'éléments), puis relecture du titre, des unités et des couleurs. |
+| **Vérifier** | Contrôles automatiques : contraste, axe à zéro, nombre d'éléments, unité présente, barres triées, titre qui énonce un constat. Puis relecture du sens. |
+
+Tout se fait en une seule commande. L'assistant écrit les données dans un fichier (un tableau CSV suffit), puis lance `kit-charts make`. Sur les 9 cas d'essai du kit, ça coûte environ 80 % de moins à l'assistant qu'avant (en tokens, l'unité de facturation des IA) : 2 actions au lieu de 7 par graphique. La mesure se relance avec `npm run bench`.
 
 ---
 
@@ -129,6 +138,19 @@ Le kit choisit la couleur selon ce que mesure le chiffre :
 ### Commandes
 
 ```bash
+# En un appel : données -> modèle -> page -> contrôles -> rendu -> export
+kit-charts make ventes.csv --title "Lyon dépasse Paris" --subtitle "CA 2026, en k€" \
+  --polarity HIGHER_IS_BETTER --export png,svg,pdf
+kit-charts update output/lyon-depasse-paris --data ventes-novembre.csv   # refaire sans repartir de zéro
+kit-charts compile output/bilan/page.json                                 # page à plusieurs graphiques
+kit-charts export output/bilan/index.html --format png,svg,pdf
+```
+
+`--offline` inclut Chart.js dans la page, qui s'ouvre alors sans réseau. `kit-charts --help` liste toutes les options : colonnes du tableau, intention, thème.
+
+Pas à pas, pour les cas que `make` ne couvre pas :
+
+```bash
 kit-charts list                                   # les 73 modèles
 kit-charts recommend data.json                    # les modèles adaptés à vos données
 kit-charts describe bar-chart-horizontal          # la forme des données attendue, avec un exemple
@@ -144,9 +166,11 @@ Dans ce dépôt, sans installation, remplacez `kit-charts` par `node bin/kit-cha
 
 ```bash
 npm run build        # régénère catalog-bundle.js à partir des modèles
-npm test             # tests d'intégration et comparaison aux configurations de référence
+npm test             # tests d'intégration, commande make, configurations de référence, mesure des tokens
 npm run test:render  # affiche les 73 modèles dans Chrome (connexion internet requise)
+npm run test:export  # export PNG, SVG et PDF dans Chrome (sans réseau)
 npm run test:cli     # installe le paquet et teste toutes les commandes
+npm run bench        # compare le coût en tokens : pas à pas contre make
 ```
 
 Après une modification volontaire d'un modèle, régénérez les configurations de référence avec `npm run snapshots` et relisez les différences avant de les valider. Les règles détaillées sont dans [`AGENTS.md`](AGENTS.md).
@@ -170,6 +194,7 @@ kit-charts/
 │   ├── 09-tableaux-dataviz/           # Tableaux enrichis (6)
 │   └── tooltip/            # Démonstration d'infobulles
 ├── themes/                 # Les 8 thèmes et les réglages communs
+├── vendor/                 # Chart.js et ses extensions, pour le mode hors ligne (versions et empreintes vérifiées)
 ├── docs/                   # Bannière et rapports de revue
 ├── output/                 # Vos graphiques générés
 └── .agents/                # L'agent dataviz, ses règles et ses outils

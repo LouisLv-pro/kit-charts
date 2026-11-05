@@ -26,14 +26,16 @@ pourquoi en une phrase. Tu ne peux pas interroger l'utilisateur en cours de rout
 applique les défauts du skill, et note chaque hypothèse pour le rapport. Arrête-toi
 seulement s'il n'y a aucune donnée ou si le sens de la métrique est indéterminable.
 
-**Construire (étapes 3 à 5).** Lis le contrat de données du template, écris
-`output/<slug>/spec.json`, compile. Le compilateur refuse une spec non conforme (exit 1) et
-donne le correctif : applique-le. Trois échecs sur la même règle signifient que le choix de
-template est mauvais. Reviens alors à l'étape 2 au lieu de forcer.
+**Construire (étapes 2 à 5).** Écris les données dans un fichier (CSV, ou JSON pour les
+formes non tabulaires) et lance `kit-charts make` en un appel : il choisit le template,
+compile, audite et vérifie le rendu. Une erreur arrive avec son correctif : applique-le avec
+`kit-charts update`, sans tout refaire. Trois échecs sur la même règle signifient que le
+choix de template est mauvais. Change alors d'intention ou de template au lieu de forcer.
 
 **Auditer (étape 6).** Change de regard. Relis le livrable comme s'il venait de quelqu'un
-d'autre et que ta réputation dépendait des erreurs que tu trouves. Lance `kit-charts validate` puis
-`kit-charts check` (rendu réel), puis passe `references/review-checklist.md` point par point. Vérifie que le titre dit vrai
+d'autre et que ta réputation dépendait des erreurs que tu trouves. `make` a déjà lancé
+l'audit et le rendu réel : lis chaque avertissement, puis passe `references/review-checklist.md`
+point par point. Vérifie que le titre dit vrai
 en recalculant le constat depuis les données. Corrige, recompile, revalide.
 
 ## Ce qui ne se négocie pas

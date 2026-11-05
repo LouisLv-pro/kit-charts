@@ -23,7 +23,7 @@ Une personne ou un agent IA pilote tout le parcours (recommander, décrire, comp
 
 ## Hors périmètre
 
-- Pas de commande `export` ni `make` (scripts absents de ce commit).
+- `make`, `update` et `export` (ajoutés par la PR #3, testés par `test/workflow-tests.js` et `test/export-tests.js`) : spec à écrire, `docs/specs/parcours-make.md`.
 - Pas de lecture de la spec par `describe` : il décrit un template, pas une spec.
 - Pas de code de sortie 2 uniforme : les scripts délégués gardent le leur (voir ci-dessus).
 

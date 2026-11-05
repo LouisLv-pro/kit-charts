@@ -216,6 +216,10 @@
         {
           "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
           "id": "kitChartsSankeyNodeLabels"
+        },
+        {
+          "id": "kcCompactResize",
+          "resize": "[Function:resize]"
         }
       ],
       "type": "sankey"

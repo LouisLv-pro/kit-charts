@@ -131,7 +131,8 @@ const KNOWN_SPEC_FIELDS = new Set([
   'formattedData', 'data', 'options', 'scales', 'theme', 'title', 'subtitle', 'height', 'footnote',
   'metricPolarity', 'beginAtZero', 'logScale', 'delta', 'deltaColor', '$schema', 'description'
 ]);
-const KNOWN_LAYOUT_FIELDS = new Set(['title', 'subtitle', 'height', 'footnote', 'containerId', 'canvasId']);
+// span : largeur de la cellule dans une page à plusieurs graphiques (compilePage).
+const KNOWN_LAYOUT_FIELDS = new Set(['title', 'subtitle', 'height', 'footnote', 'containerId', 'canvasId', 'span']);
 
 // Au-delà, les violations restantes sont résumées en une seule entrée.
 const MAX_SCHEMA_VIOLATIONS_REPORTED = 10;
@@ -234,6 +235,152 @@ const LENGTH_ENCODED_TEMPLATES = new Set([
 
 // Easings non conformes (rebonds décoratifs interdits en dataviz cognitive)
 const FORBIDDEN_EASINGS = ['bounce', 'easeinoutbounce', 'easeinbounce', 'easeoutbounce', 'elastic', 'easeinelastic', 'easeoutelastic'];
+
+// ============================================================================
+// 2 bis. HEURISTIQUES DE SENS (tri des barres, unité, titre-constat)
+// Avertissements seulement. Chaque heuristique est prudente : en cas de doute, elle se tait.
+// ============================================================================
+
+const { isTemporalLabel } = require(path.join(__dirname, 'recommend-template.js'));
+
+// Mot entier insensible à la casse, accents compris (\b de JS ignore les lettres accentuées).
+const wholeWords = words => new RegExp(`(?<![\\p{L}\\d])(?:${words.join('|')})(?![\\p{L}\\d])`, 'iu');
+
+// --- UNSORTED_BARS ----------------------------------------------------------
+// Libellés dont l'ordre a un sens en soi : tranches numériques, rangs, numérotation, échelles.
+const ORDINAL_LABEL_PATTERNS = [
+  /\d\s*(?:-|–|à)\s*\d/u,                                     // 18-24, 1 à 5, [10-25[
+  /^\s*[<>≤≥]/u,                                               // < 18, ≥ 65
+  /\d\s*\+/u,                                                  // 65+, 1 000+
+  /\d+\s*(?:ans\s+)?et\s+(?:plus|moins)/iu,                    // 50 ans et plus
+  /^\s*(?:moins|plus|au-delà|jusqu'à|jusqu’à|dès|entre|de)\s+(?:de\s+)?\d/iu, // Moins de 25 ans, De 1 à 5
+  /^\s*\d+(?:[.,]\d+)?\s*$/u,                                  // 1, 2, 3 (rang, note, échelle)
+  /^\s*(?:\d+|[ivx]+)\s*[.)]\s/iu,                             // 1. Visiteurs, II) Étape
+  /^\s*\p{L}{1,3}\s*[-+]\s*\d+\s*$/u,                         // J-11, N-1, M+3
+  /^\s*(?:étape|niveau|phase|palier|rang|vague|jour|semaine|sem\.?|mois|année|lot)\s*\d+/iu,
+  /^\s*(?:très|plutôt|assez|peu|pas|tout à fait|ni|neutre|satisfaits?|insatisfaits?|jamais|rarement|parfois|souvent|toujours|faible|moyen|moyenne|élevée?|fort|forte|bas|basse|haut|haute|mauvais|bon|bonne|excellent|médiocre)(?![\p{L}-])/iu // échelle de Likert ou qualitative
+];
+// Libellé « Autres » placé en dernier : convention légitime, exclu du contrôle d'ordre.
+const OTHERS_LABEL = /^\s*(?:autres?|other|others|divers|reste)(?![\p{L}])/iu;
+
+function isOrdinalLabel(label) {
+  const s = String(label).trim();
+  return isTemporalLabel(s) || ORDINAL_LABEL_PATTERNS.some(re => re.test(s));
+}
+
+// Valeur numérique d'une barre (nombre, ou objet {x|y|value} comme le lit bar-chart-horizontal).
+function barValue(v) {
+  if (typeof v === 'number') return Number.isFinite(v) ? v : null;
+  if (v && typeof v === 'object' && !Array.isArray(v)) {
+    const n = v.x ?? v.y ?? v.value;
+    return typeof n === 'number' && Number.isFinite(n) ? n : null;
+  }
+  return null;
+}
+
+function isMonotonic(values) {
+  let up = true;
+  let down = true;
+  for (let i = 1; i < values.length; i++) {
+    if (values[i] < values[i - 1]) up = false;
+    if (values[i] > values[i - 1]) down = false;
+  }
+  return up || down;
+}
+
+// --- MISSING_UNIT -----------------------------------------------------------
+// Une unité est repérée si l'un des textes (titre, sous-titre, label de dataset, xLabel/yLabel,
+// unit, format) contient : un symbole, une parenthèse « (…) », une abréviation d'unité, un nombre
+// suivi d'une unité d'une lettre, « en » suivi d'un mot en minuscule, ou un mot d'unité ou de
+// dénombrement. Liste large exprès : un faux « unité trouvée » ne coûte qu'un avertissement manqué.
+const UNIT_SYMBOL = /[€$£¥%‰°]/u;
+const UNIT_PAREN = /\([^)]*\S[^)]*\)/u;
+const UNIT_ABBREV = wholeWords(['ms', 'min', 'kg', 'km', 'cm', 'mm', 'm²', 'm2', 'm³', 'm3', 'kwh', 'mwh', 'gwh', 'twh',
+  'kw', 'mw', 'gw', 'ko', 'mo', 'go', 'to', 'kb', 'mb', 'gb', 'tb', 'pts?', 'pp', 'pb', 'bps', 'mds', 'mrds?', 'md', 'k', 'nb', 'nbre', 'hab']);
+const UNIT_AFTER_NUMBER = /\d\s*(?:s|h|j|t|g|l|x|×)(?![\p{L}\d])/iu;   // 24 h, 3 j, x2
+const UNIT_EN = /(?<![\p{L}\d])[eE]n\s+(?=[\p{Ll}%€$])/u;            // « en euros », « en k€ » ; pas « en 2024 » ni « en France »
+const UNIT_WORDS = wholeWords([
+  'euros?', 'dollars?', 'livres? sterling', 'francs?', 'centimes?',
+  'secondes?', 'minutes?', 'heures?', 'jours?',
+  'points?', 'pourcents?', 'pour ?cent', 'pour ?mille', 'tonnes?', 'kilos?', 'litres?', 'mètres?', 'kilomètres?',
+  'watts?', 'octets?', 'degrés?', 'fois', 'millions?', 'milliards?', 'milliers?',
+  'nombre', 'taux', 'parts?', 'ratio', 'indice', 'score', 'note', 'rang', 'proportion', 'pourcentage',
+  'unités?', 'pièces?', 'articles?', 'clients?', 'commandes?', 'utilisateurs?', 'visiteurs?', 'visites?', 'abonnés?',
+  'salariés?', 'employés?', 'personnes?', 'habitants?', 'patients?', 'colis', 'tickets?', 'incidents?', 'appels?',
+  'transactions?', 'sessions?', 'inscrits?', 'contrats?', 'dossiers?', 'véhicules?', 'passagers?', 'licences?',
+  'emplois?', 'élèves?', 'étudiants?', 'effectifs?', 'occurrences?'
+]);
+const UNIT_FORMAT = /cur|eur|usd|percent|pct|[%€$]/iu;  // champ format des KPI (currency, percent...)
+
+function hasUnitCue(text) {
+  const s = String(text);
+  return UNIT_SYMBOL.test(s) || UNIT_PAREN.test(s) || UNIT_ABBREV.test(s) || UNIT_AFTER_NUMBER.test(s) ||
+    UNIT_EN.test(s) || UNIT_WORDS.test(s);
+}
+
+// Templates sans grandeur à unité (structure, corrélation, planning) ou à unité imposée par
+// l'encodage (parts d'un tout en %). Les tableaux portent un format par colonne.
+const UNITLESS_TEMPLATES = new Set([
+  'gantt-progress', 'dendrogram', 'node-link-network', 'arc-diagram', 'matrix-heatmap',
+  'stacked-bar-100', 'waffle-chart', 'marimekko-chart', 'pie-chart', 'doughnut-chart'
+]);
+
+// --- TITLE_IS_TOPIC ---------------------------------------------------------
+// Titre court (au plus 10 mots) sans verbe conjugué courant, sans marque de comparaison ou de
+// constat (plus, moins, que, record, hausse, seul, pronom réfléchi se, nombre écrit en lettres...),
+// et sans chiffre autre qu'une année ou une période (2024, T3, Q1, S2, M-1).
+const TITLE_MAX_WORDS = 10;
+const TITLE_VERBS = new Set(`
+  est sont a ont était étaient sera seront reste restent demeure demeurent devient deviennent revient reviennent
+  dépasse dépassent baisse baissent monte montent remonte remontent double doublent triple triplent
+  recule reculent progresse progressent pèse pèsent atteint atteignent concentre concentrent passe passent
+  chute chutent grimpe grimpent devance devancent domine dominent mène mènent gagne gagnent perd perdent
+  augmente augmentent diminue diminuent croît croissent stagne stagnent explose explosent effondre effondrent
+  envole envolent rattrape rattrapent représente représentent tire tirent porte portent freine freinent
+  ralentit ralentissent accélère accélèrent bondit bondissent plonge plongent décroche décrochent
+  creuse creusent resserre resserrent résiste résistent compense compensent explique expliquent fait font
+  tient tiennent garde gardent conserve conservent maintient maintiennent prend prennent cède cèdent
+  totalise totalisent cumule cumulent affiche affichent enregistre enregistrent coûte coûtent rapporte rapportent
+  génère génèrent inverse inversent emporte emportent surpasse surpassent égale égalent rejoint rejoignent
+  franchit franchissent tombe tombent glisse glissent dérape dérapent décolle décollent améliore améliorent
+  dégrade dégradent fléchit fléchissent plafonne plafonnent varie varient oscille oscillent stabilise stabilisent
+  redresse redressent manque manquent dépend dépendent cache cachent masque masquent
+  livre livrent vend vendent fonctionne fonctionnent tourne tournent arrive arrivent sort sortent ressort ressortent
+  entraîne entraînent absorbe absorbent alourdit alourdissent allège allègent profite profitent souffre souffrent
+  bat battent attire attirent convertit convertissent dépense dépensent investit investissent produit produisent
+  consomme consomment occupe occupent couvre couvrent regroupe regroupent recrute recrutent
+  is are was were has have grows grow falls fall rises rise doubles leads lead beats drops drop
+`.trim().split(/\s+/));
+const TITLE_CLAIM_WORDS = new Set(`
+  plus moins mieux pire davantage autant que qu vs versus contre devant derrière
+  record records hausse baisse recul chute envolée bond rebond explosion effondrement dérapage stagnation
+  premier première premiers premières dernier dernière derniers dernières meilleur meilleure meilleurs meilleures
+  leader tête aucun aucune seul seule seuls seules seulement toujours jamais encore déjà ne n pas
+  se s deux trois quatre cinq six sept huit neuf dix vingt trente cent mille moitié tiers quart quarts majorité
+`.trim().split(/\s+/));
+// Années et repères de période : ce sont des sujets (« Ventes 2024 »), pas des chiffres de constat.
+const TITLE_PERIOD_TOKENS = /(?<![\p{L}\d])(?:(?:19|20)\d{2}|[tqshmw]\d{1,2}|[nm]\s*[-+]\s*\d{1,2})(?![\p{L}\d])/giu;
+
+// Verbe conjugué hors liste : 3e personne du pluriel (effacent, tirent, pèsent), imparfait
+// (baissait, montaient) ou futur (dépassera, reculeront). Les noms en -ment et les noms
+// courants en -ent sont exclus : mieux vaut manquer un sujet que signaler un constat.
+const NOUNS_IN_ENT = new Set(['client', 'clients', 'agent', 'agents', 'parent', 'parents', 'argent', 'accident', 'accidents',
+  'incident', 'incidents', 'patient', 'patients', 'talent', 'talents', 'continent', 'continents', 'président', 'présidents',
+  'percent', 'adhérent', 'adhérents', 'résident', 'résidents', 'étudiant', 'étudiants', 'courant', 'restaurant', 'restaurants',
+  'agence', 'event', 'events', 'segment', 'content', 'recent', 'current', 'different']);
+function looksConjugated(token) {
+  if (token.length < 5 || NOUNS_IN_ENT.has(token)) return false;
+  if (/(ent|ont)$/.test(token) && !/ment$/.test(token)) return true;
+  return /(aient|ait|eront|era|iront|ira)$/.test(token) && token.length >= 6;
+}
+
+function isTopicTitle(title) {
+  const s = String(title).trim();
+  const tokens = s.toLowerCase().split(/[^\p{L}\d]+/u).filter(Boolean);
+  if (tokens.length === 0 || tokens.length > TITLE_MAX_WORDS) return false;
+  if (/\d/.test(s.replace(TITLE_PERIOD_TOKENS, ' '))) return false;
+  return !tokens.some(t => TITLE_VERBS.has(t) || TITLE_CLAIM_WORDS.has(t) || looksConjugated(t));
+}
 
 /**
  * Valide un objet de spécification Dataviz (ou extrait de HTML/JS).
@@ -343,15 +490,20 @@ function validateChartSpec(spec, options = {}) {
 
   // --------------------------------------------------------------------------
   // RÈGLE 0.3 : Une valeur par label (sauf templates à données non indexées par label)
+  // Erreur bloquante quand le dataset est indexé par label : labels non vides, et aucun point
+  // ne porte sa propre position (objet avec x, comme un nuage de points). Les autres écarts
+  // restent un avertissement, comme l'extraction partielle d'un HTML (checkSchema false).
   // --------------------------------------------------------------------------
   const perLabel = !(templateMeta && templateMeta.dataRequirements && templateMeta.dataRequirements.dataPerLabel === false);
   if (perLabel && providedData && Array.isArray(providedData.labels) && Array.isArray(providedData.datasets)) {
     providedData.datasets.forEach((ds, i) => {
       if (ds && Array.isArray(ds.data) && ds.data.length !== providedData.labels.length) {
-        warnings.push({
+        const selfPositioned = ds.data.some(v => v && typeof v === 'object' && !Array.isArray(v) && 'x' in v);
+        const blocking = providedData.labels.length > 0 && !selfPositioned && options.checkSchema !== false;
+        (blocking ? errors : warnings).push({
           ruleId: 'DATA_LENGTH_MISMATCH',
           category: 'Contrat de données',
-          severity: 'WARNING',
+          severity: blocking ? 'ERROR' : 'WARNING',
           message: `datasets[${i}].data compte ${ds.data.length} valeur(s) pour ${providedData.labels.length} label(s).`,
           suggestion: `Fournir exactement une valeur par label (null pour une valeur manquante) : sinon des barres ou des points sont décalés ou perdus.`
         });
@@ -562,6 +714,90 @@ function validateChartSpec(spec, options = {}) {
     }
   }
 
+  // --------------------------------------------------------------------------
+  // RÈGLE 5 : Sens du graphique (review-checklist.md), avertissements prudents.
+  // Seulement sur des données fiables : spec fournie, ou JSON customData retrouvé dans le HTML.
+  // --------------------------------------------------------------------------
+  const reliableData = options.checkSchema !== false && providedData && typeof providedData === 'object' && !Array.isArray(providedData);
+  const isKpiCard = (templateMeta && templateMeta.family === '00-kpi-card') || /^kpi-/.test(String(templateId || ''));
+  const isTable = (templateMeta && templateMeta.dataRequirements && templateMeta.dataRequirements.labelsType === 'tabular') || /^table-/.test(String(templateId || ''));
+
+  // 5.1 UNSORTED_BARS : une seule série de barres dans un ordre quelconque.
+  // bar-chart-horizontal trie lui-même sauf "sorted": false ; lollipop-chart ne trie jamais.
+  const sortableBars = templateId === 'lollipop-chart' ||
+    (templateId === 'bar-chart-horizontal' && datasets[0] && datasets[0].sorted === false);
+  if (reliableData && sortableBars && seriesCount === 1 && Array.isArray(datasets[0].data) && datasets[0].data.length === categoryCount) {
+    let pairs = labels.map((label, i) => ({ label, value: barValue(datasets[0].data[i]) })).filter(p => p.value !== null);
+    if (pairs.length && OTHERS_LABEL.test(String(pairs[pairs.length - 1].label))) pairs = pairs.slice(0, -1);
+    const ordinalShare = labels.length ? labels.filter(isOrdinalLabel).length / labels.length : 0;
+    if (pairs.length >= 3 && ordinalShare < 0.5 && !isMonotonic(pairs.map(p => p.value))) {
+      warnings.push({
+        ruleId: 'UNSORTED_BARS',
+        category: 'Encodage',
+        severity: 'WARNING',
+        message: `${templateId} : ${pairs.length} barres ni croissantes ni décroissantes (${pairs.slice(0, 4).map(p => `${p.label} ${p.value}`).join(', ')}${pairs.length > 4 ? ', ...' : ''}). Le classement ne se lit pas d'un coup d'œil.`,
+        suggestion: templateId === 'bar-chart-horizontal'
+          ? `Retirer "sorted": false pour trier par valeur décroissante, ou garder l'ordre s'il a un sens (ordre métier, géographique) et le dire dans layout.subtitle.`
+          : `Trier labels et data par valeur décroissante, ou garder l'ordre s'il a un sens (ordre métier, géographique) et le dire dans layout.subtitle.`
+      });
+    }
+  }
+
+  // 5.1 bis ORDINAL_ORDER_LOST : bar-chart-horizontal retrie une série unique par valeur.
+  // Sur des libellés ordonnés (tranches d'âge, échelle de satisfaction, étapes), le tri casse
+  // l'ordre naturel que le lecteur attend.
+  if (reliableData && templateId === 'bar-chart-horizontal' && seriesCount === 1 && datasets[0] &&
+      datasets[0].sorted !== false && Array.isArray(datasets[0].data) && labels.length >= 3) {
+    const ordinalShare = labels.filter(isOrdinalLabel).length / labels.length;
+    const values = labels.map((_, i) => barValue(datasets[0].data[i]));
+    const alreadyDesc = values.every((v, i) => i === 0 || v === null || values[i - 1] === null || values[i - 1] >= v);
+    if (ordinalShare >= 0.5 && !alreadyDesc) {
+      warnings.push({
+        ruleId: 'ORDINAL_ORDER_LOST',
+        category: 'Encodage',
+        severity: 'WARNING',
+        message: `bar-chart-horizontal trie les barres par valeur : l'ordre naturel des libellés (${labels.slice(0, 3).join(', ')}...) sera perdu.`,
+        suggestion: 'Ajouter "sorted": false au dataset pour garder l\'ordre des libellés (kit-charts make le fait seul), ou bar-chart-vertical si N ≤ 7.'
+      });
+    }
+  }
+
+  // 5.2 MISSING_UNIT : aucune unité repérable dans les textes affichés.
+  if (reliableData && !isTable && !UNITLESS_TEMPLATES.has(templateId)) {
+    const scaleTitles = Object.values(scales || {}).map(s => s && s.title && s.title.text);
+    const unitTexts = [
+      layout.title, layout.subtitle, spec.title, spec.subtitle,
+      providedData.title, providedData.subtitle, providedData.unit, providedData.xLabel, providedData.yLabel,
+      ...scaleTitles,
+      ...datasets.map(ds => ds && ds.label)
+    ].filter(t => typeof t === 'string' && t.trim() !== '');
+    const kpiFormat = typeof providedData.format === 'string' && UNIT_FORMAT.test(providedData.format);
+    if (!kpiFormat && !unitTexts.some(hasUnitCue)) {
+      warnings.push({
+        ruleId: 'MISSING_UNIT',
+        category: 'Message',
+        severity: 'WARNING',
+        message: `Aucune unité repérée (titre, layout.subtitle, label des datasets${isKpiCard ? ', formattedData.unit' : ''}) : le lecteur ne sait pas ce que mesurent les chiffres.`,
+        suggestion: isKpiCard
+          ? `Renseigner formattedData.unit (« € », « % », « ms »...).`
+          : `Donner l'unité dans layout.subtitle (« En M€, 2024 », « Nombre de clients ») ou entre parenthèses dans le label du dataset (« CA (k€) »).`
+      });
+    }
+  }
+
+  // 5.3 TITLE_IS_TOPIC : le titre nomme un sujet sans énoncer de constat.
+  // Les cartes KPI (titre = nom de la métrique) et les tableaux (outil de consultation) sont exclus.
+  const shownTitle = layout.title || spec.title;
+  if (!isKpiCard && !isTable && typeof shownTitle === 'string' && shownTitle.trim() !== '' && isTopicTitle(shownTitle)) {
+    warnings.push({
+      ruleId: 'TITLE_IS_TOPIC',
+      category: 'Message',
+      severity: 'WARNING',
+      message: `Le titre « ${shownTitle.trim()} » nomme un sujet sans constat : ni verbe, ni comparaison, ni chiffre.`,
+      suggestion: `Réécrire en phrase qui dit ce que montrent les données : sujet, verbe, chiffre ou comparaison (« L'Île-de-France pèse 27 % du CA », « Le churn recule de 2 points »). Le sujet et la période vont dans layout.subtitle.`
+    });
+  }
+
   return buildReport(errors, warnings);
 }
 
@@ -721,6 +957,8 @@ function extractSpecFromCode(content, ext, absPath) {
       if (parsedOptions.cognitiveFeatures) spec.cognitiveFeatures = parsedOptions.cognitiveFeatures;
       if (parsedOptions.colorStrategy) spec.colorStrategy = parsedOptions.colorStrategy;
       if (parsedOptions.metricPolarity) spec.metricPolarity = parsedOptions.metricPolarity;
+      // compile-chart.js sérialise layout (titre, sous-titre) dans les options : utile aux règles de sens.
+      if (parsedOptions.layout && typeof parsedOptions.layout === 'object' && !Array.isArray(parsedOptions.layout)) spec.layout = parsedOptions.layout;
     } catch (e) {}
   }
 
@@ -870,5 +1108,6 @@ module.exports = {
   getRelativeLuminance,
   parseColor,
   LENGTH_ENCODED_TEMPLATES,
-  FORBIDDEN_EASINGS
+  FORBIDDEN_EASINGS,
+  isOrdinalLabel
 };

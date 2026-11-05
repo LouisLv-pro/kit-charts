@@ -54,5 +54,10 @@ module.exports = [
       'no-self-assign': 'off'
     }
   },
+  {
+    // Fonctions sérialisées et exécutées dans la page Chrome (page.evaluate) : DOM disponible.
+    files: ['.agents/skills/kit-charts/scripts/export-chart.js'],
+    languageOptions: { globals: { ...globals.browser } }
+  },
   prettier
 ];

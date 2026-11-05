@@ -10,6 +10,7 @@
     "bin/",
     "template/",
     "themes/",
+    "vendor/",
     ".agents/skills/kit-charts/SKILL.md",
     ".agents/skills/kit-charts/registry.json",
     ".agents/skills/kit-charts/references/",
@@ -36,10 +37,14 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc -p jsconfig.json",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm test",
-    "test": "node test/run-integration-tests.js && node test/snapshot-configs.js --check",
+    "test": "node test/run-integration-tests.js && node test/workflow-tests.js && node test/snapshot-configs.js --check && node test/token-benchmark.js --assert",
     "snapshots": "node test/snapshot-configs.js",
     "test:render": "node .agents/skills/kit-charts/scripts/render-check.js --all-templates",
-    "test:cli": "node test/cli-smoke.js"
+    "test:cli": "node test/cli-smoke.js",
+    "test:export": "node test/export-tests.js",
+    "bench": "node test/token-benchmark.js",
+    "vendor": "node .agents/skills/kit-charts/scripts/vendor-fetch.js",
+    "make": "node bin/kit-charts.js make"
   },
   "keywords": [
     "dataviz",

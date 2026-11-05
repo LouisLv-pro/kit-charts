@@ -2184,6 +2184,75 @@ function animateSeriesBuildup(chart, options = {}) {
 }
 
 /**
+ * Mode compact recalculé au redimensionnement (gabarits DOM : tableaux).
+ * Un seul ResizeObserver par conteneur : un nouvel appel sur le même conteneur (re-rendu au
+ * changement de thème sans destroy) déconnecte l'observateur précédent, rien ne s'empile.
+ * `onFlip(compact)` n'est appelé que lorsque l'état compact change, jamais pour un simple
+ * changement de hauteur (le re-rendu du contenu ne relance donc pas de boucle).
+ * Pas d'écoute window.resize : l'observateur vit et meurt avec le conteneur.
+ *
+ * @param {HTMLElement} el Conteneur observé
+ * @param {Function} measureCompact () => boolean|null (null : largeur inconnue, élément masqué)
+ * @param {boolean} initialCompact État compact du premier rendu
+ * @param {Function} onFlip (compact: boolean) => void
+ * @returns {Function} disconnect, à appeler dans destroy()
+ */
+function observeCompactWidth(el, measureCompact, initialCompact, onFlip) {
+  const noop = function () {};
+  if (!el || typeof ResizeObserver === 'undefined' || typeof measureCompact !== 'function') return noop;
+  const KEY = '__kcCompactObserver';
+  if (el[KEY]) {
+    try { el[KEY].disconnect(); } catch (e) { /* déjà libéré */ }
+  }
+  let current = Boolean(initialCompact);
+  let frame = 0;
+  // Re-rendu différé d'une image : modifier le contenu dans le rappel même changerait la hauteur
+  // observée et déclencherait « ResizeObserver loop completed » (même parade que Chart.js).
+  const defer = typeof requestAnimationFrame === 'function' ? requestAnimationFrame : function (fn) { return setTimeout(fn, 0); };
+  const ro = new ResizeObserver(() => {
+    if (frame) return;
+    frame = defer(() => {
+      frame = 0;
+      const next = measureCompact();
+      if (next === null || next === undefined || next === current) return;
+      current = Boolean(next);
+      onFlip(current);
+    });
+  });
+  ro.observe(el);
+  el[KEY] = ro;
+  return function disconnect() {
+    ro.disconnect();
+    if (el[KEY] === ro) el[KEY] = null;
+  };
+}
+
+/**
+ * Mode compact recalculé au redimensionnement (gabarits Chart.js).
+ * Chart.js (responsive) observe déjà le conteneur du canvas avec un ResizeObserver qu'il libère
+ * au destroy : ce plugin se branche sur ce cycle via le hook `resize`, sans second observateur.
+ * Le hook passe avant l'update('resize') de Chart.js : `onFlip` peut réécrire chart.options
+ * (et chart.data) sans appeler update() lui-même.
+ *
+ * @param {Function} measureCompact (chart) => boolean|null
+ * @param {boolean} initialCompact État compact à la création
+ * @param {Function} onFlip (compact: boolean, chart) => void
+ * @returns {Object} Plugin Chart.js inline
+ */
+function createCompactResizePlugin(measureCompact, initialCompact, onFlip) {
+  let current = Boolean(initialCompact);
+  return {
+    id: 'kcCompactResize',
+    resize(chart) {
+      const next = measureCompact(chart);
+      if (next === null || next === undefined || next === current) return;
+      current = Boolean(next);
+      onFlip(current, chart);
+    }
+  };
+}
+
+/**
  * B10 (18): Scrollytelling à pas avec hystérésis (Conlen & Heer 2019 / Zacks & Tversky 2001).
  * Fraction mapping: r = (scrollTop / scrollMax) * (n - 1) in [0, n - 1].
  * Advance: r >= k + 0.65 ; Recede: r <= k - 0.65 (deadband +-0.15 around k + 0.5).
@@ -4240,6 +4309,8 @@ const KitChartsTheme = {
   animateMotionTrails,
   animateSeriesBuildup,
   initScrollytelling,
+  observeCompactWidth,
+  createCompactResizePlugin,
   animateCriticalDamping,
   kcDeltaFlashPlugin,
   attachDeltaFlash,
@@ -4319,6 +4390,8 @@ if (typeof window !== 'undefined') {
   window.animateMotionTrails = animateMotionTrails;
   window.animateSeriesBuildup = animateSeriesBuildup;
   window.initScrollytelling = initScrollytelling;
+  window.observeCompactWidth = observeCompactWidth;
+  window.createCompactResizePlugin = createCompactResizePlugin;
   window.animateCriticalDamping = animateCriticalDamping;
   window.kcDeltaFlashPlugin = kcDeltaFlashPlugin;
   window.attachDeltaFlash = attachDeltaFlash;
@@ -4402,6 +4475,8 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.animateMotionTrails = animateMotionTrails;
   module.exports.animateSeriesBuildup = animateSeriesBuildup;
   module.exports.initScrollytelling = initScrollytelling;
+  module.exports.observeCompactWidth = observeCompactWidth;
+  module.exports.createCompactResizePlugin = createCompactResizePlugin;
   module.exports.animateCriticalDamping = animateCriticalDamping;
   module.exports.kcDeltaFlashPlugin = kcDeltaFlashPlugin;
   module.exports.attachDeltaFlash = attachDeltaFlash;
