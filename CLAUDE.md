@@ -38,7 +38,7 @@ Doc d'une lib (Chart.js, plugins, d3) : Context7 avant de répondre de mémoire.
 
 - `npm run check` : tout vérifier sans rien modifier (format, lint, typecheck, tests, snapshots).
 - `npm test` (environ 10 s : intégration, parcours `make`, snapshots, benchmark de tokens).
-- `npm run test:render` (73 templates dans Chrome, réseau), `npm run test:export` (PNG, SVG, PDF),
+- `npm run test:render` (73 templates dans Chrome, réseau), `npm run test:export` (PNG, SVG, PDF), `npm run test:narrow` (petits écrans),
   `npm run test:cli` (paquet installé), `npm run bench` (coût en tokens).
 - Parcours par défaut d'un graphique : `node bin/kit-charts.js make data.csv --title … --polarity …`.
 - `npm run lint`, `npm run lint:fix`, `npm run format`, `npm run typecheck`.

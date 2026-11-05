@@ -162,16 +162,40 @@
 
     let data = JSON.parse(JSON.stringify(customData || DEFAULT_DATA));
 
-    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
-    const measureCompact = () => {
-      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      return w > 0 ? w < 460 : null;
+    // Densité choisie selon la place réelle : la version la plus complète qui tient sans défilement.
+    // 'full' : libellés entiers, totaux et moyennes. 'compact' : mois en initiales, lignes en code,
+    // totaux et moyennes masqués. 'narrow' (téléphone) : chiffres plus petits, en-tête de la
+    // première colonne retiré (les codes de ligne se lisent seuls). 'color' (dernier recours) :
+    // couleur seule, la valeur reste dans l'infobulle et pour les lecteurs d'écran.
+    const LEVELS = ['full', 'compact', 'narrow', 'color'];
+    let minWidths = null; // largeur minimale de chaque niveau, mesurée au premier rendu visible
+    const zoneWidth = () => container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+    // Niveau qui tient dans la zone ; null tant que la largeur est inconnue (conteneur masqué)
+    const measureLevel = () => {
+      const w = zoneWidth();
+      if (!w) return null;
+      if (!minWidths) {
+        minWidths = LEVELS.map((lvl) => {
+          container.innerHTML = buildHtml(lvl);
+          const el = container.firstElementChild;
+          if (!el || typeof el.getBoundingClientRect !== 'function') return 0;
+          el.style.width = 'min-content';
+          return Math.ceil(el.getBoundingClientRect().width);
+        });
+      }
+      const i = minWidths.findIndex((m) => m <= w);
+      return LEVELS[i < 0 ? LEVELS.length - 1 : i];
     };
 
     function render() {
       if (!container) return;
-      // Mode compact (zone < 460 px) : mois en initiales, régions en code, totaux et moyennes masqués
-      const compact = measureCompact() === true;
+      container.innerHTML = buildHtml(measureLevel() || 'full');
+    }
+
+    function buildHtml(level) {
+      const compact = level !== 'full';
+      const colorOnly = level === 'color';
+      const narrow = level === 'narrow' || colorOnly;
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
       const bgHeader = isDark ? '#1F232B' : (isTufte ? '#FFFFFF' : '#F8FAFC');
@@ -275,8 +299,9 @@
                   position: sticky;
                   left: 0;
                   z-index: 2;
+                  ${narrow ? 'width: 1%; white-space: nowrap;' : ''}
                 ">
-                  Région
+                  ${narrow ? '' : 'Région'}
                 </th>
       `;
 
@@ -293,6 +318,7 @@
             background: ${bgHeader};
             border-bottom: 1.5px solid ${borderStrong};
             min-width: ${compact ? 0 : 44}px;
+            ${colorOnly ? `width: ${(100 / Math.max(1, data.columns.length)).toFixed(2)}%;` : ''}
           ">
             ${escapeHtml(compact ? String(col).charAt(0) : col)}
           </th>
@@ -360,18 +386,18 @@
 
           html += `
             <td style="
-              padding: ${compact ? '4px 0' : '7px 4px'};
+              padding: ${colorOnly ? '9px 0' : (narrow ? '4px 1px' : (compact ? '4px 0' : '7px 4px'))};
               text-align: center;
               font-family: ${fontMono};
               font-weight: 500;
-              font-size: ${compact ? '0.65rem' : '0.75rem'};
+              font-size: ${narrow ? '0.6rem' : (compact ? '0.65rem' : '0.75rem')};
               background-color: ${cellBg};
               color: ${cellTextColor};
-              border-radius: 3px;
+              border-radius: ${narrow ? 2 : 3}px;
               transition: transform 0.1s ease, box-shadow 0.1s ease;
               cursor: default;
             " title="${escapeHtml(row.label)} - ${escapeHtml(val)}${escapeHtml(data.unit || '')}">
-              ${escapeHtml(val)}
+              ${colorOnly ? `<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;">${escapeHtml(val)}</span>` : escapeHtml(val)}
             </td>
           `;
         });
@@ -470,12 +496,12 @@
         </div>
       `;
 
-      container.innerHTML = html;
+      return html;
     }
 
     render();
-    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
-    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
+    // Densité recalculée quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureLevel, measureLevel(), () => render());
 
     return {
       container,
@@ -490,10 +516,12 @@
       },
       update: (newData) => {
         if (newData) data = JSON.parse(JSON.stringify(newData));
+        minWidths = null;
         render();
       },
       setTheme: (newTheme) => {
         themeName = newTheme;
+        minWidths = null;
         render();
       },
       exportCSV: () => {

@@ -392,6 +392,10 @@ function assemblePage({ title, tokens, charts, bodyHtml, offline, maxWidth, extr
       width: 100%;
       max-width: ${maxWidth || 900}px;
       margin: 0 auto;
+    }
+    /* Téléphone : marge de page réduite, la place va au graphique */
+    @media (max-width: 520px) {
+      body { padding: 0.75rem; }
     }${extraCss || ''}
     @media (prefers-reduced-motion: reduce) {
       * {

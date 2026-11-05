@@ -187,17 +187,39 @@
 
     let data = JSON.parse(JSON.stringify(customData || DEFAULT_DATA));
 
-    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
-    const measureCompact = () => {
-      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      return w > 0 ? w < 460 : null;
+    // Densité choisie selon la place réelle : la version la plus complète qui tient sans défilement.
+    // 'full' : toutes les colonnes. 'compact' : budget, N-1 et écart absolu masqués, unités
+    // retirées (rappelées dans le titre). 'narrow' (téléphone) : barre de variance masquée aussi,
+    // l'écart % garde son signe et sa couleur.
+    const LEVELS = ['full', 'compact', 'narrow'];
+    let minWidths = null; // largeur minimale de chaque niveau, mesurée au premier rendu visible
+    const zoneWidth = () => container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+    // Niveau qui tient dans la zone ; null tant que la largeur est inconnue (conteneur masqué)
+    const measureLevel = () => {
+      const w = zoneWidth();
+      if (!w) return null;
+      if (!minWidths) {
+        minWidths = LEVELS.map((lvl) => {
+          container.innerHTML = buildHtml(lvl);
+          const el = container.firstElementChild;
+          if (!el || typeof el.getBoundingClientRect !== 'function') return 0;
+          el.style.width = 'min-content';
+          return Math.ceil(el.getBoundingClientRect().width);
+        });
+      }
+      const i = minWidths.findIndex((m) => m <= w);
+      return LEVELS[i < 0 ? LEVELS.length - 1 : i];
     };
 
     function render() {
       if (!container) return;
-      // Mode compact (zone < 460 px) : colonnes budget, N-1 et écart absolu masquées, unités retirées (rappelées dans le titre)
-      const compact = measureCompact() === true;
-      const hiddenKeys = compact ? ['budget', 'priorYear', 'varAbs'] : [];
+      container.innerHTML = buildHtml(measureLevel() || 'full');
+    }
+
+    function buildHtml(level) {
+      const compact = level !== 'full';
+      const narrow = level === 'narrow';
+      const hiddenKeys = compact ? ['budget', 'priorYear', 'varAbs'].concat(narrow ? ['varBar'] : []) : [];
       const unitK = compact ? '' : ' k€';
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -328,12 +350,12 @@
             <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaAbs.toLocaleString('fr-FR')} k€
             </td>`}
-            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
+            <td style="padding: ${cp}${narrow ? '; padding-right: 10px' : ''}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaPct.toFixed(1)}%
             </td>
-            <td style="padding: ${compact ? '5px 6px' : '6px 10px'}; padding-right: 14px; text-align: center; vertical-align: middle;">
+            ${narrow ? '' : `<td style="padding: ${compact ? '5px 6px' : '6px 10px'}; padding-right: 14px; text-align: center; vertical-align: middle;">
               ${generateIBCSVarianceBarSVG(deltaPct, row.metricType, compact ? 60 : 100, 16, tokens, isDark, isTufte, isFavorable, barScalePct)}
-            </td>
+            </td>`}
           </tr>
         `;
       });
@@ -344,12 +366,12 @@
         </div>
       `;
 
-      container.innerHTML = html;
+      return html;
     }
 
     render();
-    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
-    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
+    // Densité recalculée quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureLevel, measureLevel(), () => render());
 
     return {
       container,
@@ -364,10 +386,12 @@
       },
       update: (newData) => {
         if (newData) data = JSON.parse(JSON.stringify(newData));
+        minWidths = null;
         render();
       },
       setTheme: (newTheme) => {
         themeName = newTheme;
+        minWidths = null;
         render();
       },
       exportCSV: () => {

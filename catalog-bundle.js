@@ -3,7 +3,7 @@
  * @description All kit-charts template generators pre-bundled for instant zero-CORS execution.
  * Allows index.html and npm consumers to render every catalog chart immediately on file://, http://, and Node.js.
  * @version 1.0.0
- * @generated 2026-11-04T17:59:04.625Z
+ * @generated 2026-11-05T14:13:57.049Z
  */
 
 (function(global) {
@@ -20281,18 +20281,23 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       return w > 0 ? w < 460 : null;
     };
     let compact = measureCompact() === true;
-    // Retour à la ligne des libellés d'axe : 2 lignes de `max` caractères (abrégé en carte étroite)
-    const wrapTick = (text, max, abbreviate) => {
-      const src = abbreviate ? String(text).replace(/\s*\(.*?\)\s*/g, ' ').trim() : String(text);
-      const words = src.split(/\s+/);
-      const cut = (w) => (abbreviate && w.length > max ? w.slice(0, max - 1) + '.' : w);
+    // Libellés d'axe ajustés à la largeur d'une colonne : retour à la ligne par mots ; un mot trop
+    // long pour la colonne est abrégé (« Désabo. »), jamais sous 3 lettres. `measure` donne la
+    // largeur en pixels d'un texte, `slot` la place disponible.
+    const fitTick = (text, slot, measure, maxLines) => {
+      const shorten = (w) => {
+        if (measure(w) <= slot) return w;
+        let k = w.length - 1;
+        while (k > 3 && measure(w.slice(0, k) + '.') > slot) k--;
+        return w.slice(0, k) + '.';
+      };
       const lines = [];
-      words.forEach((w) => {
+      String(text).split(/\s+/).filter(Boolean).map(shorten).forEach((w) => {
         const last = lines[lines.length - 1];
-        if (last && (last + ' ' + w).length <= max) lines[lines.length - 1] = last + ' ' + w;
+        if (last && measure(last + ' ' + w) <= slot) lines[lines.length - 1] = last + ' ' + w;
         else lines.push(w);
       });
-      return lines.map(cut);
+      return maxLines ? lines.slice(0, maxLines) : lines;
     };
     const nf = (v) => new Intl.NumberFormat('fr-FR').format(v);
 
@@ -20402,8 +20407,18 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             font: { family: tokens.fontFamily, size: compact ? 10 : 11 },
             maxRotation: 0, autoSkip: false,
             callback: function(val) {
-              const t = this.getLabelForValue(val);
-              return compact ? wrapTick(t, 7, true).slice(0, 2) : wrapTick(t, 16, false);
+              const t = String(this.getLabelForValue(val));
+              // Carte étroite : précisions entre parenthèses retirées, 2 lignes au plus
+              const text = compact ? t.replace(/\s*\(.*?\)\s*/g, ' ').trim() : t;
+              const size = compact ? 10 : 11;
+              const ctx = this.ctx;
+              const count = (this.ticks && this.ticks.length) || labels.length || 1;
+              // Place d'une colonne moins 6 px d'écart entre voisins ; largeur inconnue : pas d'abréviation
+              const slot = this.width > 0 ? this.width / count - 6 : Infinity;
+              const measure = (ctx && typeof ctx.measureText === 'function')
+                ? (str) => { ctx.save(); ctx.font = `${size}px ${tokens.fontFamily}`; const w = ctx.measureText(str).width; ctx.restore(); return w; }
+                : (str) => str.length * size * 0.55;
+              return fitTick(text, slot, measure, compact ? 2 : 0);
             }
           }
         },
@@ -24173,17 +24188,39 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     let data = JSON.parse(JSON.stringify(customData || DEFAULT_DATA));
 
-    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
-    const measureCompact = () => {
-      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      return w > 0 ? w < 460 : null;
+    // Densité choisie selon la place réelle : la version la plus complète qui tient sans défilement.
+    // 'full' : toutes les colonnes. 'compact' : budget, N-1 et écart absolu masqués, unités
+    // retirées (rappelées dans le titre). 'narrow' (téléphone) : barre de variance masquée aussi,
+    // l'écart % garde son signe et sa couleur.
+    const LEVELS = ['full', 'compact', 'narrow'];
+    let minWidths = null; // largeur minimale de chaque niveau, mesurée au premier rendu visible
+    const zoneWidth = () => container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+    // Niveau qui tient dans la zone ; null tant que la largeur est inconnue (conteneur masqué)
+    const measureLevel = () => {
+      const w = zoneWidth();
+      if (!w) return null;
+      if (!minWidths) {
+        minWidths = LEVELS.map((lvl) => {
+          container.innerHTML = buildHtml(lvl);
+          const el = container.firstElementChild;
+          if (!el || typeof el.getBoundingClientRect !== 'function') return 0;
+          el.style.width = 'min-content';
+          return Math.ceil(el.getBoundingClientRect().width);
+        });
+      }
+      const i = minWidths.findIndex((m) => m <= w);
+      return LEVELS[i < 0 ? LEVELS.length - 1 : i];
     };
 
     function render() {
       if (!container) return;
-      // Mode compact (zone < 460 px) : colonnes budget, N-1 et écart absolu masquées, unités retirées (rappelées dans le titre)
-      const compact = measureCompact() === true;
-      const hiddenKeys = compact ? ['budget', 'priorYear', 'varAbs'] : [];
+      container.innerHTML = buildHtml(measureLevel() || 'full');
+    }
+
+    function buildHtml(level) {
+      const compact = level !== 'full';
+      const narrow = level === 'narrow';
+      const hiddenKeys = compact ? ['budget', 'priorYear', 'varAbs'].concat(narrow ? ['varBar'] : []) : [];
       const unitK = compact ? '' : ' k€';
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
@@ -24314,12 +24351,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaAbs.toLocaleString('fr-FR')} k€
             </td>`}
-            <td style="padding: ${cp}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
+            <td style="padding: ${cp}${narrow ? '; padding-right: 10px' : ''}; white-space: nowrap; text-align: right; font-family: ${fontMono}; color: ${deltaColor}; vertical-align: middle;">
               ${arrow}${deltaPct.toFixed(1)}%
             </td>
-            <td style="padding: ${compact ? '5px 6px' : '6px 10px'}; padding-right: 14px; text-align: center; vertical-align: middle;">
+            ${narrow ? '' : `<td style="padding: ${compact ? '5px 6px' : '6px 10px'}; padding-right: 14px; text-align: center; vertical-align: middle;">
               ${generateIBCSVarianceBarSVG(deltaPct, row.metricType, compact ? 60 : 100, 16, tokens, isDark, isTufte, isFavorable, barScalePct)}
-            </td>
+            </td>`}
           </tr>
         `;
       });
@@ -24330,12 +24367,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         </div>
       `;
 
-      container.innerHTML = html;
+      return html;
     }
 
     render();
-    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
-    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
+    // Densité recalculée quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureLevel, measureLevel(), () => render());
 
     return {
       container,
@@ -24350,10 +24387,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       update: (newData) => {
         if (newData) data = JSON.parse(JSON.stringify(newData));
+        minWidths = null;
         render();
       },
       setTheme: (newTheme) => {
         themeName = newTheme;
+        minWidths = null;
         render();
       },
       exportCSV: () => {
@@ -24539,16 +24578,40 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     let data = JSON.parse(JSON.stringify(customData || DEFAULT_DATA));
 
-    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
-    const measureCompact = () => {
-      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      return w > 0 ? w < 460 : null;
+    // Densité choisie selon la place réelle : la version la plus complète qui tient sans défilement.
+    // 'full' : libellés entiers, totaux et moyennes. 'compact' : mois en initiales, lignes en code,
+    // totaux et moyennes masqués. 'narrow' (téléphone) : chiffres plus petits, en-tête de la
+    // première colonne retiré (les codes de ligne se lisent seuls). 'color' (dernier recours) :
+    // couleur seule, la valeur reste dans l'infobulle et pour les lecteurs d'écran.
+    const LEVELS = ['full', 'compact', 'narrow', 'color'];
+    let minWidths = null; // largeur minimale de chaque niveau, mesurée au premier rendu visible
+    const zoneWidth = () => container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+    // Niveau qui tient dans la zone ; null tant que la largeur est inconnue (conteneur masqué)
+    const measureLevel = () => {
+      const w = zoneWidth();
+      if (!w) return null;
+      if (!minWidths) {
+        minWidths = LEVELS.map((lvl) => {
+          container.innerHTML = buildHtml(lvl);
+          const el = container.firstElementChild;
+          if (!el || typeof el.getBoundingClientRect !== 'function') return 0;
+          el.style.width = 'min-content';
+          return Math.ceil(el.getBoundingClientRect().width);
+        });
+      }
+      const i = minWidths.findIndex((m) => m <= w);
+      return LEVELS[i < 0 ? LEVELS.length - 1 : i];
     };
 
     function render() {
       if (!container) return;
-      // Mode compact (zone < 460 px) : mois en initiales, régions en code, totaux et moyennes masqués
-      const compact = measureCompact() === true;
+      container.innerHTML = buildHtml(measureLevel() || 'full');
+    }
+
+    function buildHtml(level) {
+      const compact = level !== 'full';
+      const colorOnly = level === 'color';
+      const narrow = level === 'narrow' || colorOnly;
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
       const bgHeader = isDark ? '#1F232B' : (isTufte ? '#FFFFFF' : '#F8FAFC');
@@ -24652,8 +24715,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                   position: sticky;
                   left: 0;
                   z-index: 2;
+                  ${narrow ? 'width: 1%; white-space: nowrap;' : ''}
                 ">
-                  Région
+                  ${narrow ? '' : 'Région'}
                 </th>
       `;
 
@@ -24670,6 +24734,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             background: ${bgHeader};
             border-bottom: 1.5px solid ${borderStrong};
             min-width: ${compact ? 0 : 44}px;
+            ${colorOnly ? `width: ${(100 / Math.max(1, data.columns.length)).toFixed(2)}%;` : ''}
           ">
             ${escapeHtml(compact ? String(col).charAt(0) : col)}
           </th>
@@ -24737,18 +24802,18 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
           html += `
             <td style="
-              padding: ${compact ? '4px 0' : '7px 4px'};
+              padding: ${colorOnly ? '9px 0' : (narrow ? '4px 1px' : (compact ? '4px 0' : '7px 4px'))};
               text-align: center;
               font-family: ${fontMono};
               font-weight: 500;
-              font-size: ${compact ? '0.65rem' : '0.75rem'};
+              font-size: ${narrow ? '0.6rem' : (compact ? '0.65rem' : '0.75rem')};
               background-color: ${cellBg};
               color: ${cellTextColor};
-              border-radius: 3px;
+              border-radius: ${narrow ? 2 : 3}px;
               transition: transform 0.1s ease, box-shadow 0.1s ease;
               cursor: default;
             " title="${escapeHtml(row.label)} - ${escapeHtml(val)}${escapeHtml(data.unit || '')}">
-              ${escapeHtml(val)}
+              ${colorOnly ? `<span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap;">${escapeHtml(val)}</span>` : escapeHtml(val)}
             </td>
           `;
         });
@@ -24847,12 +24912,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         </div>
       `;
 
-      container.innerHTML = html;
+      return html;
     }
 
     render();
-    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
-    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
+    // Densité recalculée quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureLevel, measureLevel(), () => render());
 
     return {
       container,
@@ -24867,10 +24932,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       },
       update: (newData) => {
         if (newData) data = JSON.parse(JSON.stringify(newData));
+        minWidths = null;
         render();
       },
       setTheme: (newTheme) => {
         themeName = newTheme;
+        minWidths = null;
         render();
       },
       exportCSV: () => {

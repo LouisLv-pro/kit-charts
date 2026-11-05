@@ -146,9 +146,15 @@ function chooseTemplate(loaded, opts) {
     if (pick) break;
   }
   if (!pick) {
+    // Tous écartés faute de points : agréger aggraverait le manque, on propose la comparaison.
+    const minimums = rec.rejected.map(r => r.reasons.map(x => x.match(/^N=(\d+) < minimum (\d+)$/)).find(Boolean));
+    const tooFew = minimums.length > 0 && minimums.every(Boolean);
+    const hint = tooFew
+      ? `Trop peu de données (${minimums[0][1]} points) : il en faut ${Math.min(...minimums.map(m => Number(m[2])))} au moins. Ajouter des observations, ou comparer les valeurs une à une (--intent comparison).`
+      : 'Agréger les données (top N + « Autres »), changer d\'intention (--intent) ou imposer un template (--template).';
     throw new MakeError(`Aucun template éligible pour l'intention "${rec.intent}".`, {
       rejected: rec.rejected.map(r => `${r.id} (${r.reasons.join(' ; ')})`).concat(shapeRejected),
-      hint: 'Agréger les données (top N + « Autres »), changer d\'intention (--intent) ou imposer un template (--template).'
+      hint
     });
   }
   const ranked = [rec.recommended, ...rec.eligible].filter(Boolean);

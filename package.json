@@ -42,6 +42,7 @@
     "test:render": "node .agents/skills/kit-charts/scripts/render-check.js --all-templates",
     "test:cli": "node test/cli-smoke.js",
     "test:export": "node test/export-tests.js",
+    "test:narrow": "node test/narrow-tests.js",
     "bench": "node test/token-benchmark.js",
     "vendor": "node .agents/skills/kit-charts/scripts/vendor-fetch.js",
     "make": "node bin/kit-charts.js make"

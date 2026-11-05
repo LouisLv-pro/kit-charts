@@ -51,7 +51,10 @@ Restes mineurs (corrigés en novembre 2026, vérifiés sur captures en clair et 
 - `bubble-map` : Londres et Paris restent distinguables. Les petites bulles sont dessinées au-dessus des grandes, le remplissage est translucide, chaque cercle garde un contour entier (trait sombre bordé de la couleur du fond, dessiné au-dessus de toutes les bulles) et un point au centre marque le lieu. Les rayons ne changent pas : la surface reste proportionnelle à la valeur.
 - Mode compact recalculé quand le conteneur change de largeur, dans les deux sens. Tableaux (`table-*`) : un ResizeObserver par conteneur, libéré au destroy, remplacé si le tableau est recréé (changement de thème) ; le re-rendu n'a lieu que si l'état compact bascule. Graphiques Chart.js (`waterfall-cumulative-line`, `bar-target-overlay`, `pareto-chart`, `stacked-total-line`, `sunburst`, `marimekko-chart`, `sankey-diagram`) : options reconstruites via le cycle de redimensionnement de Chart.js, qui observe déjà le conteneur et se libère au destroy. Aucune écoute de window.resize. `waterfall-chart` était déjà dynamique (largeur lue à chaque calcul des graduations).
 
-Encore visible à 380 px, hors de ce lot : libellés d'axe serrés sur `waterfall-cumulative-line` (mots abrégés qui se touchent), tableaux `table-financial-variance` et `table-heatmap-matrix` plus larges que la carte (défilement horizontal).
+Petits écrans (corrigés en novembre 2026, mesurés par `npm run test:narrow` de 340 à 1000 px) :
+- `waterfall-cumulative-line` : chaque libellé d'axe est ajusté à la largeur réelle de sa colonne. Un mot trop long est abrégé (« Désa. »), jamais sous 3 lettres ; deux libellés voisins gardent au moins 2 px d'écart.
+- `table-financial-variance` et `table-heatmap-matrix` : le tableau affiche la version la plus complète qui tient sans défilement. Financier : toutes les colonnes, puis sans budget ni N-1, puis sans la barre de variance (l'écart % garde signe et couleur). Heatmap : libellés entiers et totaux, puis initiales et codes, puis chiffres plus petits, puis couleur seule (valeur dans l'infobulle et pour les lecteurs d'écran).
+- Galerie : une carte ne peut plus élargir sa colonne (`min-width: 0`). Page compilée : marge réduite sur téléphone.
 
 ## Détail par template (constats initiaux)
 
