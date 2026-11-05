@@ -26,7 +26,7 @@ if (fs.existsSync(WORLD_ATLAS_PATH)) {
 // Plugins Chart.js non-core requis par template, injectés après chart.umd.min.js
 // pour éviter les canvas vides (erreur 'type not registered').
 // Source unique des URL épinglées : vendor-pins.js (alignée sur les previews).
-const { CHART_PLUGINS, VENDOR } = require('./vendor-pins.js');
+const { CHART_PLUGINS, VENDOR, parsePinnedUrl, readVendor } = require('./vendor-pins.js');
 
 /**
  * Charge le registre des templates
@@ -67,13 +67,14 @@ function generateId(prefix = 'kc') {
 }
 
 /**
- * Compile une spécification Dataviz en page HTML autonome ou snippet
+ * Prépare un graphique : validation, fragment DOM et script d'initialisation.
+ * Partagé par la page à un graphique (compileChart) et la page à plusieurs (compilePage).
  *
- * @param {Object} rawSpec - Spécification (dataviz-spec.json ou objet options)
- * @param {Object} [options={}] - Options de compilation (output, format, standalone, strict)
- * @returns {Object} { success: boolean, html: string, outputPath?: string, report: Object }
+ * @param {Object} rawSpec - Spécification dataviz
+ * @param {Object} [options={}] - { strict, theme (impose le thème, pages multi-graphiques) }
+ * @returns {Object} parties du graphique
  */
-function compileChart(rawSpec, options = {}) {
+function prepareChart(rawSpec, options = {}) {
   const registry = loadRegistry();
   const themeModule = loadThemeModule();
 
@@ -88,24 +89,19 @@ function compileChart(rawSpec, options = {}) {
     throw new Error(`Template "${templateId}" non trouvé dans le registre officiel (${registry.templates?.length || 0} templates).`);
   }
 
-  // Résolution du thème
-  const themeName = rawSpec.colorStrategy?.themeName || rawSpec.theme || options.theme || themeModule.DEFAULT_THEME || 'colorbrewer-accessible';
+  // Résolution du thème (imposé par la page dans une page à plusieurs graphiques)
+  const themeName = options.theme || rawSpec.colorStrategy?.themeName || rawSpec.theme || themeModule.DEFAULT_THEME || 'colorbrewer-accessible';
   const tokens = themeModule.getThemeTokens ? themeModule.getThemeTokens(themeName) : {};
 
   // Validation de la spec
   const validationReport = validateChartSpec(rawSpec, { strict: options.strict });
   if (options.strict && !validationReport.valid) {
-    throw new Error(`Échec de validation de la spec dataviz :\n${validationReport.errors.map(e => ` - [${e.ruleId}] ${e.message}${e.suggestion ? `\n   Correctif : ${e.suggestion}` : ''}`).join('\n')}`);
+    throw new Error(`Échec de validation de la spec dataviz${options.label ? ` (${options.label})` : ''} :\n${validationReport.errors.map(e => ` - [${e.ruleId}] ${e.message}${e.suggestion ? `\n   Correctif : ${e.suggestion}` : ''}`).join('\n')}`);
   }
 
   // Chargement des fichiers du triplet
   const htmlTemplateContent = readFileSafe(templateEntry.paths.html);
   const jsTemplateContent = readFileSafe(templateEntry.paths.js);
-  const themeTokensContent = readFileSafe('themes/theme-tokens.js');
-  let statHelpersContent = '';
-  if (fs.existsSync(STATS_PATH)) {
-    statHelpersContent = readFileSafe('themes/stat-helpers.js');
-  }
 
   // Détermination des métadonnées de layout
   const layout = rawSpec.layout || {};
@@ -123,7 +119,7 @@ function compileChart(rawSpec, options = {}) {
 
   // Options avancées passées à createChart
   const chartOpts = Object.assign({}, rawSpec.options || {}, {
-    colorStrategy: rawSpec.colorStrategy || {},
+    colorStrategy: Object.assign({}, rawSpec.colorStrategy || {}, options.theme ? { themeName } : {}),
     cognitiveFeatures: rawSpec.cognitiveFeatures || {},
     metricPolarity: rawSpec.colorStrategy?.metricPolarity || rawSpec.metricPolarity,
     showDataLabels: rawSpec.cognitiveFeatures?.showDataLabels,
@@ -143,23 +139,6 @@ function compileChart(rawSpec, options = {}) {
     .replace(/\{\{HEIGHT\}\}/g, String(height))
     .replace(/\{\{FOOTNOTE\}\}/g, escapeHtml(footnote));
 
-  // Injection des variables CSS de thème
-  const cssVars = `
-    --kc-bg: ${tokens.bg || '#FFFFFF'};
-    --kc-bg-card: ${tokens.surface || tokens.surfaceRaised || '#FFFFFF'};
-    --kc-border: ${tokens.border || '#E2E8F0'};
-    --kc-border-strong: ${tokens.borderStrong || '#CBD5E1'};
-    --kc-text-primary: ${tokens.textPrimary || '#0F172A'};
-    --kc-text-secondary: ${tokens.textSecondary || '#334155'};
-    --kc-text-muted: ${tokens.textMuted || '#64748B'};
-    --kc-font-family: ${tokens.fontFamily || 'Inter, sans-serif'};
-    --kc-font-mono: ${tokens.fontMono || 'monospace'};
-    --kc-focal: ${tokens.emphasis?.focal || tokens.palette?.[0] || '#2B8CBE'};
-    --kc-positive: ${tokens.semantic?.positive || '#2E7D32'};
-    --kc-negative: ${tokens.semantic?.negative || '#C62828'};
-    --kc-warning: ${tokens.semantic?.warning || '#EF6C00'};
-  `;
-
   // Cartes KPI : renderCard() dessine la carte complète ; layout.footnote (et layout.title) y sont
   // reportés quand formattedData ne les fournit pas. L'échappement HTML est fait par les templates
   // eux-mêmes, au point d'injection (escapeHtml de theme-tokens.js).
@@ -170,7 +149,7 @@ function compileChart(rawSpec, options = {}) {
     if (renderData.title === undefined && layout.title) renderData.title = layout.title;
     if (renderData.footnote === undefined && footnote) renderData.footnote = footnote;
   }
-  // Les JSON sérialisés dans <script> ont leurs < en \u003c : aucune donnée ne peut fermer le bloc.
+  // Les JSON sérialisés dans <script> ont leurs < en < : aucune donnée ne peut fermer le bloc.
 
   // Construction du script d'initialisation
   const serializedData = renderData ? JSON.stringify(renderData, null, 2).replace(/</g, '\\u003c') : 'null';
@@ -243,38 +222,78 @@ function compileChart(rawSpec, options = {}) {
 })();
   `.trim();
 
-  // Mode Snippet
-  if (options.format === 'snippet') {
-    const snippetHtml = `
-<!-- kit-charts snippet : ${templateId} (${themeName}) -->
-<div style="${cssVars}">
-  ${domFragment}
-</div>
-<script>
-${initScriptContent}
-</script>
-    `.trim();
+  return {
+    templateId,
+    templateEntry,
+    themeName,
+    tokens,
+    validationReport,
+    title,
+    domFragment,
+    initScriptContent,
+    jsTemplateContent,
+    plugins: CHART_PLUGINS[templateId] || [],
+    needsAtlas: templateId === 'choropleth-map' || templateId === 'bubble-map'
+  };
+}
 
-    return {
-      success: true,
-      html: snippetHtml,
-      templateId,
-      themeName,
-      validationReport
-    };
-  }
+/** Variables CSS de thème injectées dans :root (page) ou sur l'enveloppe (snippet). */
+function themeCssVars(tokens) {
+  return `
+    --kc-bg: ${tokens.bg || '#FFFFFF'};
+    --kc-bg-card: ${tokens.surface || tokens.surfaceRaised || '#FFFFFF'};
+    --kc-border: ${tokens.border || '#E2E8F0'};
+    --kc-border-strong: ${tokens.borderStrong || '#CBD5E1'};
+    --kc-text-primary: ${tokens.textPrimary || '#0F172A'};
+    --kc-text-secondary: ${tokens.textSecondary || '#334155'};
+    --kc-text-muted: ${tokens.textMuted || '#64748B'};
+    --kc-font-family: ${tokens.fontFamily || 'Inter, sans-serif'};
+    --kc-font-mono: ${tokens.fontMono || 'monospace'};
+    --kc-focal: ${tokens.emphasis?.focal || tokens.palette?.[0] || '#2B8CBE'};
+    --kc-positive: ${tokens.semantic?.positive || '#2E7D32'};
+    --kc-negative: ${tokens.semantic?.negative || '#C62828'};
+    --kc-warning: ${tokens.semantic?.warning || '#EF6C00'};
+  `;
+}
 
-  // Mode Page HTML Complète Autonome
-  const googleFontsLink = tokens.googleFontsUrl
+/**
+ * Balise d'une dépendance épinglée : <script src> vers le CDN, ou contenu local vérifié
+ * (SHA-384) en mode hors ligne. `</script` est neutralisé dans le contenu inliné.
+ */
+function vendorScriptTag(url, offline) {
+  if (!offline) return `  <script src="${url}"></script>`;
+  return `  <!-- ${parsePinnedUrl(url).pkg}@${parsePinnedUrl(url).version} (copie locale vérifiée) -->\n  <script>\n${readVendor(url).replace(/<\/script/gi, '<\\/script')}\n  </script>`;
+}
+
+/**
+ * Assemble une page HTML autonome autour d'un ou plusieurs graphiques préparés.
+ * Moteur de thèmes, fonctions statistiques et code de chaque template ne sont inclus qu'une fois.
+ */
+function assemblePage({ title, tokens, charts, bodyHtml, offline, maxWidth, extraCss }) {
+  const themeTokensContent = readFileSafe('themes/theme-tokens.js');
+  const statHelpersContent = fs.existsSync(STATS_PATH) ? readFileSafe('themes/stat-helpers.js') : '';
+
+  // Hors ligne : pas de Google Fonts, la pile de polices du thème se replie sur les polices système.
+  const googleFontsLink = tokens.googleFontsUrl && !offline
     ? `<link rel="preconnect" href="https://fonts.googleapis.com">\n  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n  <link href="${tokens.googleFontsUrl}" rel="stylesheet">`
     : '';
 
-  // Injecte les plugins Chart.js non-core requis par le template (ex: treemap, sankey, candlestick)
-  const chartPluginTags = (CHART_PLUGINS[templateId] || [])
-    .map(u => `  <script src="${u}"></script>`)
-    .join('\n');
+  // Plugins Chart.js non-core requis (ex : treemap, sankey, candlestick), dédoublonnés dans l'ordre.
+  const pluginUrls = [];
+  charts.forEach(c => c.plugins.forEach(u => { if (!pluginUrls.includes(u)) pluginUrls.push(u); }));
+  const chartPluginTags = pluginUrls.map(u => vendorScriptTag(u, offline)).join('\n');
 
-  const fullHtml = `<!DOCTYPE html>
+  const templateScripts = [];
+  const seen = new Set();
+  charts.forEach(c => {
+    if (seen.has(c.templateId)) return;
+    seen.add(c.templateId);
+    templateScripts.push(`  <!-- Logique Spécifique du Template : ${c.templateId} -->\n  <script>\n${c.jsTemplateContent}\n  </script>`);
+  });
+  const needsAtlas = charts.some(c => c.needsAtlas) && WORLD_ATLAS_CODE;
+  const initScripts = charts.map(c => c.initScriptContent).join('\n');
+
+  return `<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8">
@@ -290,7 +309,7 @@ ${initScriptContent}
   ${googleFontsLink}
   <style>
     :root {
-      ${cssVars}
+      ${themeCssVars(tokens)}
     }
     *, *::before, *::after {
       box-sizing: border-box;
@@ -311,9 +330,9 @@ ${initScriptContent}
     }
     .kit-charts-standalone-container {
       width: 100%;
-      max-width: 900px;
+      max-width: ${maxWidth || 900}px;
       margin: 0 auto;
-    }
+    }${extraCss || ''}
     @media (prefers-reduced-motion: reduce) {
       * {
         animation-duration: 0.01ms !important;
@@ -324,8 +343,8 @@ ${initScriptContent}
   </style>
 
   <!-- Dépendances Chart.js UMD Officielles -->
-  <script src="${VENDOR['chart.js']}"></script>
-  <!-- Plugins Chart.js non-core requis par ce template (contrôleurs treemap / matrix / sankey / candlestick) -->
+${vendorScriptTag(VENDOR['chart.js'], offline)}
+  <!-- Plugins Chart.js non-core requis (contrôleurs treemap / matrix / sankey / candlestick) -->
 ${chartPluginTags}
 
   <!-- Fonctions Statistiques kit-charts : chargées AVANT le moteur de thèmes, qui les
@@ -342,61 +361,104 @@ ${statHelpersContent}
   <script>
 ${themeTokensContent}
   </script>
-${(templateId === 'choropleth-map' || templateId === 'bubble-map') && WORLD_ATLAS_CODE ? `
+${needsAtlas ? `
   <!-- Données Cartographiques World Atlas 110m -->
   <script>
 ${WORLD_ATLAS_CODE}
   </script>` : ''}
 
-  <!-- Logique Spécifique du Template : ${templateId} -->
-  <script>
-${jsTemplateContent}
-  </script>
+${templateScripts.join('\n')}
 </head>
 <body>
   <div class="kit-charts-standalone-container">
-    ${domFragment}
+    ${bodyHtml}
   </div>
 
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      ${initScriptContent}
+      ${initScripts}
     });
   </script>
 </body>
 </html>`;
+}
 
-  // Sauvegarde sur disque si demandée (toujours isolée dans un sous-dossier propre)
-  let finalOutputPath = options.output;
-  if (finalOutputPath) {
-    let absOutput = path.isAbsolute(finalOutputPath) ? finalOutputPath : path.resolve(process.cwd(), finalOutputPath);
-    const parsedPath = path.parse(absOutput);
-    const parentDirName = path.basename(parsedPath.dir);
+/**
+ * Résout le chemin de sortie (toujours isolé dans un sous-dossier propre) et écrit la page
+ * et sa spec à côté.
+ */
+function writeOutput(outputOption, html, rawSpec) {
+  let absOutput = path.isAbsolute(outputOption) ? outputOption : path.resolve(process.cwd(), outputOption);
+  const parsedPath = path.parse(absOutput);
+  const parentDirName = path.basename(parsedPath.dir);
 
-    // Si le fichier cible est placé directement à la racine de output/ (ex: output/mon-graph.html)
-    // on l'isole automatiquement dans son sous-dossier dédié output/mon-graph/mon-graph.html
-    if (parentDirName === 'output' && parsedPath.ext) {
-      const subfolderName = parsedPath.name;
-      absOutput = path.join(parsedPath.dir, subfolderName, `${subfolderName}.html`);
-    } else if (!parsedPath.ext) {
-      // Si c'est un dossier (ex: output/mon-graph), on génère index.html à l'intérieur
-      absOutput = path.join(absOutput, 'index.html');
-    }
-
-    const parentDir = path.dirname(absOutput);
-    if (!fs.existsSync(parentDir)) {
-      fs.mkdirSync(parentDir, { recursive: true });
-    }
-    fs.writeFileSync(absOutput, fullHtml, 'utf8');
-
-    // Sauvegarde automatique du contrat JSON associé dans le même sous-dossier
-    if (rawSpec && typeof rawSpec === 'object') {
-      const specPath = path.join(parentDir, 'spec.json');
-      fs.writeFileSync(specPath, JSON.stringify(rawSpec, null, 2), 'utf8');
-    }
-
-    finalOutputPath = absOutput;
+  // Si le fichier cible est placé directement à la racine de output/ (ex: output/mon-graph.html)
+  // on l'isole automatiquement dans son sous-dossier dédié output/mon-graph/mon-graph.html
+  if (parentDirName === 'output' && parsedPath.ext) {
+    const subfolderName = parsedPath.name;
+    absOutput = path.join(parsedPath.dir, subfolderName, `${subfolderName}.html`);
+  } else if (!parsedPath.ext) {
+    // Si c'est un dossier (ex: output/mon-graph), on génère index.html à l'intérieur
+    absOutput = path.join(absOutput, 'index.html');
   }
+
+  const parentDir = path.dirname(absOutput);
+  if (!fs.existsSync(parentDir)) {
+    fs.mkdirSync(parentDir, { recursive: true });
+  }
+  fs.writeFileSync(absOutput, html, 'utf8');
+
+  // Sauvegarde automatique du contrat JSON associé dans le même sous-dossier
+  if (rawSpec && typeof rawSpec === 'object') {
+    fs.writeFileSync(path.join(parentDir, 'spec.json'), JSON.stringify(rawSpec, null, 2), 'utf8');
+  }
+  return absOutput;
+}
+
+/**
+ * Compile une spécification Dataviz en page HTML autonome ou snippet.
+ * Une spec qui porte `charts` (tableau de specs) est une page à plusieurs graphiques : compilePage.
+ *
+ * @param {Object} rawSpec - Spécification (dataviz-spec.json ou objet options)
+ * @param {Object} [options={}] - Options de compilation (output, format, strict, offline)
+ * @returns {Object} { success: boolean, html: string, outputPath?: string, report: Object }
+ */
+function compileChart(rawSpec, options = {}) {
+  if (rawSpec && Array.isArray(rawSpec.charts)) return compilePage(rawSpec, options);
+
+  const part = prepareChart(rawSpec, options);
+  const { templateId, themeName, tokens, validationReport } = part;
+
+  // Mode Snippet
+  if (options.format === 'snippet') {
+    const snippetHtml = `
+<!-- kit-charts snippet : ${templateId} (${themeName}) -->
+<div style="${themeCssVars(tokens)}">
+  ${part.domFragment}
+</div>
+<script>
+${part.initScriptContent}
+</script>
+    `.trim();
+
+    return {
+      success: true,
+      html: snippetHtml,
+      templateId,
+      themeName,
+      validationReport
+    };
+  }
+
+  const fullHtml = assemblePage({
+    title: part.title,
+    tokens,
+    charts: [part],
+    bodyHtml: part.domFragment,
+    offline: options.offline
+  });
+
+  const finalOutputPath = options.output ? writeOutput(options.output, fullHtml, rawSpec) : options.output;
 
   return {
     success: true,
@@ -407,6 +469,131 @@ ${jsTemplateContent}
     validationReport,
     stats: {
       htmlLength: fullHtml.length,
+      generatedAt: new Date().toISOString()
+    }
+  };
+}
+
+// Au-delà, le lecteur ne retient plus l'ensemble : mieux vaut deux pages.
+const MAX_CHARTS_PER_PAGE = 6;
+const MAX_PAGE_COLUMNS = 3;
+
+/**
+ * Valide une page à plusieurs graphiques : chaque graphique avec validateChartSpec (erreurs
+ * préfixées par charts[i]), plus les règles de page (nombre de graphiques, colonnes). Le thème
+ * de la page s'impose à tous les graphiques : un seul thème par page.
+ * @param {Object} pageSpec - { layout, colorStrategy: { themeName }, charts: [spec, ...] }
+ * @returns {Object} rapport { valid, errors, warnings, summary, charts: [rapport par graphique] }
+ */
+function validatePageSpec(pageSpec) {
+  const errors = [];
+  const warnings = [];
+  const charts = Array.isArray(pageSpec.charts) ? pageSpec.charts : [];
+  const layout = pageSpec.layout || {};
+  if (charts.length === 0) {
+    errors.push({ ruleId: 'PAGE_EMPTY', message: 'La page ne contient aucun graphique (charts vide).', suggestion: 'Ajouter au moins une spec dans charts.' });
+  }
+  if (charts.length > MAX_CHARTS_PER_PAGE) {
+    errors.push({ ruleId: 'PAGE_TOO_MANY_CHARTS', message: `${charts.length} graphiques sur une page (maximum ${MAX_CHARTS_PER_PAGE}) : le lecteur ne retient plus l'ensemble.`, suggestion: 'Garder les graphiques qui portent le message, ou répartir sur deux pages.' });
+  }
+  const columns = layout.columns === undefined ? null : layout.columns;
+  if (columns !== null && (!Number.isInteger(columns) || columns < 1 || columns > MAX_PAGE_COLUMNS)) {
+    errors.push({ ruleId: 'PAGE_COLUMNS', message: `layout.columns = ${JSON.stringify(columns)} : entier de 1 à ${MAX_PAGE_COLUMNS} attendu.`, suggestion: '2 colonnes pour 2 à 4 graphiques, 3 pour une rangée de cartes KPI.' });
+  }
+  if (!layout.title || !String(layout.title).trim()) {
+    warnings.push({ ruleId: 'PAGE_MISSING_TITLE', message: 'La page n\'a pas de titre (layout.title).', suggestion: 'Un titre de page qui énonce le message d\'ensemble.' });
+  }
+  const reports = charts.map((spec, i) => {
+    const r = validateChartSpec(spec);
+    r.errors.forEach(e => errors.push(Object.assign({}, e, { message: `charts[${i}] (${spec.targetTemplateId || '?'}) : ${e.message}` })));
+    r.warnings.forEach(w => warnings.push(Object.assign({}, w, { message: `charts[${i}] (${spec.targetTemplateId || '?'}) : ${w.message}` })));
+    return r;
+  });
+  const valid = errors.length === 0;
+  return {
+    valid,
+    errors,
+    warnings,
+    charts: reports,
+    summary: valid
+      ? `Page conforme : ${charts.length} graphique(s), ${warnings.length} avertissement(s).`
+      : `Page non conforme : ${errors.length} erreur(s) bloquante(s), ${warnings.length} avertissement(s).`
+  };
+}
+
+/**
+ * Compile une page à plusieurs graphiques (tableau de bord, rapport) en un seul HTML :
+ * un thème, une grille, et le code partagé chargé une seule fois.
+ *
+ * pageSpec = {
+ *   layout: { title, subtitle, footnote, columns: 1..3 },
+ *   colorStrategy: { themeName },
+ *   charts: [ spec, ... ]   // specs habituelles ; layout.span (1..columns) élargit une cellule
+ * }
+ */
+function compilePage(pageSpec, options = {}) {
+  const themeModule = loadThemeModule();
+  const themeName = pageSpec.colorStrategy?.themeName || pageSpec.charts?.find(c => c.colorStrategy?.themeName)?.colorStrategy.themeName || themeModule.DEFAULT_THEME || 'colorbrewer-accessible';
+  const tokens = themeModule.getThemeTokens(themeName);
+  const validationReport = validatePageSpec(pageSpec);
+  if (options.strict && !validationReport.valid) {
+    throw new Error(`Échec de validation de la page :\n${validationReport.errors.map(e => ` - [${e.ruleId}] ${e.message}${e.suggestion ? `\n   Correctif : ${e.suggestion}` : ''}`).join('\n')}`);
+  }
+
+  const layout = pageSpec.layout || {};
+  const charts = pageSpec.charts.map((spec, i) => prepareChart(spec, { strict: false, theme: themeName, label: `charts[${i}]` }));
+  const columns = Math.min(Math.max(parseInt(layout.columns, 10) || (charts.length >= 2 ? 2 : 1), 1), MAX_PAGE_COLUMNS);
+  const cells = charts.map((c, i) => {
+    const span = Math.min(Math.max(parseInt(pageSpec.charts[i].layout?.span, 10) || 1, 1), columns);
+    return `<div class="kc-page-cell"${span > 1 ? ` style="grid-column: span ${span}"` : ''}>\n      ${c.domFragment}\n    </div>`;
+  });
+  const title = layout.title || 'kit-charts';
+  const header = `<header class="kc-page-header">
+      ${layout.title ? `<h1 class="kc-page-title">${escapeHtml(layout.title)}</h1>` : ''}
+      ${layout.subtitle ? `<p class="kc-page-subtitle">${escapeHtml(layout.subtitle)}</p>` : ''}
+    </header>`;
+  const footer = layout.footnote ? `<p class="kc-page-footnote">${escapeHtml(layout.footnote)}</p>` : '';
+  const bodyHtml = `<div class="kc-page" data-kc-page="${charts.length}">
+    ${header}
+    <div class="kc-page-grid" style="--kc-cols: ${columns}">
+    ${cells.join('\n    ')}
+    </div>
+    ${footer}
+  </div>`;
+  const extraCss = `
+    .kc-page { display: flex; flex-direction: column; gap: 1.5rem; }
+    .kc-page-title { font-size: 1.6rem; font-weight: 700; line-height: 1.25; color: var(--kc-text-primary); }
+    .kc-page-subtitle { margin-top: 0.35rem; font-size: 1rem; color: var(--kc-text-secondary); }
+    .kc-page-footnote { font-size: 0.8rem; color: var(--kc-text-muted); }
+    .kc-page-grid { display: grid; grid-template-columns: repeat(var(--kc-cols), minmax(0, 1fr)); gap: 1.25rem; align-items: start; }
+    .kc-page-cell { min-width: 0; }
+    @media (max-width: 760px) {
+      .kc-page-grid { grid-template-columns: minmax(0, 1fr); }
+      .kc-page-cell { grid-column: auto !important; }
+    }`;
+
+  const fullHtml = assemblePage({
+    title,
+    tokens,
+    charts,
+    bodyHtml,
+    offline: options.offline,
+    maxWidth: columns === 1 ? 900 : columns === 2 ? 1240 : 1440,
+    extraCss
+  });
+
+  const finalOutputPath = options.output ? writeOutput(options.output, fullHtml, pageSpec) : options.output;
+  return {
+    success: true,
+    html: fullHtml,
+    outputPath: finalOutputPath,
+    templateId: charts.map(c => c.templateId).join(', '),
+    templateIds: charts.map(c => c.templateId),
+    themeName,
+    validationReport,
+    stats: {
+      htmlLength: fullHtml.length,
+      charts: charts.length,
       generatedAt: new Date().toISOString()
     }
   };
@@ -461,6 +648,8 @@ function parseCliArgs(args) {
       parsed.options.format = args[++i];
     } else if (arg === '--strict') {
       parsed.options.strict = true;
+    } else if (arg === '--offline') {
+      parsed.options.offline = true;
     } else if (arg === '--force') {
       parsed.options.strict = false;
     } else if (arg === '--json') {
@@ -497,6 +686,7 @@ Options:
   --subtitle <subtitle>   Sous-titre explicatif
   --output, -o <path>     Chemin du fichier HTML/snippet généré en sortie
   --format <html|snippet> Format de sortie (html complet ou snippet, default: html)
+  --offline               Inclut Chart.js et ses plugins dans la page (copies locales vérifiées) : s'ouvre sans réseau
   --strict                Bloquer la génération en cas d'erreur bloquante (défaut en CLI)
   --force                 Générer malgré les erreurs bloquantes (debug uniquement, sortie non conforme)
   --json                  Afficher le résultat au format JSON sur stdout
@@ -591,6 +781,9 @@ Exemples:
 
 module.exports = {
   compileChart,
+  compilePage,
+  validatePageSpec,
+  prepareChart,
   loadRegistry,
   loadThemeModule
 };

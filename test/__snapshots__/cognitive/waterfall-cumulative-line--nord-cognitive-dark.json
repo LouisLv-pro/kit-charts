@@ -313,6 +313,10 @@
         {
           "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
           "id": "kitChartsWaterfallLabels"
+        },
+        {
+          "id": "kcCompactResize",
+          "resize": "[Function:resize]"
         }
       ],
       "type": "bar"

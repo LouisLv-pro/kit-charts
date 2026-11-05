@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
@@ -101,7 +102,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // (faux canvas sans largeur : `isNarrowViewport === false`) inchangés.
   // Forçage possible via `options.compactLabels` (booléen).
   const NARROW_BREAKPOINT = 480;
-  const isNarrowViewport = (() => {
+  // Recalculé au redimensionnement du conteneur (plugin kcCompactResize) ; un forçage
+  // `options.compactLabels` fige l'état.
+  const measureNarrow = () => {
+    if (options && typeof options.compactLabels === 'boolean') return options.compactLabels;
+    const w = container && typeof container.clientWidth === 'number' ? container.clientWidth : 0;
+    return w > 0 ? w <= NARROW_BREAKPOINT : null;
+  };
+  let isNarrowViewport = (() => {
     if (options && typeof options.compactLabels === 'boolean') return options.compactLabels;
     try {
       if (container && typeof container.clientWidth === 'number' && container.clientWidth > 0) {
@@ -305,7 +313,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         }
       }
     },
-    plugins: [nodeLabelPlugin]
+    plugins: [nodeLabelPlugin, createCompactResizePlugin(measureNarrow, isNarrowViewport, (next, chart) => {
+      // Bascule du mode compact : police, espacement des nœuds et libellés abrégés des datasets
+      isNarrowViewport = next;
+      chart.data.datasets.forEach((d, i) => {
+        const src = rawDatasets[i] || {};
+        const flow = Array.isArray(d.data) ? d.data : [];
+        d.font = next ? { size: 10 } : { family: tokens.fontFamily, size: 12, weight: '600' };
+        if (src.nodePadding === undefined || src.nodePadding === null) d.nodePadding = next ? 10 : 16;
+        const map = next ? buildShortLabels(flow) : {};
+        flow.forEach((it) => { [it.from, it.to].forEach((n) => { if (map[n] === undefined) map[n] = n; }); });
+        d.kcLabels = map;
+        d.data = flow.slice(); // nouveau tableau : le contrôleur Sankey recalcule la disposition
+      });
+    })]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {

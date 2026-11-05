@@ -22,6 +22,7 @@
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const observeCompactWidth = (KitChartsTheme && KitChartsTheme.observeCompactWidth) || (typeof window !== 'undefined' && window.observeCompactWidth) || function() { return function() {}; };
   const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) {
@@ -309,11 +310,16 @@
     let sortColumn = options.sortColumn || null;
     let sortDirection = options.sortDirection || 'asc';
 
+    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
+    const measureCompact = () => {
+      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+
     function render() {
       if (!container) return;
       // Mode compact (zone < 460 px) : domaine et cible masqués, sparkline réduite, statut en pastille symbole
-      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      const compact = hostW > 0 && hostW < 460;
+      const compact = measureCompact() === true;
       const hiddenKeys = compact ? ['category', 'target'] : [];
       const cp = compact ? '7px 5px' : '10px 14px';
 
@@ -530,6 +536,8 @@
     }
 
     render();
+    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
 
     return {
       container,
@@ -538,6 +546,7 @@
       options: options || {},
       theme: themeName,
       destroy: () => {
+        stopObserving();
         if (container) container.innerHTML = '';
         if (canvasElement) canvasElement.style.display = '';
       },

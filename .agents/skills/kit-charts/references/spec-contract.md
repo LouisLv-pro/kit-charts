@@ -15,6 +15,7 @@ invalides » au lieu de compléter avec son exemple : `kit-charts check` le rapp
 4. `cognitiveFeatures` (étiquettes, infobulle)
 5. `formattedData` selon la famille
 6. `options` (avancé)
+7. Page à plusieurs graphiques
 
 ## 1. Champs racine
 
@@ -35,6 +36,7 @@ invalides » au lieu de compléter avec son exemple : `kit-charts check` le rapp
 | `subtitle` | string | description du template | Unité, périmètre, période |
 | `height` | entier 100 à 2000 | 400 | 320 à 480 pour un graphique seul |
 | `footnote` | string | vide | Source ou note de lecture, rendue en pied de carte par tous les templates. Vide : pas de pied. Carte KPI : `formattedData.footnote` prioritaire, sinon `layout.footnote` |
+| `span` | entier 1 à 3 | 1 | Page à plusieurs graphiques seulement : nombre de colonnes occupées par ce graphique |
 
 ## 3. `colorStrategy`
 
@@ -126,3 +128,21 @@ Règles de données valables partout :
 
 Surcharges passées au template. Le linter refuse `beginAtZero: false` et les échelles
 logarithmiques sur les encodages par longueur. N'y mets jamais de couleur ni d'animation.
+
+## 7. Page à plusieurs graphiques
+
+Un tableau de bord ou un rapport tient dans une spec de page, compilée par
+`kit-charts compile output/<page>/page.json` en une seule page HTML. Le code commun (Chart.js,
+moteur de thèmes, code de chaque template) n'y est chargé qu'une fois.
+
+| Champ | Requis | Rôle |
+| :--- | :---: | :--- |
+| `layout.title` | conseillé | Le message d'ensemble de la page |
+| `layout.subtitle`, `layout.footnote` | non | Périmètre et période ; source commune |
+| `layout.columns` | non | 1 à 3 (défaut : 2 dès deux graphiques). Sous 760 px, une colonne |
+| `colorStrategy.themeName` | non | Un seul thème, imposé à tous les graphiques |
+| `charts` | oui | 1 à 6 specs : objets, ou chemins vers des `spec.json` relatifs au fichier de page |
+
+Règles bloquantes : `PAGE_EMPTY`, `PAGE_TOO_MANY_CHARTS` (plus de 6), `PAGE_COLUMNS`, et les
+erreurs de chaque graphique, préfixées par `charts[i]`. Les graphiques sont alignés en haut de
+leur rangée : une carte KPI garde sa hauteur à côté d'un graphique plus haut.

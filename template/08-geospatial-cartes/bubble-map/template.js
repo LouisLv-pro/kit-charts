@@ -121,6 +121,48 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   features = features.filter(f => !(f.properties && f.properties.name === 'Antarctica'));
 
   const defaultBubbleColor = getColor(tokens, 0);
+  // Contour « gainé » : trait sombre bordé de la couleur de surface, lisible sur la mer,
+  // sur les terres et sur une autre bulle. Surface des bulles inchangée (rayons du size scale).
+  const surfaceColor = tokens.surface || (tokens.isDark ? '#2E3440' : '#FFFFFF');
+  const inkColor = tokens.isDark ? '#ECEFF4' : '#0F172A';
+
+  // Bulles proches (Londres et Paris) : tous les contours et les centres sont redessinés
+  // au-dessus des remplissages, du plus grand au plus petit. Chaque cercle reste entier
+  // et chaque lieu garde son point d'ancrage, même quand une bulle en recouvre une autre.
+  const contoursPlugin = {
+    id: 'bubbleContours',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data || meta.hidden) return;
+      const ctx = chart.ctx;
+      const pts = [];
+      meta.data.forEach((el) => {
+        const r = el && el.options && el.options.radius;
+        if (!el || !Number.isFinite(el.x) || !Number.isFinite(el.y) || !(r > 0)) return;
+        pts.push({ x: el.x, y: el.y, r });
+      });
+      ctx.save();
+      // 1. Liseré de surface sous chaque trait (sépare deux disques qui se chevauchent)
+      ctx.strokeStyle = surfaceColor;
+      ctx.lineWidth = 3;
+      pts.forEach((p) => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.stroke(); });
+      // 2. Trait sombre fin par-dessus : les deux cercles restent lisibles en entier
+      ctx.strokeStyle = inkColor;
+      ctx.lineWidth = 1.2;
+      pts.forEach((p) => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.stroke(); });
+      // 3. Point d'ancrage au centre (position exacte du lieu)
+      pts.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = inkColor;
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = surfaceColor;
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+  };
 
   const labelsPlugin = {
     id: 'bubbleCityLabels',
@@ -239,12 +281,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             if (context.dataIndex == null) return defaultBubbleColor;
             const b = context.dataset.data[context.dataIndex];
             if (!b) return defaultBubbleColor;
-            if (b.role === 'focal') return hexToRgba(tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB'), 0.8);
-            if (b.role === 'anomaly') return (tokens.status && tokens.status.danger) || '#DC2626';
-            return hexToRgba(defaultBubbleColor, tokens.isDark ? 0.8 : 0.65);
+            // Remplissage translucide : la zone de recouvrement de deux bulles se lit plus foncée
+            if (b.role === 'focal') return hexToRgba(tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB'), 0.7);
+            if (b.role === 'anomaly') return hexToRgba((tokens.status && tokens.status.danger) || '#DC2626', 0.8);
+            return hexToRgba(defaultBubbleColor, tokens.isDark ? 0.7 : 0.6);
           },
-          borderColor: tokens.isDark ? '#ECEFF4' : '#0F172A',
-          borderWidth: 1.2,
+          // Contour tracé par bubbleContours (au-dessus de toutes les bulles)
+          borderColor: inkColor,
+          borderWidth: 0,
           data: bubbles.map(b => ({
             feature: b,
             latitude: b.lat !== undefined ? b.lat : b.latitude,
@@ -256,7 +300,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }))
         }]
       },
-      plugins: [labelsPlugin, {
+      plugins: [contoursPlugin, labelsPlugin, {
         id: 'bubbleSizeByWidth',
         beforeLayout(chart) {
           // Rayon maximal proportionnel à la largeur : 26 px en grand, ~11 px sur une carte étroite
@@ -376,7 +420,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
           let bColor = defaultBubbleColor;
           let bAlpha = tokens.isDark ? 0.75 : 0.65;
-          let bBorderColor = tokens.bg || '#FFFFFF';
+          let bBorderColor = surfaceColor;
           let bBorderWidth = 1.5;
 
           if (b.role === 'focal') {
@@ -398,6 +442,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
           ctx.strokeStyle = bBorderColor;
           ctx.lineWidth = bBorderWidth;
+          ctx.stroke();
+          // Même contour gainé que la carte ChartGeo : trait sombre fin sur liseré de surface
+          ctx.strokeStyle = inkColor;
+          ctx.lineWidth = 1.2;
           ctx.stroke();
 
           if (showDataLabels) {

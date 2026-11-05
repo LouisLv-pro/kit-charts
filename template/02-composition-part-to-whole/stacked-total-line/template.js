@@ -23,6 +23,7 @@
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
@@ -100,8 +101,12 @@
     const rawDatasets = rawData.datasets;
 
     // Carte étroite (< 420 px) : seuls les totaux sont étiquetés, polices et légende réduites.
-    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
-    const narrow = cw > 0 && cw < 420;
+    // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+    const measureNarrow = () => {
+      const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+      return cw > 0 ? cw < 420 : null;
+    };
+    let narrow = measureNarrow() === true;
     const totals = computeStackedTotals(rawDatasets);
     // Couleur neutre contrastée, distincte de toute série empilée
     const totalColor = tokens.textPrimary || (isDark ? '#ECEFF4' : '#0F172A');
@@ -163,80 +168,87 @@
     };
 
     const defaultOpts = getChartDefaultOptions(tokens);
+    // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+    const buildOptions = () => ({
+      ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        ...defaultOpts.plugins,
+        datalabels: getDataLabelOptions(tokens, {
+          display: showDataLabels && !narrow,
+          formatter: (v) => formatLabelValue(v)
+        }),
+        legend: {
+          display: true,
+          position: 'top',
+          align: narrow ? 'start' : 'end',
+          labels: {
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+            usePointStyle: true,
+            boxWidth: narrow ? 8 : 10,
+            padding: narrow ? 8 : 10
+          }
+        },
+        tooltip: {
+          ...defaultOpts.plugins.tooltip,
+          callbacks: {
+            title: (items) => `Période : ${items[0].label}`,
+            footer: (items) => {
+              const totalVal = totals[items[0].dataIndex];
+              return `Total Consolidé : ${totalVal.toLocaleString('fr-FR')} k€`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ...defaultOpts.scales.x,
+          stacked: true,
+          grid: { display: false },
+          ticks: {
+            ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+            maxRotation: narrow ? 0 : 50,
+            autoSkip: false,
+            callback: function(value) { const l = String(this.getLabelForValue(value)); return narrow ? l.replace(/ 20(\d\d)$/, ' $1') : l; }
+          }
+        },
+        y: {
+          ...defaultOpts.scales.y,
+          stacked: true,
+          beginAtZero: true,
+          grace: '10%',
+          grid: { color: tokens.gridColor },
+          ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 }, maxTicksLimit: narrow ? 5 : undefined },
+          title: {
+            display: !narrow,
+            text: 'Revenu (k€)',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          }
+        }
+      }
+    });
+
     const config = {
       type: 'bar',
       data: {
         labels,
         datasets: processedDatasets
       },
-      options: {
-        ...defaultOpts,
-        _kitChartsTokens: tokens,
-        showDataLabels: showDataLabels,
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        plugins: {
-          ...defaultOpts.plugins,
-          datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels && !narrow,
-            formatter: (v) => formatLabelValue(v)
-          }),
-          legend: {
-            display: true,
-            position: 'top',
-            align: narrow ? 'start' : 'end',
-            labels: {
-              color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
-              usePointStyle: true,
-              boxWidth: narrow ? 8 : 10,
-              padding: narrow ? 8 : 10
-            }
-          },
-          tooltip: {
-            ...defaultOpts.plugins.tooltip,
-            callbacks: {
-              title: (items) => `Période : ${items[0].label}`,
-              footer: (items) => {
-                const totalVal = totals[items[0].dataIndex];
-                return `Total Consolidé : ${totalVal.toLocaleString('fr-FR')} k€`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            ...defaultOpts.scales.x,
-            stacked: true,
-            grid: { display: false },
-            ticks: {
-              ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
-              maxRotation: narrow ? 0 : 50,
-              autoSkip: false,
-              callback: function(value) { const l = String(this.getLabelForValue(value)); return narrow ? l.replace(/ 20(\d\d)$/, ' $1') : l; }
-            }
-          },
-          y: {
-            ...defaultOpts.scales.y,
-            stacked: true,
-            beginAtZero: true,
-            grace: '10%',
-            grid: { color: tokens.gridColor },
-            ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 }, maxTicksLimit: narrow ? 5 : undefined },
-            title: {
-              display: !narrow,
-              text: 'Revenu (k€)',
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
-            }
-          }
-        }
-      },
-      plugins: [totalLabelsPlugin]
+      options: buildOptions(),
+      plugins: [createCompactResizePlugin(measureNarrow, narrow, (next, chart) => {
+        narrow = next;
+        chart.options = buildOptions();
+        chart.data.datasets.forEach((d) => { if (d.type === 'bar' && d.datalabels) d.datalabels.display = showDataLabels && !narrow; });
+      }), totalLabelsPlugin]
     };
 
     if (typeof Chart === 'undefined') return { config, totals, computeStackedTotals };

@@ -340,6 +340,10 @@
       },
       "plugins": [
         {
+          "id": "kcCompactResize",
+          "resize": "[Function:resize]"
+        },
+        {
           "afterDatasetsDraw": "[Function:afterDatasetsDraw]",
           "id": "kitChartsPareto80Line"
         },

@@ -3,7 +3,7 @@
  * @description All kit-charts template generators pre-bundled for instant zero-CORS execution.
  * Allows index.html and npm consumers to render every catalog chart immediately on file://, http://, and Node.js.
  * @version 1.0.0
- * @generated 2026-11-04T16:01:12.654Z
+ * @generated 2026-11-04T17:59:04.625Z
  */
 
 (function(global) {
@@ -2935,6 +2935,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
@@ -3032,8 +3033,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     const analysis = computeVarianceDeltas(actuals, targets);
     // Carte étroite (< 420 px) : polices réduites, étiquettes compactes, légende courte.
-    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
-    const narrow = cw > 0 && cw < 420;
+    // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+    const measureNarrow = () => {
+      const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+      return cw > 0 ? cw < 420 : null;
+    };
+    let narrow = measureNarrow() === true;
 
     const successColor = tokens.semantic?.positive || tokens.status?.success || '#2E7D32';
     const warningColor = tokens.semantic?.warning || tokens.status?.warning || '#EF6C00';
@@ -3091,6 +3096,86 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const showLabels = showDataLabels;
 
     const defaultOpts = getChartDefaultOptions(tokens);
+    // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+    const buildOptions = () => ({
+      ...defaultOpts,
+      indexAxis: 'y',
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      layout: {
+        padding: {
+          right: narrow ? 66 : 120 // place pour l'étiquette valeur + écart de la barre la plus longue
+        }
+      },
+      animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        ...defaultOpts.plugins,
+        datalabels: getDataLabelOptions(tokens, {
+          display: showDataLabels
+        }),
+        legend: {
+          display: true,
+          position: 'top',
+          align: narrow ? 'start' : 'end',
+          onClick: null,
+          labels: {
+            usePointStyle: true,
+            boxWidth: narrow ? 8 : 12,
+            boxHeight: narrow ? 8 : 12,
+            padding: narrow ? 8 : 10,
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 11, weight: '500' },
+            generateLabels: () => ([
+              { text: 'Objectif', fillStyle: targetMarkerColor, strokeStyle: targetMarkerColor, lineWidth: 3, pointStyle: 'line', rotation: 90, fontColor: tokens.textPrimary, hidden: false },
+              { text: narrow ? 'Atteint' : 'Objectif atteint', fillStyle: successColor, strokeStyle: successColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
+              { text: narrow ? 'Écart ≤ 10 %' : 'Écart jusqu\'à -10 %', fillStyle: warningColor, strokeStyle: warningColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
+              { text: narrow ? 'Écart > 10 %' : 'Écart pire que -10 %', fillStyle: dangerColor, strokeStyle: dangerColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false }
+            ])
+          }
+        },
+        tooltip: {
+          ...defaultOpts.plugins.tooltip,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (ctx) => {
+              const item = analysis[ctx.dataIndex];
+              if (!item) return '';
+              const sign = item.delta >= 0 ? '+' : '';
+              return [
+                `Réalisé : ${item.actual.toLocaleString('fr-FR')} k€`,
+                `Objectif : ${item.target.toLocaleString('fr-FR')} k€`,
+                `Écart : ${sign}${item.delta.toLocaleString('fr-FR')} k€ (${sign}${item.deltaPct}%)`
+              ];
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ...defaultOpts.scales.x,
+          beginAtZero: true,
+          grace: '25%',
+          grid: { color: tokens.gridColor },
+          ticks: { ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks), maxTicksLimit: narrow ? 5 : 8, font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
+          title: {
+            display: !narrow,
+            text: 'Montant (k€)',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          }
+        },
+        y: {
+          ...defaultOpts.scales.y,
+          ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
+          grid: { display: false }
+        }
+      }
+    });
+
     const config = {
       type: 'bar',
       data: {
@@ -3116,85 +3201,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }
         ]
       },
-      options: {
-        ...defaultOpts,
-        indexAxis: 'y',
-        _kitChartsTokens: tokens,
-        showDataLabels: showDataLabels,
-        layout: {
-          padding: {
-            right: narrow ? 66 : 120 // place pour l'étiquette valeur + écart de la barre la plus longue
-          }
-        },
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        plugins: {
-          ...defaultOpts.plugins,
-          datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels
-          }),
-          legend: {
-            display: true,
-            position: 'top',
-            align: narrow ? 'start' : 'end',
-            onClick: null,
-            labels: {
-              usePointStyle: true,
-              boxWidth: narrow ? 8 : 12,
-              boxHeight: narrow ? 8 : 12,
-              padding: narrow ? 8 : 10,
-              color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 11, weight: '500' },
-              generateLabels: () => ([
-                { text: 'Objectif', fillStyle: targetMarkerColor, strokeStyle: targetMarkerColor, lineWidth: 3, pointStyle: 'line', rotation: 90, fontColor: tokens.textPrimary, hidden: false },
-                { text: narrow ? 'Atteint' : 'Objectif atteint', fillStyle: successColor, strokeStyle: successColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
-                { text: narrow ? 'Écart ≤ 10 %' : 'Écart jusqu\'à -10 %', fillStyle: warningColor, strokeStyle: warningColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false },
-                { text: narrow ? 'Écart > 10 %' : 'Écart pire que -10 %', fillStyle: dangerColor, strokeStyle: dangerColor, lineWidth: 0, pointStyle: 'rect', fontColor: tokens.textPrimary, hidden: false }
-              ])
-            }
-          },
-          tooltip: {
-            ...defaultOpts.plugins.tooltip,
-            callbacks: {
-              title: (items) => items[0].label,
-              label: (ctx) => {
-                const item = analysis[ctx.dataIndex];
-                if (!item) return '';
-                const sign = item.delta >= 0 ? '+' : '';
-                return [
-                  `Réalisé : ${item.actual.toLocaleString('fr-FR')} k€`,
-                  `Objectif : ${item.target.toLocaleString('fr-FR')} k€`,
-                  `Écart : ${sign}${item.delta.toLocaleString('fr-FR')} k€ (${sign}${item.deltaPct}%)`
-                ];
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            ...defaultOpts.scales.x,
-            beginAtZero: true,
-            grace: '25%',
-            grid: { color: tokens.gridColor },
-            ticks: { ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks), maxTicksLimit: narrow ? 5 : 8, font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
-            title: {
-              display: !narrow,
-              text: 'Montant (k€)',
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
-            }
-          },
-          y: {
-            ...defaultOpts.scales.y,
-            ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 } },
-            grid: { display: false }
-          }
-        }
-      },
-      plugins: [targetOverlayPlugin]
+      options: buildOptions(),
+      plugins: [createCompactResizePlugin(measureNarrow, narrow, (next, chart) => {
+        narrow = next;
+        chart.options = buildOptions();
+      }), targetOverlayPlugin]
     };
 
     if (typeof Chart === 'undefined') return Object.assign(config, { analysis, computeVarianceDeltas });
@@ -3260,6 +3271,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const getContrastingTextColor = (KitChartsTheme && KitChartsTheme.getContrastingTextColor) || (typeof window !== 'undefined' && window.getContrastingTextColor) || function() { return '#FFFFFF'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -3407,11 +3419,71 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   const chartData = { labels, datasets };
 
+  // Étiquette de valeur de la mesure, posée par le template (le plugin commun place toujours
+  // le texte 8 px après la barre, même quand le trait de cible s'y trouve).
+  // Règle : à droite de la barre ; si le trait de cible tombe dans la zone du texte, le texte
+  // passe de l'autre côté du trait ; faute de place à droite, il rentre dans la barre.
+  const measureIdx = datasets.findIndex(d => d.type === 'bar' && d.order === 1);
+  const targetIdx = datasets.findIndex(d => d.type === 'scatter');
+  const labelFont = `600 11px ${tokens.fontMono || 'monospace'}`;
+  const labelColor = isDark ? '#ECEFF4' : '#0F172A';
+  const nfLabel = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
+  const valueLabelsPlugin = {
+    id: 'bulletValueLabels',
+    afterDatasetsDraw(chart) {
+      if (!showDataLabels || measureIdx < 0) return;
+      const area = chart.chartArea;
+      const meta = chart.getDatasetMeta(measureIdx);
+      if (!area || !meta || meta.hidden || !chart.isDatasetVisible(measureIdx)) return;
+      const tMeta = targetIdx >= 0 && chart.isDatasetVisible(targetIdx) ? chart.getDatasetMeta(targetIdx) : null;
+      const ds = chart.data.datasets[measureIdx];
+      const ctx = chart.ctx;
+      const GAP = 8;      // écart entre la barre (ou le trait) et le texte
+      const CLEAR = 6;    // demi-largeur protégée autour du trait de cible (trait de 3 px + marge)
+      ctx.save();
+      ctx.font = labelFont;
+      ctx.textBaseline = 'middle';
+      meta.data.forEach((el, i) => {
+        const raw = ds.data[i];
+        const v = typeof raw === 'object' && raw !== null ? (raw.x ?? raw.value) : raw;
+        if (!el || typeof v !== 'number' || !Number.isFinite(v)) return;
+        const p = el.getProps ? el.getProps(['x', 'y', 'base'], true) : el;
+        const barLeft = Math.min(p.base, p.x);
+        const barRight = Math.max(p.base, p.x);
+        const text = nfLabel.format(v);
+        const tw = ctx.measureText(text).width;
+        const tp = tMeta && tMeta.data && tMeta.data[i];
+        const tx = tp && Number.isFinite(tp.x) ? tp.x : null;
+        const hitsTarget = (x0) => tx !== null && x0 < tx + CLEAR && x0 + tw > tx - CLEAR;
+        const maxRight = chart.width - 2;
+        let x0 = barRight + GAP;
+        let color = labelColor;
+        if (hitsTarget(x0)) x0 = tx + CLEAR + GAP / 2;
+        if (x0 + tw > maxRight) {
+          // Pas de place à droite : dans la barre, calé avant la cible si elle y tombe
+          const end = (tx !== null && tx < barRight ? tx - CLEAR : barRight) - GAP / 2;
+          if (end - tw >= barLeft + 4) {
+            x0 = end - tw;
+            const bg = Array.isArray(ds.backgroundColor) ? ds.backgroundColor[i] : ds.backgroundColor;
+            color = getContrastingTextColor(bg);
+          } else {
+            x0 = Math.max(area.left, maxRight - tw);
+          }
+        }
+        ctx.fillStyle = color;
+        ctx.textAlign = 'left';
+        ctx.fillText(text, x0, p.y);
+      });
+      ctx.restore();
+    }
+  };
+
   // Options Chart.js v4+
   const defaultOpts = getChartDefaultOptions(tokens);
   const config = {
     type: 'bar',
     data: chartData,
+    plugins: [valueLabelsPlugin],
     options: {
       ...defaultOpts,
       indexAxis: 'y', // Orientation horizontale Stephen Few
@@ -3431,8 +3503,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       barPercentage: 0.9,
       plugins: {
         ...defaultOpts.plugins,
+        // Plugin commun désactivé : l'étiquette est posée par bulletValueLabels (évitement de la cible)
         datalabels: getDataLabelOptions(tokens, {
-          display: showDataLabels,
+          display: false,
           anchor: 'end',
           align: 'right',
           offset: 8,
@@ -6247,6 +6320,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
@@ -6356,8 +6430,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const seriesLabel = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || 'Incidents';
 
     // Carte étroite (< 420 px) : libellés abrégés, titres d'axes retirés, polices réduites.
-    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
-    const narrow = cw > 0 && cw < 420;
+    // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+    const measureNarrow = () => {
+      const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+      return cw > 0 ? cw < 420 : null;
+    };
+    let narrow = measureNarrow() === true;
     const shortLabel = (l) => { const t = String(l); return t.length > 13 ? t.slice(0, 12).trimEnd() + '…' : t; };
     const pareto = computeParetoCumsum(inputLabels, inputValues);
     const gini = computeGini(pareto.values);
@@ -6436,6 +6514,110 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     };
 
     const defaultOpts = getChartDefaultOptions(tokens);
+    // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+    const buildOptions = () => ({
+      ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        ...defaultOpts.plugins,
+        datalabels: getDataLabelOptions(tokens, {
+          display: showDataLabels,
+          formatter: (v, ctx) => {
+            if (ctx && ctx.dataset && ctx.dataset.type === 'line') {
+              return `${v}%`;
+            }
+            return formatLabelValue(v);
+          }
+        }),
+        legend: {
+          display: true,
+          position: 'top',
+          align: narrow ? 'start' : 'end',
+          labels: {
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+            usePointStyle: true,
+            boxWidth: narrow ? 8 : 10,
+            padding: narrow ? 8 : 10
+          }
+        },
+        tooltip: {
+          ...defaultOpts.plugins.tooltip,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (ctx) => {
+              const idx = ctx.dataIndex;
+              if (ctx.dataset.type === 'bar') {
+                const pctIndiv = ((pareto.values[idx] / pareto.total) * 100).toFixed(1);
+                return `Effectif : ${ctx.parsed.y} (${pctIndiv}% du total)`;
+              }
+              return `Cumul : ${ctx.parsed.y}% (Gini = ${gini})`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ...defaultOpts.scales.x,
+          grid: { display: false },
+          ticks: {
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 11 },
+            maxRotation: narrow ? 90 : 30,
+            minRotation: narrow ? 90 : 0,
+            autoSkip: false,
+            callback: function(value) { const l = this.getLabelForValue(value); return narrow ? shortLabel(l) : l; }
+          }
+        },
+        y: {
+          type: 'linear',
+          position: 'left',
+          beginAtZero: true,
+          min: 0,
+          max: pareto.total, // le sommet de l'axe gauche = total : 100% du cumul y est aligné
+          grid: { color: tokens.gridColor },
+          ticks: {
+            color: tokens.textSecondary,
+            font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
+            includeBounds: false,
+            maxTicksLimit: narrow ? 4 : undefined
+          },
+          title: {
+            display: !narrow,
+            text: "Nombre d'occurrences",
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          }
+        },
+        y1: {
+          type: 'linear',
+          position: 'right',
+          beginAtZero: true,
+          min: 0,
+          max: 100,
+          grid: { display: false },
+          ticks: {
+            stepSize: narrow ? 25 : 20,
+            color: lineColor,
+            font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
+            callback: (val) => `${val}%`
+          },
+          title: {
+            display: !narrow,
+            text: `Pourcentage cumulé (Gini = ${gini})`,
+            color: lineColor,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          }
+        }
+      }
+    });
+
     const config = {
       type: 'bar',
       data: {
@@ -6481,109 +6663,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }
         ]
       },
-      options: {
-        ...defaultOpts,
-        _kitChartsTokens: tokens,
-        showDataLabels: showDataLabels,
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        plugins: {
-          ...defaultOpts.plugins,
-          datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels,
-            formatter: (v, ctx) => {
-              if (ctx && ctx.dataset && ctx.dataset.type === 'line') {
-                return `${v}%`;
-              }
-              return formatLabelValue(v);
-            }
-          }),
-          legend: {
-            display: true,
-            position: 'top',
-            align: narrow ? 'start' : 'end',
-            labels: {
-              color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
-              usePointStyle: true,
-              boxWidth: narrow ? 8 : 10,
-              padding: narrow ? 8 : 10
-            }
-          },
-          tooltip: {
-            ...defaultOpts.plugins.tooltip,
-            callbacks: {
-              title: (items) => items[0].label,
-              label: (ctx) => {
-                const idx = ctx.dataIndex;
-                if (ctx.dataset.type === 'bar') {
-                  const pctIndiv = ((pareto.values[idx] / pareto.total) * 100).toFixed(1);
-                  return `Effectif : ${ctx.parsed.y} (${pctIndiv}% du total)`;
-                }
-                return `Cumul : ${ctx.parsed.y}% (Gini = ${gini})`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            ...defaultOpts.scales.x,
-            grid: { display: false },
-            ticks: {
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 11 },
-              maxRotation: narrow ? 90 : 30,
-              minRotation: narrow ? 90 : 0,
-              autoSkip: false,
-              callback: function(value) { const l = this.getLabelForValue(value); return narrow ? shortLabel(l) : l; }
-            }
-          },
-          y: {
-            type: 'linear',
-            position: 'left',
-            beginAtZero: true,
-            min: 0,
-            max: pareto.total, // le sommet de l'axe gauche = total : 100% du cumul y est aligné
-            grid: { color: tokens.gridColor },
-            ticks: {
-              color: tokens.textSecondary,
-              font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
-              includeBounds: false,
-              maxTicksLimit: narrow ? 4 : undefined
-            },
-            title: {
-              display: !narrow,
-              text: "Nombre d'occurrences",
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
-            }
-          },
-          y1: {
-            type: 'linear',
-            position: 'right',
-            beginAtZero: true,
-            min: 0,
-            max: 100,
-            grid: { display: false },
-            ticks: {
-              stepSize: narrow ? 25 : 20,
-              color: lineColor,
-              font: { family: tokens.fontMono, size: narrow ? 10 : 11 },
-              callback: (val) => `${val}%`
-            },
-            title: {
-              display: !narrow,
-              text: `Pourcentage cumulé (Gini = ${gini})`,
-              color: lineColor,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
-            }
-          }
-        }
-      },
-      plugins: [pareto80LinePlugin, paretoBarLabelsPlugin]
+      options: buildOptions(),
+      plugins: [createCompactResizePlugin(measureNarrow, narrow, (next, chart) => {
+        narrow = next;
+        chart.options = buildOptions();
+        chart.data.datasets.forEach((d) => { if (d.type === 'line' && d.datalabels) d.datalabels.display = showDataLabels && !narrow; });
+      }), pareto80LinePlugin, paretoBarLabelsPlugin]
     };
 
     if (typeof Chart === 'undefined') return Object.assign(config, { pareto, gini, computeParetoCumsum, computeGini });
@@ -7198,6 +7283,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
@@ -7275,8 +7361,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const rawDatasets = rawData.datasets;
 
     // Carte étroite (< 420 px) : seuls les totaux sont étiquetés, polices et légende réduites.
-    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
-    const narrow = cw > 0 && cw < 420;
+    // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+    const measureNarrow = () => {
+      const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+      return cw > 0 ? cw < 420 : null;
+    };
+    let narrow = measureNarrow() === true;
     const totals = computeStackedTotals(rawDatasets);
     // Couleur neutre contrastée, distincte de toute série empilée
     const totalColor = tokens.textPrimary || (isDark ? '#ECEFF4' : '#0F172A');
@@ -7338,80 +7428,87 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     };
 
     const defaultOpts = getChartDefaultOptions(tokens);
+    // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+    const buildOptions = () => ({
+      ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        ...defaultOpts.plugins,
+        datalabels: getDataLabelOptions(tokens, {
+          display: showDataLabels && !narrow,
+          formatter: (v) => formatLabelValue(v)
+        }),
+        legend: {
+          display: true,
+          position: 'top',
+          align: narrow ? 'start' : 'end',
+          labels: {
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+            usePointStyle: true,
+            boxWidth: narrow ? 8 : 10,
+            padding: narrow ? 8 : 10
+          }
+        },
+        tooltip: {
+          ...defaultOpts.plugins.tooltip,
+          callbacks: {
+            title: (items) => `Période : ${items[0].label}`,
+            footer: (items) => {
+              const totalVal = totals[items[0].dataIndex];
+              return `Total Consolidé : ${totalVal.toLocaleString('fr-FR')} k€`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ...defaultOpts.scales.x,
+          stacked: true,
+          grid: { display: false },
+          ticks: {
+            ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
+            font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
+            maxRotation: narrow ? 0 : 50,
+            autoSkip: false,
+            callback: function(value) { const l = String(this.getLabelForValue(value)); return narrow ? l.replace(/ 20(\d\d)$/, ' $1') : l; }
+          }
+        },
+        y: {
+          ...defaultOpts.scales.y,
+          stacked: true,
+          beginAtZero: true,
+          grace: '10%',
+          grid: { color: tokens.gridColor },
+          ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 }, maxTicksLimit: narrow ? 5 : undefined },
+          title: {
+            display: !narrow,
+            text: 'Revenu (k€)',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: 12, weight: '500' }
+          }
+        }
+      }
+    });
+
     const config = {
       type: 'bar',
       data: {
         labels,
         datasets: processedDatasets
       },
-      options: {
-        ...defaultOpts,
-        _kitChartsTokens: tokens,
-        showDataLabels: showDataLabels,
-        animation: getAccessibleAnimationOptions(tokens, { duration: 400, easing: 'easeOutQuart' }),
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        plugins: {
-          ...defaultOpts.plugins,
-          datalabels: getDataLabelOptions(tokens, {
-            display: showDataLabels && !narrow,
-            formatter: (v) => formatLabelValue(v)
-          }),
-          legend: {
-            display: true,
-            position: 'top',
-            align: narrow ? 'start' : 'end',
-            labels: {
-              color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
-              usePointStyle: true,
-              boxWidth: narrow ? 8 : 10,
-              padding: narrow ? 8 : 10
-            }
-          },
-          tooltip: {
-            ...defaultOpts.plugins.tooltip,
-            callbacks: {
-              title: (items) => `Période : ${items[0].label}`,
-              footer: (items) => {
-                const totalVal = totals[items[0].dataIndex];
-                return `Total Consolidé : ${totalVal.toLocaleString('fr-FR')} k€`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            ...defaultOpts.scales.x,
-            stacked: true,
-            grid: { display: false },
-            ticks: {
-              ...(defaultOpts.scales.x && defaultOpts.scales.x.ticks),
-              font: { family: tokens.fontFamily, size: narrow ? 10 : 12 },
-              maxRotation: narrow ? 0 : 50,
-              autoSkip: false,
-              callback: function(value) { const l = String(this.getLabelForValue(value)); return narrow ? l.replace(/ 20(\d\d)$/, ' $1') : l; }
-            }
-          },
-          y: {
-            ...defaultOpts.scales.y,
-            stacked: true,
-            beginAtZero: true,
-            grace: '10%',
-            grid: { color: tokens.gridColor },
-            ticks: { ...(defaultOpts.scales.y && defaultOpts.scales.y.ticks), font: { family: tokens.fontMono || tokens.fontFamily, size: narrow ? 10 : 12 }, maxTicksLimit: narrow ? 5 : undefined },
-            title: {
-              display: !narrow,
-              text: 'Revenu (k€)',
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: 12, weight: '500' }
-            }
-          }
-        }
-      },
-      plugins: [totalLabelsPlugin]
+      options: buildOptions(),
+      plugins: [createCompactResizePlugin(measureNarrow, narrow, (next, chart) => {
+        narrow = next;
+        chart.options = buildOptions();
+        chart.data.datasets.forEach((d) => { if (d.type === 'bar' && d.datalabels) d.datalabels.display = showDataLabels && !narrow; });
+      }), totalLabelsPlugin]
     };
 
     if (typeof Chart === 'undefined') return { config, totals, computeStackedTotals };
@@ -7444,6 +7541,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
@@ -7595,8 +7693,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   });
 
   const total = levels[0] ? levels[0].data.reduce((a, b) => a + b, 0) : 0;
-  const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
-  const narrow = cw > 0 && cw < 420;
+  // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+  const measureNarrow = () => {
+    const cw = (canvas.clientWidth || (canvas.parentElement && canvas.parentElement.clientWidth) || 0);
+    return cw > 0 ? cw < 420 : null;
+  };
+  let narrow = measureNarrow() === true;
 
   // Étiquettes d'arcs locales : anneau extérieur = nom (sur 1 ou 2 lignes) + part quand l'arc est
   // assez grand, sinon la part seule ; anneaux intérieurs = part seule (noms en légende).
@@ -7677,79 +7779,85 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   // Options Chart.js v4+ avec capture de partition multi-niveaux
   const defaultOpts = getChartDefaultOptions(tokens);
-  const config = {
-    type: 'doughnut',
-    data: chartData,
-    plugins: [sunburstLabelsPlugin],
-    options: {
-      ...defaultOpts,
-      scales: {}, // AUCUN AXE CARTÉSIEN (après defaultOpts pour ne pas être écrasé)
-      cutout: 0, // Pas de trou central : la racine est le disque le plus interne
-      rotation: -90, // Départ à 12h
-      animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
-      interaction: {
-        mode: 'nearest',
-        intersect: true,
-        axis: 'xy'
-      },
-      hover: {
-        mode: 'nearest',
-        intersect: true,
-        animationDuration: (isTufte || isReducedMotionPreferred()) ? 0 : 120
-      },
-      plugins: {
-        ...defaultOpts.plugins,
-        // Étiquettes dessinées par kitChartsSunburstLabels (nom + part selon la place disponible)
-        datalabels: getDataLabelOptions(tokens, { display: () => false }),
-        legend: {
-          ...defaultOpts.plugins.legend,
-          display: !isTufte,
-          position: 'right',
-          align: 'center',
-          labels: {
-            color: tokens.textPrimary,
-            font: { family: tokens.fontFamily, size: narrow ? 11 : 12, weight: '500' },
-            boxWidth: narrow ? 8 : 12,
-            padding: narrow ? 8 : 12,
-            usePointStyle: true,
+  // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+  const buildOptions = () => ({
+    ...defaultOpts,
+    scales: {}, // AUCUN AXE CARTÉSIEN (après defaultOpts pour ne pas être écrasé)
+    cutout: 0, // Pas de trou central : la racine est le disque le plus interne
+    rotation: -90, // Départ à 12h
+    animation: getAccessibleAnimationOptions(tokens, { duration: 450, easing: 'easeOutQuart' }),
+    interaction: {
+      mode: 'nearest',
+      intersect: true,
+      axis: 'xy'
+    },
+    hover: {
+      mode: 'nearest',
+      intersect: true,
+      animationDuration: (isTufte || isReducedMotionPreferred()) ? 0 : 120
+    },
+    plugins: {
+      ...defaultOpts.plugins,
+      // Étiquettes dessinées par kitChartsSunburstLabels (nom + part selon la place disponible)
+      datalabels: getDataLabelOptions(tokens, { display: () => false }),
+      legend: {
+        ...defaultOpts.plugins.legend,
+        display: !isTufte,
+        position: 'right',
+        align: 'center',
+        labels: {
+          color: tokens.textPrimary,
+          font: { family: tokens.fontFamily, size: narrow ? 11 : 12, weight: '500' },
+          boxWidth: narrow ? 8 : 12,
+          padding: narrow ? 8 : 12,
+          usePointStyle: true,
+          pointStyle: 'circle',
+          // Légende = niveau racine uniquement (les sous-niveaux héritent de sa teinte)
+          generateLabels: () => (levels[0] ? levels[0].labels : []).map((name, i) => ({
+            text: name,
+            fillStyle: levelColors[0][i],
+            strokeStyle: levelColors[0][i],
+            fontColor: tokens.textPrimary,
             pointStyle: 'circle',
-            // Légende = niveau racine uniquement (les sous-niveaux héritent de sa teinte)
-            generateLabels: () => (levels[0] ? levels[0].labels : []).map((name, i) => ({
-              text: name,
-              fillStyle: levelColors[0][i],
-              strokeStyle: levelColors[0][i],
-              fontColor: tokens.textPrimary,
-              pointStyle: 'circle',
-              hidden: false,
-              index: i
-            }))
-          },
-          onClick: () => {}
+            hidden: false,
+            index: i
+          }))
         },
-        tooltip: {
-          ...defaultOpts.plugins.tooltip,
-          padding: { top: 10, bottom: 10, left: 14, right: 14 },
-          cornerRadius: isTufte ? 0 : 6,
-          titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
-          bodyFont: { family: tokens.fontMono || 'monospace', size: 12, weight: '400' },
-          animation: (isTufte || isReducedMotionPreferred()) ? false : { duration: 150, easing: 'easeOutQuad' },
-          callbacks: {
-            title: (items) => {
-              const it = items && items[0];
-              if (!it) return '';
-              const names = it.dataset.kcLabels || [];
-              return names[it.dataIndex] || '';
-            },
-            label: (context) => {
-              const val = Number(context.parsed !== null && context.parsed !== undefined ? context.parsed : context.raw) || 0;
-              const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val);
-              const pct = total > 0 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format((val / total) * 100) : '0';
-              return ` ${context.dataset.label || ''} : ${formatted} (${pct}% du total)`;
-            }
+        onClick: () => {}
+      },
+      tooltip: {
+        ...defaultOpts.plugins.tooltip,
+        padding: { top: 10, bottom: 10, left: 14, right: 14 },
+        cornerRadius: isTufte ? 0 : 6,
+        titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
+        bodyFont: { family: tokens.fontMono || 'monospace', size: 12, weight: '400' },
+        animation: (isTufte || isReducedMotionPreferred()) ? false : { duration: 150, easing: 'easeOutQuad' },
+        callbacks: {
+          title: (items) => {
+            const it = items && items[0];
+            if (!it) return '';
+            const names = it.dataset.kcLabels || [];
+            return names[it.dataIndex] || '';
+          },
+          label: (context) => {
+            const val = Number(context.parsed !== null && context.parsed !== undefined ? context.parsed : context.raw) || 0;
+            const formatted = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 2 }).format(val);
+            const pct = total > 0 ? new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 }).format((val / total) * 100) : '0';
+            return ` ${context.dataset.label || ''} : ${formatted} (${pct}% du total)`;
           }
         }
       }
     }
+  });
+
+  const config = {
+    type: 'doughnut',
+    data: chartData,
+    plugins: [createCompactResizePlugin(measureNarrow, narrow, (next, chart) => {
+      narrow = next;
+      chart.options = buildOptions();
+    }), sunburstLabelsPlugin],
+    options: buildOptions()
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
@@ -19373,6 +19481,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
@@ -19452,7 +19561,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   // (faux canvas sans largeur : `isNarrowViewport === false`) inchangés.
   // Forçage possible via `options.compactLabels` (booléen).
   const NARROW_BREAKPOINT = 480;
-  const isNarrowViewport = (() => {
+  // Recalculé au redimensionnement du conteneur (plugin kcCompactResize) ; un forçage
+  // `options.compactLabels` fige l'état.
+  const measureNarrow = () => {
+    if (options && typeof options.compactLabels === 'boolean') return options.compactLabels;
+    const w = container && typeof container.clientWidth === 'number' ? container.clientWidth : 0;
+    return w > 0 ? w <= NARROW_BREAKPOINT : null;
+  };
+  let isNarrowViewport = (() => {
     if (options && typeof options.compactLabels === 'boolean') return options.compactLabels;
     try {
       if (container && typeof container.clientWidth === 'number' && container.clientWidth > 0) {
@@ -19656,7 +19772,20 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         }
       }
     },
-    plugins: [nodeLabelPlugin]
+    plugins: [nodeLabelPlugin, createCompactResizePlugin(measureNarrow, isNarrowViewport, (next, chart) => {
+      // Bascule du mode compact : police, espacement des nœuds et libellés abrégés des datasets
+      isNarrowViewport = next;
+      chart.data.datasets.forEach((d, i) => {
+        const src = rawDatasets[i] || {};
+        const flow = Array.isArray(d.data) ? d.data : [];
+        d.font = next ? { size: 10 } : { family: tokens.fontFamily, size: 12, weight: '600' };
+        if (src.nodePadding === undefined || src.nodePadding === null) d.nodePadding = next ? 10 : 16;
+        const map = next ? buildShortLabels(flow) : {};
+        flow.forEach((it) => { [it.from, it.to].forEach((n) => { if (map[n] === undefined) map[n] = n; }); });
+        d.kcLabels = map;
+        d.data = flow.slice(); // nouveau tableau : le contrôleur Sankey recalcule la disposition
+      });
+    })]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
@@ -20048,6 +20177,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
@@ -20145,8 +20275,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     const analysis = computeWaterfallBalances(steps);
 
     // Mode compact : largeur disponible sous ~420 px (carte d'aperçu) ; libellés abrégés sur 2 lignes, légende réduite
-    const availW = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
-    const compact = availW > 0 && availW < 460;
+    // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+    const measureCompact = () => {
+      const w = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+    let compact = measureCompact() === true;
     // Retour à la ligne des libellés d'axe : 2 lignes de `max` caractères (abrégé en carte étroite)
     const wrapTick = (text, max, abbreviate) => {
       const src = abbreviate ? String(text).replace(/\s*\(.*?\)\s*/g, ' ').trim() : String(text);
@@ -20205,9 +20339,96 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       }
     };
 
+    // Options reconstruites à chaque bascule du mode compact (polices, légende, grace, ticks)
+    const buildOptions = () => ({
+      ...defaultOpts,
+      _kitChartsTokens: tokens,
+      showDataLabels: showDataLabels,
+      layout: {
+        padding: {
+          top: 16
+        }
+      },
+      animation: false,
+      interaction: {
+        mode: 'index',
+        intersect: false
+      },
+      plugins: {
+        ...defaultOpts.plugins,
+        datalabels: { display: false },
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          onClick: null,
+          labels: {
+            color: tokens.textPrimary,
+            font: { family: tokens.fontFamily, size: compact ? 10 : 12 },
+            boxWidth: compact ? 10 : 40,
+            boxHeight: compact ? 10 : 12,
+            padding: compact ? 8 : 10,
+            generateLabels: () => [
+              { text: 'Hausse', fillStyle: posColor, strokeStyle: posColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+              { text: 'Baisse', fillStyle: negColor, strokeStyle: negColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+              { text: compact ? 'Initial / final' : 'Solde initial / final', fillStyle: totalColor, strokeStyle: totalColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
+              { text: compact ? 'Cumulé' : 'Solde cumulé', fillStyle: lineColor, strokeStyle: lineColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 2, hidden: false }
+            ]
+          }
+        },
+        tooltip: {
+          ...defaultOpts.plugins.tooltip,
+          callbacks: {
+            title: (items) => items[0].label,
+            label: (ctx) => {
+              const idx = ctx.dataIndex;
+              const s = steps[idx];
+              const bal = analysis.balances[idx];
+              if (ctx.dataset.type === 'bar') {
+                const valStr = s.isTotal ? `${bal} k€ (Total)` : `${s.value >= 0 ? '+' : ''}${s.value} k€`;
+                return `Impact : ${valStr}`;
+              }
+              return `Solde Cumulé : ${bal.toLocaleString('fr-FR')} k€`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          ...defaultOpts.scales.x,
+          grid: { display: false },
+          ticks: {
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: compact ? 10 : 11 },
+            maxRotation: 0, autoSkip: false,
+            callback: function(val) {
+              const t = this.getLabelForValue(val);
+              return compact ? wrapTick(t, 7, true).slice(0, 2) : wrapTick(t, 16, false);
+            }
+          }
+        },
+        y: {
+          ...defaultOpts.scales.y,
+          beginAtZero: true,
+          ticks: { ...((defaultOpts.scales.y && defaultOpts.scales.y.ticks) || {}), font: { family: tokens.fontMono || tokens.fontFamily, size: compact ? 10 : 11 }, padding: compact ? 4 : 6, maxTicksLimit: compact ? 5 : 8 },
+          grace: compact ? '18%' : '12%',
+          grid: { color: tokens.gridColor },
+          title: {
+            display: true,
+            text: 'Solde Net (k€)',
+            color: tokens.textSecondary,
+            font: { family: tokens.fontFamily, size: compact ? 10 : 12, weight: '500' }, padding: compact ? 2 : 4
+          }
+        }
+      }
+    });
+
     const config = {
       type: 'bar',
-      plugins: [labelsPlugin],
+      plugins: [labelsPlugin, createCompactResizePlugin(measureCompact, compact, (next, chart) => {
+        compact = next;
+        chart.options = buildOptions();
+      })],
       data: {
         labels,
         datasets: [
@@ -20239,88 +20460,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }
         ]
       },
-      options: {
-        ...defaultOpts,
-        _kitChartsTokens: tokens,
-        showDataLabels: showDataLabels,
-        layout: {
-          padding: {
-            top: 16
-          }
-        },
-        animation: false,
-        interaction: {
-          mode: 'index',
-          intersect: false
-        },
-        plugins: {
-          ...defaultOpts.plugins,
-          datalabels: { display: false },
-          legend: {
-            display: true,
-            position: 'top',
-            align: 'end',
-            onClick: null,
-            labels: {
-              color: tokens.textPrimary,
-              font: { family: tokens.fontFamily, size: compact ? 10 : 12 },
-              boxWidth: compact ? 10 : 40,
-              boxHeight: compact ? 10 : 12,
-              padding: compact ? 8 : 10,
-              generateLabels: () => [
-                { text: 'Hausse', fillStyle: posColor, strokeStyle: posColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
-                { text: 'Baisse', fillStyle: negColor, strokeStyle: negColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
-                { text: compact ? 'Initial / final' : 'Solde initial / final', fillStyle: totalColor, strokeStyle: totalColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 0, hidden: false },
-                { text: compact ? 'Cumulé' : 'Solde cumulé', fillStyle: lineColor, strokeStyle: lineColor, fontColor: tokens.textPrimary, color: tokens.textPrimary, lineWidth: 2, hidden: false }
-              ]
-            }
-          },
-          tooltip: {
-            ...defaultOpts.plugins.tooltip,
-            callbacks: {
-              title: (items) => items[0].label,
-              label: (ctx) => {
-                const idx = ctx.dataIndex;
-                const s = steps[idx];
-                const bal = analysis.balances[idx];
-                if (ctx.dataset.type === 'bar') {
-                  const valStr = s.isTotal ? `${bal} k€ (Total)` : `${s.value >= 0 ? '+' : ''}${s.value} k€`;
-                  return `Impact : ${valStr}`;
-                }
-                return `Solde Cumulé : ${bal.toLocaleString('fr-FR')} k€`;
-              }
-            }
-          }
-        },
-        scales: {
-          x: {
-            ...defaultOpts.scales.x,
-            grid: { display: false },
-            ticks: {
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: compact ? 10 : 11 },
-              maxRotation: 0, autoSkip: false,
-              callback: function(val) {
-                const t = this.getLabelForValue(val);
-                return compact ? wrapTick(t, 7, true).slice(0, 2) : wrapTick(t, 16, false);
-              }
-            }
-          },
-          y: {
-            ...defaultOpts.scales.y,
-            beginAtZero: true,
-            ticks: { ...((defaultOpts.scales.y && defaultOpts.scales.y.ticks) || {}), font: { family: tokens.fontMono || tokens.fontFamily, size: compact ? 10 : 11 }, padding: compact ? 4 : 6, maxTicksLimit: compact ? 5 : 8 },
-            grace: compact ? '18%' : '12%',
-            grid: { color: tokens.gridColor },
-            title: {
-              display: true,
-              text: 'Solde Net (k€)',
-              color: tokens.textSecondary,
-              font: { family: tokens.fontFamily, size: compact ? 10 : 12, weight: '500' }, padding: compact ? 2 : 4
-            }
-          }
-        }
-      }
+      options: buildOptions()
     };
 
     if (typeof Chart === 'undefined') return { config, analysis, computeWaterfallBalances };
@@ -21142,6 +21282,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const createCompactResizePlugin = (KitChartsTheme && KitChartsTheme.createCompactResizePlugin) || (typeof window !== 'undefined' && window.createCompactResizePlugin) || function() { return { id: 'kcCompactResize' }; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
@@ -21372,8 +21513,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const rawItems = (rawData.datasets && rawData.datasets[0]?.data) || (Array.isArray(rawData) ? rawData : []);
   const normalizedData = normalizeMekkoData(rawItems);
 
-  const availW = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
-  const compact = availW > 0 && availW < 460;
+  // Recalculé au redimensionnement du conteneur (plugin kcCompactResize), pas seulement à la création
+  const measureCompact = () => {
+    const availW = (container && container.clientWidth) || (canvas && canvas.clientWidth) || 0;
+    return availW > 0 ? availW < 460 : null;
+  };
+  let compact = measureCompact() === true;
   const distinctSubNames = Array.from(new Set(normalizedData.map(d => d.sub)));
   const surfaceBorder = isDark ? (tokens.surface || '#2E3440') : '#FFFFFF';
 
@@ -21414,79 +21559,85 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     stepSize: 25
   };
 
-  const config = {
-    type: 'scatter',
-    data: chartData,
-    options: {
-      ...defaultOpts,
-      animation: false,
-      layout: { padding: { top: 40 } },
-      interaction: { mode: 'nearest', intersect: false },
-      hover: { mode: 'nearest', intersect: false, animationDuration: 0 },
-      plugins: {
-        ...defaultOpts.plugins,
-        mekkoMeta: { tokens, items: normalizedData, showLabels },
-        legend: {
-          display: !isTufte && distinctSubNames.length > 1,
-          position: 'bottom',
-          labels: {
-            color: tokens.textPrimary,
-            usePointStyle: true,
-            pointStyle: 'rect',
-            boxWidth: 10,
-            boxHeight: 10,
-            font: { family: tokens.fontFamily, size: 11 }
-          }
-        },
-        tooltip: {
-          ...defaultOpts.plugins.tooltip,
-          backgroundColor: tokens.tooltipBg || '#0F172A',
-          titleColor: tokens.tooltipText || '#F8FAFC',
-          bodyColor: tokens.tooltipText || '#F8FAFC',
-          borderColor: tokens.borderStrong || tokens.border || '#334155',
-          borderWidth: 1,
-          padding: { top: 10, bottom: 10, left: 14, right: 14 },
-          cornerRadius: isTufte ? 0 : 6,
-          boxPadding: 6,
-          titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
-          bodyFont: { family: tokens.fontMono, size: 12, weight: '400' },
-          callbacks: {
-            title: (items) => (items.length ? (items[0].raw?.label || 'Segment Mekko') : ''),
-            label: (item) => {
-              const raw = item.raw;
-              if (!raw) return '';
-              const growthInfo = typeof raw.growth === 'number'
-                ? ` Évolution A/A-1 : ${raw.growth > 0 ? '+' : ''}${raw.growth}%`
-                : '';
-              return [
-                ` Segment : ${raw.col} (Poids: ${raw.colWeightPct}%)`,
-                ` Catégorie : ${raw.sub} (Part: ${raw.subSharePct}%)`,
-                ` Volume Global : ${raw.marketShare}% du marché total`,
-                ...(growthInfo ? [growthInfo] : []),
-                ...(raw.role === 'anomaly' ? [' Bordure rouge : segment atypique'] : [])
-              ];
-            }
-          }
+  // Options reconstruites à chaque bascule du mode étroit (Chart.js observe déjà le conteneur)
+  const buildOptions = () => ({
+    ...defaultOpts,
+    animation: false,
+    layout: { padding: { top: 40 } },
+    interaction: { mode: 'nearest', intersect: false },
+    hover: { mode: 'nearest', intersect: false, animationDuration: 0 },
+    plugins: {
+      ...defaultOpts.plugins,
+      mekkoMeta: { tokens, items: normalizedData, showLabels },
+      legend: {
+        display: !isTufte && distinctSubNames.length > 1,
+        position: 'bottom',
+        labels: {
+          color: tokens.textPrimary,
+          usePointStyle: true,
+          pointStyle: 'rect',
+          boxWidth: 10,
+          boxHeight: 10,
+          font: { family: tokens.fontFamily, size: 11 }
         }
       },
-      scales: {
-        x: {
-          type: 'linear', min: 0, max: 100,
-          title: { display: true, text: compact ? 'Part cumulée du marché (largeur)' : 'Part cumulée des segments de marché (largeur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
-          grid: { display: false },
-          border: { display: false },
-          ticks: axisTick
-        },
-        y: {
-          type: 'linear', min: 0, max: 100, beginAtZero: true,
-          title: { display: true, text: compact ? 'Part dans le segment (hauteur)' : 'Part de chaque motorisation dans le segment (hauteur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
-          grid: { display: false },
-          border: { display: false },
-          ticks: axisTick
+      tooltip: {
+        ...defaultOpts.plugins.tooltip,
+        backgroundColor: tokens.tooltipBg || '#0F172A',
+        titleColor: tokens.tooltipText || '#F8FAFC',
+        bodyColor: tokens.tooltipText || '#F8FAFC',
+        borderColor: tokens.borderStrong || tokens.border || '#334155',
+        borderWidth: 1,
+        padding: { top: 10, bottom: 10, left: 14, right: 14 },
+        cornerRadius: isTufte ? 0 : 6,
+        boxPadding: 6,
+        titleFont: { family: tokens.fontFamily, size: 12, weight: '600' },
+        bodyFont: { family: tokens.fontMono, size: 12, weight: '400' },
+        callbacks: {
+          title: (items) => (items.length ? (items[0].raw?.label || 'Segment Mekko') : ''),
+          label: (item) => {
+            const raw = item.raw;
+            if (!raw) return '';
+            const growthInfo = typeof raw.growth === 'number'
+              ? ` Évolution A/A-1 : ${raw.growth > 0 ? '+' : ''}${raw.growth}%`
+              : '';
+            return [
+              ` Segment : ${raw.col} (Poids: ${raw.colWeightPct}%)`,
+              ` Catégorie : ${raw.sub} (Part: ${raw.subSharePct}%)`,
+              ` Volume Global : ${raw.marketShare}% du marché total`,
+              ...(growthInfo ? [growthInfo] : []),
+              ...(raw.role === 'anomaly' ? [' Bordure rouge : segment atypique'] : [])
+            ];
+          }
         }
       }
     },
-    plugins: [mekkoRectsPlugin]
+    scales: {
+      x: {
+        type: 'linear', min: 0, max: 100,
+        title: { display: true, text: compact ? 'Part cumulée du marché (largeur)' : 'Part cumulée des segments de marché (largeur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
+        grid: { display: false },
+        border: { display: false },
+        ticks: axisTick
+      },
+      y: {
+        type: 'linear', min: 0, max: 100, beginAtZero: true,
+        title: { display: true, text: compact ? 'Part dans le segment (hauteur)' : 'Part de chaque motorisation dans le segment (hauteur)', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11 } },
+        grid: { display: false },
+        border: { display: false },
+        ticks: axisTick
+      }
+    }
+  });
+
+  const config = {
+    type: 'scatter',
+    data: chartData,
+    options: buildOptions(),
+    plugins: [createCompactResizePlugin(measureCompact, compact, (next, chart) => {
+      compact = next;
+      chart.options = buildOptions();
+    }), mekkoRectsPlugin]
   };
 
   if (typeof Chart !== 'undefined' && canvas && typeof canvas.getContext === 'function') {
@@ -22145,6 +22296,48 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   features = features.filter(f => !(f.properties && f.properties.name === 'Antarctica'));
 
   const defaultBubbleColor = getColor(tokens, 0);
+  // Contour « gainé » : trait sombre bordé de la couleur de surface, lisible sur la mer,
+  // sur les terres et sur une autre bulle. Surface des bulles inchangée (rayons du size scale).
+  const surfaceColor = tokens.surface || (tokens.isDark ? '#2E3440' : '#FFFFFF');
+  const inkColor = tokens.isDark ? '#ECEFF4' : '#0F172A';
+
+  // Bulles proches (Londres et Paris) : tous les contours et les centres sont redessinés
+  // au-dessus des remplissages, du plus grand au plus petit. Chaque cercle reste entier
+  // et chaque lieu garde son point d'ancrage, même quand une bulle en recouvre une autre.
+  const contoursPlugin = {
+    id: 'bubbleContours',
+    afterDatasetsDraw(chart) {
+      const meta = chart.getDatasetMeta(0);
+      if (!meta || !meta.data || meta.hidden) return;
+      const ctx = chart.ctx;
+      const pts = [];
+      meta.data.forEach((el) => {
+        const r = el && el.options && el.options.radius;
+        if (!el || !Number.isFinite(el.x) || !Number.isFinite(el.y) || !(r > 0)) return;
+        pts.push({ x: el.x, y: el.y, r });
+      });
+      ctx.save();
+      // 1. Liseré de surface sous chaque trait (sépare deux disques qui se chevauchent)
+      ctx.strokeStyle = surfaceColor;
+      ctx.lineWidth = 3;
+      pts.forEach((p) => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.stroke(); });
+      // 2. Trait sombre fin par-dessus : les deux cercles restent lisibles en entier
+      ctx.strokeStyle = inkColor;
+      ctx.lineWidth = 1.2;
+      pts.forEach((p) => { ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2); ctx.stroke(); });
+      // 3. Point d'ancrage au centre (position exacte du lieu)
+      pts.forEach((p) => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2, 0, Math.PI * 2);
+        ctx.fillStyle = inkColor;
+        ctx.fill();
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = surfaceColor;
+        ctx.stroke();
+      });
+      ctx.restore();
+    }
+  };
 
   const labelsPlugin = {
     id: 'bubbleCityLabels',
@@ -22263,12 +22456,14 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             if (context.dataIndex == null) return defaultBubbleColor;
             const b = context.dataset.data[context.dataIndex];
             if (!b) return defaultBubbleColor;
-            if (b.role === 'focal') return hexToRgba(tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB'), 0.8);
-            if (b.role === 'anomaly') return (tokens.status && tokens.status.danger) || '#DC2626';
-            return hexToRgba(defaultBubbleColor, tokens.isDark ? 0.8 : 0.65);
+            // Remplissage translucide : la zone de recouvrement de deux bulles se lit plus foncée
+            if (b.role === 'focal') return hexToRgba(tokens.emphasis?.focal || (tokens.isDark ? '#60A5FA' : '#2563EB'), 0.7);
+            if (b.role === 'anomaly') return hexToRgba((tokens.status && tokens.status.danger) || '#DC2626', 0.8);
+            return hexToRgba(defaultBubbleColor, tokens.isDark ? 0.7 : 0.6);
           },
-          borderColor: tokens.isDark ? '#ECEFF4' : '#0F172A',
-          borderWidth: 1.2,
+          // Contour tracé par bubbleContours (au-dessus de toutes les bulles)
+          borderColor: inkColor,
+          borderWidth: 0,
           data: bubbles.map(b => ({
             feature: b,
             latitude: b.lat !== undefined ? b.lat : b.latitude,
@@ -22280,7 +22475,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
           }))
         }]
       },
-      plugins: [labelsPlugin, {
+      plugins: [contoursPlugin, labelsPlugin, {
         id: 'bubbleSizeByWidth',
         beforeLayout(chart) {
           // Rayon maximal proportionnel à la largeur : 26 px en grand, ~11 px sur une carte étroite
@@ -22400,7 +22595,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
           let bColor = defaultBubbleColor;
           let bAlpha = tokens.isDark ? 0.75 : 0.65;
-          let bBorderColor = tokens.bg || '#FFFFFF';
+          let bBorderColor = surfaceColor;
           let bBorderWidth = 1.5;
 
           if (b.role === 'focal') {
@@ -22422,6 +22617,10 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
           ctx.strokeStyle = bBorderColor;
           ctx.lineWidth = bBorderWidth;
+          ctx.stroke();
+          // Même contour gainé que la carte ChartGeo : trait sombre fin sur liseré de surface
+          ctx.strokeStyle = inkColor;
+          ctx.lineWidth = 1.2;
           ctx.stroke();
 
           if (showDataLabels) {
@@ -23374,6 +23573,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const observeCompactWidth = (KitChartsTheme && KitChartsTheme.observeCompactWidth) || (typeof window !== 'undefined' && window.observeCompactWidth) || function() { return function() {}; };
   const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
@@ -23538,11 +23738,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     let sortColumn = options.sortColumn || 'revenue';
     let sortDirection = options.sortDirection || 'desc';
 
+    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
+    const measureCompact = () => {
+      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+
     function render() {
       if (!container) return;
       // Mode compact (zone < 460 px) : colonnes secondaires masquées, paddings réduits, barres plus courtes
-      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      const compact = hostW > 0 && hostW < 460;
+      const compact = measureCompact() === true;
       const pad = compact ? '7px 8px' : '10px 14px';
       const hiddenKeys = compact ? ['category', 'volume', 'completion'] : [];
 
@@ -23730,6 +23935,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     }
 
     render();
+    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
 
     return {
       container,
@@ -23738,6 +23945,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       options: options || {},
       theme: themeName,
       destroy: () => {
+        stopObserving();
         if (container) container.innerHTML = '';
         if (canvasElement) canvasElement.style.display = '';
       },
@@ -23800,6 +24008,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const observeCompactWidth = (KitChartsTheme && KitChartsTheme.observeCompactWidth) || (typeof window !== 'undefined' && window.observeCompactWidth) || function() { return function() {}; };
   const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return d >= 0 ? '#2E7D32' : '#C62828'; };
@@ -23964,11 +24173,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     let data = JSON.parse(JSON.stringify(customData || DEFAULT_DATA));
 
+    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
+    const measureCompact = () => {
+      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+
     function render() {
       if (!container) return;
       // Mode compact (zone < 460 px) : colonnes budget, N-1 et écart absolu masquées, unités retirées (rappelées dans le titre)
-      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      const compact = hostW > 0 && hostW < 460;
+      const compact = measureCompact() === true;
       const hiddenKeys = compact ? ['budget', 'priorYear', 'varAbs'] : [];
       const unitK = compact ? '' : ' k€';
 
@@ -24120,6 +24334,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     }
 
     render();
+    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
 
     return {
       container,
@@ -24128,6 +24344,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       options: options || {},
       theme: themeName,
       destroy: () => {
+        stopObserving();
         if (container) container.innerHTML = '';
         if (canvasElement) canvasElement.style.display = '';
       },
@@ -24182,6 +24399,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const observeCompactWidth = (KitChartsTheme && KitChartsTheme.observeCompactWidth) || (typeof window !== 'undefined' && window.observeCompactWidth) || function() { return function() {}; };
   const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
@@ -24321,11 +24539,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
     let data = JSON.parse(JSON.stringify(customData || DEFAULT_DATA));
 
+    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
+    const measureCompact = () => {
+      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+
     function render() {
       if (!container) return;
       // Mode compact (zone < 460 px) : mois en initiales, régions en code, totaux et moyennes masqués
-      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      const compact = hostW > 0 && hostW < 460;
+      const compact = measureCompact() === true;
 
       const bgSurface = tokens.surface || (isDark ? '#242933' : '#FFFFFF');
       const bgHeader = isDark ? '#1F232B' : (isTufte ? '#FFFFFF' : '#F8FAFC');
@@ -24628,6 +24851,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     }
 
     render();
+    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
 
     return {
       container,
@@ -24636,6 +24861,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       options: options || {},
       theme: themeName,
       destroy: () => {
+        stopObserving();
         if (container) container.innerHTML = '';
         if (canvasElement) canvasElement.style.display = '';
       },
@@ -24690,6 +24916,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const observeCompactWidth = (KitChartsTheme && KitChartsTheme.observeCompactWidth) || (typeof window !== 'undefined' && window.observeCompactWidth) || function() { return function() {}; };
   const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -24941,11 +25168,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     }
     initExpanded(data.items);
 
+    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
+    const measureCompact = () => {
+      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+
     function render() {
       if (!container) return;
       // Mode compact (zone < 460 px) : effectifs, dépenses et badge masqués (statut porté par la couleur du taux), retrait réduit
-      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      const compact = hostW > 0 && hostW < 460;
+      const compact = measureCompact() === true;
       const hiddenKeys = compact ? ['headcount', 'spent', 'status'] : [];
       const cp = compact ? '7px 6px' : '9px 14px';
 
@@ -25172,6 +25404,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     }
 
     render();
+    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
 
     return {
       container,
@@ -25180,6 +25414,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       options: options || {},
       theme: themeName,
       destroy: () => {
+        stopObserving();
         if (container) container.innerHTML = '';
         if (canvasElement) canvasElement.style.display = '';
       },
@@ -25240,6 +25475,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const observeCompactWidth = (KitChartsTheme && KitChartsTheme.observeCompactWidth) || (typeof window !== 'undefined' && window.observeCompactWidth) || function() { return function() {}; };
   const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) {
@@ -25527,11 +25763,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     let sortColumn = options.sortColumn || null;
     let sortDirection = options.sortDirection || 'asc';
 
+    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
+    const measureCompact = () => {
+      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+
     function render() {
       if (!container) return;
       // Mode compact (zone < 460 px) : domaine et cible masqués, sparkline réduite, statut en pastille symbole
-      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      const compact = hostW > 0 && hostW < 460;
+      const compact = measureCompact() === true;
       const hiddenKeys = compact ? ['category', 'target'] : [];
       const cp = compact ? '7px 5px' : '10px 14px';
 
@@ -25748,6 +25989,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     }
 
     render();
+    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
 
     return {
       container,
@@ -25756,6 +25999,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       options: options || {},
       theme: themeName,
       destroy: () => {
+        stopObserving();
         if (container) container.innerHTML = '';
         if (canvasElement) canvasElement.style.display = '';
       },
@@ -25820,6 +26064,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 'use strict';
 
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
+  const observeCompactWidth = (KitChartsTheme && KitChartsTheme.observeCompactWidth) || (typeof window !== 'undefined' && window.observeCompactWidth) || function() { return function() {}; };
   const escapeHtml = (KitChartsTheme && KitChartsTheme.escapeHtml) || (typeof window !== 'undefined' && window.escapeHtml) || function(v) { return String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -25981,11 +26226,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     let sortColumn = options.sortColumn || 'rank';
     let sortDirection = options.sortDirection || 'asc';
 
+    // Largeur de la zone : null tant qu'elle est inconnue (conteneur masqué)
+    const measureCompact = () => {
+      const w = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
+      return w > 0 ? w < 460 : null;
+    };
+
     function render() {
       if (!container) return;
       // Mode compact (zone < 460 px) : région, contrats, conversion et activité masqués, barre de score réduite
-      const hostW = container.clientWidth || (container.parentElement && container.parentElement.clientWidth) || 0;
-      const compact = hostW > 0 && hostW < 460;
+      const compact = measureCompact() === true;
       const hiddenKeys = compact ? ['region', 'deals', 'conversion', 'monthlyActivity'] : [];
       const cp = compact ? '7px 5px' : '10px 9px';
 
@@ -26193,6 +26443,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
     }
 
     render();
+    // Mode compact recalculé quand le conteneur change de largeur, pas seulement à la création
+    const stopObserving = observeCompactWidth(container, measureCompact, measureCompact() === true, () => render());
 
     return {
       container,
@@ -26201,6 +26453,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       options: options || {},
       theme: themeName,
       destroy: () => {
+        stopObserving();
         if (container) container.innerHTML = '';
         if (canvasElement) canvasElement.style.display = '';
       },

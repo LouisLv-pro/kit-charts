@@ -10,9 +10,9 @@ la spec, puis on recompile.
 
 | Contrôle | Pourquoi | Correctif |
 | :--- | :--- | :--- |
-| Le titre énonce un constat vérifiable dans les données | Le lecteur retient le titre, pas l'axe | Réécrire en phrase : sujet, verbe, chiffre ou comparaison |
+| Le titre énonce un constat vérifiable dans les données (automatisé en partie : `TITLE_IS_TOPIC`) | Le lecteur retient le titre, pas l'axe | Réécrire en phrase : sujet, verbe, chiffre ou comparaison |
 | Le constat du titre est vrai | Un titre faux est pire qu'un titre vague | Recalculer à partir de `formattedData` |
-| Le sous-titre donne unité, périmètre et période | Sans unité, aucun chiffre n'a de sens | Compléter `layout.subtitle` |
+| Le sous-titre donne unité, périmètre et période (unité automatisée : `MISSING_UNIT`) | Sans unité, aucun chiffre n'a de sens | Compléter `layout.subtitle` |
 | La source figure si elle est connue | Crédibilité et traçabilité | `layout.footnote`, rendu en pied de carte par tous les templates |
 
 ## Encodage
@@ -20,7 +20,7 @@ la spec, puis on recompile.
 | Contrôle | Pourquoi | Correctif |
 | :--- | :--- | :--- |
 | La variable clé est encodée par position ou longueur | Précision maximale (Cleveland-McGill) | Changer de template plutôt que de garder une aire ou une teinte |
-| Barres horizontales triées par valeur décroissante | Le classement se lit sans effort | Automatique sur `bar-chart-horizontal` ; `"sorted": false` pour un ordre naturel ou « Autres » en dernier |
+| Barres horizontales triées par valeur décroissante (automatisé : `UNSORTED_BARS`) | Le classement se lit sans effort | Automatique sur `bar-chart-horizontal` ; `"sorted": false` pour un ordre naturel ou « Autres » en dernier |
 | Pas de part inférieure à 3 % isolée | Une tranche fine est invisible | Regrouper dans « Autres », en dernier |
 | Bulles : z encodé par l'aire | L'œil perçoit la surface, pas le rayon | Vérifier que la donnée fournie est z, pas un rayon calculé |
 | Choroplèthe : valeurs normalisées | Les grandes zones écrasent le message | Diviser par la population ou la surface, ou passer en `bubble-map` |
