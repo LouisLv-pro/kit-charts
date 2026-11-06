@@ -999,13 +999,256 @@ assert(conflictRun.status === 1 && !fs.existsSync(conflictOut) && conflictRun.st
   `LOWER_IS_BETTER avec metricType "gain" refusé : exit ${conflictRun.status}, fichier écrit=${fs.existsSync(conflictOut)}, règle citée=${conflictRun.stderr.includes('METRIC_POLARITY_CONFLICT')}`);
 
 // ----------------------------------------------------------------------------
+// BLOC 16 : Lecture guidée (docs/specs/lecture-guidee.md). Mise en avant de l'élément cité,
+// distributions à deux paquets, finitions (courbes droites, années, unités, décimales).
+// Les couleurs et textes sont lus là où ils sont dessinés : plugins exécutés sur un contexte
+// canvas qui enregistre chaque fillStyle, strokeStyle et fillText.
+// ----------------------------------------------------------------------------
+console.log('\n🔹 Bloc 16 : Lecture guidée (mise en avant, deux paquets, finitions)');
+const compileExports = require('../.agents/skills/kit-charts/scripts/compile-chart.js');
+const statHelpers = require('../themes/stat-helpers.js');
+const recommender = require('../.agents/skills/kit-charts/scripts/recommend-template.js');
+const focusDir = path.join(OUTPUT_DIR, 'e2e-focus');
+fs.rmSync(focusDir, { recursive: true, force: true });
+fs.mkdirSync(focusDir, { recursive: true });
+const gTok = themeTokens.getThemeTokens('colorbrewer-accessible');
+const FOCAL = gTok.emphasis.focal;
+const CONTEXT = gTok.emphasis.context;
+const tplModule = id => require(path.resolve(__dirname, '..', registry.templates.find(t => t.id === id).paths.js));
+const rgbTriple = hex => [1, 3, 5].map(i => parseInt(hex.slice(i, i + 2), 16)).join(',');
+const usesColor = (colors, hex) => colors.some(c => c.toLowerCase().includes(hex.toLowerCase()) || c.replace(/\s/g, '').includes(rgbTriple(hex)));
+function recordingCtx(log) {
+  const state = { fillStyle: '#000000', strokeStyle: '#000000' };
+  return new Proxy(state, {
+    get(t, p) {
+      if (p in t) return t[p];
+      if (p === 'measureText') return s => ({ width: String(s).length * 6 });
+      if (p === 'fillText') return s => log.texts.push({ text: String(s), color: String(t.fillStyle) });
+      if (p === 'createLinearGradient' || p === 'createRadialGradient') return () => ({ addColorStop() {} });
+      if (p === 'getLineDash') return () => [];
+      if (p === 'canvas') return { width: 800, height: 400 };
+      return () => {};
+    },
+    set(t, p, v) {
+      t[p] = v;
+      if (p === 'fillStyle' || p === 'strokeStyle') log.colors.push(String(v));
+      return true;
+    }
+  });
+}
+function drawPlugins(cfg) {
+  const log = { colors: [], texts: [], errors: [] };
+  const scale = () => ({ getPixelForValue: v => (typeof v === 'number' ? 60 + v * 4 : 60), getValueForPixel: p => p,
+    width: 600, height: 300, left: 60, right: 660, top: 20, bottom: 320, min: 0, max: 100, ticks: [] });
+  const chart = {
+    ctx: recordingCtx(log), width: 800, height: 400, config: cfg, data: cfg.data, options: cfg.options,
+    chartArea: { left: 190, right: 610, top: 20, bottom: 320, width: 420, height: 300 },
+    scales: { x: scale(), y: scale() },
+    getDatasetMeta: di => ({ hidden: false, data: ((cfg.data.datasets[di] || {}).data || []).map((v, i) => ({ x: 200 + i * 400, y: 100 + di * 30 })) }),
+    isDatasetVisible: () => true
+  };
+  (cfg.plugins || []).forEach(pl => ['beforeDraw', 'afterDatasetsDraw', 'afterDraw'].forEach(h => {
+    if (typeof pl[h] !== 'function') return;
+    try { pl[h](chart, {}, pl.options || {}); } catch (e) { log.errors.push(`${pl.id}.${h} : ${e.message}`); }
+  }));
+  return log;
+}
+function probe(id, data, opts = {}) {
+  global.Chart = ProbeChart;
+  ProbeChart.last = null;
+  let threw = '';
+  try { tplModule(id).createChart(fakeProbeCanvas(), data, 'colorbrewer-accessible', opts); } catch (e) { threw = e.message; }
+  global.Chart = PrevChart;
+  return { cfg: ProbeChart.last, threw };
+}
+const SP = [21, 23, 24, 24, 25, 26, 27, 49, 51, 52, 53, 54, 55, 57, 60];
+const GONESSE = [22, 24, 25, 25, 26, 27, 27, 28, 28, 29, 30, 31, 33, 35, 38];
+const LESQUIN = [26, 28, 29, 30, 31, 31, 32, 33, 33, 34, 35, 36, 37, 39, 41];
+const VITROLLES = [24, 25, 27, 28, 28, 30, 31, 33, 35, 38, 41, 45, 50, 56, 63, 72];
+
+// 16.1 applyFocus : focusIndex (par catégorie) ou rôles focal/contexte (par série), entrée intacte.
+const { applyFocus } = compileExports;
+if (typeof applyFocus !== 'function') {
+  assert(false, 'compile-chart.js exporte applyFocus');
+} else {
+  const focusFaults = [];
+  const cat = { labels: ['Lyon', 'Île-de-France', 'Nice'], datasets: [{ label: 'CA', data: [3, 9, 1] }] };
+  const catBefore = JSON.stringify(cat);
+  for (const id of ['bar-chart-vertical', 'bar-chart-horizontal', 'lollipop-chart', 'box-plot', 'violin-plot', 'box-strip-plot', 'pie-chart', 'doughnut-chart']) {
+    const out = applyFocus(cat, id, 'ile-de-france');
+    if (!out || !out.datasets || out.datasets[0].focusIndex !== 1) focusFaults.push(`${id} : focusIndex=${out && out.datasets && out.datasets[0].focusIndex}`);
+  }
+  if (JSON.stringify(cat) !== catBefore) focusFaults.push('entrée modifiée');
+  const series = { labels: ['2023', '2025'], datasets: [{ label: 'Lille', data: [68, 84] }, { label: 'Lyon', data: [72, 81] }, { label: 'Nantes', data: [79, 76] }] };
+  for (const id of ['slope-chart', 'multi-line-chart']) {
+    const roles = (applyFocus(series, id, 'Lille').datasets || []).map(d => d.role).join(',');
+    if (roles !== 'focal,context,context') focusFaults.push(`${id} : rôles=${roles}`);
+  }
+  if ('focusIndex' in applyFocus(cat, 'bar-chart-vertical', 'Paris').datasets[0]) focusFaults.push('libellé inconnu appliqué');
+  if (JSON.stringify(applyFocus(cat, 'waterfall-chart', 'Lyon')) !== catBefore) focusFaults.push('template sans mise en avant modifié');
+  assert(focusFaults.length === 0, `applyFocus : focusIndex sur 8 templates par catégorie, rôles sur slope et multi-line, rien sinon${focusFaults.length ? ' | ' + focusFaults.join(' | ') : ''}`);
+}
+const focusSpec = (id, focus, data) => ({ targetTemplateId: id, layout: { title: 'Lyon recule', subtitle: 'En k€' }, cognitiveFeatures: { focus }, formattedData: data });
+const catData = { labels: ['Lyon', 'Paris', 'Nice'], datasets: [{ label: 'CA', data: [3, 9, 1] }] };
+const unknownFocus = validateChartSpec(focusSpec('bar-chart-vertical', 'Brest', catData)).errors.find(e => e.ruleId === 'FOCUS_UNKNOWN_LABEL');
+assert(Boolean(unknownFocus) && unknownFocus.message.includes('Lyon, Paris, Nice'), `FOCUS_UNKNOWN_LABEL : « Brest » refusé, libellés listés${unknownFocus ? '' : ' | règle muette'}`);
+const unsupported = validateChartSpec(focusSpec('waterfall-chart', 'Lyon', { labels: ['A', 'Lyon', 'B'], datasets: [{ label: 'EBIT', data: [10, [10, 12], 12] }] }));
+assert(unsupported.warnings.some(w => w.ruleId === 'FOCUS_UNSUPPORTED'), 'FOCUS_UNSUPPORTED : avertissement sur un template sans mise en avant');
+let focusPage;
+const focusInput = focusSpec('bar-chart-vertical', 'Paris', catData);
+try { focusPage = compileChart(focusInput, { output: path.join(focusDir, 'barres', 'index.html'), strict: true }); } catch (e) { focusPage = { error: e.message }; }
+const focusJson = focusPage && focusPage.outputPath ? fs.readFileSync(path.join(focusDir, 'barres', 'spec.json'), 'utf8') : '';
+assert(Boolean(focusPage && focusPage.html && /"focusIndex":\s*1/.test(focusPage.html)) && focusJson.includes('"focus"') && !focusJson.includes('focusIndex') && !('focusIndex' in focusInput.formattedData.datasets[0]),
+  `Page compilée : focusIndex 1 sérialisé, spec.json et objet d'entrée intacts${focusPage && focusPage.error ? ' | ' + focusPage.error : ''}`);
+
+// 16.2 Couleurs dessinées : focal + contexte avec mise en avant ; une seule couleur sans.
+const CATEGORICAL = [1, 2, 3].map(i => themeTokens.getColor(gTok, i));
+const distFaults = [];
+for (const id of ['box-plot', 'violin-plot', 'box-strip-plot']) {
+  for (const focusIndex of [undefined, 1]) {
+    const ds = { label: 'Délai (h)', data: [GONESSE, SP, LESQUIN] };
+    if (focusIndex !== undefined) ds.focusIndex = focusIndex;
+    const { cfg, threw } = probe(id, { labels: ['Gonesse', 'Saint-Priest', 'Lesquin'], datasets: [ds] });
+    if (!cfg) { distFaults.push(`${id} : aucun graphique (${threw})`); continue; }
+    const log = drawPlugins(cfg);
+    if (log.errors.length) distFaults.push(`${id} : ${log.errors.join(', ')}`);
+    const cats = CATEGORICAL.filter(c => usesColor(log.colors, c));
+    if (cats.length) distFaults.push(`${id}${focusIndex !== undefined ? ' avec focus' : ''} : couleurs de catégorie ${cats.join(', ')}`);
+    if (focusIndex !== undefined && !(usesColor(log.colors, FOCAL) && usesColor(log.colors, CONTEXT))) distFaults.push(`${id} avec focus : focal ou contexte absent`);
+  }
+}
+assert(distFaults.length === 0, `box-plot, violin-plot, box-strip-plot : une couleur sans focus, focal + gris avec${distFaults.length ? ' | ' + distFaults.join(' | ') : ''}`);
+const multi = probe('multi-line-chart', { labels: ['Jan 2024', 'Fév 2024', 'Mar 2024'], datasets: [
+  { label: 'Lille', data: [1, 2, 3], role: 'focal' }, { label: 'Lyon', data: [2, 2, 2], role: 'context' }] }).cfg;
+assert(Boolean(multi) && multi.data.datasets[0].borderColor === FOCAL && multi.data.datasets[1].borderColor === CONTEXT,
+  `multi-line-chart : série focale ${FOCAL}, série de contexte ${CONTEXT}`);
+const slope = probe('slope-chart', { labels: ['2023', '2025'], datasets: [
+  { label: 'Lille', data: [68, 84], role: 'focal' }, { label: 'Lyon', data: [72.5, 81], role: 'context' }] }).cfg;
+const slopeLog = slope ? drawPlugins(slope) : { texts: [], errors: ['aucun graphique'] };
+const slopeTexts = slopeLog.texts.map(t => t.text);
+const lilleText = slopeLog.texts.find(t => t.text.includes('Lille'));
+const lyonText = slopeLog.texts.find(t => t.text.includes('Lyon'));
+assert(slopeTexts.some(t => /\b84\b/.test(t) && !t.includes('84,0')) && slopeTexts.some(t => t.includes('72,5')),
+  `slope-chart : décimales des données (84, 72,5) | ${slopeTexts.join(' / ') || slopeLog.errors.join(', ')}`);
+assert(Boolean(lilleText && lyonText) && lilleText.color === gTok.textPrimary && lyonText.color === gTok.textSecondary,
+  `slope-chart : étiquette focale en textPrimary, contexte en textSecondary (${lilleText && lilleText.color} / ${lyonText && lyonText.color})`);
+
+// 16.3 make : mise en avant déduite du titre, imposée, retirée, suivie par update.
+const fixture = name => path.resolve(__dirname, 'fixtures/benchmark', name);
+const mk = (...args) => spawnSync('node', [KC_BIN, 'make', ...args, '--no-check'], { cwd: focusDir, encoding: 'utf8' });
+const specOf = dir => JSON.parse(fs.readFileSync(path.join(focusDir, dir, 'spec.json'), 'utf8'));
+const focusOf = dir => { try { return (specOf(dir).cognitiveFeatures || {}).focus; } catch (e) { return `illisible (${e.message})`; } };
+const slopeArgs = [fixture('classement-satisfaction-agences-2023-2025.csv'), '--template', 'slope-chart', '--subtitle', 'Clients satisfaits, en %', '--polarity', 'HIGHER_IS_BETTER'];
+const autoRun = mk(...slopeArgs, '--title', 'Lille passe de la 6e à la 1re place', '-o', 'slope-auto');
+assert(focusOf('slope-auto') === 'Lille' && autoRun.stdout.includes('mise en avant « Lille »'),
+  `make : « Lille » cité par le titre, mis en avant et annoncé (focus=${focusOf('slope-auto')})`);
+mk(...slopeArgs, '--title', 'Lille passe de la 6e à la 1re place', '--focus', 'aucun', '-o', 'slope-none');
+mk(...slopeArgs, '--title', 'Lille devance Lyon en 2025', '-o', 'slope-two');
+mk(...slopeArgs, '--title', 'Le classement est rebattu', '--focus', 'Nantes', '-o', 'slope-forced');
+assert(focusOf('slope-none') === undefined && focusOf('slope-two') === undefined && focusOf('slope-forced') === 'Nantes',
+  `make : --focus aucun retire, deux libellés cités = aucune, --focus impose (${focusOf('slope-none')}, ${focusOf('slope-two')}, ${focusOf('slope-forced')})`);
+spawnSync('node', [KC_BIN, 'update', 'slope-auto', '--title', 'Lyon reste sur le podium', '--no-check'], { cwd: focusDir, encoding: 'utf8' });
+spawnSync('node', [KC_BIN, 'update', 'slope-forced', '--title', 'Lyon reste sur le podium', '--no-check'], { cwd: focusDir, encoding: 'utf8' });
+assert(focusOf('slope-auto') === 'Lyon' && focusOf('slope-forced') === 'Nantes',
+  `update : mise en avant déduite recalculée (${focusOf('slope-auto')}), imposée gardée (${focusOf('slope-forced')})`);
+const regions = mk(fixture('neuf-regions-bascule-horizontal.csv'), '--title', "L'Île-de-France pèse plus que les deux régions suivantes réunies", '--polarity', 'HIGHER_IS_BETTER', '-o', 'regions');
+assert(focusOf('regions') === 'Île-de-France', `make : accents et apostrophe ignorés (focus=${focusOf('regions')}) ${regions.status ? regions.stderr : ''}`);
+
+// 16.4 Deux paquets : détection, recommandation, avertissement.
+const { findModeGap } = statHelpers;
+if (typeof findModeGap !== 'function') {
+  assert(false, 'stat-helpers.js exporte findModeGap');
+} else {
+  const shuffled = [55, 21, 49, 27, 60, 24, 51, 23, 57, 25, 52, 26, 54, 24, 53];
+  const gap = findModeGap(shuffled);
+  const verdicts = [['Gonesse', GONESSE], ['Lesquin', LESQUIN], ['Vitrolles', VITROLLES], ['3 points', [1, 2, 10]], ['vide', []]]
+    .filter(([, v]) => findModeGap(v) !== null).map(([n]) => n);
+  assert(Boolean(gap) && gap.low === 27 && gap.high === 49 && verdicts.length === 0,
+    `findModeGap : Saint-Priest coupé entre 27 et 49 h (${JSON.stringify(gap)}), aucun paquet ailleurs${verdicts.length ? ' | à tort : ' + verdicts.join(', ') : ''}`);
+}
+const samples = (labels, groups) => ({ labels, datasets: [{ label: 'Délai (h)', data: groups }] });
+const four = samples(['Gonesse', 'Saint-Priest', 'Lesquin', 'Vitrolles'], [GONESSE, SP, LESQUIN, VITROLLES]);
+const prof = recommender.profileData(four);
+const pick = data => (recommender.recommendTemplates(recommender.profileData(data), { intent: 'distribution' }).recommended || {}).id;
+const wide = Array.from({ length: 40 }, (_, i) => 20 + (i % 10) + Math.floor(i / 10));
+assert(JSON.stringify(prof.multimodalGroups) === '["Saint-Priest"]' && prof.maxGroupSize === 16,
+  `profileData : groupes à deux paquets ${JSON.stringify(prof.multimodalGroups)}, plus grand groupe ${prof.maxGroupSize}`);
+const picks = [pick(four), pick(samples(['Gonesse', 'Lesquin'], [GONESSE, LESQUIN])), pick(samples(['A', 'B'], [wide, wide.map(v => v + 3)]))];
+assert(picks.join(',') === 'violin-plot,box-strip-plot,box-plot',
+  `Recommandation : violon si deux paquets, box-strip sous 30 points, box-plot sinon (${picks.join(', ')})`);
+const hides = validateChartSpec({ targetTemplateId: 'box-plot', layout: { subtitle: 'En heures' }, formattedData: four }).warnings.find(w => w.ruleId === 'BOX_PLOT_HIDES_MODES');
+const violinOk = !validateChartSpec({ targetTemplateId: 'violin-plot', layout: { subtitle: 'En heures' }, formattedData: four }).warnings.some(w => w.ruleId === 'BOX_PLOT_HIDES_MODES');
+assert(Boolean(hides) && hides.message.includes('Saint-Priest') && violinOk, `BOX_PLOT_HIDES_MODES : box-plot sur Saint-Priest averti, violon non`);
+const delais = mk(fixture('delais-livraison-observations-brutes-par-entrepot.csv'), '--title', 'Saint-Priest livre à deux vitesses', '--subtitle', 'Délai, en heures', '--polarity', 'LOWER_IS_BETTER', '-o', 'delais');
+const delaisSpec = (() => { try { return specOf('delais'); } catch (e) { return { error: delais.stdout + delais.stderr }; } })();
+assert(delaisSpec.targetTemplateId === 'violin-plot' && (delaisSpec.cognitiveFeatures || {}).focus === 'Saint-Priest',
+  `make (eval délais) : violin-plot et Saint-Priest mis en avant (${delaisSpec.targetTemplateId}, ${(delaisSpec.cognitiveFeatures || {}).focus})${delaisSpec.error ? ' | ' + delaisSpec.error : ''}`);
+
+// 16.5 Finitions.
+const smoothed = [];
+for (const tpl of registry.templates) {
+  if (tpl.id === 'streamgraph') continue;
+  const { cfg } = probe(tpl.id, null);
+  if (!cfg) continue;
+  const lineTension = cfg.options && cfg.options.elements && cfg.options.elements.line && cfg.options.elements.line.tension;
+  if (lineTension > 0) smoothed.push(`${tpl.id} (elements.line ${lineTension})`);
+  ((cfg.data && cfg.data.datasets) || []).forEach((d, i) => { if (d && d.tension > 0) smoothed.push(`${tpl.id} (série ${i} : ${d.tension})`); });
+}
+assert(smoothed.length === 0, `Aucune courbe lissée hors streamgraph (tension 0)${smoothed.length ? ' | ' + smoothed.join(', ') : ''}`);
+const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Juin', 'Juil', 'Août', 'Sep', 'Oct', 'Nov', 'Déc'];
+const periods = [...months.map(m => `${m} 2024`), 'Jan 2025', 'Fév 2025'];
+const yearFaults = [];
+for (const id of ['line-chart', 'multi-line-chart', 'area-chart', 'stacked-area-chart']) {
+  const { cfg } = probe(id, { labels: periods, datasets: [{ label: 'Facture', data: periods.map((_, i) => 40 + i) }, { label: 'Budget', data: periods.map(() => 45) }].slice(0, id === 'line-chart' || id === 'area-chart' ? 1 : 2) });
+  const cb = cfg && cfg.options.scales.x.ticks && cfg.options.scales.x.ticks.callback;
+  const ticks = [0, 1, 11, 12, 13].map(v => ({ value: v }));
+  const shown = typeof cb === 'function' ? ticks.map((t, i) => cb.call({ getLabelForValue: v => periods[v] }, t.value, i, ticks)) : [];
+  if (shown.join('|') !== 'Jan 2024|Fév|Déc|Jan 2025|Fév') yearFaults.push(`${id} : ${shown.join('|') || 'aucun callback'}`);
+}
+assert(yearFaults.length === 0, `Année affichée au premier mois et à chaque changement d'année${yearFaults.length ? ' | ' + yearFaults.join(' | ') : ''}`);
+const axisFaults = [];
+for (const [id, axis] of [['bar-chart-horizontal', 'x'], ['bar-chart-vertical', 'y']]) {
+  const data = { labels: ['Lyon', 'Paris', 'Nice'], datasets: [{ label: 'CA 2024 (M€)', data: [9, 5, 3] }] };
+  const same = probe(id, data, { layout: { subtitle: "Chiffre d'affaires 2024, en M€" } }).cfg;
+  const other = probe(id, data, { layout: { subtitle: 'Par ville, 2024' } }).cfg;
+  if (!same || same.options.scales[axis].title.display !== false) axisFaults.push(`${id} : titre répété sous « en M€ »`);
+  if (!other || other.options.scales[axis].title.display !== true) axisFaults.push(`${id} : titre masqué alors que l'unité manque`);
+}
+assert(axisFaults.length === 0, `Titre d'axe masqué seulement quand le sous-titre porte déjà l'unité${axisFaults.length ? ' | ' + axisFaults.join(' | ') : ''}`);
+const wf = probe('waterfall-chart', { labels: ['Ventes 2024', 'Prix', 'Ventes 2025'], datasets: [{ label: 'Ventes (k unités)', data: [120, [120, 131], 131] }] }).cfg;
+const wfOut = [];
+if (wf) {
+  const fmtFn = wf.options.plugins.datalabels.formatter;
+  const tip = wf.options.plugins.tooltip.callbacks.label;
+  const ds = wf.data.datasets[0];
+  [0, 1, 2].forEach(i => {
+    wfOut.push(String(fmtFn(ds.data[i], { dataIndex: i, dataset: ds, rawVal: ds.data[i] })));
+    wfOut.push(JSON.stringify(tip({ raw: ds.data[i], dataIndex: i, dataset: ds })));
+  });
+  wfOut.push(String(wf.options.scales.y.title.text));
+}
+assert(wfOut.length > 0 && !wfOut.join(' ').includes('M€'), `waterfall-chart : aucune unité « M€ » inventée | ${wfOut.join(' ; ').slice(0, 160)}`);
+
+// 16.6 Sortie plus courte : une cause, une erreur ; correctifs qui donnent l'option de make.
+const nine = 'ABCDEFGHI'.split('');
+const crowded = validateChartSpec({ targetTemplateId: 'bar-chart-vertical', layout: { subtitle: 'En M€' }, formattedData: { labels: nine, datasets: [{ label: 'CA', data: [9, 8, 7, 6, 5, 4, 3, 2, 1] }] } });
+assert(crowded.errors.map(e => e.ruleId).join(',') === 'VERTICAL_BAR_MAX_CATEGORIES', `9 barres verticales : une seule erreur (${crowded.errors.map(e => e.ruleId).join(', ')})`);
+const fixOf = (spec, ruleId) => ((validateChartSpec(spec).errors.concat(validateChartSpec(spec).warnings).find(x => x.ruleId === ruleId)) || {}).suggestion || '';
+const fixFaults = [
+  ['CLEVELAND_Y_ZERO', '--template', { targetTemplateId: 'bar-chart-vertical', options: { scales: { y: { beginAtZero: false } } }, formattedData: catData }],
+  ['VALENCE_POLARITY_MISMATCH', '--polarity', { targetTemplateId: 'kpi-standard', colorStrategy: { metricPolarity: 'HIGHER_IS_BETTER' }, delta: 5, deltaColor: '#C62828' }],
+  ['DATALABELS_OVERCROWDING', '--no-labels', { targetTemplateId: 'bar-chart-horizontal', cognitiveFeatures: { showDataLabels: true }, formattedData: { labels: 'ABCDEFGHIJKLM'.split(''), datasets: [{ label: 'CA', data: [13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1] }] } }]
+].filter(([ruleId, flag, spec]) => !fixOf(spec, ruleId).includes(flag)).map(([ruleId, flag]) => `${ruleId} sans ${flag}`);
+assert(fixFaults.length === 0, `Correctifs exprimés en options de make${fixFaults.length ? ' | ' + fixFaults.join(' | ') : ''}`);
+
+// ----------------------------------------------------------------------------
 // BLOC 8 : Nettoyage Déterministe des Artefacts de Test
 // ----------------------------------------------------------------------------
 try {
   const testSubdirs = [
     'e2e-kpi-standard', 'e2e-bar-vertical', 'e2e-box-plot',
     'e2e-bullet', 'e2e-multi-line', 'e2e-bar-horiz',
-    'e2e-choropleth', 'e2e-treemap', 'e2e-cli', 'e2e-schema', 'e2e-meaning', 'e2e-polarity'
+    'e2e-choropleth', 'e2e-treemap', 'e2e-cli', 'e2e-schema', 'e2e-meaning', 'e2e-polarity', 'e2e-focus'
   ];
   testSubdirs.forEach(sub => {
     const subPath = path.join(OUTPUT_DIR, sub);

@@ -40,7 +40,7 @@
             "label": "Température Moyenne (°C)",
             "pointHoverRadius": 6,
             "pointRadius": 4,
-            "tension": 0.3,
+            "tension": 0,
             "yAxisID": "y"
           },
           {
@@ -74,7 +74,7 @@
             "label": "Consommation Électrique (GWh)",
             "pointHoverRadius": 6,
             "pointRadius": 4,
-            "tension": 0.3,
+            "tension": 0,
             "yAxisID": "y1"
           }
         ],
@@ -176,7 +176,7 @@
           },
           "line": {
             "borderWidth": 2,
-            "tension": 0.1
+            "tension": 0
           },
           "point": {
             "hitRadius": 10,

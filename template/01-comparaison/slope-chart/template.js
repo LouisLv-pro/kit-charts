@@ -38,6 +38,7 @@
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const decimalsOf = (KitChartsTheme && KitChartsTheme.decimalsOf) || (typeof window !== 'undefined' && window.decimalsOf) || function() { return 1; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -80,7 +81,9 @@ const slopeDirectLabelsPlugin = {
     const narrow = chart.width < 420;
     const fontSize = narrow ? 10 : 11;
     const lineH = fontSize + 3;
-    const fmt = (v) => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v);
+    // Décimales des données : 84 reste « 84 », 72,5 reste « 72,5 » (jamais de « 84,0 » inventé).
+    const digits = decimalsOf(chart.data.datasets.flatMap(d => (Array.isArray(d.data) ? d.data : [])));
+    const fmt = (v) => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: digits }).format(v);
     const sides = [
       { idx: 0, align: 'right', dx: -10 },
       { idx: null, align: 'left', dx: 10 }
@@ -116,7 +119,8 @@ const slopeDirectLabelsPlugin = {
         if (!pt || v === null || v === undefined) return;
         const valueText = fmt(v);
         const out = wrap(ds.label, valueText, side.idx === 0);
-        items.push({ out, x: pt.x, y: pt.y, ly: pt.y, h: out.length * lineH });
+        const muted = ds.role === 'context';
+        items.push({ out, x: pt.x, y: pt.y, ly: pt.y, h: out.length * lineH, color: muted ? (tokens.textSecondary || '#334155') : (tokens.textPrimary || '#0F172A') });
       });
       items.sort((a, b) => a.y - b.y);
       for (let k = 1; k < items.length; k++) {
@@ -126,6 +130,7 @@ const slopeDirectLabelsPlugin = {
       ctx.textAlign = side.align;
       items.forEach((it) => {
         const top = it.ly - ((it.out.length - 1) * lineH) / 2;
+        ctx.fillStyle = it.color;
         it.out.forEach((line, k) => ctx.fillText(line, it.x + side.dx, top + k * lineH));
       });
     });
@@ -208,7 +213,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       pointBackgroundColor: borderColor,
       pointBorderColor: tokens.bg,
       pointBorderWidth: 2,
-      fill: false
+      fill: false,
+      // Rôle conservé pour l'étiquetage direct (contexte en gris secondaire).
+      ...(ds.emphasisRole || ds.role ? { role: ds.emphasisRole || ds.role } : {})
     };
   });
 

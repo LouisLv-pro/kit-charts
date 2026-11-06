@@ -353,7 +353,7 @@
             pointRadius: 4,
             pointHoverRadius: 6,
             pointBackgroundColor: lineColor,
-            tension: 0.2,
+            tension: 0,
             datalabels: {
               // Carte étroite : les valeurs du cumul se lisent sur l'axe droit et à l'infobulle
               display: showDataLabels && !narrow,

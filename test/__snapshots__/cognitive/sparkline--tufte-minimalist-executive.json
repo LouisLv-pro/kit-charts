@@ -36,7 +36,7 @@
             "pointHoverRadius": 5,
             "pointRadius": "[Function:anonymous]",
             "pointStyle": "circle",
-            "tension": 0.25
+            "tension": 0
           }
         ],
         "labels": [
@@ -62,7 +62,7 @@
         "elements": {
           "line": {
             "borderWidth": 1.5,
-            "tension": 0.1
+            "tension": 0
           },
           "point": {
             "hitRadius": 10,

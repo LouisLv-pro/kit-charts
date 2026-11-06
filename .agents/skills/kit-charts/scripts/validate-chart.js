@@ -242,6 +242,8 @@ const FORBIDDEN_EASINGS = ['bounce', 'easeinoutbounce', 'easeinbounce', 'easeout
 // ============================================================================
 
 const { isTemporalLabel } = require(path.join(__dirname, 'recommend-template.js'));
+const { focusMode, focusCandidates, findFocus, isNoFocus, BY_INDEX, BY_SERIES } = require(path.join(__dirname, 'focus.js'));
+const { findModeGap } = require(path.join(ROOT_DIR, 'themes/stat-helpers.js'));
 
 // Mot entier insensible à la casse, accents compris (\b de JS ignore les lettres accentuées).
 const wholeWords = words => new RegExp(`(?<![\\p{L}\\d])(?:${words.join('|')})(?![\\p{L}\\d])`, 'iu');
@@ -554,7 +556,7 @@ function validateChartSpec(spec, options = {}) {
         category: 'Cleveland-McGill',
         severity: 'ERROR',
         message: `Axe de valeur tronqué : 'beginAtZero' est à false sur le template '${templateId}'.`,
-        suggestion: `Rétablir 'scales.${isHorizontal ? 'x' : 'y'}.beginAtZero = true' pour respecter la proportionnalité physique des longueurs (Cleveland-McGill 1984 / Huff 1954).`
+        suggestion: `Retirer 'scales.${isHorizontal ? 'x' : 'y'}.beginAtZero: false' : une barre coupée ment sur les proportions. Pour montrer un petit écart, coder par la position : --template dumbbell-chart, slope-chart ou line-chart.`
       });
     }
 
@@ -564,7 +566,7 @@ function validateChartSpec(spec, options = {}) {
         category: 'Cleveland-McGill',
         severity: 'ERROR',
         message: `'beginAtZero' est explicitement désactivé sur un graphique à encodage par longueur.`,
-        suggestion: `Configurer 'beginAtZero: true' pour éviter la déformation déontologique des deltas relatifs.`
+        suggestion: `Retirer 'beginAtZero: false'. Pour montrer un petit écart, coder par la position : --template dumbbell-chart, slope-chart ou line-chart.`
       });
     }
   }
@@ -630,8 +632,57 @@ function validateChartSpec(spec, options = {}) {
       category: 'Perceptual Clutter',
       severity: 'WARNING',
       message: `Labels directs actifs sur un échantillon dense (${categoryCount} points > seuil de 12).`,
-      suggestion: `Désactiver 'showDataLabels: false' et confier le détail fin aux infobulles (tooltips) interactives avec anti-occlusion.`
+      suggestion: `Relancer avec --no-labels (cognitiveFeatures.showDataLabels: false) : les infobulles portent le détail.`
     });
+  }
+
+  // 2.5 Une cause, une erreur : la règle de cardinalité dit déjà pourquoi et quoi faire,
+  // le dépassement du maxItems du schéma n'est pas répété.
+  const CARDINALITY_RULES = ['VERTICAL_BAR_MAX_CATEGORIES', 'PIE_DONUT_MAX_SLICES', 'MULTI_LINE_MAX_SERIES'];
+  if (errors.some(e => CARDINALITY_RULES.includes(e.ruleId))) {
+    for (let i = errors.length - 1; i >= 0; i--) {
+      if (errors[i].ruleId === 'SCHEMA_FORMATTED_DATA' && /^formattedData\.(labels|datasets) : \d+ élément\(s\) > maxItems/.test(errors[i].message)) errors.splice(i, 1);
+    }
+  }
+
+  // 2.6 Mise en avant (règle 90/10) : l'élément nommé doit exister et le template le gérer.
+  const focus = cognitiveFeatures.focus;
+  if (templateId && !isNoFocus(focus)) {
+    if (!focusMode(templateId)) {
+      warnings.push({
+        ruleId: 'FOCUS_UNSUPPORTED',
+        category: 'Focus + Contexte',
+        severity: 'WARNING',
+        message: `cognitiveFeatures.focus « ${focus} » ignoré : '${templateId}' ne sait pas mettre un élément en avant.`,
+        suggestion: `--focus aucun, ou un template qui le gère : ${[...BY_INDEX, ...BY_SERIES].join(', ')}.`
+      });
+    } else if (findFocus(formattedData, templateId, focus) < 0) {
+      const names = focusCandidates(formattedData, templateId);
+      errors.push({
+        ruleId: 'FOCUS_UNKNOWN_LABEL',
+        category: 'Focus + Contexte',
+        severity: 'ERROR',
+        message: `« ${focus} » ne figure pas parmi les ${focusMode(templateId) === 'index' ? 'libellés' : 'noms de séries'} : ${names.slice(0, 12).join(', ')}${names.length > 12 ? '…' : ''}.`,
+        suggestion: `--focus "<un nom exact de la liste>", ou --focus aucun.`
+      });
+    }
+  }
+
+  // 2.7 Boîte à moustaches sur des observations à deux paquets : la boîte les fond en un seul.
+  const sampleGroups = templateId === 'box-plot' && Array.isArray(formattedData.datasets) && formattedData.datasets[0]
+    && Array.isArray(formattedData.datasets[0].data) && formattedData.datasets[0].data.length > 0 && formattedData.datasets[0].data.every(Array.isArray)
+    ? formattedData.datasets[0].data : null;
+  if (sampleGroups) {
+    const split = sampleGroups.map((g, i) => ({ name: labels[i] ?? `Groupe ${i + 1}`, gap: findModeGap(g) })).filter(x => x.gap);
+    if (split.length) {
+      warnings.push({
+        ruleId: 'BOX_PLOT_HIDES_MODES',
+        category: 'Distribution',
+        severity: 'WARNING',
+        message: `Deux paquets cachés par la boîte : ${split.map(x => `${x.name} (jusqu'à ${x.gap.low}, puis dès ${x.gap.high})`).join(', ')}.`,
+        suggestion: `--template violin-plot (la forme montre les deux paquets) ou box-strip-plot (chaque point visible).`
+      });
+    }
   }
 
   // --------------------------------------------------------------------------
@@ -649,7 +700,7 @@ function validateChartSpec(spec, options = {}) {
           category: 'WCAG 2.2 AA',
           severity: 'ERROR',
           message: `Ratio de contraste insuffisant pour le texte principal (${contrastPrimary.toFixed(2)}:1 < 4.5:1 exigé).`,
-          suggestion: `Ajuster la couleur textPrimary (${tokens.textPrimary}) ou l'arrière-plan bg (${tokens.bg}).`
+          suggestion: `Changer de thème : --theme colorbrewer-accessible (contrastes vérifiés). Texte ${tokens.textPrimary} sur fond ${tokens.bg}.`
         });
       }
 
@@ -661,7 +712,7 @@ function validateChartSpec(spec, options = {}) {
             category: 'WCAG 2.2 AA',
             severity: 'WARNING',
             message: `Contraste du texte secondaire faible (${contrastSecondary.toFixed(2)}:1 < 4.5:1).`,
-            suggestion: `Renforcer la saturation de textSecondary (${tokens.textSecondary}) pour garantir la lisibilité.`
+            suggestion: `Changer de thème : --theme colorbrewer-accessible (contrastes vérifiés). Texte secondaire ${tokens.textSecondary}.`
           });
         }
       }
@@ -723,7 +774,7 @@ function validateChartSpec(spec, options = {}) {
             category: 'Valence Semantics',
             severity: 'ERROR',
             message: `Incohérence de polarité : Hausse (+${spec.delta}) encodée en Rouge sous HIGHER_IS_BETTER.`,
-            suggestion: `Sous HIGHER_IS_BETTER, une progression positive doit être encodée en Vert (semantic.positive).`
+            suggestion: `Retirer deltaColor : le kit colore selon la polarité. Si une hausse est mauvaise ici (coût, délai), corriger --polarity LOWER_IS_BETTER ; jamais les couleurs à la main.`
           });
         }
       } else if (metricPolarity === 'LOWER_IS_BETTER') {
@@ -733,7 +784,7 @@ function validateChartSpec(spec, options = {}) {
             category: 'Valence Semantics',
             severity: 'ERROR',
             message: `Incohérence de polarité : Hausse de coût/churn (+${spec.delta}) encodée en Vert sous LOWER_IS_BETTER.`,
-            suggestion: `Sous LOWER_IS_BETTER, une hausse de coût ou de latence doit être encodée en Rouge (semantic.negative).`
+            suggestion: `Retirer deltaColor : le kit colore selon la polarité. Si une hausse est bonne ici (CA, satisfaction), corriger --polarity HIGHER_IS_BETTER ; jamais les couleurs à la main.`
           });
         }
       }

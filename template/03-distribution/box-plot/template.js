@@ -24,6 +24,7 @@
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
+  const getGroupColors = (KitChartsTheme && KitChartsTheme.getGroupColors) || (typeof window !== 'undefined' && window.getGroupColors) || function(t, n) { return Array.from({ length: n }, () => '#2B8CBE'); };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
   const getSequentialColor = (KitChartsTheme && KitChartsTheme.getSequentialColor) || (typeof window !== 'undefined' && window.getSequentialColor) || function() { return '#3182BD'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return '#2B8CBE'; };
@@ -169,7 +170,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const suggestedMin = rawMin >= 0 && (rawMin - yPadding < 0) ? 0 : Math.floor(rawMin - yPadding);
   const suggestedMax = Math.ceil(rawMax + yPadding);
 
+  // Une seule teinte pour des groupes de même nature ; --focus grise les autres groupes.
+  const focusIndex = rawData.datasets?.[0]?.focusIndex;
+  const groupColors = getGroupColors(tokens, boxStats.length, focusIndex);
   const primaryColors = boxStats.map((stat, i) => {
+    if (Number.isInteger(focusIndex)) return groupColors[i];
     if (stat.role || stat.emphasis) {
       return getEmphasisStyle(tokens, stat.role || stat.emphasis).borderColor || getColor(tokens, i);
     }
@@ -178,9 +183,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     }
     if (rawData.datasets?.[0]?.role || rawData.datasets?.[0]?.emphasis) {
       const empRole = rawData.datasets[0].role || rawData.datasets[0].emphasis;
-      return getEmphasisStyle(tokens, empRole).borderColor || getColor(tokens, i);
+      return getEmphasisStyle(tokens, empRole).borderColor || groupColors[i];
     }
-    return getColor(tokens, i);
+    return groupColors[i];
   });
 
   // Custom Tukey Boxplot Painter Plugin

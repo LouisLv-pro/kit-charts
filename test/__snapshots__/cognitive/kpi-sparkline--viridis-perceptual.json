@@ -33,7 +33,7 @@
             "pointBorderWidth": 1.5,
             "pointHoverRadius": 5,
             "pointRadius": "[Function:pointRadius]",
-            "tension": 0.35
+            "tension": 0
           }
         ],
         "labels": [

@@ -33,6 +33,7 @@
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return {}; };
   const isReducedMotionPreferred = (KitChartsTheme && KitChartsTheme.isReducedMotionPreferred) || (typeof window !== 'undefined' && window.isReducedMotionPreferred) || function() { return false; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const compactPeriodTick = (KitChartsTheme && KitChartsTheme.compactPeriodTick) || (typeof window !== 'undefined' && window.compactPeriodTick) || function(l, v) { return l[v] !== undefined ? l[v] : v; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -113,7 +114,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       backgroundColor: bg,
       borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : emphasisStyle.borderWidth,
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [5, 5] : []),
-      tension: typeof ds.tension === 'number' ? ds.tension : 0.3,
+      tension: typeof ds.tension === 'number' ? ds.tension : 0,
       fill: ds.fill !== undefined ? ds.fill : 'origin',
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : 0,
       pointHoverRadius: 6,
@@ -151,7 +152,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
               family: tokens.fontFamily,
               size: 11
             },
-            padding: 6
+            padding: 6,
+            // « Jan 2024, Fév, … Jan 2025 » : l'année ne se répète qu'au changement d'année.
+            callback: function(value, index, ticks) { return compactPeriodTick(labels, value, index, ticks); }
           }
         },
         y: {

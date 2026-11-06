@@ -40,6 +40,7 @@
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const isAxisTitleRedundant = (KitChartsTheme && KitChartsTheme.isAxisTitleRedundant) || (typeof window !== 'undefined' && window.isAxisTitleRedundant) || function() { return false; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -109,6 +110,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   const rawData = customData || DEFAULT_DATA;
   const labels = rawData.labels ? [...rawData.labels] : [];
+  const yTitle = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || '';
 
   const datasets = (rawData.datasets || []).map((ds, dsIdx) => {
     const rawPoints = Array.isArray(ds.data) ? ds.data : [];
@@ -226,7 +228,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Strict psychophysical mandate for waterfall baseline
-          title: { display: true, text: 'M€', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '500' } },
+          // Unité tirée des données (nom de série), jamais « M€ » imposé ; masquée si le sous-titre la donne.
+          title: { display: !!yTitle && !isAxisTitleRedundant(yTitle, options.layout && options.layout.subtitle), text: yTitle, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '500' } },
           grace: '10%',
           grid: {
             color: tokens.gridColor,
@@ -256,7 +259,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               const dLen = (ctx.dataset && ctx.dataset.data) ? ctx.dataset.data.length : 0;
               const isTotal = dIndex === 0 || dIndex === dLen - 1;
               if (isTotal) {
-                return `${formatLabelValue(raw[1])} M€`;
+                return formatLabelValue(raw[1]);
               }
               const diff = raw[1] - raw[0];
               const sign = diff > 0 ? '+' : '';
@@ -297,15 +300,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 const formattedDiff = typeof diff === 'number' ? diff.toLocaleString('fr-FR') : diff;
                 const formattedTotal = typeof val[1] === 'number' ? val[1].toLocaleString('fr-FR') : val[1];
                 if (isTotal) {
-                  return ` Solde Total: ${formattedTotal} M€`;
+                  return ` Solde total : ${formattedTotal}`;
                 }
                 return [
-                  ` Niveau Atteint: ${formattedTotal} M€`,
-                  ` Contribution Étape: ${sign}${formattedDiff} M€ (${diff > 0 ? 'Gain' : 'Perte/Coût'})`
+                  ` Niveau atteint : ${formattedTotal}`,
+                  ` Contribution : ${sign}${formattedDiff} (${diff > 0 ? 'gain' : 'perte ou coût'})`
                 ];
               }
               const formattedVal = typeof val === 'number' ? val.toLocaleString('fr-FR') : val;
-              return ` Valeur: ${formattedVal} M€`;
+              return ` Valeur : ${formattedVal}`;
             }
           }
         }

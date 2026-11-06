@@ -10,6 +10,7 @@
 const fs = require('fs');
 const path = require('path');
 const { validateChartSpec } = require('./validate-chart.js');
+const { applyFocus } = require('./focus.js');
 
 // Chemins de base du projet
 const ROOT_DIR = path.resolve(__dirname, '../../../..');
@@ -143,11 +144,16 @@ function prepareChart(userSpec, options = {}) {
   // Copie : la spec de l'utilisateur (et sa copie spec.json) reste intacte.
   const metricPolarity = userSpec.colorStrategy?.metricPolarity || userSpec.metricPolarity;
   const dataKey = userSpec.formattedData ? 'formattedData' : (userSpec.data ? 'data' : null);
-  const rawSpec = metricPolarity && dataKey
+  const polarized = metricPolarity && dataKey
     ? Object.assign({}, userSpec, {
       [dataKey]: applyMetricPolarity(userSpec[dataKey], metricPolarity, { polarityField: schemaHasPolarity(templateEntry) })
     })
     : userSpec;
+  // Mise en avant (cognitiveFeatures.focus) traduite en focusIndex ou en rôles, même principe.
+  const focus = userSpec.cognitiveFeatures && userSpec.cognitiveFeatures.focus;
+  const rawSpec = focus !== undefined && dataKey
+    ? Object.assign({}, polarized, { [dataKey]: applyFocus(polarized[dataKey], templateId, focus) })
+    : polarized;
 
   // Résolution du thème (imposé par la page dans une page à plusieurs graphiques)
   const themeName = options.theme || rawSpec.colorStrategy?.themeName || rawSpec.theme || themeModule.DEFAULT_THEME || 'colorbrewer-accessible';
@@ -844,6 +850,7 @@ Exemples:
 }
 
 module.exports = {
+  applyFocus,
   applyMetricPolarity,
   compileChart,
   compilePage,

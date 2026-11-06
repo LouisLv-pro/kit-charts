@@ -29,7 +29,7 @@
             "pointHoverRadius": 5,
             "pointRadius": 0,
             "pointStyle": "circle",
-            "tension": 0.3
+            "tension": 0
           },
           {
             "backgroundColor": "rgba(230, 97, 1, 0.65)",
@@ -51,7 +51,7 @@
             "pointHoverRadius": 5,
             "pointRadius": 0,
             "pointStyle": "circle",
-            "tension": 0.3
+            "tension": 0
           },
           {
             "backgroundColor": "rgba(94, 60, 153, 0.65)",
@@ -73,7 +73,7 @@
             "pointHoverRadius": 5,
             "pointRadius": 0,
             "pointStyle": "circle",
-            "tension": 0.3
+            "tension": 0
           }
         ],
         "labels": [
@@ -93,7 +93,7 @@
         "elements": {
           "line": {
             "borderWidth": 2,
-            "tension": 0.1
+            "tension": 0
           },
           "point": {
             "hitRadius": 12,
@@ -179,6 +179,7 @@
             },
             "stacked": true,
             "ticks": {
+              "callback": "[Function:callback]",
               "color": "#334155",
               "font": {
                 "family": "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",

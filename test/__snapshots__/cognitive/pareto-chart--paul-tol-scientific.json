@@ -69,7 +69,7 @@
             "pointBackgroundColor": "#4477AA",
             "pointHoverRadius": 6,
             "pointRadius": 4,
-            "tension": 0.2,
+            "tension": 0,
             "type": "line",
             "yAxisID": "y1"
           }
@@ -163,7 +163,7 @@
           },
           "line": {
             "borderWidth": 2,
-            "tension": 0.1
+            "tension": 0
           },
           "point": {
             "hitRadius": 10,

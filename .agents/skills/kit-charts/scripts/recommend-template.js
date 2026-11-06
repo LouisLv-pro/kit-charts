@@ -11,6 +11,9 @@ const fs = require('fs');
 const path = require('path');
 
 const REGISTRY_PATH = path.join(__dirname, '..', 'registry.json');
+const { findModeGap } = require(path.join(__dirname, '..', '..', '..', '..', 'themes', 'stat-helpers.js'));
+// Sous ce nombre d'observations par groupe, chaque point reste visible (box-strip-plot).
+const FEW_SAMPLES = 30;
 
 // Intention analytique -> templates par ordre de préférence par défaut
 // (ordre issu de references/decision-matrix.md).
@@ -99,7 +102,15 @@ function profileData(input) {
 
   const hasTargetSeries = datasets.some(ds => /cible|target|objectif|budget|goal|quota/i.test(String(ds.label || '')));
 
-  return { categoryCount, seriesCount, maxLabelLength, labelsType, hasNegative, sumsTo100, minSharePct, hasTargetSeries };
+  const profile = { categoryCount, seriesCount, maxLabelLength, labelsType, hasNegative, sumsTo100, minSharePct, hasTargetSeries };
+  // Observations brutes (un tableau de valeurs par groupe) : taille et forme des groupes.
+  const groups = datasets.length === 1 && Array.isArray(datasets[0].data) && datasets[0].data.length > 0 && datasets[0].data.every(Array.isArray)
+    ? datasets[0].data : null;
+  if (groups) {
+    profile.maxGroupSize = Math.max(...groups.map(g => g.length));
+    profile.multimodalGroups = groups.map((g, i) => (findModeGap(g) ? String(labels[i] ?? `Groupe ${i + 1}`) : null)).filter(Boolean);
+  }
+  return profile;
 }
 
 function inferIntent(profile) {
@@ -177,6 +188,11 @@ function recommendTemplates(profile, opts = {}) {
       if (profile.hasNegative && ['pie-chart', 'doughnut-chart', 'waffle-chart', 'treemap', 'stacked-bar-100'].includes(id)) blockers.push('valeurs négatives : pas une partition d\'un tout');
     }
 
+    if (intent === 'distribution' && Array.isArray(profile.multimodalGroups)) {
+      const twoPeaks = profile.multimodalGroups;
+      if (id === 'violin-plot' && twoPeaks.length) { score += 40; reasons.push(`deux paquets dans ${twoPeaks.join(', ')} : la forme du violon les montre, une boîte les cache`); }
+      if (id === 'box-strip-plot' && !twoPeaks.length && profile.maxGroupSize < FEW_SAMPLES) { score += 20; reasons.push(`moins de ${FEW_SAMPLES} observations par groupe : chaque point reste visible`); }
+    }
     if (meta.supportedFeatures && meta.supportedFeatures.semanticValence) reasons.push('gère la polarité métier');
 
     const entry = { id, family: meta.family, name: meta.name, score, reasons };

@@ -206,7 +206,7 @@
         "elements": {
           "line": {
             "borderWidth": 1.5,
-            "tension": 0.1
+            "tension": 0
           },
           "point": {
             "hitRadius": 12,
