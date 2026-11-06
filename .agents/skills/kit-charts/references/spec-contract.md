@@ -24,7 +24,7 @@ invalides » au lieu de compléter avec son exemple : `kit-charts check` le rapp
 | `targetTemplateId` | oui | Identifiant exact d'un template de `registry.json` |
 | `layout` | non | Titre, sous-titre, hauteur, source |
 | `colorStrategy` | non | Thème, mode couleur, polarité métier |
-| `cognitiveFeatures` | non | Étiquettes directes et infobulle |
+| `cognitiveFeatures` | non | Étiquettes directes, mise en avant, infobulle |
 | `formattedData` | oui | Données au format du template |
 | `options` | non | Surcharges Chart.js contrôlées par le linter |
 
@@ -79,6 +79,21 @@ tableau de polarité dans `SKILL.md`. Toute autre valeur déclenche `INVALID_MET
 | N > 12, plus de 3 courbes, nuages de points, treemaps fins | `false` |
 
 Au-delà de 12 points, `true` déclenche `DATALABELS_OVERCROWDING`.
+
+### `focus`
+
+Nom d'une catégorie (ou d'une série) à mettre en avant : elle prend la couleur focale, les
+autres passent en gris de contexte. Exemple : `"focus": "Lille"` sur un classement d'agences.
+Le compilateur le traduit en `focusIndex` ou en rôles `focal` / `context` ; ne les écris pas
+à la main. `make` le déduit d'un titre qui cite une seule catégorie (`--focus` pour imposer,
+`--focus aucun` pour enlever).
+
+| Situation | Résultat |
+| :--- | :--- |
+| Barres, sucettes, parts, boîtes, violons | une catégorie mise en avant |
+| `slope-chart`, `multi-line-chart` | une série mise en avant |
+| Nom absent des données | erreur `FOCUS_UNKNOWN_LABEL`, avec les noms connus |
+| Autre template | avertissement `FOCUS_UNSUPPORTED`, rendu inchangé |
 
 ### `tooltip`
 

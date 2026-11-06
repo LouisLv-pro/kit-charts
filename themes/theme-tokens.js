@@ -2498,7 +2498,8 @@ function getChartDefaultOptions(themeTokens) {
       },
       line: {
         borderWidth: isTufte ? 1.5 : 2,
-        tension: 0.1
+        // Segments droits : un arrondi invente des valeurs entre deux mesures.
+        tension: 0
       },
       point: {
         radius: 4,
@@ -3370,7 +3371,7 @@ function getTemporalInteractionOptions(themeTokens, options = {}) {
     elements: {
       line: {
         borderWidth: isTufte ? 1.5 : (opts.borderWidth !== undefined ? opts.borderWidth : 2),
-        tension: opts.tension !== undefined ? opts.tension : 0.1
+        tension: opts.tension !== undefined ? opts.tension : 0
       },
       point: {
         radius: opts.radius !== undefined ? opts.radius : 3,
@@ -3510,6 +3511,71 @@ function computeAntiOcclusionTooltipPosition(pointCoords, tooltipDim, canvasDim,
     caretPosition,
     align
   };
+}
+
+/**
+ * Couleurs de groupes nommés sur l'axe (box-plot, violon...) : le nom suffit à les distinguer,
+ * une couleur par groupe n'ajoute rien. Une seule couleur, ou focal + gris si un groupe est
+ * mis en avant (focusIndex).
+ * @param {Object} tokens @param {number} count @param {number} [focusIndex]
+ * @returns {string[]}
+ */
+function getGroupColors(tokens, count, focusIndex) {
+  const t = tokens || {};
+  const emphasis = t.emphasis || {};
+  const hasFocus = Number.isInteger(focusIndex) && focusIndex >= 0 && focusIndex < count;
+  const base = getColor(t, 0);
+  return Array.from({ length: count }, (_, i) => {
+    if (!hasFocus) return base;
+    return i === focusIndex ? (emphasis.focal || base) : (emphasis.context || '#94A3B8');
+  });
+}
+
+const PERIOD_LABEL = /^(.*\S)\s+((?:19|20)\d{2})$/;
+
+/**
+ * Libellé de graduation « Mois Année » compacté : l'année n'apparaît qu'à la première
+ * graduation affichée et à chaque changement d'année (Jan 2024, Fév, Mar… Jan 2025).
+ * S'utilise comme ticks.callback d'un axe catégoriel. Libellés sans année : inchangés.
+ * @param {string[]} labels @param {number} value - index du libellé
+ * @param {number} index - rang de la graduation affichée @param {Array<{value:number}>} [ticks]
+ * @returns {string}
+ */
+function compactPeriodTick(labels, value, index, ticks) {
+  const list = Array.isArray(labels) ? labels : [];
+  const label = list[value] !== undefined ? String(list[value]) : String(value);
+  if (!list.length || !list.every(l => PERIOD_LABEL.test(String(l)))) return label;
+  const prevValue = index > 0 && Array.isArray(ticks) && ticks[index - 1] ? ticks[index - 1].value : null;
+  const m = label.match(PERIOD_LABEL);
+  const prev = prevValue !== null && list[prevValue] !== undefined ? String(list[prevValue]).match(PERIOD_LABEL) : null;
+  return prev && m && prev[2] === m[2] ? m[1] : label;
+}
+
+/**
+ * Le titre d'axe répète-t-il le sous-titre ? Vrai quand l'unité entre parenthèses du nom de
+ * série (« CA 2024 (M€) ») figure déjà dans le sous-titre (« Chiffre d'affaires 2024, en M€ »).
+ * @param {string} label @param {string} subtitle @returns {boolean}
+ */
+function isAxisTitleRedundant(label, subtitle) {
+  const unit = String(label || '').match(/\(([^)]+)\)\s*$/);
+  if (!unit || !subtitle) return false;
+  const norm = s => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/\s+/g, ' ').trim();
+  return norm(subtitle).includes(norm(unit[1]));
+}
+
+/**
+ * Nombre de décimales à afficher : celui des données, plafonné (84 reste 84, 72,5 reste 72,5).
+ * @param {Array<number|null>} values @param {number} [max=2] @returns {number}
+ */
+function decimalsOf(values, max = 2) {
+  let d = 0;
+  (Array.isArray(values) ? values : []).forEach(v => {
+    if (typeof v !== 'number' || !Number.isFinite(v)) return;
+    const s = String(v);
+    const frac = s.includes('e') ? max : (s.split('.')[1] || '').length;
+    d = Math.max(d, frac);
+  });
+  return Math.min(d, max);
 }
 
 /**
@@ -4276,6 +4342,10 @@ const KitChartsTheme = {
   getValenceColor,
   getMetricRole,
   getEmphasisStyle,
+  getGroupColors,
+  compactPeriodTick,
+  isAxisTitleRedundant,
+  decimalsOf,
   getThresholdStatus,
   resolveThresholds,
   suggestScale,
@@ -4358,6 +4428,10 @@ if (typeof window !== 'undefined') {
   window.getValenceColor = getValenceColor;
   window.getMetricRole = getMetricRole;
   window.getEmphasisStyle = getEmphasisStyle;
+  window.getGroupColors = getGroupColors;
+  window.compactPeriodTick = compactPeriodTick;
+  window.isAxisTitleRedundant = isAxisTitleRedundant;
+  window.decimalsOf = decimalsOf;
   window.getThresholdStatus = getThresholdStatus;
   window.resolveThresholds = resolveThresholds;
   window.suggestScale = suggestScale;
@@ -4444,6 +4518,10 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.getValenceColor = getValenceColor;
   module.exports.getMetricRole = getMetricRole;
   module.exports.getEmphasisStyle = getEmphasisStyle;
+  module.exports.getGroupColors = getGroupColors;
+  module.exports.compactPeriodTick = compactPeriodTick;
+  module.exports.isAxisTitleRedundant = isAxisTitleRedundant;
+  module.exports.decimalsOf = decimalsOf;
   module.exports.getThresholdStatus = getThresholdStatus;
   module.exports.resolveThresholds = resolveThresholds;
   module.exports.suggestScale = suggestScale;

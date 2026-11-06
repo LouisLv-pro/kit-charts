@@ -117,7 +117,7 @@
           borderWidth: 2.2,
           backgroundColor: gradient,
           fill: true,
-          tension: 0.35,
+          tension: 0,
           pointRadius: (ctx) => {
             const idx = ctx.dataIndex;
             if (idx === lastIndex) return 4;

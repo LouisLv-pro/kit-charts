@@ -11,7 +11,7 @@
         "datasets": [
           {
             "backgroundColor": "#26828E",
-            "borderColor": "#3E4A89",
+            "borderColor": "#26828E",
             "borderDash": [],
             "borderWidth": 3,
             "data": [
@@ -32,11 +32,11 @@
             "pointHoverRadius": 6,
             "pointRadius": 4,
             "pointStyle": "circle",
-            "tension": 0.25
+            "tension": 0
           },
           {
             "backgroundColor": "#3E4A89",
-            "borderColor": "#26828E",
+            "borderColor": "#3E4A89",
             "borderDash": [
               4,
               4
@@ -60,11 +60,11 @@
             "pointHoverRadius": 6,
             "pointRadius": 4,
             "pointStyle": "rectRot",
-            "tension": 0.25
+            "tension": 0
           },
           {
             "backgroundColor": "rgba(148, 163, 184, 0.4)",
-            "borderColor": "#35B779",
+            "borderColor": "#94A3B8",
             "borderDash": [],
             "borderWidth": 1.5,
             "data": [
@@ -85,7 +85,7 @@
             "pointHoverRadius": 6,
             "pointRadius": 2,
             "pointStyle": "circle",
-            "tension": 0.25
+            "tension": 0
           }
         ],
         "labels": [
@@ -107,7 +107,7 @@
         "elements": {
           "line": {
             "borderWidth": 2,
-            "tension": 0.1
+            "tension": 0
           },
           "point": {
             "hitRadius": 12,
@@ -191,6 +191,7 @@
               "drawBorder": false
             },
             "ticks": {
+              "callback": "[Function:callback]",
               "color": "#334155",
               "font": {
                 "family": "'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",

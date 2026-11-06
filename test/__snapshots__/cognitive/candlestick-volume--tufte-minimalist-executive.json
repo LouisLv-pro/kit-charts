@@ -111,7 +111,7 @@
             "label": "Volume MA (5j)",
             "order": 2,
             "pointRadius": 0,
-            "tension": 0.3,
+            "tension": 0,
             "type": "line",
             "yAxisID": "yVolume"
           },
@@ -179,7 +179,7 @@
           },
           "line": {
             "borderWidth": 1.5,
-            "tension": 0.1
+            "tension": 0
           },
           "point": {
             "hitRadius": 10,

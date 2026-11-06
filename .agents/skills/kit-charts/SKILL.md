@@ -54,7 +54,7 @@ numériques = séries. Préciser au besoin :
 
 Ce que `make` fait seul :
 - calcule les paires chaînées du waterfall ;
-- calcule les quartiles d'un `box-plot` ;
+- calcule les quartiles d'un `box-plot`, ou prend un `violin-plot` si un groupe a deux pics ;
 - garde l'ordre des tranches d'âge et des échelles sur `bar-chart-horizontal` ;
 - écarte les templates qui ne savent pas lire la forme des données.
 
@@ -88,6 +88,10 @@ Le titre énonce le constat, pas le sujet. « CA par région » oblige à cherch
 prouve. Unité et période vont dans `--subtitle`, la source dans `--footnote`. Les valeurs
 affichées n'ont pas de suffixe : l'unité doit être dans le sous-titre ou le nom de la série.
 
+**Mise en avant.** Si le titre cite une seule catégorie (« Lille passe en tête »), `make` la
+colore et grise les autres : la sortie l'indique. `--focus "Lille"` l'impose, `--focus aucun`
+l'enlève.
+
 ## Pages à plusieurs graphiques, export, hors ligne
 
 - **Page** (tableau de bord, rapport) : crée chaque graphique avec `make`, puis écris
@@ -111,29 +115,11 @@ affichées n'ont pas de suffixe : l'unité doit être dans le sous-titre ou le n
 - **Hors ligne** : `--offline` inclut Chart.js et ses plugins (copies vérifiées) dans la
   page, qui s'ouvre sans réseau.
 
-## Règles et correctifs
+## Erreurs et avertissements
 
-| Règle | Correctif |
-| :--- | :--- |
-| `CLEVELAND_Y_ZERO` axe tronqué sur barres | Garder l'axe à zéro ; petits écarts : `dumbbell-chart`, `slope-chart`, `line-chart` |
-| `NO_LOG_ON_LENGTH` log sur barres | Échelle linéaire, ou `scatter-plot` |
-| `VERTICAL_BAR_MAX_CATEGORIES` plus de 7 colonnes | `bar-chart-horizontal`, ou top 6 + « Autres » |
-| `MULTI_LINE_MAX_SERIES` plus de 5 courbes | Top 4 + « Autres », ou plusieurs `line-chart` |
-| `PIE_DONUT_MAX_SLICES` trop de tranches (registre : pie 3, doughnut 4) | `bar-chart-horizontal` trié ou `treemap` |
-| `DATALABELS_OVERCROWDING` étiquettes avec N > 12 | `--no-labels`, détail dans l'infobulle |
-| `VALENCE_POLARITY_MISMATCH` | Corriger `--polarity`, jamais les couleurs à la main |
-| `METRIC_POLARITY_CONFLICT` | Retirer `metricType` ou `polarity` des données : `--polarity` les complète |
-| `WCAG_CONTRAST_*` | Changer de thème (`--theme`) |
-| `SCHEMA_FORMATTED_DATA` | Reprendre la forme de `kit-charts describe <id>` ; le message donne le chemin fautif |
-| `DATA_LENGTH_MISMATCH` | Une valeur par catégorie, `null` si manquante |
-| `PAGE_TOO_MANY_CHARTS`, `PAGE_COLUMNS` | 6 graphiques au plus, 1 à 3 colonnes |
-| Avertissement `TITLE_IS_TOPIC` | Phrase avec verbe, chiffre ou comparaison |
-| Avertissement `MISSING_UNIT` | Unité dans `--subtitle` ou dans le nom de la colonne |
-| Avertissement `UNSORTED_BARS`, `ORDINAL_ORDER_LOST` | Trier par valeur, sauf ordre naturel à garder (et à dire) |
-| Avertissement `WATERFALL_STEP_AS_TOTAL` | Paires chaînées (`make` les calcule depuis un CSV) |
-| Avertissement `UNKNOWN_FIELD` | Champ mal nommé ou au mauvais niveau |
-
-Un avertissement se corrige ou se justifie dans le rapport.
+Chaque règle violée arrive avec son correctif, souvent l'option de `make` à relancer
+(`--template`, `--polarity`, `--no-labels`, `--theme`). Applique-le avec `update`. Un
+avertissement se corrige ou se justifie dans le rapport.
 
 ## Ne pas faire
 

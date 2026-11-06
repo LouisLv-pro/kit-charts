@@ -117,7 +117,7 @@
           },
           "line": {
             "borderWidth": 2,
-            "tension": 0.1
+            "tension": 0
           },
           "point": {
             "hitRadius": 10,

@@ -27,7 +27,7 @@
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
-  const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
+  const getGroupColors = (KitChartsTheme && KitChartsTheme.getGroupColors) || (typeof window !== 'undefined' && window.getGroupColors) || function(t, n) { return Array.from({ length: n }, () => '#2B8CBE'); };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
 
@@ -146,10 +146,12 @@
     const labels = rawData.labels || ['Groupe 1', 'Groupe 2', 'Groupe 3'];
     const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
 
+    // Une seule teinte pour des groupes de même nature ; --focus grise les autres groupes.
+    const groupColors = getGroupColors(tokens, groups.length, rawData.datasets[0].focusIndex);
     const groupStats = groups.map((g, i) => {
       const rawPoints = Array.isArray(g) ? g : [];
       const stats = computeTukeyBoxStats(rawPoints);
-      const color = getColor(tokens, i);
+      const color = groupColors[i];
       return { rawPoints, stats, color, label: labels[i] || `Groupe ${i + 1}` };
     });
 

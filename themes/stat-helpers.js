@@ -267,6 +267,29 @@ const errorBarsPlugin = {
   }
 };
 
+/**
+ * Repère une distribution « à deux paquets » : valeurs triées, le plus grand écart entre deux
+ * voisines vaut au moins 25 % de l'étendue et laisse au moins 25 % des points (3 au minimum)
+ * de chaque côté. Exemple : délais 21 à 27 h puis 49 à 60 h -> { low: 27, high: 49 }.
+ * Une boîte à moustaches résume ces deux paquets en une seule boîte : il faut le savoir.
+ * @param {number[]} values
+ * @returns {{low: number, high: number}|null}
+ */
+function findModeGap(values) {
+  const clean = (Array.isArray(values) ? values : []).map(Number).filter(Number.isFinite).sort((a, b) => a - b);
+  const n = clean.length;
+  const minSide = Math.max(3, Math.ceil(n * 0.25));
+  if (n < minSide * 2) return null;
+  const range = clean[n - 1] - clean[0];
+  if (range <= 0) return null;
+  let best = -1;
+  for (let i = minSide - 1; i < n - minSide; i++) {
+    if (best < 0 || clean[i + 1] - clean[i] > clean[best + 1] - clean[best]) best = i;
+  }
+  if (best < 0 || clean[best + 1] - clean[best] < range * 0.25) return null;
+  return { low: clean[best], high: clean[best + 1] };
+}
+
 // Auto registration if Chart.js is present
 if (typeof Chart !== 'undefined' && Chart.register) {
   try {
@@ -285,6 +308,7 @@ const StatHelpers = {
   studentT,
   ci95,
   checkCIOverlap,
+  findModeGap,
   errorBarsPlugin
 };
 
@@ -310,5 +334,6 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports.studentT = studentT;
   module.exports.ci95 = ci95;
   module.exports.checkCIOverlap = checkCIOverlap;
+  module.exports.findModeGap = findModeGap;
   module.exports.errorBarsPlugin = errorBarsPlugin;
 }

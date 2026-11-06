@@ -208,7 +208,7 @@
             borderColor: vmaColor,
             borderWidth: 1.5,
             pointRadius: 0,
-            tension: 0.3,
+            tension: 0,
             order: 2
           },
           {

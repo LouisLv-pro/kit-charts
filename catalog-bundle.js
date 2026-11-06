@@ -3,7 +3,7 @@
  * @description All kit-charts template generators pre-bundled for instant zero-CORS execution.
  * Allows index.html and npm consumers to render every catalog chart immediately on file://, http://, and Node.js.
  * @version 1.0.0
- * @generated 2026-11-05T14:13:57.049Z
+ * @generated 2026-11-06T09:45:31.634Z
  */
 
 (function(global) {
@@ -1423,7 +1423,7 @@
           borderWidth: 2.2,
           backgroundColor: gradient,
           fill: true,
-          tension: 0.35,
+          tension: 0,
           pointRadius: (ctx) => {
             const idx = ctx.dataIndex;
             if (idx === lastIndex) return 4;
@@ -2275,6 +2275,7 @@
   const getPartitionInteractionOptions = (KitChartsTheme && KitChartsTheme.getPartitionInteractionOptions) || (typeof window !== 'undefined' && window.getPartitionInteractionOptions) || function(t, o) { return o || {}; };
   const computeAntiOcclusionTooltipPosition = (KitChartsTheme && KitChartsTheme.computeAntiOcclusionTooltipPosition) || (typeof window !== 'undefined' && window.computeAntiOcclusionTooltipPosition) || function() { return {}; };
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
+  const isAxisTitleRedundant = (KitChartsTheme && KitChartsTheme.isAxisTitleRedundant) || (typeof window !== 'undefined' && window.isAxisTitleRedundant) || function() { return false; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -2501,7 +2502,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         x: {
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage horizontal
-          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1', text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
+          // Titre d'axe masqué quand le sous-titre donne déjà l'unité (« … en M€ »).
+          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1' && !isAxisTitleRedundant(datasets[0].label, options.layout && options.layout.subtitle), text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
           grace: '15%',
           grid: {
             color: tokens.gridColor,
@@ -2597,6 +2599,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const getPartitionInteractionOptions = (KitChartsTheme && KitChartsTheme.getPartitionInteractionOptions) || (typeof window !== 'undefined' && window.getPartitionInteractionOptions) || function(t, o) { return o || {}; };
   const computeAntiOcclusionTooltipPosition = (KitChartsTheme && KitChartsTheme.computeAntiOcclusionTooltipPosition) || (typeof window !== 'undefined' && window.computeAntiOcclusionTooltipPosition) || function() { return {}; };
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
+  const isAxisTitleRedundant = (KitChartsTheme && KitChartsTheme.isAxisTitleRedundant) || (typeof window !== 'undefined' && window.isAxisTitleRedundant) || function() { return false; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -2852,7 +2855,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage par longueur
-          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1', text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
+          // Titre d'axe masqué quand le sous-titre donne déjà l'unité (« … en M€ »).
+          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1' && !isAxisTitleRedundant(datasets[0].label, options.layout && options.layout.subtitle), text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
           grace: '10%',
           grid: {
             color: tokens.gridColor,
@@ -5417,6 +5421,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const decimalsOf = (KitChartsTheme && KitChartsTheme.decimalsOf) || (typeof window !== 'undefined' && window.decimalsOf) || function() { return 1; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -5459,7 +5464,9 @@ const slopeDirectLabelsPlugin = {
     const narrow = chart.width < 420;
     const fontSize = narrow ? 10 : 11;
     const lineH = fontSize + 3;
-    const fmt = (v) => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v);
+    // Décimales des données : 84 reste « 84 », 72,5 reste « 72,5 » (jamais de « 84,0 » inventé).
+    const digits = decimalsOf(chart.data.datasets.flatMap(d => (Array.isArray(d.data) ? d.data : [])));
+    const fmt = (v) => new Intl.NumberFormat('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: digits }).format(v);
     const sides = [
       { idx: 0, align: 'right', dx: -10 },
       { idx: null, align: 'left', dx: 10 }
@@ -5495,7 +5502,8 @@ const slopeDirectLabelsPlugin = {
         if (!pt || v === null || v === undefined) return;
         const valueText = fmt(v);
         const out = wrap(ds.label, valueText, side.idx === 0);
-        items.push({ out, x: pt.x, y: pt.y, ly: pt.y, h: out.length * lineH });
+        const muted = ds.role === 'context';
+        items.push({ out, x: pt.x, y: pt.y, ly: pt.y, h: out.length * lineH, color: muted ? (tokens.textSecondary || '#334155') : (tokens.textPrimary || '#0F172A') });
       });
       items.sort((a, b) => a.y - b.y);
       for (let k = 1; k < items.length; k++) {
@@ -5505,6 +5513,7 @@ const slopeDirectLabelsPlugin = {
       ctx.textAlign = side.align;
       items.forEach((it) => {
         const top = it.ly - ((it.out.length - 1) * lineH) / 2;
+        ctx.fillStyle = it.color;
         it.out.forEach((line, k) => ctx.fillText(line, it.x + side.dx, top + k * lineH));
       });
     });
@@ -5587,7 +5596,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       pointBackgroundColor: borderColor,
       pointBorderColor: tokens.bg,
       pointBorderWidth: 2,
-      fill: false
+      fill: false,
+      // Rôle conservé pour l'étiquetage direct (contexte en gris secondaire).
+      ...(ds.emphasisRole || ds.role ? { role: ds.emphasisRole || ds.role } : {})
     };
   });
 
@@ -6649,7 +6660,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
             pointRadius: 4,
             pointHoverRadius: 6,
             pointBackgroundColor: lineColor,
-            tension: 0.2,
+            tension: 0,
             datalabels: {
               // Carte étroite : les valeurs du cumul se lisent sur l'axe droit et à l'infobulle
               display: showDataLabels && !narrow,
@@ -8885,6 +8896,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const getThemeTokens = (KitChartsTheme && KitChartsTheme.getThemeTokens) || (typeof window !== 'undefined' && window.getThemeTokens) || function(t) { return {}; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
   const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
+  const getGroupColors = (KitChartsTheme && KitChartsTheme.getGroupColors) || (typeof window !== 'undefined' && window.getGroupColors) || function(t, n) { return Array.from({ length: n }, () => '#2B8CBE'); };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
   const getSequentialColor = (KitChartsTheme && KitChartsTheme.getSequentialColor) || (typeof window !== 'undefined' && window.getSequentialColor) || function() { return '#3182BD'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function(t, d, m) { return '#2B8CBE'; };
@@ -9030,7 +9042,11 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const suggestedMin = rawMin >= 0 && (rawMin - yPadding < 0) ? 0 : Math.floor(rawMin - yPadding);
   const suggestedMax = Math.ceil(rawMax + yPadding);
 
+  // Une seule teinte pour des groupes de même nature ; --focus grise les autres groupes.
+  const focusIndex = rawData.datasets?.[0]?.focusIndex;
+  const groupColors = getGroupColors(tokens, boxStats.length, focusIndex);
   const primaryColors = boxStats.map((stat, i) => {
+    if (Number.isInteger(focusIndex)) return groupColors[i];
     if (stat.role || stat.emphasis) {
       return getEmphasisStyle(tokens, stat.role || stat.emphasis).borderColor || getColor(tokens, i);
     }
@@ -9039,9 +9055,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     }
     if (rawData.datasets?.[0]?.role || rawData.datasets?.[0]?.emphasis) {
       const empRole = rawData.datasets[0].role || rawData.datasets[0].emphasis;
-      return getEmphasisStyle(tokens, empRole).borderColor || getColor(tokens, i);
+      return getEmphasisStyle(tokens, empRole).borderColor || groupColors[i];
     }
-    return getColor(tokens, i);
+    return groupColors[i];
   });
 
   // Custom Tukey Boxplot Painter Plugin
@@ -9277,7 +9293,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
-  const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
+  const getGroupColors = (KitChartsTheme && KitChartsTheme.getGroupColors) || (typeof window !== 'undefined' && window.getGroupColors) || function(t, n) { return Array.from({ length: n }, () => '#2B8CBE'); };
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return o || {}; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
 
@@ -9396,10 +9412,12 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
     const labels = rawData.labels || ['Groupe 1', 'Groupe 2', 'Groupe 3'];
     const groups = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].data);
 
+    // Une seule teinte pour des groupes de même nature ; --focus grise les autres groupes.
+    const groupColors = getGroupColors(tokens, groups.length, rawData.datasets[0].focusIndex);
     const groupStats = groups.map((g, i) => {
       const rawPoints = Array.isArray(g) ? g : [];
       const stats = computeTukeyBoxStats(rawPoints);
-      const color = getColor(tokens, i);
+      const color = groupColors[i];
       return { rawPoints, stats, color, label: labels[i] || `Groupe ${i + 1}` };
     });
 
@@ -11854,7 +11872,7 @@ var factory = function(KitChartsTheme) {
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
-  const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
+  const getGroupColors = (KitChartsTheme && KitChartsTheme.getGroupColors) || (typeof window !== 'undefined' && window.getGroupColors) || function(t, n) { return Array.from({ length: n }, () => '#2B8CBE'); };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
   const getSequentialColor = (KitChartsTheme && KitChartsTheme.getSequentialColor) || (typeof window !== 'undefined' && window.getSequentialColor) || function() { return '#3182BD'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function() { return '#2E7D32'; };
@@ -12017,12 +12035,14 @@ var factory = function(KitChartsTheme) {
     const showInnerBox = options.showInnerBox !== undefined ? options.showInnerBox : true;
     const showRawPoints = options.showRawPoints !== undefined ? options.showRawPoints : (groups.some(g => Array.isArray(g) && g.length <= 30));
 
+    // Une seule teinte pour des groupes de même nature ; --focus grise les autres groupes.
+    const groupColors = getGroupColors(tokens, groups.length, rawData.datasets[0].focusIndex);
     // Pré-calcul du KDE et stats pour chaque groupe
     const groupAnalysis = groups.map((g, i) => {
       const rawPoints = Array.isArray(g) ? g : [];
       const kde = computeGaussianKDE(rawPoints);
       const stats = computeSummaryStats(rawPoints);
-      const color = getColor(tokens, i);
+      const color = groupColors[i];
       return { rawPoints, kde, stats, color, label: labels[i] || `Groupe ${i + 1}` };
     });
 
@@ -15265,6 +15285,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return {}; };
   const isReducedMotionPreferred = (KitChartsTheme && KitChartsTheme.isReducedMotionPreferred) || (typeof window !== 'undefined' && window.isReducedMotionPreferred) || function() { return false; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const compactPeriodTick = (KitChartsTheme && KitChartsTheme.compactPeriodTick) || (typeof window !== 'undefined' && window.compactPeriodTick) || function(l, v) { return l[v] !== undefined ? l[v] : v; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -15345,7 +15366,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       backgroundColor: bg,
       borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : emphasisStyle.borderWidth,
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [5, 5] : []),
-      tension: typeof ds.tension === 'number' ? ds.tension : 0.3,
+      tension: typeof ds.tension === 'number' ? ds.tension : 0,
       fill: ds.fill !== undefined ? ds.fill : 'origin',
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : 0,
       pointHoverRadius: 6,
@@ -15383,7 +15404,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
               family: tokens.fontFamily,
               size: 11
             },
-            padding: 6
+            padding: 6,
+            // « Jan 2024, Fév, … Jan 2025 » : l'année ne se répète qu'au changement d'année.
+            callback: function(value, index, ticks) { return compactPeriodTick(labels, value, index, ticks); }
           }
         },
         y: {
@@ -15962,7 +15985,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             borderColor: vmaColor,
             borderWidth: 1.5,
             pointRadius: 0,
-            tension: 0.3,
+            tension: 0,
             order: 2
           },
           {
@@ -16285,7 +16308,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             borderWidth: 2.5,
             pointRadius: 4,
             pointHoverRadius: 6,
-            tension: 0.3,
+            tension: 0,
             datalabels: {
               display: false,
               color: color1,
@@ -16303,7 +16326,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
             borderWidth: 2.5,
             pointRadius: 4,
             pointHoverRadius: 6,
-            tension: 0.3,
+            tension: 0,
             datalabels: {
               display: false,
               color: color2,
@@ -16479,6 +16502,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return {}; };
   const isReducedMotionPreferred = (KitChartsTheme && KitChartsTheme.isReducedMotionPreferred) || (typeof window !== 'undefined' && window.isReducedMotionPreferred) || function() { return false; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const compactPeriodTick = (KitChartsTheme && KitChartsTheme.compactPeriodTick) || (typeof window !== 'undefined' && window.compactPeriodTick) || function(l, v) { return l[v] !== undefined ? l[v] : v; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 
@@ -16559,7 +16583,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       backgroundColor: bg,
       borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : emphasisStyle.borderWidth,
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [5, 5] : []),
-      tension: typeof ds.tension === 'number' ? ds.tension : 0.2,
+      tension: typeof ds.tension === 'number' ? ds.tension : 0,
       fill: ds.fill !== undefined ? ds.fill : false,
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : (emphasisStyle.pointRadius ?? (isTufte ? 2.5 : 3.5)),
       pointHoverRadius: 6,
@@ -16605,7 +16629,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               family: tokens.fontFamily,
               size: 11
             },
-            padding: 6
+            padding: 6,
+            // « Jan 2024, Fév, … Jan 2025 » : l'année ne se répète qu'au changement d'année.
+            callback: function(value, index, ticks) { return compactPeriodTick(labels, value, index, ticks); }
           }
         },
         y: isLogRequested ? {
@@ -16749,6 +16775,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return {}; };
   const isReducedMotionPreferred = (KitChartsTheme && KitChartsTheme.isReducedMotionPreferred) || (typeof window !== 'undefined' && window.isReducedMotionPreferred) || function() { return false; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const compactPeriodTick = (KitChartsTheme && KitChartsTheme.compactPeriodTick) || (typeof window !== 'undefined' && window.compactPeriodTick) || function(l, v) { return l[v] !== undefined ? l[v] : v; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -16832,12 +16859,16 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       baseColor = getValenceColor(tokens, ds.valence, 'gain');
     }
 
-    const emphasisStyle = getEmphasisStyle(tokens, role, {
+    // Seules les options définies sont transmises : une clé undefined écraserait la couleur du rôle
+    // (focal, contexte) choisi par --focus. Sans rôle explicite, la palette reste la couleur de série.
+    const emphasisOpts = {
       fill: ds.fill ?? false,
-      alpha: ds.alpha,
-      borderColor: ds.borderColor || (ds.valence ? baseColor : undefined),
       borderWidth: ds.borderWidth ?? (isTufte ? 1.5 : (role === 'focal' ? 3.0 : (role === 'benchmark' ? 2.0 : 1.5)))
-    });
+    };
+    if (ds.alpha !== undefined) emphasisOpts.alpha = ds.alpha;
+    const explicitBorder = ds.borderColor || (ds.valence || !ds.role ? baseColor : undefined);
+    if (explicitBorder) emphasisOpts.borderColor = explicitBorder;
+    const emphasisStyle = getEmphasisStyle(tokens, role, emphasisOpts);
 
     const border = ds.borderColor || emphasisStyle.borderColor || baseColor;
     const bg = ds.backgroundColor || (typeof emphasisStyle.backgroundColor === 'string'
@@ -16851,7 +16882,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       backgroundColor: bg,
       borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : emphasisStyle.borderWidth,
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [5, 5] : (role === 'benchmark' ? [4, 4] : [])),
-      tension: typeof ds.tension === 'number' ? ds.tension : 0.25,
+      tension: typeof ds.tension === 'number' ? ds.tension : 0,
       fill: ds.fill !== undefined ? ds.fill : false,
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : (emphasisStyle.pointRadius ?? (role === 'focal' ? 4 : (role === 'benchmark' ? 3 : 2))),
       pointHoverRadius: 6,
@@ -16987,7 +17018,9 @@ function legibleOn(color, surface) {
               family: tokens.fontFamily,
               size: 11
             },
-            padding: 6
+            padding: 6,
+            // « Jan 2024, Fév, … Jan 2025 » : l'année ne se répète qu'au changement d'année.
+            callback: function(value, index, ticks) { return compactPeriodTick(labels, value, index, ticks); }
           }
         },
         y: {
@@ -17248,7 +17281,7 @@ function legibleOn(color, surface) {
             borderWidth: 2.5,
             pointRadius: 3,
             pointHoverRadius: 5,
-            tension: 0.2,
+            tension: 0,
             order: 1
           },
           {
@@ -17259,7 +17292,7 @@ function legibleOn(color, surface) {
             borderDash: [3, 3],
             pointStyle: 'line',
             pointRadius: 0,
-            tension: 0.3,
+            tension: 0,
             order: 2
           },
           {
@@ -17271,7 +17304,7 @@ function legibleOn(color, surface) {
             fill: '+1',
             pointStyle: 'rect',
             backgroundColor: hexToRgba(bandColor, isDark ? 0.22 : 0.18),
-            tension: 0.3,
+            tension: 0,
             order: 3
           },
           {
@@ -17281,7 +17314,7 @@ function legibleOn(color, surface) {
             borderWidth: 1,
             pointRadius: 0,
             fill: false,
-            tension: 0.3,
+            tension: 0,
             order: 3
           }
         ]
@@ -17456,7 +17489,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       backgroundColor: bg,
       borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : emphasisStyle.borderWidth,
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [4, 4] : []),
-      tension: typeof ds.tension === 'number' ? ds.tension : 0.25,
+      tension: typeof ds.tension === 'number' ? ds.tension : 0,
       fill: ds.fill !== undefined ? ds.fill : false,
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : (ctx) => {
         const count = ctx.chart?.data?.datasets?.[idx]?.data?.length || 12;
@@ -17632,6 +17665,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const getAccessibleAnimationOptions = (KitChartsTheme && KitChartsTheme.getAccessibleAnimationOptions) || (typeof window !== 'undefined' && window.getAccessibleAnimationOptions) || function(t, o) { return {}; };
   const isReducedMotionPreferred = (KitChartsTheme && KitChartsTheme.isReducedMotionPreferred) || (typeof window !== 'undefined' && window.isReducedMotionPreferred) || function() { return false; };
   const hexToRgba = (KitChartsTheme && KitChartsTheme.hexToRgba) || (typeof window !== 'undefined' && window.hexToRgba) || function(c, a) { return c; };
+  const compactPeriodTick = (KitChartsTheme && KitChartsTheme.compactPeriodTick) || (typeof window !== 'undefined' && window.compactPeriodTick) || function(l, v) { return l[v] !== undefined ? l[v] : v; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -17721,7 +17755,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
       backgroundColor: bg,
       borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : emphasisStyle.borderWidth,
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [5, 5] : []),
-      tension: typeof ds.tension === 'number' ? ds.tension : 0.3,
+      tension: typeof ds.tension === 'number' ? ds.tension : 0,
       fill: ds.fill !== undefined ? ds.fill : (idx === 0 ? 'origin' : '-1'),
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : 0,
       pointHoverRadius: 5,
@@ -17759,7 +17793,9 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME)
               family: tokens.fontFamily,
               size: 11
             },
-            padding: 6
+            padding: 6,
+            // « Jan 2024, Fév, … Jan 2025 » : l'année ne se répète qu'au changement d'année.
+            callback: function(value, index, ticks) { return compactPeriodTick(labels, value, index, ticks); }
           }
         },
         y: {
@@ -19849,6 +19885,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
+  const isAxisTitleRedundant = (KitChartsTheme && KitChartsTheme.isAxisTitleRedundant) || (typeof window !== 'undefined' && window.isAxisTitleRedundant) || function() { return false; };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
 
 /**
@@ -19918,6 +19955,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
 
   const rawData = customData || DEFAULT_DATA;
   const labels = rawData.labels ? [...rawData.labels] : [];
+  const yTitle = (rawData.datasets && rawData.datasets[0] && rawData.datasets[0].label) || '';
 
   const datasets = (rawData.datasets || []).map((ds, dsIdx) => {
     const rawPoints = Array.isArray(ds.data) ? ds.data : [];
@@ -20035,7 +20073,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         y: {
           beginAtZero: true, // Strict psychophysical mandate for waterfall baseline
-          title: { display: true, text: 'M€', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '500' } },
+          // Unité tirée des données (nom de série), jamais « M€ » imposé ; masquée si le sous-titre la donne.
+          title: { display: !!yTitle && !isAxisTitleRedundant(yTitle, options.layout && options.layout.subtitle), text: yTitle, color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 12, weight: '500' } },
           grace: '10%',
           grid: {
             color: tokens.gridColor,
@@ -20065,7 +20104,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
               const dLen = (ctx.dataset && ctx.dataset.data) ? ctx.dataset.data.length : 0;
               const isTotal = dIndex === 0 || dIndex === dLen - 1;
               if (isTotal) {
-                return `${formatLabelValue(raw[1])} M€`;
+                return formatLabelValue(raw[1]);
               }
               const diff = raw[1] - raw[0];
               const sign = diff > 0 ? '+' : '';
@@ -20106,15 +20145,15 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
                 const formattedDiff = typeof diff === 'number' ? diff.toLocaleString('fr-FR') : diff;
                 const formattedTotal = typeof val[1] === 'number' ? val[1].toLocaleString('fr-FR') : val[1];
                 if (isTotal) {
-                  return ` Solde Total: ${formattedTotal} M€`;
+                  return ` Solde total : ${formattedTotal}`;
                 }
                 return [
-                  ` Niveau Atteint: ${formattedTotal} M€`,
-                  ` Contribution Étape: ${sign}${formattedDiff} M€ (${diff > 0 ? 'Gain' : 'Perte/Coût'})`
+                  ` Niveau atteint : ${formattedTotal}`,
+                  ` Contribution : ${sign}${formattedDiff} (${diff > 0 ? 'gain' : 'perte ou coût'})`
                 ];
               }
               const formattedVal = typeof val === 'number' ? val.toLocaleString('fr-FR') : val;
-              return ` Valeur: ${formattedVal} M€`;
+              return ` Valeur : ${formattedVal}`;
             }
           }
         }

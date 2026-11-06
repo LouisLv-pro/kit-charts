@@ -36,6 +36,7 @@
   const getPartitionInteractionOptions = (KitChartsTheme && KitChartsTheme.getPartitionInteractionOptions) || (typeof window !== 'undefined' && window.getPartitionInteractionOptions) || function(t, o) { return o || {}; };
   const computeAntiOcclusionTooltipPosition = (KitChartsTheme && KitChartsTheme.computeAntiOcclusionTooltipPosition) || (typeof window !== 'undefined' && window.computeAntiOcclusionTooltipPosition) || function() { return {}; };
   const getDataLabelOptions = (KitChartsTheme && KitChartsTheme.getDataLabelOptions) || (typeof window !== 'undefined' && window.getDataLabelOptions) || function(t, o) { return o || {}; };
+  const isAxisTitleRedundant = (KitChartsTheme && KitChartsTheme.isAxisTitleRedundant) || (typeof window !== 'undefined' && window.isAxisTitleRedundant) || function() { return false; };
   const kitChartsDataLabelsPlugin = (KitChartsTheme && KitChartsTheme.kitChartsDataLabelsPlugin) || (typeof window !== 'undefined' && window.kitChartsDataLabelsPlugin) || null;
   const formatLabelValue = (KitChartsTheme && KitChartsTheme.formatLabelValue) || (typeof window !== 'undefined' && window.formatLabelValue) || function(v) { return String(v); };
   const DEFAULT_THEME = (KitChartsTheme && KitChartsTheme.DEFAULT_THEME) || 'colorbrewer-accessible';
@@ -262,7 +263,8 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
         },
         x: {
           beginAtZero: true, // Règle psychophysique obligatoire pour encodage horizontal
-          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1', text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
+          // Titre d'axe masqué quand le sous-titre donne déjà l'unité (« … en M€ »).
+          title: { display: datasets.length === 1 && !!datasets[0].label && datasets[0].label !== 'Série 1' && !isAxisTitleRedundant(datasets[0].label, options.layout && options.layout.subtitle), text: datasets.length ? datasets[0].label : '', color: tokens.textSecondary, font: { family: tokens.fontFamily, size: 11, weight: '500' } },
           grace: '15%',
           grid: {
             color: tokens.gridColor,

@@ -199,7 +199,7 @@
             borderWidth: 2.5,
             pointRadius: 4,
             pointHoverRadius: 6,
-            tension: 0.3,
+            tension: 0,
             datalabels: {
               display: false,
               color: color1,
@@ -217,7 +217,7 @@
             borderWidth: 2.5,
             pointRadius: 4,
             pointHoverRadius: 6,
-            tension: 0.3,
+            tension: 0,
             datalabels: {
               display: false,
               color: color2,

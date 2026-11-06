@@ -71,7 +71,7 @@
           },
           "line": {
             "borderWidth": 2,
-            "tension": 0.1
+            "tension": 0
           },
           "point": {
             "hitRadius": 10,
@@ -192,7 +192,7 @@
                 "size": 12,
                 "weight": "500"
               },
-              "text": "M€"
+              "text": "Pont Financier EBITDA (M€)"
             }
           }
         },

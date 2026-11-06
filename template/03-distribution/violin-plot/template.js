@@ -26,7 +26,7 @@ var factory = function(KitChartsTheme) {
   const checkRequiredArrays = (KitChartsTheme && KitChartsTheme.checkRequiredArrays) || (typeof window !== 'undefined' && window.checkRequiredArrays) || function() { return null; };
   const renderInvalidData = (KitChartsTheme && KitChartsTheme.renderInvalidData) || (typeof window !== 'undefined' && window.renderInvalidData) || function(t, r) { if (typeof console !== 'undefined') console.error('[kit-charts] Données invalides : ' + r); return null; };
   const getChartDefaultOptions = (KitChartsTheme && KitChartsTheme.getChartDefaultOptions) || (typeof window !== 'undefined' && window.getChartDefaultOptions) || function() { return {}; };
-  const getColor = (KitChartsTheme && KitChartsTheme.getColor) || (typeof window !== 'undefined' && window.getColor) || function(t, i) { return '#2B8CBE'; };
+  const getGroupColors = (KitChartsTheme && KitChartsTheme.getGroupColors) || (typeof window !== 'undefined' && window.getGroupColors) || function(t, n) { return Array.from({ length: n }, () => '#2B8CBE'); };
   const getSemanticColor = (KitChartsTheme && KitChartsTheme.getSemanticColor) || (typeof window !== 'undefined' && window.getSemanticColor) || function() { return '#999999'; };
   const getSequentialColor = (KitChartsTheme && KitChartsTheme.getSequentialColor) || (typeof window !== 'undefined' && window.getSequentialColor) || function() { return '#3182BD'; };
   const getValenceColor = (KitChartsTheme && KitChartsTheme.getValenceColor) || (typeof window !== 'undefined' && window.getValenceColor) || function() { return '#2E7D32'; };
@@ -189,12 +189,14 @@ var factory = function(KitChartsTheme) {
     const showInnerBox = options.showInnerBox !== undefined ? options.showInnerBox : true;
     const showRawPoints = options.showRawPoints !== undefined ? options.showRawPoints : (groups.some(g => Array.isArray(g) && g.length <= 30));
 
+    // Une seule teinte pour des groupes de même nature ; --focus grise les autres groupes.
+    const groupColors = getGroupColors(tokens, groups.length, rawData.datasets[0].focusIndex);
     // Pré-calcul du KDE et stats pour chaque groupe
     const groupAnalysis = groups.map((g, i) => {
       const rawPoints = Array.isArray(g) ? g : [];
       const kde = computeGaussianKDE(rawPoints);
       const stats = computeSummaryStats(rawPoints);
-      const color = getColor(tokens, i);
+      const color = groupColors[i];
       return { rawPoints, kde, stats, color, label: labels[i] || `Groupe ${i + 1}` };
     });
 

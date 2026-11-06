@@ -111,7 +111,7 @@ function createChart(canvasTarget, customData = null, themeName = DEFAULT_THEME,
       backgroundColor: bg,
       borderWidth: typeof ds.borderWidth === 'number' ? ds.borderWidth : emphasisStyle.borderWidth,
       borderDash: ds.borderDash || emphasisStyle.borderDash || (isForecast ? [4, 4] : []),
-      tension: typeof ds.tension === 'number' ? ds.tension : 0.25,
+      tension: typeof ds.tension === 'number' ? ds.tension : 0,
       fill: ds.fill !== undefined ? ds.fill : false,
       pointRadius: typeof ds.pointRadius === 'number' ? ds.pointRadius : (ctx) => {
         const count = ctx.chart?.data?.datasets?.[idx]?.data?.length || 12;

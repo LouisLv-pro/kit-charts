@@ -47,6 +47,8 @@ Options de make et update :
   --start C --end C --progress C --today N  Planning gantt-progress (semaine du jour en --today)
                                           waterfall-chart : total de départ, variations signées, total
                                           d'arrivée ; les paires chaînées sont calculées
+  --focus "Lille" | --focus aucun         Élément mis en avant, le reste en gris (déduit du titre
+                                          quand il cite un seul libellé)
   --theme X --height N --labels|--no-labels
   --export png,svg,pdf --offline --no-check -o output/<slug>
 
@@ -261,6 +263,7 @@ function makeOptions(args) {
     footnote: v(['--footnote']),
     polarity: v(['--polarity']),
     theme: v(['--theme']),
+    focus: v(['--focus']),
     intent: v(['--intent', '-i']),
     template: v(['--template', '-t']),
     height: v(['--height']),
@@ -277,7 +280,7 @@ function makeOptions(args) {
   return opts;
 }
 
-const MAKE_VALUE_OPTIONS = ['--title', '--subtitle', '--footnote', '--polarity', '--theme', '--intent', '-i', '--template', '-t',
+const MAKE_VALUE_OPTIONS = ['--title', '--subtitle', '--footnote', '--polarity', '--theme', '--focus', '--intent', '-i', '--template', '-t',
   '--height', '--scale', '-o', '--output', '--label', '--value', '--series', '--x', '--y', '--r', '--export', '--data', '-d',
   '--start', '--end', '--progress', '--today'];
 

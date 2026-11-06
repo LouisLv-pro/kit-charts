@@ -139,7 +139,7 @@
             borderWidth: 2.5,
             pointRadius: 3,
             pointHoverRadius: 5,
-            tension: 0.2,
+            tension: 0,
             order: 1
           },
           {
@@ -150,7 +150,7 @@
             borderDash: [3, 3],
             pointStyle: 'line',
             pointRadius: 0,
-            tension: 0.3,
+            tension: 0,
             order: 2
           },
           {
@@ -162,7 +162,7 @@
             fill: '+1',
             pointStyle: 'rect',
             backgroundColor: hexToRgba(bandColor, isDark ? 0.22 : 0.18),
-            tension: 0.3,
+            tension: 0,
             order: 3
           },
           {
@@ -172,7 +172,7 @@
             borderWidth: 1,
             pointRadius: 0,
             fill: false,
-            tension: 0.3,
+            tension: 0,
             order: 3
           }
         ]

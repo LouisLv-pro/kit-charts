@@ -22,6 +22,7 @@ const { compileChart, loadRegistry } = require('./compile-chart.js');
 const { validateChartSpec, isOrdinalLabel } = require('./validate-chart.js');
 const { profileData, recommendTemplates, INTENTS } = require('./recommend-template.js');
 const { loadTableFile, parseTable, tableToFormattedData, shapeOfTemplate } = require('./table-import.js');
+const { focusFromTitle, focusMode, isNoFocus } = require('./focus.js');
 
 const POLARITIES = ['HIGHER_IS_BETTER', 'LOWER_IS_BETTER', 'TARGET_BASED', 'NEUTRAL_CATEGORICAL'];
 const EXPORT_FORMATS = ['png', 'svg', 'pdf'];
@@ -271,6 +272,33 @@ function keepOrdinalOrder(spec, choice) {
 }
 
 /**
+ * Mise en avant : imposée par --focus, retirée par --focus aucun, sinon déduite du titre quand
+ * il cite exactement un libellé (« Lille passe de la 6e à la 1re place » -> Lille).
+ * @param {Object} spec - spec en cours (cognitiveFeatures modifié)
+ * @param {string|undefined} requested - valeur de --focus
+ * @param {string|undefined} previousSource - 'titre' | 'imposé' | 'aucun' (update)
+ * @returns {string|null} source retenue, pour make.json
+ */
+function resolveFocus(spec, choice, requested, previousSource) {
+  const cf = spec.cognitiveFeatures = spec.cognitiveFeatures || {};
+  if (requested !== undefined) {
+    if (isNoFocus(requested)) { delete cf.focus; return 'aucun'; }
+    cf.focus = String(requested);
+    return 'imposé';
+  }
+  if (previousSource === 'imposé' || previousSource === 'aucun') return previousSource;
+  // Spec écrite à la main (ou antérieure à make.json focusSource) : son choix est gardé.
+  if (!previousSource && cf.focus !== undefined) return 'imposé';
+  delete cf.focus;
+  if (!focusMode(spec.targetTemplateId)) return null;
+  const found = focusFromTitle(spec.layout.title, spec.formattedData, spec.targetTemplateId);
+  if (!found) return null;
+  cf.focus = found;
+  choice.notes = (choice.notes || []).concat(`mise en avant « ${found} » (citée dans le titre ; --focus aucun pour l'enlever)`);
+  return 'titre';
+}
+
+/**
  * kit-charts make <données> --title "..." --polarity X [options]
  * @param {Object} opts - { data, title, subtitle, footnote, polarity, theme, intent, template,
  *   mapping: {label, value, series, x, y, r}, out, exports, offline, check, height, dataLabels }
@@ -306,6 +334,7 @@ async function make(opts) {
   if (opts.height) spec.layout.height = Number(opts.height);
   if (opts.dataLabels !== undefined) spec.cognitiveFeatures.showDataLabels = opts.dataLabels;
   keepOrdinalOrder(spec, choice);
+  const focusSource = resolveFocus(spec, choice, opts.focus, undefined);
   fillRequiredTexts(spec);
   if (!spec.layout.footnote) delete spec.layout.footnote;
   if (!spec.layout.subtitle) delete spec.layout.subtitle;
@@ -316,6 +345,7 @@ async function make(opts) {
     mapping: mapping || null,
     intent: opts.intent || null,
     templateChoice: choice.source,
+    focusSource,
     exports: exportsList,
     offline: Boolean(opts.offline)
   };
@@ -383,6 +413,8 @@ async function update(opts) {
   }
   // Mêmes traitements que make : titre des cartes KPI et tableaux, ordre des libellés ordonnés.
   if (dataSource !== undefined || opts.template) keepOrdinalOrder(spec, choice);
+  // Mise en avant déduite : recalculée sur le nouveau titre ou les nouvelles données.
+  meta.focusSource = resolveFocus(spec, choice, opts.focus, meta.focusSource);
   fillRequiredTexts(spec);
   const exportsList = opts.exports !== undefined ? parseExports(opts.exports) : (meta.exports || []);
   const offline = opts.offline !== undefined ? opts.offline : Boolean(meta.offline);
